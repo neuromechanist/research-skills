@@ -1,13 +1,13 @@
 {
   "name": "research-skills",
-  "version": "0.1.0",
-  "description": "Claude Code plugin with skills for academic research workflows: literature search, grant writing, scientific icon generation, paper-ready figures, and grant proposal review",
+  "version": "0.2.0",
+  "description": "Claude Code plugin for academic research workflows: literature search, grant writing, scientific figures, and grant proposal review",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
   },
   "repository": "https://github.com/neuromechanist/research-skills",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "keywords": [
     "academic",
     "research",
