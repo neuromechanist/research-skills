@@ -1,0 +1,59 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "research-skills",
+  "description": "Claude Code plugins for academic research workflows: literature search, grant writing, scientific figures, and grant proposal review",
+  "owner": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "plugins": [
+    {
+      "name": "opencite",
+      "description": "Academic literature search, citation management, and PDF retrieval using the opencite CLI",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/opencite",
+      "category": "research",
+      "homepage": "https://github.com/neuromechanist/research-skills"
+    },
+    {
+      "name": "grant-writing",
+      "description": "NIH/NSF grant proposal drafting with mechanism-specific templates and formatting",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/grant-writing",
+      "category": "research",
+      "homepage": "https://github.com/neuromechanist/research-skills"
+    },
+    {
+      "name": "scientific-figures",
+      "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA for Nature/Science/PNAS journals",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/scientific-figures",
+      "category": "research",
+      "homepage": "https://github.com/neuromechanist/research-skills"
+    },
+    {
+      "name": "grant-review",
+      "description": "Structured grant proposal review using NIH/NSF scoring criteria",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/grant-review",
+      "category": "research",
+      "homepage": "https://github.com/neuromechanist/research-skills"
+    }
+  ]
+}
