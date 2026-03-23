@@ -13,9 +13,9 @@ Curated, publication-quality color palettes. All palettes are colorblind-safe un
 
 ## Qualitative Palettes (Categorical Data)
 
-### Wong (Nature standard, colorblind-safe)
+### Wong/Okabe-Ito (Nature standard, colorblind-safe)
 
-The go-to palette for scientific figures. From Bang Wong, Nature Methods 2011.
+This palette, published by Bang Wong (Nature Methods 2011) and based on Okabe and Ito (2008), is the standard for scientific figures.
 
 | Name | Hex | Use |
 |------|-----|-----|
@@ -29,7 +29,7 @@ The go-to palette for scientific figures. From Bang Wong, Nature Methods 2011.
 | Black | #000000 | Reference/control |
 
 ```python
-WONG = ['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']
+WONG_OKABE_ITO = ['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#000000']
 ```
 
 ### Tol Bright (colorblind-safe, high contrast)
@@ -48,25 +48,6 @@ From Paul Tol's color schemes. Excellent for presentations and print.
 
 ```python
 TOL_BRIGHT = ['#4477AA', '#66CCEE', '#228833', '#CCBB44', '#EE6677', '#AA3377', '#BBBBBB']
-```
-
-### Okabe-Ito (universal colorblind-safe)
-
-Designed specifically for color vision deficiency accessibility.
-
-| Name | Hex |
-|------|-----|
-| Orange | #E69F00 |
-| Sky blue | #56B4E9 |
-| Bluish green | #009E73 |
-| Yellow | #F0E442 |
-| Blue | #0072B2 |
-| Vermillion | #D55E00 |
-| Reddish purple | #CC79A7 |
-| Black | #000000 |
-
-```python
-OKABE_ITO = ['#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7', '#000000']
 ```
 
 ### Paired (for matched conditions)

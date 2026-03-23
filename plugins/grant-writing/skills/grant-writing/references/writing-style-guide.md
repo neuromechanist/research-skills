@@ -5,51 +5,8 @@
 1. **Direct, active voice** - "We will demonstrate" not "It will be demonstrated"
 2. **Professional objectivity over validation** - Technical accuracy and truthfulness over confirming beliefs
 3. **Strategic bolding** - Bold key statements reviewers should remember; not liberal use
-4. **No em-dashes** - Use commas, semicolons, or parentheses instead
+4. **No em-dashes (PI style preference)** - Use commas, semicolons, or parentheses instead. This is a PI stylistic convention, not a universal grant writing standard.
 5. **Define abbreviations on first use** - Full term before acronym, once per document
-
-## Grant Proposal Structure
-
-### Specific Aims Page (1 page, <650 words)
-- **Opening paragraph** (2-3 sentences): Problem + critical gap
-- **Bold overarching goal**: Ultimate objective + innovation/methodology explanation
-- **Brief scope statement**: Recruitment/context (can merge with goal if space tight)
-- **Aims**: Bold title with action verb
-  - Sub-hypotheses: *Italic labels* (Hypothesis 1A:), very concise (one sentence)
-  - Hypothesis can continue inline with explanation if space tight
-  - After each hypothesis: "We will..." with **bold key methodological innovations**
-- **Expected Impact**: Bold header, numbered deliverables
-
-### Specific Aims Formatting (LaTeX)
-- No indentation; 4pt space between paragraphs
-- Arial 11pt body, 12pt title
-- 0.5in margins all sides
-- Justified text
-- Fit on 1 page by trimming content, not reducing spacing below readability
-
-### Research Strategy Sections
-
-**Significance:**
-- Problem -> Gap -> Why it matters -> What success enables
-- Bold for key problem statements and barriers
-- Use section headers (##) to guide reviewers
-- Quantify when possible (N=X, Y datasets, Z dollars invested)
-
-**Innovation:**
-- What's new -> Why current approaches fail -> How this advances the field
-- Distinguish conceptual, technical, and methodological innovations
-- Avoid overstating; let innovations speak for themselves
-
-**Approach:**
-- Preliminary data first (establishes credibility)
-- Aim-by-aim breakdown:
-  - Rationale (why this aim matters)
-  - Approach (detailed methods)
-  - Hypothesis -> Analyses -> Expected outcomes
-  - Potential problems/alternatives (in tables when possible)
-- **Tables for potential problems**: Problem | Detection | Alternative
-- Rigor section: cross-validation, null models, minimum effect sizes, failure criteria
-- Timeline: realistic, with milestones
 
 ## Style Elements
 
@@ -126,7 +83,7 @@
 
 ## Things to Avoid
 
-- Em-dashes (use commas, semicolons, parentheses)
+- Em-dashes (PI style preference; use commas, semicolons, parentheses instead)
 - Time estimates ("this will take 3 weeks")
 - Liberal bolding (strategic only)
 - Validation without substance ("You're absolutely right")

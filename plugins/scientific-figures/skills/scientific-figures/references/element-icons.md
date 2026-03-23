@@ -107,3 +107,33 @@ Dependencies are handled on-the-fly via `uvx --from "openai python-dotenv pillow
 - **engineering**: wearable-sensor, circuit-board, electrode
 
 Full template schema and element definitions: `icon-bible.md`
+
+## Prompt Templates by Category
+
+### Biological Structure
+```
+A flat minimalist icon of [structure], simple geometric shapes,
+[palette], white background, no text, clean vector style,
+centered, Nature journal figure aesthetic
+```
+
+### Laboratory Equipment
+```
+A flat minimalist pictogram of [equipment], schematic style,
+simple lines, [palette], no gradients, no shadows, centered,
+scientific illustration style
+```
+
+### Data/Computational
+```
+A flat minimalist icon representing [concept], abstract geometric design,
+[palette], clean edges, infographic style, no text labels,
+centered on white background
+```
+
+### Clinical/Patient
+```
+A flat minimalist pictogram of [clinical element], simple silhouette style,
+[palette], no facial details, gender-neutral where applicable,
+medical infographic aesthetic
+```

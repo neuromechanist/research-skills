@@ -31,6 +31,47 @@
 - **Eligibility:** Within 4 years of terminal degree, no prior R01
 - **Key Sections:** Candidate section, Mentoring plan, RCR training
 
+### R03 (Small Grant)
+- **Duration:** Up to 2 years
+- **Page Limits:** Specific Aims (1 page), Research Strategy (6 pages)
+- **Budget:** Up to $50K/year direct costs
+- **Preliminary Data:** Not required
+- **Focus:** Pilot studies, secondary analysis, small self-contained projects
+- **Key:** Limited scope; not renewable; no preliminary data expectation but feasibility must be clear
+
+### F31 (Predoctoral Fellowship)
+- **For:** Doctoral candidates in research training
+- **Duration:** Typically 1-5 years (varies by IC)
+- **Page Limits:** Specific Aims (1 page), Research Strategy (6 pages), Applicant Background & Goals (6 pages), Sponsor & Co-Sponsor Statements (6 pages combined)
+- **Budget:** Stipend (set by NRSA rates), tuition/fees, institutional allowance
+- **Key Sections:** Applicant's background and goals, sponsors and institutional environment, training plan, responsible conduct of research (RCR) plan
+- **Eligibility:** US citizen or permanent resident, enrolled in doctoral program
+
+### F32 (Postdoctoral Fellowship)
+- **For:** Postdoctoral researchers seeking supervised research training
+- **Duration:** Typically 1-3 years
+- **Page Limits:** Specific Aims (1 page), Research Strategy (6 pages), Applicant Background & Goals (6 pages), Sponsor & Co-Sponsor Statements (6 pages combined)
+- **Budget:** Stipend (NRSA rates based on years of experience), institutional allowance
+- **Key Sections:** Applicant's background and goals, sponsors and institutional environment, training plan, RCR plan
+- **Eligibility:** US citizen or permanent resident, doctoral degree received within specified window
+
+### K08 (Mentored Clinical Scientist Development Award)
+- **For:** Clinician-scientists transitioning to independent research careers
+- **Duration:** 3-5 years
+- **Page Limits:** Specific Aims (1 page), Candidate Section (6 pages including career goals and background), Research Strategy (12 pages), Mentoring Plan (1 page), Training Plan
+- **Budget:** Salary support up to $100K/year + fringe, plus $50K/year research costs
+- **Effort:** Minimum 75% protected time for research and career development
+- **Key Sections:** Candidate section (career goals, training background), career development plan, research plan, mentor and institutional support
+
+### K23 (Mentored Patient-Oriented Research Career Development Award)
+- **For:** Clinicians developing skills in patient-oriented research
+- **Duration:** 3-5 years
+- **Page Limits:** Same as K08
+- **Budget:** Same as K08
+- **Effort:** Minimum 75% protected time
+- **Key Sections:** Same as K08, with emphasis on patient-oriented research training
+- **Distinction from K08:** K23 focuses on patient-oriented research; K08 is broader (basic, translational, or clinical)
+
 ### R24 (Resource-Related Research)
 - **Duration:** Up to 5 years
 - **Page Limits:** Specific Aims (1 page), Research Strategy (12 pages)
@@ -84,11 +125,11 @@ Each criterion scored 1-9:
 - **R01/R21:** Feb 5, Jun 5, Oct 5
 - Check specific NOFO for variations
 
-## Important 2025 Updates
-- SciENcv required for biosketches (May 25, 2025+)
-- Simplified review framework for RPGs (Jan 25, 2025+)
+## Important Updates (as of March 2026)
+- SciENcv required for all biosketches (effective May 2025)
+- Simplified review framework for RPGs in effect (implemented January 2025); verify current review criteria against the specific NOFO, as implementation details continue to evolve
 - 6 application limit per PI per calendar year
-- Grants.gov as single source (Oct 2025+)
+- Grants.gov is now the single submission portal (transition completed October 2025); all applications must be submitted through Grants.gov
 
 ## Resources
 - [NIH Write Application](https://grants.nih.gov/grants-process/write-application)

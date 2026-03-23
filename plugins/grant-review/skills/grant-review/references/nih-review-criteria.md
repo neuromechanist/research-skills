@@ -112,6 +112,16 @@
 - Access to required participant populations
 - Unique resources (special equipment, biobanks, cohorts)
 
+## Three-Tier Review Structure
+
+NIH review encompasses three distinct categories of evaluation:
+
+1. **Scored Review Criteria** (the five core criteria above) - Each receives an individual 1-9 score from assigned reviewers
+2. **Additional Review Criteria** (below) - Do not receive individual scores but ARE considered in determining the Overall Impact score
+3. **Additional Review Considerations** (budget, data sharing, etc.) - Noted by reviewers but addressed administratively; do not factor into the Overall Impact score
+
+Understanding this distinction is important: a weakness in an Additional Review Criterion (e.g., inadequate human subjects protections) can lower the Overall Impact score, while a budget concern typically results in an administrative note rather than a score reduction.
+
 ## Additional Review Criteria
 
 These do not receive individual scores but can affect the overall impact score:
@@ -145,7 +155,12 @@ These do not receive individual scores but can affect the overall impact score:
 - Period sufficient for proposed work
 
 ### Authentication of Key Biological and/or Chemical Resources
-- Plan for ensuring reagent quality
+- Plan for ensuring reagent quality and identity throughout the project
+- **Antibody validation**: Specify validation strategy (knockout controls, multiple antibodies to same target, vendor validation data)
+- **Cell line authentication**: Short tandem repeat (STR) profiling to confirm identity; mycoplasma testing schedule
+- **Chemical compound purity**: Source verification, purity documentation, and stability testing for key reagents
+- **Biological specimens**: Provenance documentation, quality control metrics, storage conditions
+- Reviewers note whether the plan is present and reasonable; absence is flagged as a weakness in the summary statement
 
 ## Scoring Mechanics
 
@@ -175,6 +190,15 @@ Each reviewer scores each of the five criteria:
 - Calculated within the study section
 - Represents ranking relative to other applications
 - Paylines vary by IC (typically 10th-25th percentile)
+
+## Resubmission Process
+
+- NIH allows one resubmission (A1) of an unfunded application; there is no A2
+- Resubmissions include a 1-page Introduction that summarizes changes made in response to prior critiques
+- Reviewers receive the prior summary statement and evaluate whether concerns were adequately addressed
+- The A1 application is reviewed on its own merit, not solely on whether prior critiques were addressed; new weaknesses may be identified
+- A substantially changed application may be submitted as a new (A0) application rather than a resubmission
+- Reviewers assess both the quality of the response to prior critiques and the overall scientific merit of the revised application
 
 ## Sources
 - [NIH Peer Review Process](https://grants.nih.gov/grants/peer-review.htm)

@@ -2,8 +2,8 @@
 
 ## Key Document
 - **PAPPG** (Proposal & Award Policies and Procedures Guide)
-- Current: NSF 24-1 (effective May 20, 2024)
-- Check annually for updates
+- Last verified: NSF 24-1 (effective May 20, 2024)
+- **Important:** NSF 24-1 may be superseded. Always check the [NSF PAPPG page](https://www.nsf.gov/policies/pappg) for the latest version before preparing a submission. PAPPG updates can change formatting requirements, page limits, and required documents.
 
 ## Common Mechanisms
 

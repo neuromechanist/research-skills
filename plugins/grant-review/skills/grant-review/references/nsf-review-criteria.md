@@ -50,32 +50,36 @@
 - Missing or weak preliminary data for ambitious claims
 
 ### 2. Broader Impacts
-**Key questions:**
-- What is the potential for the proposed activity to benefit society or advance desired societal outcomes?
-- To what extent do the proposed activities suggest and explore creative, original, or potentially transformative concepts?
-- Is the plan for carrying out the proposed activities well-reasoned, well-organized, and based on a sound rationale?
-- How well qualified is the individual, team, or institution to conduct the proposed activities?
-- Are there adequate resources available to the PI?
+**Key questions (same five elements as IM, but evaluated through the lens of societal impact):**
+- What is the potential for the proposed activity to benefit society and contribute to the achievement of specific, desired societal outcomes?
+- What plans exist for broadening participation of underrepresented groups in science, technology, engineering, and mathematics (STEM)?
+- To what extent do the proposed educational activities have national, regional, or local impact?
+- How well-reasoned is the plan for broader dissemination of results and public engagement with science?
+- Are there adequate resources and institutional support for carrying out the proposed broader impacts activities?
 
 **What reviewers assess:**
-- Clear plan for societal impact beyond the scientific community
-- Integration of research and education
-- Broadening participation of underrepresented groups
+- Concrete plan for societal impact beyond the scientific community
+- Integration of research and education in a meaningful, bidirectional way
+- Specific, actionable plans for broadening participation of underrepresented groups
 - Enhancement of infrastructure for research and education
-- Dissemination plan for research results
-- Benefits to society at large
+- Plans for broader dissemination of results to the public and relevant stakeholders
+- Assessment plan for measuring the effectiveness of broader impacts activities
+- Benefits to society at large, with clear connection to the proposed research
 
 **Common strengths:**
-- Concrete, measurable broader impacts activities
-- Integration of research into educational programs
-- Meaningful plans for broadening participation
-- Partnerships with organizations serving underrepresented groups
+- Concrete, measurable broader impacts activities with timelines and assessment metrics
+- Integration of research into educational programs at multiple levels
+- Meaningful plans for broadening participation with identified partner organizations
+- Partnerships with organizations serving underrepresented groups (e.g., HBCUs, HSIs, tribal colleges)
+- Plans for public engagement (museum exhibits, citizen science, K-12 outreach)
 
 **Common weaknesses:**
 - Broader impacts as an afterthought (generic mentoring statement)
 - No concrete plan or timeline for BI activities
 - BI activities disconnected from the research
 - No assessment plan for BI effectiveness
+- Relying solely on graduate student mentoring as the BI plan
+- No plan for broadening participation of underrepresented groups
 
 ## Rating System
 
@@ -123,15 +127,22 @@ The panel reaches consensus on an overall rating:
 ### Standard Research Grants
 - Primary criteria: IM + BI
 - Results from Prior NSF Support evaluated within IM
+- **Results from Prior NSF Support**: Reviewers assess productivity from prior awards (publications, students trained, data/code shared, broader impacts achieved). For PIs with prior NSF funding, this section is required and carries significant weight. Reviewers look for: clear connection between prior funding and proposed work, evidence of completed objectives, and intellectual products (papers, datasets, software). Absence of this section when prior NSF funding exists is a notable weakness.
+- **Postdoctoral Researcher Mentoring Plan**: Required when the project will support postdoctoral researchers. Describe mentoring activities (career counseling, training in research ethics, professional development, publication/presentation guidance). Reviewers evaluate the specificity and quality of the plan.
 
-### CAREER Awards
-- Additional emphasis on integration of research and education
-- Career development plan evaluated
-- Educational activities must be integral, not add-on
+### CAREER Awards (Faculty Early Career Development Program)
+CAREER is NSF's most prestigious award for junior faculty, supporting those who integrate research and education effectively.
+
+- **Research-education integration must be genuinely bidirectional**: The research must inform the educational activities AND the educational activities must feed back into the research. A proposal where the education plan is simply "mentoring graduate students" does not meet the CAREER standard.
+- **Educational plan must be original and impactful**: Developing a new course, creating open educational resources, establishing community partnerships, or building research experiences for undergraduates. Generic teaching or advising does not suffice.
+- **Departmental letter requirement**: The department chair (or equivalent) must provide a letter confirming the institution's commitment to the PI's career development and outlining the resources and support available.
+- **5-year duration, appropriate scope**: CAREER awards are for 5 years with a minimum budget of $400K (varies by directorate). The scope of both research and education components must be commensurate with this investment.
+- **Panel evaluation**: CAREER proposals are reviewed by disciplinary panels with additional CAREER-specific considerations. Panelists explicitly evaluate the quality and creativity of the educational plan, not just the research. A proposal with outstanding research but a weak educational plan will not be funded.
+- All standard IM + BI criteria apply in addition to CAREER-specific considerations
 
 ### RAPID/EAGER
-- Higher risk tolerance
-- Focus on urgency (RAPID) or high-risk/high-reward (EAGER)
+- **RAPID**: Focus on urgency; must justify why the research cannot wait for standard review. Typically for data collection tied to ephemeral events (natural disasters, emerging phenomena). Higher risk tolerance. No external review required (program officer decision).
+- **EAGER**: High-risk/high-reward exploratory work. Untested or unconventional approaches. No preliminary data required. Limited to $300K and 2 years. No external review required (program officer decision).
 
 ## Sources
 - [NSF Merit Review](https://www.nsf.gov/bfa/dias/policy/merit_review/)

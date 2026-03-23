@@ -1,6 +1,6 @@
 ---
 name: scientific-figures
-description: This skill should be used when the user asks to "create a figure", "make a scientific figure", "create a paper figure", "generate a figure element", "make an icon", "plot data for a figure", "compose figure panels", "create a graphical abstract", "make a multi-panel figure", "generate a PDF figure", "create a Nature-style figure", "make a publication figure", or mentions scientific figures, figure elements, figure composition, figure panels, icons for papers, matplotlib/seaborn/ggplot plots for figures, or react-pdf figures.
+description: This skill should be used when the user asks to "create a figure", "make a scientific figure", "create a paper figure", "generate a figure element", "make an icon", "plot data for a figure", "compose figure panels", "create a graphical abstract", "make a multi-panel figure", "generate a PDF figure", "create a Nature-style figure", "make a publication figure", "create a figure for my grant", "make a poster figure", "create a schematic diagram", or mentions scientific figures, figure elements, figure composition, figure panels, icons for papers, matplotlib/seaborn/ggplot plots for figures, or react-pdf figures.
 version: 0.1.0
 ---
 
@@ -90,37 +90,9 @@ Key rules for plot elements:
 - Remove chart junk: no top/right spines, minimal gridlines
 - Match the figure's shared color palette
 
-### Data Plots (ggplot2/R)
+### Data Plots (ggplot2/R, plotly)
 
-```bash
-# R plot via Rscript
-Rscript -e '
-library(ggplot2)
-p <- ggplot(data, aes(x, y)) +
-  geom_point() +
-  theme_classic(base_size = 9, base_family = "Helvetica") +
-  theme(
-    axis.line = element_line(linewidth = 0.4),
-    axis.ticks = element_line(linewidth = 0.4)
-  )
-ggsave("elements/plot.svg", p, width = 3, height = 2.5)
-'
-```
-
-### Data Plots (plotly)
-
-```bash
-uvx --from "plotly kaleido" python -c "
-import plotly.graph_objects as go
-fig = go.Figure(...)
-fig.update_layout(
-    font=dict(family='Helvetica', size=9),
-    plot_bgcolor='rgba(0,0,0,0)',
-    paper_bgcolor='rgba(0,0,0,0)',
-)
-fig.write_image('elements/plot.svg')
-"
-```
+Full ggplot2 and plotly templates with publication rcParams are in `references/element-plots.md`. Use the same font, spine, and tick conventions as the matplotlib example above.
 
 ## Step 3: Compose the Figure (react-pdf)
 
@@ -146,6 +118,8 @@ Standard sizes in points (1in = 72pt):
 bunx --bun run render.tsx    # outputs figure.pdf
 ```
 
+For researchers using LaTeX for figure composition, standard LaTeX figure tools (includegraphics, subfigure) remain a valid alternative. This skill focuses on the react-pdf workflow for its precise layout control and programmatic composition.
+
 ## Step 4: Visual QA Feedback Loop
 
 After rendering the PDF, verify it is pixel-perfect before delivery.
@@ -153,16 +127,14 @@ After rendering the PDF, verify it is pixel-perfect before delivery.
 ### Render PDF to PNG for inspection
 
 ```bash
-# Convert PDF to high-res PNG using sips (macOS built-in)
-sips -s format png figure.pdf --out figure_preview.png
-
-# Or use ImageMagick if available
 uvx --from "pdf2image pillow" python -c "
 from pdf2image import convert_from_path
 pages = convert_from_path('figure.pdf', dpi=300)
 pages[0].save('figure_preview.png', 'PNG')
 "
 ```
+
+See `references/figure-composition.md` for alternative conversion approaches (e.g., pdftoppm).
 
 ### Inspect the rendered output
 
@@ -201,7 +173,6 @@ Generate a figure caption that:
 - **`references/react-pdf-guide.md`** - react-pdf API quick reference
 - **`references/icon-bible.md`** - Icon template schema and categories
 - **`references/icon-templates.json`** - Structured icon template catalog
-- **`references/style-guide.md`** - Icon visual style examples and domain palettes
 
 ### Examples
 - **`examples/multi-panel.tsx`** - Working 2x2 panel react-pdf figure

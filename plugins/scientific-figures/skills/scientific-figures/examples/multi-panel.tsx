@@ -1,8 +1,12 @@
 /**
- * Example: 2x2 multi-panel figure (double-column width, half-page height)
+ * Layout template: 2x2 multi-panel figure (double-column width, half-page height).
+ *
+ * This file is a structural template with placeholder panels. Each placeholder
+ * View should be replaced with an Image component pointing to actual icon/plot
+ * files when building a real figure.
  *
  * Usage:
- *   bun add @react-pdf/renderer react
+ *   bunx --bun add @react-pdf/renderer react
  *   bun run examples/multi-panel.tsx
  *
  * Output: figure-example.pdf
@@ -120,7 +124,7 @@ const Panel = ({
       }}
     >
       <Text style={{ fontSize: 10, color: PALETTE.primary }}>
-        {label} icon
+        Placeholder: replace with Image component
       </Text>
     </View>
     <Text style={styles.caption}>{caption}</Text>

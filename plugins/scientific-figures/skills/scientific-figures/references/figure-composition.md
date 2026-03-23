@@ -70,10 +70,10 @@ bunx --bun run render.tsx
 ### 3. Convert PDF to PNG for visual QA
 
 ```bash
-# macOS built-in
-sips -s format png figure.pdf --out figure_preview.png
+# Using poppler (pdftoppm)
+pdftoppm -png -r 300 figure.pdf figure_preview
 
-# Or via Python
+# Or using Python
 uvx --from "pdf2image pillow" python -c "
 from pdf2image import convert_from_path
 pages = convert_from_path('figure.pdf', dpi=300)

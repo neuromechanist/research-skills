@@ -3,25 +3,25 @@
 
 Usage:
     # Free-form prompt
-    uv run scripts/generate_icon.py "a human brain with EEG electrodes" -o brain_eeg.png
+    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py "a human brain with EEG electrodes" -o brain_eeg.png
 
     # From template (icon bible)
-    uv run scripts/generate_icon.py --template brain-eeg -o brain_eeg.png
+    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template brain-eeg -o brain_eeg.png
 
     # Override template colors
-    uv run scripts/generate_icon.py --template neuron --colors "#3498DB,#E74C3C" -o neuron.png
+    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template neuron --colors "#3498DB,#E74C3C" -o neuron.png
 
     # With transparency
-    uv run scripts/generate_icon.py --template dna-helix -o dna.png --transparent
+    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template dna-helix -o dna.png --transparent
 
     # Batch from template category
-    uv run scripts/generate_icon.py --category neuroscience -o icons/neuro/
+    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --category neuroscience -o icons/neuro/
 
     # Batch from free-form prompt
-    uv run scripts/generate_icon.py "a flat icon of a {item}" -o icons/ --batch "brain,heart,lung"
+    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py "a flat icon of a {item}" -o icons/ --batch "brain,heart,lung"
 
     # List available templates
-    uv run scripts/generate_icon.py --list-templates
+    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --list-templates
 
 Environment:
     OPENAI_API_KEY - Required. Read from .env file or environment variable.
@@ -37,13 +37,13 @@ from typing import Any
 try:
     from dotenv import load_dotenv
 except ImportError:
-    print("Missing dependency: python-dotenv. Install with: uv pip install python-dotenv")
+    print("Missing dependency: python-dotenv. Run via: uvx --from \"openai python-dotenv pillow\" python scripts/generate_icon.py")
     sys.exit(1)
 
 try:
     from openai import OpenAI
 except ImportError:
-    print("Missing dependency: openai. Install with: uv pip install openai")
+    print("Missing dependency: openai. Run via: uvx --from \"openai python-dotenv pillow\" python scripts/generate_icon.py")
     sys.exit(1)
 
 try:
@@ -249,7 +249,7 @@ def main() -> None:
         parser.error("--output is required")
 
     if args.transparent and not HAS_PILLOW:
-        print("Warning: --transparent requires Pillow. Install with: uv pip install pillow")
+        print("Warning: --transparent requires Pillow. Ensure pillow is included in the uvx --from dependencies.")
         print("Generating without transparency.")
         args.transparent = False
 

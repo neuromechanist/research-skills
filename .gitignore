@@ -24,3 +24,6 @@ Thumbs.db
 # Generated
 *.generated.pdf
 output/
+
+# Serena
+.serena/

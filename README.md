@@ -73,6 +73,10 @@ research-skills/
 - For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
 - For figure composition: react-pdf via `bunx` (on-the-fly)
 
+## Notes
+
+The `opencite` plugin included here is a snapshot of the standalone [`neuromechanist/opencite`](https://github.com/neuromechanist/opencite) plugin. If you have already installed that standalone plugin, do not install it again from this marketplace; having both installed will create duplicate skills.
+
 ## License
 
 BSD-3-Clause

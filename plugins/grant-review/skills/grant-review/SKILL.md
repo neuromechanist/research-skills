@@ -1,6 +1,6 @@
 ---
 name: grant-review
-description: This skill should be used when the user asks to "review a grant", "review my proposal", "score this grant", "evaluate my specific aims", "critique my research strategy", "review as an NIH reviewer", "review as an NSF panelist", "give me reviewer feedback", "check my grant proposal", or mentions grant review, proposal critique, NIH scoring, NSF panel review, or study section feedback.
+description: This skill should be used when the user asks to "review a grant", "review my proposal", "score this grant", "evaluate my specific aims", "critique my research strategy", "review as an NIH reviewer", "review as an NSF panelist", "give me reviewer feedback", "check my grant proposal", "review my R01", "review my K99", "evaluate my CAREER proposal", "run a mock study section", "review my resubmission", or mentions grant review, proposal critique, NIH scoring, NSF panel review, or study section feedback.
 version: 0.1.0
 ---
 
@@ -16,7 +16,20 @@ Activate when the user wants feedback on a grant proposal (specific aims, resear
 
 ### 1. Identify the mechanism and agency
 
-Determine whether the proposal is NIH or NSF, and which mechanism (R01, R21, DP2, CAREER, etc.). This determines the review criteria, scoring system, and expectations. Consult `references/nih-review-criteria.md` or `references/nsf-review-criteria.md` for details.
+Determine whether the proposal is NIH or NSF, and which mechanism (R01, R21, DP2, CAREER, etc.). This determines the review criteria, scoring system, and expectations.
+
+When the mechanism is not specified in the proposal or by the user, infer from document structure: presence of Specific Aims indicates NIH; a Project Summary with separate Intellectual Merit and Broader Impacts sections indicates NSF. If the mechanism remains ambiguous, ask the user before proceeding.
+
+Use the following table to select the appropriate criteria reference:
+
+| Mechanism | Criteria Reference |
+|-----------|-------------------|
+| R01, R21, R03, R15, DP2 | `references/nih-review-criteria.md` |
+| K99/R00, K08, K23 | `references/nih-career-training-criteria.md` |
+| F31, F32 | `references/nih-career-training-criteria.md` |
+| T32 | `references/nih-career-training-criteria.md` |
+| NSF Standard, CAREER, RAPID, EAGER | `references/nsf-review-criteria.md` |
+| Unknown | Infer from document structure or ask the user |
 
 ### 2. Read the full proposal
 
@@ -72,117 +85,14 @@ Structure the output as described below.
 
 ## Review Output Format
 
-### NIH-Style Review
+Structure the review output according to the appropriate agency template in `references/review-output-templates.md`. Both NIH and NSF templates follow this general structure:
 
-```
-## Summary of Proposal
-[2-3 sentence summary of what the proposal aims to do]
+1. **Summary** - 2-3 sentence proposal overview
+2. **Criterion scores** - Individual scores (NIH 1-9) or ratings (NSF Excellent-Poor) with strengths/weaknesses for each criterion
+3. **Additional review criteria** - Non-scored items (human subjects, data management, rigor)
+4. **Actionable improvements** - Prioritized as Critical, Important, and Suggested
 
-## Overall Impact Score: [1-9]
-[Brief justification for overall impact score]
-
----
-
-## Criterion Scores
-
-### Significance: [1-9]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
-
-### Investigator(s): [1-9]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
-
-### Innovation: [1-9]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
-
-### Approach: [1-9]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
-
-### Environment: [1-9]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
-
----
-
-## Additional Review Criteria
-- **Protections for Human Subjects:** [Acceptable / Concerns]
-- **Data Management Plan:** [Acceptable / Needs revision]
-- **Rigor and Reproducibility:** [Addressed / Needs strengthening]
-- **Budget:** [Appropriate / Concerns]
-
----
-
-## Actionable Improvements (Priority Order)
-
-### Critical (would likely prevent funding)
-1. [Specific, actionable improvement with rationale]
-2. [...]
-
-### Important (would significantly improve score)
-1. [Specific, actionable improvement with rationale]
-2. [...]
-
-### Suggested (would strengthen the proposal)
-1. [Specific, actionable improvement with rationale]
-2. [...]
-```
-
-### NSF-Style Review
-
-```
-## Summary of Proposal
-[2-3 sentence summary]
-
----
-
-## Intellectual Merit: [Excellent/Very Good/Good/Fair/Poor]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
-
-## Broader Impacts: [Excellent/Very Good/Good/Fair/Poor]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
-
-## Summary Assessment: [Excellent/Very Good/Good/Fair/Poor]
-[Paragraph synthesizing the evaluation]
-
----
-
-## Actionable Improvements (Priority Order)
-
-### Critical
-1. [Specific improvement]
-
-### Important
-1. [Specific improvement]
-
-### Suggested
-1. [Specific improvement]
-```
+For a complete worked example, see `examples/sample-nih-r01-review.md`.
 
 ## Review Perspective
 
@@ -192,45 +102,22 @@ Adopt the viewpoint of a **senior researcher** on a study section or review pane
 - **Skepticism**: Demand evidence for claims; flag unsupported assertions
 - **Constructiveness**: Every weakness should include a suggestion for improvement
 - **Fairness**: Acknowledge strengths genuinely; do not manufacture weaknesses
-- **Calibration**: Score relative to the mechanism (R21 should not be held to R01 preliminary data standards)
+- **Calibration**: Score relative to the mechanism (R21 should not be held to R01 preliminary data standards; K awards emphasize career development over research scope; CAREER proposals require genuine research-education integration; DP2 rewards bold, innovative thinking from new investigators)
 - **Precision**: Cite specific sections, figures, or claims when identifying issues
 - **Impact focus**: Always tie feedback back to how it affects the overall impact score
 
-## Common Issues to Watch For
+## Common Issues
 
-### Specific Aims
-- Aims too interdependent (if Aim 1 fails, Aims 2-3 collapse)
-- Overarching goal too vague or too narrow
-- Hypotheses not testable or too obvious
-- Missing expected impact statement
-
-### Significance
-- Problem not connected to broader field or NIH/NSF mission
-- Gaps not clearly identified
-- Incremental advance presented as transformative
-
-### Innovation
-- Claims of novelty without evidence ("for the first time" without citation search)
-- Confusing "nobody has done this" with "this is innovative and valuable"
-- Innovation only in application, not acknowledged as such
-
-### Approach
-- Insufficient power analysis or sample size justification
-- Missing potential problems and alternatives
-- Methods too vague (suggests the PI hasn't piloted)
-- Overly ambitious timeline
-- Preliminary data doesn't support feasibility
-- Sex as a Biological Variable (SABV) not addressed (NIH)
-- Rigor and reproducibility section missing or superficial
-
-### Budget
-- Personnel effort doesn't match proposed work
-- Equipment requests without justification
-- Travel without scientific rationale
+For common reviewer comments and their meanings, consult `references/review-best-practices.md`.
 
 ## Additional Resources
 
 ### Reference Files
 - **`references/nih-review-criteria.md`** - Complete NIH review criteria, scoring rubric, and study section process
+- **`references/nih-career-training-criteria.md`** - Review criteria for K, F, and T32 mechanisms
 - **`references/nsf-review-criteria.md`** - Complete NSF review criteria and panel process
 - **`references/review-best-practices.md`** - Best practices from experienced reviewers, common reviewer comments, and calibration guidance
+- **`references/review-output-templates.md`** - NIH and NSF review output format templates
+
+### Examples
+- **`examples/sample-nih-r01-review.md`** - Complete example review demonstrating expected format, tone, and scoring calibration

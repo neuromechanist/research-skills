@@ -3,8 +3,8 @@
 ## Setup
 
 ```bash
-bun init -y
-bun add @react-pdf/renderer react
+bunx --bun create-bun@latest . --yes 2>/dev/null
+bunx --bun add @react-pdf/renderer react
 ```
 
 ## Core Components

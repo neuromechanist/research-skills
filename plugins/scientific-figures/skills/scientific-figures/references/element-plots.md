@@ -107,6 +107,71 @@ cbar.ax.tick_params(labelsize=7)
 plt.savefig('elements/heatmap.svg', bbox_inches='tight', transparent=True)
 ```
 
+#### Box plot
+```python
+fig, ax = plt.subplots(figsize=(3.5, 2.5))
+bp = ax.boxplot(
+    [group_a, group_b, group_c],
+    labels=['Control', 'Treatment A', 'Treatment B'],
+    patch_artist=True,
+    widths=0.6,
+    medianprops=dict(color='black', linewidth=1.0),
+    boxprops=dict(linewidth=0.8),
+    whiskerprops=dict(linewidth=0.8),
+    capprops=dict(linewidth=0.8),
+    flierprops=dict(marker='o', markersize=3, markerfacecolor='#999999', alpha=0.5),
+)
+for patch, color in zip(bp['boxes'], PALETTE[:3]):
+    patch.set_facecolor(color)
+    patch.set_alpha(0.7)
+ax.set_ylabel('Measurement (units)')
+plt.savefig('elements/boxplot.svg', bbox_inches='tight', transparent=True)
+```
+
+#### Survival curve (Kaplan-Meier)
+```python
+# Requires: uvx --from "matplotlib numpy lifelines" python -c "..."
+from lifelines import KaplanMeierFitter
+
+fig, ax = plt.subplots(figsize=(3.5, 2.5))
+kmf = KaplanMeierFitter()
+
+for i, (label, T, E) in enumerate(groups):
+    kmf.fit(T, event_observed=E, label=label)
+    kmf.plot_survival_function(
+        ax=ax, color=PALETTE[i], linewidth=1.2, ci_show=True, ci_alpha=0.15
+    )
+
+ax.set_xlabel('Time (months)')
+ax.set_ylabel('Survival probability')
+ax.set_ylim(0, 1.05)
+ax.legend(frameon=False, fontsize=8)
+plt.savefig('elements/survival.svg', bbox_inches='tight', transparent=True)
+```
+
+#### Volcano plot (genomics/proteomics)
+```python
+fig, ax = plt.subplots(figsize=(3.5, 3.0))
+
+# Classify points: significant up, significant down, not significant
+sig_up = (log2fc > fc_thresh) & (neg_log10p > p_thresh)
+sig_down = (log2fc < -fc_thresh) & (neg_log10p > p_thresh)
+ns = ~sig_up & ~sig_down
+
+ax.scatter(log2fc[ns], neg_log10p[ns], c='#999999', s=8, alpha=0.4, edgecolors='none', label='NS')
+ax.scatter(log2fc[sig_up], neg_log10p[sig_up], c='#D55E00', s=12, alpha=0.7, edgecolors='none', label='Up')
+ax.scatter(log2fc[sig_down], neg_log10p[sig_down], c='#0072B2', s=12, alpha=0.7, edgecolors='none', label='Down')
+
+ax.axhline(y=p_thresh, color='#999999', linestyle='--', linewidth=0.5)
+ax.axvline(x=fc_thresh, color='#999999', linestyle='--', linewidth=0.5)
+ax.axvline(x=-fc_thresh, color='#999999', linestyle='--', linewidth=0.5)
+
+ax.set_xlabel('log2(Fold Change)')
+ax.set_ylabel('-log10(p-value)')
+ax.legend(frameon=False, fontsize=8, markerscale=1.5)
+plt.savefig('elements/volcano.svg', bbox_inches='tight', transparent=True)
+```
+
 ## seaborn Setup
 
 ```bash
