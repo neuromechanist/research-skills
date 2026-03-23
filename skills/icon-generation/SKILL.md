@@ -6,7 +6,7 @@ version: 0.1.0
 
 # Scientific Icon Generation
 
-Generates flat, minimalist scientific icons in the style commonly seen in Nature, Science, and Cell journal figures, using OpenAI's gpt-image-1 model.
+Generates flat, minimalist scientific icons in the style commonly seen in Nature, Science, and Cell journal figures, using OpenAI's gpt-image-1.5 model.
 
 ## When to Use
 
@@ -196,4 +196,4 @@ The icon bible (`references/icon-templates.json`) is a structured catalog of ico
 - **`references/style-guide.md`** - Detailed visual style examples and color palettes
 
 ### Scripts
-- **`scripts/generate_icon.py`** - Icon generation script supporting both template-based and free-form generation
+- **`scripts/generate_icon.py`** - Icon generation script (gpt-image-1.5) supporting both template-based and free-form generation
