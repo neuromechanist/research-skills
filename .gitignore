@@ -1,0 +1,26 @@
+# Environment
+.env
+.env.local
+
+# Node
+node_modules/
+dist/
+.turbo/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Generated
+*.generated.pdf
+output/

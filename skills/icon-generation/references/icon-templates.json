@@ -1,0 +1,477 @@
+{
+  "$schema": "./icon-template-schema.json",
+  "version": "0.1.0",
+  "templates": [
+    {
+      "id": "brain-eeg",
+      "name": "Brain with EEG Electrodes",
+      "category": "neuroscience",
+      "tags": ["brain", "eeg", "electrodes", "recording", "neural"],
+      "description": "Side-view brain silhouette with small electrode dots on the scalp surface and thin bundled wires",
+      "elements": [
+        {
+          "id": "brain",
+          "shape": "organic-silhouette",
+          "description": "Simplified brain silhouette in side view, visible cortical folds as smooth curves, no fine detail",
+          "fill": "#2D7D9A",
+          "stroke": "none",
+          "position": "center",
+          "size": "primary",
+          "z_index": 0
+        },
+        {
+          "id": "electrodes",
+          "shape": "circle-array",
+          "description": "7 small circles evenly spaced along the top surface of the brain silhouette",
+          "fill": "#E8734A",
+          "stroke": "none",
+          "position": "on:brain:top-surface",
+          "size": "tiny",
+          "count": 7,
+          "z_index": 1
+        },
+        {
+          "id": "wires",
+          "shape": "thin-lines",
+          "description": "Thin lines from each electrode converging upward into a single bundle",
+          "stroke": "#4A4A4A",
+          "stroke_width": 1,
+          "position": "from:electrodes:top",
+          "z_index": 0.5
+        }
+      ],
+      "composition": {
+        "background": "transparent",
+        "canvas_size": 1024,
+        "margin_percent": 12,
+        "alignment": "center",
+        "style": "flat-minimalist"
+      },
+      "palette": {
+        "primary": "#2D7D9A",
+        "secondary": "#E8734A",
+        "accent": "#F5C242",
+        "neutral": "#4A4A4A"
+      },
+      "prompt_hints": ["side view", "simplified cortical folds", "electrodes as small dots", "no text or labels"]
+    },
+    {
+      "id": "neuron",
+      "name": "Neuron",
+      "category": "neuroscience",
+      "tags": ["neuron", "cell", "axon", "dendrite", "synapse"],
+      "description": "Simplified neuron with cell body, branching dendrites, and a long axon with terminal buttons",
+      "elements": [
+        {
+          "id": "cell-body",
+          "shape": "circle",
+          "description": "Large circle representing the soma/cell body",
+          "fill": "#2D7D9A",
+          "stroke": "none",
+          "position": "center-left",
+          "size": "medium",
+          "z_index": 1
+        },
+        {
+          "id": "dendrites",
+          "shape": "tree",
+          "description": "3-4 branching lines extending left from the cell body, tapering outward",
+          "stroke": "#2D7D9A",
+          "stroke_width": 2,
+          "position": "from:cell-body:left",
+          "size": "medium",
+          "z_index": 0
+        },
+        {
+          "id": "axon",
+          "shape": "line",
+          "description": "Single long line extending right from the cell body",
+          "stroke": "#2D7D9A",
+          "stroke_width": 3,
+          "position": "from:cell-body:right",
+          "size": "large",
+          "z_index": 0
+        },
+        {
+          "id": "myelin",
+          "shape": "rounded-rectangle",
+          "description": "3-4 rounded rectangles spaced along the axon representing myelin sheaths",
+          "fill": "#E8734A",
+          "stroke": "none",
+          "position": "on:axon:along",
+          "size": "small",
+          "count": 4,
+          "z_index": 1
+        },
+        {
+          "id": "terminals",
+          "shape": "circle-array",
+          "description": "3 small circles at the end of the axon representing synaptic terminals",
+          "fill": "#F5C242",
+          "stroke": "none",
+          "position": "from:axon:end",
+          "size": "tiny",
+          "count": 3,
+          "z_index": 1
+        }
+      ],
+      "composition": {
+        "background": "transparent",
+        "canvas_size": 1024,
+        "margin_percent": 10,
+        "alignment": "center",
+        "style": "flat-minimalist"
+      },
+      "palette": {
+        "primary": "#2D7D9A",
+        "secondary": "#E8734A",
+        "accent": "#F5C242",
+        "neutral": "#4A4A4A"
+      },
+      "prompt_hints": ["horizontal orientation", "simplified branching", "no nucleus detail"]
+    },
+    {
+      "id": "dna-helix",
+      "name": "DNA Double Helix",
+      "category": "molecular-biology",
+      "tags": ["dna", "helix", "genetics", "genome", "molecular"],
+      "description": "Simplified double helix with two intertwined strands and base pair rungs",
+      "elements": [
+        {
+          "id": "strand-a",
+          "shape": "helix",
+          "description": "First strand of the double helix, smooth sinusoidal curve",
+          "stroke": "#2D7D9A",
+          "stroke_width": 4,
+          "position": "center",
+          "size": "primary",
+          "z_index": 1
+        },
+        {
+          "id": "strand-b",
+          "shape": "helix",
+          "description": "Second strand, offset 180 degrees from strand-a, crossing at regular intervals",
+          "stroke": "#E8734A",
+          "stroke_width": 4,
+          "position": "center",
+          "size": "primary",
+          "z_index": 1
+        },
+        {
+          "id": "base-pairs",
+          "shape": "thin-lines",
+          "description": "Short horizontal lines connecting the two strands at crossing points, representing base pairs",
+          "stroke": "#F5C242",
+          "stroke_width": 2,
+          "position": "between:strand-a:strand-b",
+          "size": "small",
+          "count": 8,
+          "z_index": 0
+        }
+      ],
+      "composition": {
+        "background": "transparent",
+        "canvas_size": 1024,
+        "margin_percent": 15,
+        "alignment": "center",
+        "style": "flat-minimalist"
+      },
+      "palette": {
+        "primary": "#2D7D9A",
+        "secondary": "#E8734A",
+        "accent": "#F5C242",
+        "neutral": "#4A4A4A"
+      },
+      "prompt_hints": ["vertical orientation", "3-4 full turns visible", "no atomic detail"]
+    },
+    {
+      "id": "microscope",
+      "name": "Microscope",
+      "category": "laboratory",
+      "tags": ["microscope", "lab", "equipment", "optics", "imaging"],
+      "description": "Simplified side-view microscope with eyepiece, objective, stage, and base",
+      "elements": [
+        {
+          "id": "base",
+          "shape": "rounded-rectangle",
+          "description": "Wide flat base of the microscope",
+          "fill": "#34495E",
+          "stroke": "none",
+          "position": "bottom-center",
+          "size": "medium",
+          "z_index": 0
+        },
+        {
+          "id": "arm",
+          "shape": "rectangle",
+          "description": "Vertical arm connecting base to head, slight curve",
+          "fill": "#34495E",
+          "stroke": "none",
+          "position": "from:base:top",
+          "size": "large",
+          "z_index": 1
+        },
+        {
+          "id": "stage",
+          "shape": "rectangle",
+          "description": "Horizontal platform extending from the arm where slides are placed",
+          "fill": "#7F8C8D",
+          "stroke": "none",
+          "position": "on:arm:middle",
+          "size": "medium",
+          "z_index": 2
+        },
+        {
+          "id": "objective",
+          "shape": "rounded-rectangle",
+          "description": "Small cylinder hanging below the arm above the stage",
+          "fill": "#2D7D9A",
+          "stroke": "none",
+          "position": "adjacent:stage:above",
+          "size": "small",
+          "z_index": 2
+        },
+        {
+          "id": "eyepiece",
+          "shape": "rounded-rectangle",
+          "description": "Cylinder at the top of the arm, angled slightly",
+          "fill": "#2D7D9A",
+          "stroke": "none",
+          "position": "on:arm:top",
+          "size": "small",
+          "z_index": 2,
+          "rotation": -15
+        }
+      ],
+      "composition": {
+        "background": "transparent",
+        "canvas_size": 1024,
+        "margin_percent": 12,
+        "alignment": "center",
+        "style": "flat-minimalist"
+      },
+      "palette": {
+        "primary": "#34495E",
+        "secondary": "#2D7D9A",
+        "accent": "#7F8C8D",
+        "neutral": "#BDC3C7"
+      },
+      "prompt_hints": ["side view", "simplified geometry", "no knobs or fine details"]
+    },
+    {
+      "id": "muscle-emg",
+      "name": "Muscle with EMG Sensor",
+      "category": "physiology",
+      "tags": ["muscle", "emg", "sensor", "electromyography", "motor"],
+      "description": "Simplified arm muscle with surface EMG sensor attached and signal trace",
+      "elements": [
+        {
+          "id": "muscle",
+          "shape": "organic-silhouette",
+          "description": "Simplified bicep/forearm muscle shape, elongated oval with tapered ends",
+          "fill": "#E74C3C",
+          "stroke": "none",
+          "position": "center",
+          "size": "primary",
+          "z_index": 0
+        },
+        {
+          "id": "fibers",
+          "shape": "thin-lines",
+          "description": "3-4 parallel lines inside the muscle indicating fiber direction",
+          "stroke": "#C0392B",
+          "stroke_width": 1,
+          "position": "inside:muscle",
+          "size": "large",
+          "count": 4,
+          "z_index": 0.5
+        },
+        {
+          "id": "sensor",
+          "shape": "rounded-rectangle",
+          "description": "Small rectangular EMG sensor on the surface of the muscle",
+          "fill": "#2D7D9A",
+          "stroke": "none",
+          "position": "on:muscle:top-surface",
+          "size": "small",
+          "z_index": 1
+        },
+        {
+          "id": "signal",
+          "shape": "wave",
+          "description": "Small EMG signal trace (jagged waveform) emanating from the sensor",
+          "stroke": "#F5C242",
+          "stroke_width": 2,
+          "position": "from:sensor:top",
+          "size": "medium",
+          "z_index": 2
+        }
+      ],
+      "composition": {
+        "background": "transparent",
+        "canvas_size": 1024,
+        "margin_percent": 10,
+        "alignment": "center",
+        "style": "flat-minimalist"
+      },
+      "palette": {
+        "primary": "#E74C3C",
+        "secondary": "#2D7D9A",
+        "accent": "#F5C242",
+        "neutral": "#4A4A4A"
+      },
+      "prompt_hints": ["horizontal orientation", "simplified anatomy", "signal trace as squiggly line"]
+    },
+    {
+      "id": "network-graph",
+      "name": "Network Graph",
+      "category": "data-science",
+      "tags": ["network", "graph", "nodes", "connections", "data"],
+      "description": "Abstract network with colored nodes of varying sizes connected by thin edges",
+      "elements": [
+        {
+          "id": "hub-nodes",
+          "shape": "circle-array",
+          "description": "3 larger circles representing hub nodes, evenly distributed",
+          "fill": "#2D7D9A",
+          "stroke": "none",
+          "position": "center",
+          "size": "medium",
+          "count": 3,
+          "z_index": 2
+        },
+        {
+          "id": "leaf-nodes",
+          "shape": "circle-array",
+          "description": "8-10 smaller circles surrounding and connected to hub nodes",
+          "fill": "#E8734A",
+          "stroke": "none",
+          "position": "surrounding:hub-nodes",
+          "size": "small",
+          "count": 9,
+          "z_index": 2
+        },
+        {
+          "id": "edges",
+          "shape": "thin-lines",
+          "description": "Thin lines connecting nodes to their neighbors, forming a network structure",
+          "stroke": "#BDC3C7",
+          "stroke_width": 1,
+          "position": "between:hub-nodes:leaf-nodes",
+          "size": "large",
+          "z_index": 1
+        }
+      ],
+      "composition": {
+        "background": "transparent",
+        "canvas_size": 1024,
+        "margin_percent": 10,
+        "alignment": "center",
+        "style": "flat-minimalist"
+      },
+      "palette": {
+        "primary": "#2D7D9A",
+        "secondary": "#E8734A",
+        "accent": "#F5C242",
+        "neutral": "#BDC3C7"
+      },
+      "prompt_hints": ["abstract layout", "no labels on nodes", "varying node sizes show hierarchy"]
+    },
+    {
+      "id": "patient-silhouette",
+      "name": "Patient Silhouette",
+      "category": "clinical",
+      "tags": ["patient", "person", "clinical", "human", "subject"],
+      "description": "Gender-neutral standing human silhouette, simplified and abstract",
+      "elements": [
+        {
+          "id": "body",
+          "shape": "organic-silhouette",
+          "description": "Gender-neutral standing human figure, arms at sides, no facial features, simplified proportions",
+          "fill": "#34495E",
+          "stroke": "none",
+          "position": "center",
+          "size": "primary",
+          "z_index": 0
+        }
+      ],
+      "composition": {
+        "background": "transparent",
+        "canvas_size": 1024,
+        "margin_percent": 15,
+        "alignment": "center",
+        "style": "flat-minimalist"
+      },
+      "palette": {
+        "primary": "#34495E",
+        "secondary": "#2D7D9A",
+        "accent": "#E8734A",
+        "neutral": "#BDC3C7"
+      },
+      "prompt_hints": ["standing pose", "no facial features", "gender neutral", "simple silhouette"]
+    },
+    {
+      "id": "wearable-sensor",
+      "name": "Wearable Sensor Device",
+      "category": "engineering",
+      "tags": ["wearable", "sensor", "device", "iot", "monitoring"],
+      "description": "Simplified wrist-worn sensor device with a small display showing a signal trace",
+      "elements": [
+        {
+          "id": "band",
+          "shape": "curve",
+          "description": "Curved band representing a wrist strap, open at the bottom",
+          "fill": "#34495E",
+          "stroke": "none",
+          "position": "center",
+          "size": "primary",
+          "z_index": 0
+        },
+        {
+          "id": "housing",
+          "shape": "rounded-rectangle",
+          "description": "Small rectangular sensor housing on top of the band",
+          "fill": "#2D7D9A",
+          "stroke": "none",
+          "position": "on:band:top",
+          "size": "medium",
+          "z_index": 1
+        },
+        {
+          "id": "display",
+          "shape": "rectangle",
+          "description": "Small screen area within the housing showing a simplified waveform",
+          "fill": "#1A1A2E",
+          "stroke": "none",
+          "position": "inside:housing",
+          "size": "small",
+          "z_index": 2
+        },
+        {
+          "id": "signal-trace",
+          "shape": "wave",
+          "description": "Small green waveform on the display",
+          "stroke": "#2ECC71",
+          "stroke_width": 2,
+          "position": "inside:display",
+          "size": "small",
+          "z_index": 3
+        }
+      ],
+      "composition": {
+        "background": "transparent",
+        "canvas_size": 1024,
+        "margin_percent": 15,
+        "alignment": "center",
+        "style": "flat-minimalist"
+      },
+      "palette": {
+        "primary": "#34495E",
+        "secondary": "#2D7D9A",
+        "accent": "#2ECC71",
+        "neutral": "#1A1A2E"
+      },
+      "prompt_hints": ["three-quarter view", "simplified band shape", "tiny signal on screen"]
+    }
+  ]
+}
