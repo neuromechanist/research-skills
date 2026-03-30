@@ -1,0 +1,12 @@
+[default.extend-words]
+# Technical terms, acronyms, and proper nouns
+HED = "HED"
+rcParams = "rcParams"
+PNGs = "PNGs"
+PN = "PN"
+
+[files]
+extend-exclude = [
+    "*.json",
+    "*.mdc",
+]

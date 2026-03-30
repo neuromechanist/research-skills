@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Determine release info
+      id: info
+      run: |
+        TAG="${GITHUB_REF#refs/tags/}"
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+        # Extract plugin versions from marketplace.json
+        BODY="## Plugins\n\n"
+        BODY+="| Plugin | Version |\n|--------|--------|\n"
+        BODY+=$(python3 -c "
+        import json
+        with open('.claude-plugin/marketplace.json') as f:
+            data = json.load(f)
+        for p in data['plugins']:
+            print(f'| {p[\"name\"]} | {p[\"version\"]} |')
+        ")
+        echo "body<<RELEASE_EOF" >> "$GITHUB_OUTPUT"
+        echo -e "$BODY" >> "$GITHUB_OUTPUT"
+        echo "RELEASE_EOF" >> "$GITHUB_OUTPUT"
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.info.outputs.tag }}
+        body: ${{ steps.info.outputs.body }}
+        generate_release_notes: true

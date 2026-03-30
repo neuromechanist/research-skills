@@ -24,7 +24,7 @@ This palette, published by Bang Wong (Nature Methods 2011) and based on Okabe an
 | Bluish green | #009E73 | Category 3 |
 | Yellow | #F0E442 | Category 4 |
 | Blue | #0072B2 | Category 5 |
-| Vermillion | #D55E00 | Category 6 |
+| Vermilion | #D55E00 | Category 6 |
 | Reddish purple | #CC79A7 | Category 7 |
 | Black | #000000 | Reference/control |
 
