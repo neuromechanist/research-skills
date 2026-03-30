@@ -24,7 +24,7 @@ Systematic checklist for evaluating the methodological soundness of a manuscript
 
 ## Signal Processing (EEG/EMG/physiological data)
 
-- [ ] Filtering parameters are appropriate (check Nyquist: analysis bandwidth must not exceed half the cutoff frequency)
+- [ ] Filtering parameters are appropriate (check Nyquist: analysis bandwidth must not exceed the Nyquist frequency, i.e., half the sampling rate, or the low-pass filter cutoff)
 - [ ] Artifact rejection/correction method is described and validated for the data type
 - [ ] For movement data: movement-specific artifact handling is addressed
 - [ ] Re-referencing scheme is stated (if applicable)

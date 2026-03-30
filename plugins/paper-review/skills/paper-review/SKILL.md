@@ -67,7 +67,7 @@ This is the core of the review. Evaluate using the checklist in `references/meth
 - Are there potential confounds that are not addressed?
 
 **Signal processing and data analysis (when applicable):**
-- Are filtering parameters appropriate? Check Nyquist constraints: the analysis bandwidth must not exceed half the sampling rate or half the filter cutoff.
+- Are filtering parameters appropriate? Check Nyquist constraints: the analysis bandwidth must not exceed half the sampling rate (Nyquist frequency) and should not exceed the low-pass filter cutoff.
 - Are artifact rejection/correction methods validated for the specific data type?
 - Are analysis parameters (e.g., window lengths, frequency bands) justified?
 - Is there any "double-dipping" where the same data features used for selection/clustering are also the analysis target?

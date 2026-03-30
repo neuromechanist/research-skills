@@ -58,8 +58,8 @@ Common statistical issues encountered in manuscript review and how to identify t
 
 ### Nyquist Constraint
 - **Issue:** Analyzing frequency content above the Nyquist frequency (half the sampling rate) or above half the filter cutoff.
-- **How to identify:** If data is filtered at X Hz, the maximum analyzable frequency is X/2 Hz. If the analysis extends above this, the results above that frequency are invalid.
-- **What to recommend:** Either increase the filter cutoff (if the sampling rate allows) or restrict the analysis to below the Nyquist limit.
+- **How to identify:** The Nyquist frequency is half the sampling rate (fs/2); this is the absolute upper bound of representable frequencies. If a low-pass filter is applied at X Hz, frequencies near and above X Hz are attenuated; the practical analysis range is limited to the filter cutoff (or slightly below it, depending on filter order and roll-off). Both constraints must be satisfied: analysis bandwidth must not exceed fs/2, and should not exceed the filter cutoff.
+- **What to recommend:** Either increase the filter cutoff and sampling rate, or restrict the analysis to below both the Nyquist frequency and the filter cutoff.
 
 ### Baseline Correction in Spectral Analysis
 - **Issue:** Event-related spectral perturbation (ERSP) or coherence plots shown without baseline removal.
