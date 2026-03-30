@@ -1,0 +1,21 @@
+# Cursor Rules Configuration
+
+## Core Rules
+- cursor-templates/core_rules/cursor_rules.mdc
+- cursor-templates/core_rules/testing.mdc
+- cursor-templates/core_rules/self_improve.mdc
+- cursor-templates/core_rules/documentation.mdc
+- cursor-templates/core_rules/ci_cd.mdc
+
+## Planning Approach
+# Default: Plan-based development (.context/plan.md)
+- cursor-templates/planning/default/dev_workflow.mdc
+
+# Advanced: TaskMaster for complex multi-dependency projects
+# Uncomment to use:
+# - cursor-templates/planning/advanced-taskmaster/dev_workflow.mdc
+# - cursor-templates/planning/advanced-taskmaster/taskmaster_reference.mdc
+
+## Project-Specific Rules
+# Add your custom .mdc files here:
+# - project-rules/custom.mdc

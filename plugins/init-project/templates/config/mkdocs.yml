@@ -1,0 +1,134 @@
+# --- Basic Site Information --- Replace placeholders!
+site_name: {{PROJECT_NAME}} Documentation
+site_url: https://{{GITHUB_USERNAME}}.github.io/{{REPO_NAME}}/ # Or custom domain
+site_description: Documentation for {{PROJECT_NAME}}.
+site_author: {{YOUR_NAME}}
+
+# --- Repository Information --- Replace placeholders!
+repo_url: https://github.com/{{GITHUB_USERNAME}}/{{REPO_NAME}}/
+repo_name: {{GITHUB_USERNAME}}/{{REPO_NAME}}
+# Edit link for documentation source files
+edit_uri: edit/main/docs/ # Assumes docs are in `docs/` on the `main` branch
+
+# --- Theme Configuration (Material for MkDocs) ---
+theme:
+  name: material
+  # --- Branding --- (Optional)
+  # logo: assets/logo.png # Path relative to docs_dir
+  # favicon: assets/favicon.ico
+
+  # --- Color Palette --- (Customize as desired)
+  # https://squidfunk.github.io/mkdocs-material/setup/changing-the-colors/
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  # --- Features --- (Enable useful features)
+  # https://squidfunk.github.io/mkdocs-material/setup/extensions/
+  features:
+    - navigation.tabs # Use tabs for top-level sections
+    # - navigation.tabs.sticky # Keep tabs visible when scrolling
+    - navigation.sections # Group pages in the left sidebar
+    - navigation.indexes # Make section index pages clickable links
+    - navigation.top # Add a "Back to top" button
+    - navigation.tracking # URL updates with active anchor links
+    - navigation.instant # Faster page loads (experimental)
+    - search.suggest # Autocomplete search terms
+    - search.highlight # Highlight search terms on pages
+    - content.code.copy # Add copy button to code blocks
+    - content.code.annotate # Add annotations to code blocks
+    # - content.tabs.link # Link content tabs across pages
+    - toc.integrate # Integrate table of contents into sidebar
+
+  # --- Fonts --- (Optional)
+  # font:
+  #   text: Roboto
+  #   code: Roboto Mono
+
+# --- Markdown Extensions ---
+# https://squidfunk.github.io/mkdocs-material/reference/
+markdown_extensions:
+  - admonition # Nicely styled note/warning/tip boxes
+  - pymdownx.details # Collapsible sections
+  - pymdownx.superfences # Nested code/content blocks
+  - pymdownx.highlight: # Code highlighting options
+      anchor_linenums: true
+  - pymdownx.inlinehilite # Highlight code within text
+  - pymdownx.snippets # Include content from other files
+  - pymdownx.tabbed:
+      alternate_style: true # Use Material style tabs
+  - toc:
+      permalink: true # Add anchor links to headings
+      toc_depth: 3 # Generate ToC down to h3
+  - attr_list # Add HTML attributes/CSS classes to Markdown
+  - md_in_html # Allow Markdown processing inside HTML blocks
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+# --- Plugins ---
+plugins:
+  - search # Built-in search plugin
+  - mkdocstrings: # For auto-generating API docs (Python example)
+      handlers:
+        python:
+          options:
+            show_source: true # Show link to source code
+            show_root_heading: true # Add heading for the documented object
+            heading_level: 2 # Start API headings at h2
+            docstring_style: google # Or numpy, sphinx
+            members_order: source # Order members as defined in source
+            # filters: ["!^_"] # Example: Exclude members starting with _
+  - git-revision-date-localized: # Show last updated date from Git
+      enable_creation_date: true
+  # Add other plugins here, e.g.:
+  # - mkdocs-jupyter: # For rendering Jupyter notebooks
+  #     include_source: True
+
+# --- Navigation Structure --- (Define manually for clarity)
+# Replace with your actual documentation structure
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+    - Overview: guides/index.md
+    - {{PROJECT_NAME}} Features: guides/features.md
+    - Advanced Usage: guides/advanced.md
+  - API Reference:
+    - Overview: api/index.md
+    - Core Module: api/core.md # Uses mkdocstrings
+    - Utilities: api/utils.md
+  - Development:
+    - Contributing: development/contributing.md
+    - Testing: development/testing.md
+    - Release Process: development/release-process.md
+  - Changelog: changelog.md
+
+# --- Optional Settings ---
+# Custom directories
+# docs_dir: documentation # Default is 'docs'
+# site_dir: build/docs # Default is 'site'
+
+# Exclude files/directories from build
+# exclude_docs: |
+#   private/
+#   drafts/
+
+# Add extra CSS or JavaScript files (paths relative to docs_dir)
+# extra_css:
+#   - stylesheets/custom.css
+# extra_javascript:
+#   - js/custom.js
+
+# Copyright notice displayed in the footer
+copyright: Copyright &copy; 2024 {{YOUR_NAME}} 

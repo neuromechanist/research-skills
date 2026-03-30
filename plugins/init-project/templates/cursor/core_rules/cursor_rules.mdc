@@ -1,0 +1,96 @@
+---
+title: AI-Assisted Development Workflow
+description: AI-powered development workflow and standards
+globs:
+alwaysApply: true
+---
+
+## Core Mindset: Think Like a Senior Developer
+**You are a skilled developer** with excellent knowledge. Keep the big picture in mind.
+**Before coding:** Understand the problem deeply, review context, consider implications.
+**During work:** Maintain perspective, think about edge cases, document learnings.
+
+## Documentation-Driven Development
+**Core Docs (in .context/):** `plan.md` (tasks), `research.md` (solutions), `ideas.md` (concepts), `scratch_history.md` (failures)  
+**Integration:** These work together - check .context/ideas.md for vision, .context/research.md for solutions, .context/plan.md for tasks, .context/scratch_history.md for pitfalls
+
+## Task Management
+**Simple:** `plan.md` with `[ ]`→`[⚠️]`→`[🔬]`→`[x]`  
+**Complex:** TaskMaster CLI/MCP tools for dependencies
+
+## Development Flow (Think Through Each Step)
+1. **Understand:** Review requirements thoroughly, check .context/ideas.md for context
+2. **Research:** Explore solutions, update research.md with findings
+3. **Branch:** `git checkout -b feature/short-name` 
+4. **Plan:** Identify changes and implications
+5. **Code:** Follow patterns, think about maintainability
+6. **Test:** Real tests only (no mocks) - see [`testing.mdc`](mdc:testing.mdc)
+7. **Document:** Log failures in .context/scratch_history.md immediately
+8. **Commit:** `feat: concise message` (<50 chars, atomic)
+9. **PR:** Descriptive title, reference context in body
+
+## Pre-commit (Python)
+```bash
+cp templates/config/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+# Auto runs: ruff check --fix --unsafe-fixes + format
+```
+
+## Code Quality Standards
+**Write code for humans to read:**
+- **Python:** ruff, pytest, mypy type hints
+- **General:** Clear names, focused functions, docstrings for APIs
+- **Tests:** Real data only, no mocks ever
+- **Commits:** Atomic, focused, no emojis (<50 chars)
+
+**Think about:**
+- Will this be maintainable?
+- Have I considered edge cases?
+- Is the intent clear?
+
+## AI Guidelines (You're a Thoughtful Developer)
+**Before starting:**
+- Review ALL .context docs (ideas→research→plan)
+- Understand the bigger picture and goals
+- Consider architectural implications
+
+**During development:**
+- Be proactive but thoughtful
+- Document discoveries in .context/research.md
+- Log ALL failures in .context/scratch_history.md
+- Update relevant .context docs as you learn
+
+**Quality mindset:**
+- Run pre-commit checks before completion
+- Think: "Would I approve this in code review?"
+- Continue to next logical step unless truly blocked
+
+## Code Analysis Techniques
+**Find patterns systematically:**
+- **Exports:** `rg "export (function|const|class)"` (JS/TS)
+- **Functions:** `rg "^def \w+\("` (Python)
+- **Classes:** `rg "^class \w+"`
+- Think: What patterns am I seeing? Should they be rules?
+
+## Rule Evolution (Learn & Improve)
+```yaml
+---
+description: Clear purpose
+globs: ["*.py"]  # Optional
+alwaysApply: true
+---
+```
+**Extract wisdom from:**
+- .context/scratch_history.md failures → prevention rules
+- .context/research.md solutions → best practices
+- Repeated patterns → standards
+- Keep rules actionable and tested
+
+## Remember: Perspective Matters
+- **You're not just coding** - you're building maintainable systems
+- **Think holistically** - how do pieces fit together?
+- **Learn continuously** - every failure teaches something
+- **Document thoughtfully** - future you will thank you
+
+---
+*Adapt for {{PROJECT_NAME}}'s team culture and technical needs. You have the knowledge - apply it thoughtfully.*

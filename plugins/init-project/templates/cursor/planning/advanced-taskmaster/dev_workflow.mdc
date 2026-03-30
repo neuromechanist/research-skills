@@ -1,0 +1,147 @@
+---
+title: TaskMaster Development Workflow for {{PROJECT_NAME}}
+description: AI-powered task management for complex {{PROJECT_NAME}} projects with detailed breakdown and dependency tracking.
+globs:
+alwaysApply: true
+---
+
+# TaskMaster Development Workflow for {{PROJECT_NAME}}
+
+## Documentation-Driven Development
+
+### Core Documents
+- **TaskMaster DB**: Primary task tracking (.taskmaster/)
+- **.context/research.md**: Solution exploration and technical references
+- **.context/ideas.md**: Abstract concepts and design exploration  
+- **.context/scratch_history.md**: Failed approaches and lessons learned
+
+### Document Integration
+- TaskMaster handles task management
+- Use .context/research.md for technical exploration
+- Document design decisions in .context/ideas.md
+- Track failures in .context/scratch_history.md
+
+## Task Management: AI-Powered
+
+### Setup
+```bash
+task-master init --yes
+task-master parse-prd scripts/prd.txt --num-tasks=15 --research
+```
+
+### MCP Tools (Recommended)
+- `get_tasks`, `next_task`, `get_task` - Task viewing
+- `update_subtask`, `update_task` - Progress logging  
+- `add_task`, `expand_task` - Task creation/breakdown
+- `add_dependency`, `validate_dependencies` - Dependencies
+
+### CLI Fallback
+```bash
+task-master list              # View tasks
+task-master next              # Find next task
+task-master show <id>         # Task details
+task-master set-status <id> --status=in-progress|done
+```
+
+## Daily Workflow
+
+1. **Find next task:** `next_task` / `task-master next`
+2. **Review context:** Check .context/ideas.md and .context/research.md if needed
+3. **Start work:** Set status to in-progress
+4. **Research if blocked:** Update .context/research.md with findings
+5. **Create branch:** `git checkout -b "feature/short-description"`
+6. **Implement:** Code following task requirements
+7. **Log progress:** `update_subtask --prompt="implementation notes"`
+8. **Test & commit:** Concise message <50 chars, no emojis
+9. **Mark complete:** Set status to done
+10. **Update docs:** Document learnings in .context/ files
+11. **Create PR:** Descriptive title, reference task in body
+
+## Task Breakdown & Dependencies
+
+### Complex Tasks
+```bash
+# MCP: expand_task(id="5", num="4", research=true)
+task-master expand <id> --num=4 --research
+```
+
+### Dependencies
+```bash
+# MCP: add_dependency(id="8", dependsOn="3")
+task-master add-dependency <id> --depends-on=<prerequisite>
+```
+
+### Validation
+```bash
+# MCP: validate_dependencies()
+task-master validate-dependencies
+```
+
+## Git Integration
+
+### Commits
+```bash
+git commit -m "feat: implement auth system"
+# Use: feat:, fix:, docs:, refactor:, test:, chore:
+# Keep under 50 characters, no emojis
+# Task IDs optional, only when critical
+```
+
+### PRs
+- **Title:** Clear, descriptive summary
+- **Body:** Reference task: "Implements Task 4"
+- **Testing:** Include validation results
+- **Docs:** Note any doc updates needed
+
+## Code Quality
+
+### Pre-commit Setup (Python)
+```bash
+cp templates/config/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+# Runs ruff check --fix --unsafe-fixes on staged files
+# Runs ruff format on staged files
+# Auto-restages modified files
+```
+
+### Standards
+- Follow existing code patterns
+- Prefer real tests over mocks
+- Document complex logic in research.md
+- Keep functions focused and simple
+
+## AI Guidelines
+
+### For AI Assistants
+- Use MCP tools over CLI when available
+- Check research.md and ideas.md for context
+- Update subtasks with implementation details
+- Document blockers in scratch_history.md
+- Continue to next task unless blocked
+- Run quality checks before completing
+
+### Progress Logging
+- Log decisions in TaskMaster subtasks
+- Update .context/research.md with technical findings
+- Use `--research` flag for exploration tasks
+- Reference .context docs in subtask notes when relevant
+
+### File Organization
+```
+{{PROJECT_NAME}}/
+├── .context/                 # Development context (gitignored)
+│   ├── research.md          # Technical solutions
+│   ├── ideas.md             # Design decisions
+│   └── scratch_history.md   # Failed attempts
+├── .taskmaster/              # TaskMaster database
+├── src/{{PROJECT_NAME}}/     # Source code
+├── tests/                    # Test files
+├── docs/                     # Public documentation
+├── pyproject.toml           # Project config
+├── README.md                # Project overview
+└── .gitignore               # Include: .context/
+```
+
+---
+*See `taskmaster_reference.mdc` for complete tool reference.*
+*Adapt this workflow to your project needs and team practices.*

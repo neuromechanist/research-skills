@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Runs ruff check and format on staged Python files only
+
+echo "Running ruff check and format on staged files..."
+
+# Check if ruff is available
+if ! command -v ruff &> /dev/null; then
+    echo "Error: ruff is not installed or not in PATH"
+    echo "Please install ruff: pip install ruff"
+    exit 1
+fi
+
+# Get list of staged Python files
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+
+# Exit if no Python files are staged
+if [ -z "$staged_files" ]; then
+    echo "No Python files staged for commit"
+    exit 0
+fi
+
+echo "Staged Python files: $staged_files"
+
+# Run ruff check with fixes on staged files only
+echo "Running ruff check --fix --unsafe-fixes on staged files..."
+ruff check --fix --unsafe-fixes $staged_files
+
+# Check if ruff check found any issues that couldn't be fixed
+if [ $? -ne 0 ]; then
+    echo "Error: ruff check found issues that need manual fixing"
+    echo "Please fix the issues and try committing again"
+    exit 1
+fi
+
+# Run ruff format on staged files only
+echo "Running ruff format on staged files..."
+ruff format $staged_files
+
+if [ $? -ne 0 ]; then
+    echo "Error: ruff format failed"
+    exit 1
+fi
+
+# Re-add only the files that were originally staged and potentially modified by ruff
+for file in $staged_files; do
+    if [ -f "$file" ]; then
+        git add "$file"
+    fi
+done
+
+echo "ruff check and format completed successfully on staged files"
+exit 0 
