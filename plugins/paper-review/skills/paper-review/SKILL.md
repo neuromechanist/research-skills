@@ -16,14 +16,15 @@ Activate when the user wants peer-review feedback on a manuscript (journal artic
 
 ## Manuscript Intake
 
-Handle the manuscript based on its format:
+Manuscripts for peer review are typically provided as PDFs from journal submission systems. Convert to markdown first for reliable text extraction, then read figures from the PDF directly.
 
-**Markdown or LaTeX:** Read directly.
-
-**PDF:** Use the Read tool directly on the PDF (Claude reads PDFs natively). For large PDFs (>10 pages), read in page ranges (e.g., `pages: "1-10"`, then `pages: "11-20"`). For complex layouts with equations or tables, convert to markdown:
+**PDF (most common):** Convert to markdown using opencite, then read the markdown for the full text review:
 ```bash
 uvx opencite convert manuscript.pdf -o manuscript.md
 ```
+After conversion, read `manuscript.md` for the text-based review. Also read the original PDF using the Read tool to inspect figures, tables, and layout that may not convert cleanly to markdown. For large PDFs (>10 pages), read in page ranges (e.g., `pages: "1-10"`, then `pages: "11-20"`).
+
+**Markdown or LaTeX:** Read directly; no conversion needed.
 
 Read all sections including supplementary materials, appendices, and figures. Note the target journal if known, as expectations differ across venues (transactions vs. letters vs. conference proceedings).
 
