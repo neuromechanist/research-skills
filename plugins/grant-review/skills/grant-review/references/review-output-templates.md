@@ -62,6 +62,14 @@ Structured output formats for NIH-style and NSF-style grant proposal reviews. Us
 
 ---
 
+## Layout and Space Utilization (when PDF was provided)
+- **Figure sizing:** [Are figures appropriately sized? Could any be reduced?]
+- **Whitespace:** [Areas of underutilized space or excessive whitespace]
+- **Space efficiency:** [Specific suggestions for reclaiming space]
+- **Overall page usage:** [How effectively does the proposal use its page limits?]
+
+---
+
 ## Actionable Improvements (Priority Order)
 
 ### Critical (would likely prevent funding)
@@ -110,6 +118,13 @@ Structured output formats for NIH-style and NSF-style grant proposal reviews. Us
 
 ## Summary Assessment: [Excellent/Very Good/Good/Fair/Poor]
 [Paragraph synthesizing the evaluation]
+
+---
+
+## Layout and Space Utilization (when PDF was provided)
+- **Figure sizing:** [Are figures appropriately sized? Could any be reduced?]
+- **Whitespace:** [Areas of underutilized space]
+- **Space efficiency:** [Suggestions for reclaiming space]
 
 ---
 

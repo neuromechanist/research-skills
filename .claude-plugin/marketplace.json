@@ -34,7 +34,7 @@
     {
       "name": "scientific-figures",
       "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA for Nature/Science/PNAS journals",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -46,7 +46,7 @@
     {
       "name": "grant-review",
       "description": "Structured grant proposal review using NIH/NSF scoring criteria",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"

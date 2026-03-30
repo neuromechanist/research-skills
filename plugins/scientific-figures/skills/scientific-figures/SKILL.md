@@ -1,7 +1,7 @@
 ---
 name: scientific-figures
 description: This skill should be used when the user asks to "create a figure", "make a scientific figure", "create a paper figure", "generate a figure element", "make an icon", "plot data for a figure", "compose figure panels", "create a graphical abstract", "make a multi-panel figure", "generate a PDF figure", "create a Nature-style figure", "make a publication figure", "create a figure for my grant", "make a poster figure", "create a schematic diagram", or mentions scientific figures, figure elements, figure composition, figure panels, icons for papers, matplotlib/seaborn/ggplot plots for figures, or react-pdf figures.
-version: 0.1.0
+version: 0.1.1
 ---
 
 # Scientific Figures

@@ -1,7 +1,7 @@
 ---
 name: grant-review
 description: This skill should be used when the user asks to "review a grant", "review my proposal", "score this grant", "evaluate my specific aims", "critique my research strategy", "review as an NIH reviewer", "review as an NSF panelist", "give me reviewer feedback", "check my grant proposal", "review my R01", "review my K99", "evaluate my CAREER proposal", "run a mock study section", "review my resubmission", "review this PDF", "check my proposal PDF", "analyze my grant layout", or mentions grant review, proposal critique, NIH scoring, NSF panel review, study section feedback, or proposal PDF review.
-version: 0.1.0
+version: 0.1.1
 ---
 
 # Grant Proposal Review
@@ -37,13 +37,12 @@ Handle the proposal based on its format:
 
 **Markdown or LaTeX:** Read directly; no conversion needed.
 
-**PDF:** Convert using a two-track approach:
+**PDF:** Use a two-track approach:
 
-1. **Text extraction** -- Convert PDF to markdown for content review:
+1. **Text extraction** -- Read the PDF for content review. Use the Read tool directly on the PDF (Claude can read PDFs natively). For large PDFs (>10 pages), read in page ranges (e.g., `pages: "1-10"`, then `pages: "11-20"`). For math-heavy or complex-layout PDFs where native reading struggles, convert to markdown via opencite:
    ```bash
    uvx opencite convert <proposal.pdf> -o proposal.md
    ```
-   If opencite is not available, use the Read tool directly on the PDF (Claude can read PDFs natively). For large PDFs (>10 pages), read in page ranges.
 
 2. **Visual layout analysis** -- Convert each page to low-resolution PNG for figure sizing and space utilization review:
    ```bash
@@ -54,6 +53,8 @@ Handle the proposal based on its format:
        page.save(f'proposal_page_{i+1}.png', 'PNG')
    "
    ```
+   Note: `pdf2image` requires poppler as a system dependency (`brew install poppler` on macOS, `apt install poppler-utils` on Linux). If poppler is not available, use `pdftoppm -png -r 150 proposal.pdf proposal_page` directly, or fall back to reading the PDF natively with the Read tool.
+
    Read each page image to assess:
    - Are figures appropriately sized for their content, or oversized with wasted space?
    - Are there large areas of whitespace or underutilized regions?

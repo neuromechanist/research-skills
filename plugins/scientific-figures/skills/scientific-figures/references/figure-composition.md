@@ -83,7 +83,7 @@ pages[0].save('figure_preview.png', 'PNG')
 
 ### 4. Visual inspection
 
-**Read `figure_preview.png` using the Read tool.** Verify against the full QA checklist:
+**Read `figure_preview.png` using the Read tool.** Verify against the QA checklist below (condensed; see SKILL.md Step 4 for the full checklist with paper-readiness criteria):
 
 **Layout and alignment:**
 - Dimensions match target journal specs
