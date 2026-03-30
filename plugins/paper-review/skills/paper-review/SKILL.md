@@ -18,15 +18,14 @@ Activate when the user wants peer-review feedback on a manuscript (journal artic
 
 Manuscripts for peer review are typically provided as PDFs from journal submission systems. Convert to markdown first for reliable text extraction, then read figures from the PDF directly.
 
-**PDF (most common):** Two approaches, depending on whether page/line number precision is needed:
+**PDF (most common):** Use a hybrid approach: convert to both markdown and PNG. Markdown gives efficient searchable text for content analysis; PNG preserves exact page layout, line numbers, and figure positions for precise citations.
 
-**Option A: Convert to markdown** (faster, good for content review):
+**Step 1: Convert to markdown** for text analysis:
 ```bash
 uvx opencite convert manuscript.pdf -o manuscript.md
 ```
-Read `manuscript.md` for the text-based review. Also read the original PDF using the Read tool to inspect figures and tables that may not convert cleanly.
 
-**Option B: Convert to PNG** (preserves exact page layout, line numbers, and figure positions):
+**Step 2: Convert to PNG** for page/line references and figure inspection:
 ```bash
 uv run --with pdf2image --with pillow python -c "
 from pdf2image import convert_from_path
@@ -37,9 +36,9 @@ for i, page in enumerate(pages):
 ```
 Note: requires poppler (`brew install poppler` on macOS, `apt install poppler-utils` on Linux). Alternatively, use `pdftoppm -png -r 200 manuscript.pdf manuscript_page`.
 
-Read each page image to review with exact page and line number references (e.g., "page 4, line 23"). This is the preferred approach when the review requires precise location citations, which journal reviews typically do.
+**Workflow:** Read the markdown for content review (methods, statistics, logic, literature). When citing a specific issue, refer to the PNG pages to provide exact page and line numbers (e.g., "page 4, line 23" or "p4 l23"). Use the PNGs to inspect figures, tables, and overall layout.
 
-For large PDFs (>10 pages), read in batches. Both approaches can be combined: markdown for efficient text review, PNG for figure inspection and line-level citations.
+For large PDFs (>10 pages), read PNGs in batches as needed.
 
 **Markdown or LaTeX:** Read directly; no conversion needed.
 
