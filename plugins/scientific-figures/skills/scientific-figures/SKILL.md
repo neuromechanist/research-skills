@@ -122,7 +122,7 @@ For researchers using LaTeX for figure composition, standard LaTeX figure tools 
 
 ## Step 4: Visual QA Feedback Loop
 
-After rendering the PDF, verify it is pixel-perfect before delivery.
+After rendering the PDF, verify it is paper-ready before delivery. This step is critical; figure creation without visual verification is incomplete.
 
 ### Render PDF to PNG for inspection
 
@@ -136,22 +136,52 @@ pages[0].save('figure_preview.png', 'PNG')
 
 See `references/figure-composition.md` for alternative conversion approaches (e.g., pdftoppm).
 
-### Inspect the rendered output
+### Read and inspect the rendered image
 
-Read `figure_preview.png` to verify:
+**You must read `figure_preview.png` using the Read tool.** Do not skip this step. Visually analyze the image and verify every item below. Report each finding explicitly.
 
+#### Layout and alignment
 - [ ] Dimensions match target journal specs
-- [ ] Panel labels (A, B, C...) are visible, bold, correctly positioned
+- [ ] Panel labels (A, B, C...) are visible, bold, top-left positioned, and vertically aligned with each other across the figure
+- [ ] All panels are evenly spaced with consistent gutters
+- [ ] No elements are clipped, bleeding outside panel boundaries, or extending into adjacent panels
+
+#### Text and labels
 - [ ] All text is readable at print size (9-10pt body, 7-8pt annotations)
 - [ ] Font is sans-serif throughout (no serif or monospace leaks)
-- [ ] Colors are consistent across panels and match the chosen palette
-- [ ] No elements overlap, are clipped, or bleed outside panel boundaries
-- [ ] Tick marks and axis labels are clear with consistent decimal places
-- [ ] Scale bars (if present) have correct labels
-- [ ] White background, no artifacts or unwanted borders
-- [ ] Icons/images are sharp (not blurry from over-scaling)
+- [ ] Axis labels, tick labels, and annotations do not overlap each other or overlap data
+- [ ] Panel titles or subtitles (if present) are consistently positioned and formatted
+- [ ] No text is cut off, truncated, or running into panel edges
 
-If any issue is found, fix the render script and re-run steps 3-4. Iterate until pixel-perfect.
+#### Arrows, connectors, and annotations
+- [ ] Arrows point to their intended targets and do not cross over unrelated elements
+- [ ] Annotation lines or brackets do not overlap other annotations or data
+- [ ] Arrow styles are consistent (same head type, line weight, color)
+- [ ] Connector paths are clean with no unnecessary crossings
+
+#### Visual quality
+- [ ] Colors are consistent across panels and match the chosen palette
+- [ ] Tick marks and axis labels are clear with consistent decimal places
+- [ ] Scale bars (if present) have correct labels and consistent sizing
+- [ ] White background, no artifacts, unwanted borders, or rendering glitches
+- [ ] Icons/images are sharp (not blurry from over-scaling or under-resolution)
+- [ ] Line weights are consistent across all panels and elements
+
+#### Paper-readiness
+- [ ] Figure looks professional and polished at actual print size
+- [ ] Visual hierarchy is clear: the most important data draws the eye first
+- [ ] No placeholder text, debug borders, or development artifacts remain
+- [ ] Figure would not require revisions from a journal production team
+
+### Iterate until paper-ready
+
+If **any** issue is found:
+1. Describe the specific problem (e.g., "Panel B y-axis label overlaps the tick labels at the bottom")
+2. Fix the render script (`render.tsx`) to address the issue
+3. Re-run steps 3-4 (re-render PDF, re-convert to PNG, re-inspect)
+4. Repeat until every checklist item passes
+
+Do not deliver a figure that has not passed visual QA. A figure with overlapping labels or misaligned panels undermines the quality of the entire paper.
 
 ## Caption Guidelines
 

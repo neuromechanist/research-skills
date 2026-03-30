@@ -83,21 +83,39 @@ pages[0].save('figure_preview.png', 'PNG')
 
 ### 4. Visual inspection
 
-Read `figure_preview.png` and verify against the QA checklist:
+**Read `figure_preview.png` using the Read tool.** Verify against the full QA checklist:
 
+**Layout and alignment:**
 - Dimensions match target journal specs
-- Panel labels (A, B, C) are visible, bold, correctly positioned
+- Panel labels (A, B, C) are visible, bold, top-left, and vertically aligned across the figure
+- Panels are evenly spaced with consistent gutters
+- No elements clipped, bleeding, or extending into adjacent panels
+
+**Text and labels:**
 - All text readable at print size (9-10pt labels, 7-8pt annotations)
 - Sans-serif font throughout
+- Axis labels, tick labels, and annotations do not overlap each other or data
+- No text cut off or truncated at panel edges
+
+**Arrows and annotations:**
+- Arrows point to intended targets without crossing unrelated elements
+- Annotation lines or brackets do not overlap other annotations
+- Consistent arrow styles (head type, weight, color)
+
+**Visual quality:**
 - Colors consistent across panels
-- No overlapping, clipped, or bleeding elements
 - Tick marks and axis labels clear
 - White background, no artifacts
 - Icons/images sharp (not blurry)
+- Line weights consistent throughout
+
+**Paper-readiness:**
+- Professional and polished at actual print size
+- No placeholder text, debug borders, or development artifacts
 
 ### 5. Iterate
 
-Fix issues in `render.tsx`, re-run steps 2-4 until pixel-perfect.
+For each issue found: describe the specific problem, fix `render.tsx`, re-run steps 2-4. Do not deliver until every checklist item passes.
 
 ## Layout Patterns
 
