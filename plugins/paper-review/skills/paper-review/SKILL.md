@@ -18,11 +18,28 @@ Activate when the user wants peer-review feedback on a manuscript (journal artic
 
 Manuscripts for peer review are typically provided as PDFs from journal submission systems. Convert to markdown first for reliable text extraction, then read figures from the PDF directly.
 
-**PDF (most common):** Convert to markdown using opencite, then read the markdown for the full text review:
+**PDF (most common):** Two approaches, depending on whether page/line number precision is needed:
+
+**Option A: Convert to markdown** (faster, good for content review):
 ```bash
 uvx opencite convert manuscript.pdf -o manuscript.md
 ```
-After conversion, read `manuscript.md` for the text-based review. Also read the original PDF using the Read tool to inspect figures, tables, and layout that may not convert cleanly to markdown. For large PDFs (>10 pages), read in page ranges (e.g., `pages: "1-10"`, then `pages: "11-20"`).
+Read `manuscript.md` for the text-based review. Also read the original PDF using the Read tool to inspect figures and tables that may not convert cleanly.
+
+**Option B: Convert to PNG** (preserves exact page layout, line numbers, and figure positions):
+```bash
+uv run --with pdf2image --with pillow python -c "
+from pdf2image import convert_from_path
+pages = convert_from_path('manuscript.pdf', dpi=200)
+for i, page in enumerate(pages):
+    page.save(f'manuscript_page_{i+1}.png', 'PNG')
+"
+```
+Note: requires poppler (`brew install poppler` on macOS, `apt install poppler-utils` on Linux). Alternatively, use `pdftoppm -png -r 200 manuscript.pdf manuscript_page`.
+
+Read each page image to review with exact page and line number references (e.g., "page 4, line 23"). This is the preferred approach when the review requires precise location citations, which journal reviews typically do.
+
+For large PDFs (>10 pages), read in batches. Both approaches can be combined: markdown for efficient text review, PNG for figure inspection and line-level citations.
 
 **Markdown or LaTeX:** Read directly; no conversion needed.
 
