@@ -6,6 +6,7 @@
 **Stack:** {{TECH_STACK}}
 
 ## Development Tasks
+<!-- Status markers: [ ] pending, [~] in progress, [x] complete -->
 
 ### Phase 1: Foundation
 - [ ] Setup project structure and configuration

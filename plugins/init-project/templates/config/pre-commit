@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Runs ruff check and format on staged Python files only
+# Runs ruff check and format on staged Python files only via uv
 
 echo "Running ruff check and format on staged files..."
 
-# Check if ruff is available
-if ! command -v ruff &> /dev/null; then
-    echo "Error: ruff is not installed or not in PATH"
-    echo "Please install ruff: pip install ruff"
+# Check if uv is available
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv is not installed or not in PATH"
+    echo "Please install uv: https://docs.astral.sh/uv/getting-started/installation/"
     exit 1
 fi
 
@@ -24,7 +24,7 @@ echo "Staged Python files: $staged_files"
 
 # Run ruff check with fixes on staged files only
 echo "Running ruff check --fix --unsafe-fixes on staged files..."
-ruff check --fix --unsafe-fixes $staged_files
+uv run ruff check --fix --unsafe-fixes $staged_files
 
 # Check if ruff check found any issues that couldn't be fixed
 if [ $? -ne 0 ]; then
@@ -35,7 +35,7 @@ fi
 
 # Run ruff format on staged files only
 echo "Running ruff format on staged files..."
-ruff format $staged_files
+uv run ruff format $staged_files
 
 if [ $? -ne 0 ]; then
     echo "Error: ruff format failed"
@@ -50,4 +50,4 @@ for file in $staged_files; do
 done
 
 echo "ruff check and format completed successfully on staged files"
-exit 0 
+exit 0

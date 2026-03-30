@@ -11,7 +11,7 @@ The `.rules/` directory contains detailed development standards as individual ma
 **Always include.** Atomic commits, branch strategy, squash merging for features, rebase to update branches. References `gh issue develop` for branch creation.
 
 ### code_review.md
-**Always include.** PR review process using pr-review-toolkit agents (code-reviewer, silent-failure-hunter, simplifier, comment-analyzer, test-analyzer, type-design-analyzer). Checklist: compiles, tests pass, no debug code, error handling, resources cleaned up.
+**Always include.** PR review process using pr-review-toolkit agents (code-reviewer, silent-failure-hunter, code-simplifier, comment-analyzer, pr-test-analyzer, type-design-analyzer). Checklist: compiles, tests pass, no debug code, error handling, resources cleaned up.
 
 ### python.md
 **Include for Python projects.** UV for all package management, ruff for formatting and linting, ty for type checking. Line length 88, type hints for all public functions, pathlib.Path instead of os.path, context managers for resource management.

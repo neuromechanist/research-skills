@@ -38,9 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with: { python-version: '3.11', cache: 'pip' }
-    - run: pip install ruff && ruff check .
+    - uses: astral-sh/setup-uv@v4
+    - run: uv python install 3.12 && uv tool install ruff && ruff check .
 
   test:
     needs: lint
@@ -49,10 +48,10 @@ jobs:
       matrix: { python-version: ['3.10', '3.11', '3.12'] }
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with: { python-version: '${{ matrix.python-version }}', cache: 'pip' }
-    - run: pip install .[test]
-    - run: pytest --cov=src
+    - uses: astral-sh/setup-uv@v4
+    - run: uv python install ${{ matrix.python-version }}
+    - run: uv sync --extra test
+    - run: uv run pytest --cov=src
 ```
 
 ## Key Practices (Think About Pipeline Flow)

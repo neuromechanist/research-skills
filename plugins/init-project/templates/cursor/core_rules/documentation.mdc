@@ -11,7 +11,7 @@ alwaysApply: false
 **Goal:** New developers productive in <1 hour.
 
 ## Setup
-**Install:** `pip install mkdocs mkdocs-material mkdocstrings[python]`  
+**Install:** `uv add --group docs mkdocs mkdocs-material mkdocstrings[python]`  
 **Config:** `mkdocs.yml` in project root
 
 ## Minimal mkdocs.yml

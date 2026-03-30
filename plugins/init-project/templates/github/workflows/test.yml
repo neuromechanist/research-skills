@@ -16,13 +16,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-        cache: 'pip'
+      run: uv python install 3.12
     - name: Install lint dependencies
-      run: pip install ruff
+      run: uv tool install ruff
     - name: Run linting
       run: |
         ruff check .
@@ -34,18 +33,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
     steps:
     - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
+      run: uv python install ${{ matrix.python-version }}
     - name: Install dependencies
-      run: pip install -e .[test]
+      run: uv sync --extra test
     - name: Run tests
-      run: pytest --cov=src/{{PACKAGE_NAME}} --cov-report=xml
+      run: uv run pytest --cov=src/{{PACKAGE_NAME}} --cov-report=xml
     - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
@@ -57,15 +55,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-        cache: 'pip'
-    - name: Install security tools
+      run: uv python install 3.12
+    - name: Run security tools
       run: |
-        pip install safety bandit
-    - name: Run safety check
-      run: safety check
-    - name: Run bandit security linter
-      run: bandit -r src/ 
+        uv tool install safety
+        uv tool install bandit
+        safety check
+        bandit -r src/

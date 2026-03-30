@@ -22,7 +22,7 @@ The plugin bundles all templates under `templates/`:
 ```
 templates/
   claude/           # Claude Code templates
-    CLAUDE.md       # Main instructions file (<150 lines)
+    CLAUDE.md       # Main instructions file
     rules/          # Detailed rule references
       testing.md      # NO MOCK testing policy
       git.md          # Version control standards
@@ -51,7 +51,9 @@ templates/
   cursor/           # Cursor IDE templates (optional)
     .cursorrules      # Main cursor config
     core_rules/       # Modular .mdc rule files
-    planning/         # Workflow templates
+    planning/
+      default/        # Plan-based development workflow
+      advanced-taskmaster/ # Complex project task management
 ```
 
 ## Initialization Workflow
@@ -83,9 +85,9 @@ Copy with safety checks (never overwrite existing files):
 ### Step 4: Customize CLAUDE.md
 
 Replace template placeholders with project-specific values:
-- `{{PROJECT_NAME}}` - actual project name
-- `{{ENV_NAME}}` - virtual environment name
-- `{{TECH_STACK}}` - detected languages and frameworks
+- `{{PROJECT_NAME}}` in CLAUDE.md - actual project name
+- `{{framework}}` in CLAUDE.md - detected framework (e.g., Django, FastAPI, Next.js)
+- `{{TECH_STACK}}` in context/plan.md - detected languages and frameworks
 
 Tailor the content:
 - Remove rules that do not apply (e.g., remove python.md reference for a pure JS project)

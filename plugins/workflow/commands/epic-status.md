@@ -1,6 +1,6 @@
 ---
 description: Show current epic/sprint workflow state
-allowed-tools: ["Bash", "Read", "Glob"]
+allowed-tools: Bash, Read, Glob
 ---
 
 # Epic Status

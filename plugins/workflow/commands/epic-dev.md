@@ -1,7 +1,7 @@
 ---
 description: Epic/sprint development workflow with git worktrees, GitHub issues, and phased delivery
 argument-hint: "<epic description>" or --resume or --next-phase or --finalize
-allowed-tools: ["Bash", "Read", "Write", "Edit", "Glob", "Grep", "Skill", "Task", "AskUserQuestion", "EnterPlanMode", "ExitPlanMode", "TodoWrite"]
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Skill, Task, AskUserQuestion, EnterPlanMode, ExitPlanMode, TodoWrite
 ---
 
 # Epic Development Workflow
@@ -24,9 +24,11 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 
 **Actions**:
 1. Run `${CLAUDE_PLUGIN_ROOT}/scripts/detect-repo-config.sh` and parse the output
-2. If `HAS_GH_SUBISSUE=false`, install it: `gh extension install agbiotech/gh-sub-issue`
-3. Store detected values: `INTEGRATION_BRANCH`, `REPO_ROOT`, `HAS_EPIC_STATE`
-4. Create initial todo list tracking all workflow phases
+2. **Validate all required values are present**: `INTEGRATION_BRANCH`, `REPO_ROOT`, `CURRENT_BRANCH` must be non-empty. If any are missing or if `ERROR` is set, report the error to the user and stop.
+3. **Validate gh is functional**: If `HAS_GH=false` or `GH_ERROR` is set, tell the user what needs to be fixed and stop.
+4. If `HAS_GH_SUBISSUE=false`, install it: `gh extension install agbiotech/gh-sub-issue`
+5. Store detected values: `INTEGRATION_BRANCH`, `REPO_ROOT`, `HAS_EPIC_STATE`
+6. Create initial todo list tracking all workflow phases
 
 ---
 
@@ -207,9 +209,14 @@ Update state: mark phase `in_progress`.
 
 ## Error Handling
 
+- **Detection script failure**: If `detect-repo-config.sh` fails or returns `ERROR`, report the exact error and stop. Do not proceed with empty configuration values.
 - **Git conflicts**: Stop and present the conflict. Ask user to resolve manually, then continue.
 - **Test failures**: Present test output. Ask user whether to fix and retry or skip.
 - **PR check failures**: Wait for CI, present results. If failing, ask user how to proceed.
+- **GitHub API failures**: If `gh issue create` or `gh pr create` fails, report the exact error, show which issues/PRs were already created, and ask the user whether to retry or abort. Never proceed with empty issue/PR numbers.
 - **Missing gh sub-issue**: Install automatically: `gh extension install agbiotech/gh-sub-issue`
+- **Merge failures**: If `gh pr merge` fails for any reason (CI, review, conflicts), do NOT proceed to worktree cleanup or state update. Report the error and wait for user resolution. The state file should remain at `in_progress` for the current phase.
 - **Worktree already exists**: Detect and reuse existing worktree instead of creating new one.
+- **Worktree cleanup failures**: If `git worktree remove` fails (dirty tree, locked), warn the user and suggest `git worktree remove --force` only after confirming no uncommitted work.
 - **State file missing on resume**: Report error, ask user to start fresh or provide details.
+- **State file corruption**: After reading `.claude/epic.local.md`, validate that required fields (`epic_issue`, `epic_branch`, `integration_branch`, `phases`, `current_phase`) are present and have valid values. If validation fails, show what was read and ask the user to fix or start fresh.
