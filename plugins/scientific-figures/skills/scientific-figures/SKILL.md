@@ -127,7 +127,7 @@ After rendering the PDF, verify it is paper-ready before delivery. This step is 
 ### Render PDF to PNG for inspection
 
 ```bash
-uvx --from "pdf2image pillow" python -c "
+uv run --with pdf2image --with pillow python -c "
 from pdf2image import convert_from_path
 pages = convert_from_path('figure.pdf', dpi=300)
 pages[0].save('figure_preview.png', 'PNG')
@@ -153,7 +153,7 @@ See `references/figure-composition.md` for alternative conversion approaches (e.
 - [ ] Panel titles or subtitles (if present) are consistently positioned and formatted
 - [ ] No text is cut off, truncated, or running into panel edges
 
-#### Arrows, connectors, and annotations
+#### Arrows, connectors, and annotations (if present)
 - [ ] Arrows point to their intended targets and do not cross over unrelated elements
 - [ ] Annotation lines or brackets do not overlap other annotations or data
 - [ ] Arrow styles are consistent (same head type, line weight, color)
@@ -169,9 +169,9 @@ See `references/figure-composition.md` for alternative conversion approaches (e.
 
 #### Paper-readiness
 - [ ] Figure looks professional and polished at actual print size
-- [ ] Visual hierarchy is clear: the most important data draws the eye first
+- [ ] Panel labels and titles create a clear reading order; no secondary element visually dominates the primary data
 - [ ] No placeholder text, debug borders, or development artifacts remain
-- [ ] Figure would not require revisions from a journal production team
+- [ ] No obvious issues that would be flagged in journal proofing (wrong dimensions, unreadable text, clipped elements)
 
 ### Iterate until paper-ready
 

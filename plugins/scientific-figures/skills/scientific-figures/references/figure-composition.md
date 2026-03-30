@@ -74,7 +74,7 @@ bunx --bun run render.tsx
 pdftoppm -png -r 300 figure.pdf figure_preview
 
 # Or using Python
-uvx --from "pdf2image pillow" python -c "
+uv run --with pdf2image --with pillow python -c "
 from pdf2image import convert_from_path
 pages = convert_from_path('figure.pdf', dpi=300)
 pages[0].save('figure_preview.png', 'PNG')

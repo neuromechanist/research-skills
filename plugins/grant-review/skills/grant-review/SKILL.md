@@ -41,12 +41,12 @@ Handle the proposal based on its format:
 
 1. **Text extraction** -- Read the PDF for content review. Use the Read tool directly on the PDF (Claude can read PDFs natively). For large PDFs (>10 pages), read in page ranges (e.g., `pages: "1-10"`, then `pages: "11-20"`). For math-heavy or complex-layout PDFs where native reading struggles, convert to markdown via opencite:
    ```bash
-   uvx opencite convert <proposal.pdf> -o proposal.md
+   uvx opencite convert proposal.pdf -o proposal.md
    ```
 
-2. **Visual layout analysis** -- Convert each page to low-resolution PNG for figure sizing and space utilization review:
+2. **Visual layout analysis** -- Convert each page to PNG for figure sizing and space utilization review:
    ```bash
-   uvx --from "pdf2image pillow" python -c "
+   uv run --with pdf2image --with pillow python -c "
    from pdf2image import convert_from_path
    pages = convert_from_path('proposal.pdf', dpi=150)
    for i, page in enumerate(pages):
