@@ -1,0 +1,331 @@
+# Taskmaster Tool & Command Reference
+
+This document provides a detailed reference for interacting with Taskmaster, covering both the recommended MCP tools (for integrations like Cursor) and the corresponding `task-master` CLI commands (for direct user interaction or fallback).
+
+**Note:** For interacting with Taskmaster programmatically or via integrated tools, using the **MCP tools is strongly recommended** due to better performance, structured data, and error handling. The CLI commands serve as a user-friendly alternative and fallback. *(Implementation details for MCP/CLI are assumed to be internal to Taskmaster).*
+
+**Important:** Several MCP tools involve AI processing and are long-running operations that may take up to a minute to complete. When using these tools, always inform users that the operation is in progress and to wait patiently for results. The AI-powered tools include: `parse_prd`, `analyze_project_complexity`, `update_subtask`, `update_task`, `update`, `expand_all`, `expand_task`, and `add_task`.
+
+---
+
+## Initialization & Setup
+
+### 1. Initialize Project (`init`)
+
+*   **MCP Tool:** `initialize_project`
+*   **CLI Command:** `task-master init [options]`
+*   **Description:** Set up the basic Taskmaster file structure and configuration in the current directory for a new project.
+*   **Key CLI Options:**
+    *   `--name <n>`: Set project name.
+    *   `--description <text>`: Set project description.
+    *   `--version <version>`: Set initial version.
+    *   `-y, --yes`: Initialize with defaults, no prompts.
+*   **Key MCP Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `projectName`: Project name (CLI: `--name`).
+    *   `projectDescription`: Project description (CLI: `--description`).
+    *   `projectVersion`: Initial version (CLI: `--version`).
+    *   `skipInstall`: Skip dependency install (CLI: `--skip-install`).
+    *   `addAliases`: Add shell aliases (CLI: `--aliases`).
+    *   `yes`: Skip prompts (CLI: `-y, --yes`). **Must be true for MCP.**
+*   **Usage:** Run once at the start of a new project.
+*   **Important:** After `init`, run `parse_prd` to generate initial tasks from a requirements document.
+
+### 2. Parse PRD (`parse_prd`)
+
+*   **MCP Tool:** `parse_prd`
+*   **CLI Command:** `task-master parse-prd [file] [options]`
+*   **Description:** Automatically generate initial `tasks.json` from a Product Requirements Document (PRD) or text file.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `input`: Path to PRD file (CLI: `[file]` or `-i, --input`).
+    *   `output`: Output path for `tasks.json` (default: `tasks/tasks.json`) (CLI: `-o, --output`).
+    *   `numTasks`: Approximate number of top-level tasks (CLI: `-n, --num-tasks`).
+    *   `force`: Allow overwriting existing `tasks.json` (CLI: `-f, --force`).
+    *   `append`: Append to existing tasks instead of overwriting (CLI: `-a, --append`).
+*   **Usage:** Bootstrap a project from requirements.
+*   **Notes:** Adheres to PRD specifics (tech stack, etc.), fills gaps. AI-powered, may take time.
+
+---
+
+## Task Listing & Viewing
+
+### 3. Get Tasks (`get_tasks`)
+
+*   **MCP Tool:** `get_tasks`
+*   **CLI Command:** `task-master list [options]`
+*   **Description:** List tasks, optionally filter by status and show subtasks.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `status`: Filter by status (e.g., 'pending') (CLI: `-s, --status`).
+    *   `withSubtasks`: Include subtasks (CLI: `--with-subtasks`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Get project status overview.
+
+### 4. Get Next Task (`next_task`)
+
+*   **MCP Tool:** `next_task`
+*   **CLI Command:** `task-master next [options]`
+*   **Description:** Show the next available task based on status and dependencies.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Identify what to work on next.
+
+### 5. Get Task Details (`get_task`)
+
+*   **MCP Tool:** `get_task`
+*   **CLI Command:** `task-master show [id] [options]`
+*   **Description:** Display detailed information for a specific task or subtask.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: Task/Subtask ID (e.g., '15', '15.2') (CLI: `[id]` or `-i, --id`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Understand task details before implementation.
+
+---
+
+## Task Creation & Modification
+
+### 6. Add Task (`add_task`)
+
+*   **MCP Tool:** `add_task`
+*   **CLI Command:** `task-master add-task [options]`
+*   **Description:** Add a new task via AI description.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `prompt`: Description of the task (CLI: `-p, --prompt`). **Required if manual fields omitted.**
+    *   `dependencies`: Prerequisite task IDs (comma-separated) (CLI: `-d, --dependencies`).
+    *   `priority`: Priority (high, medium, low) (CLI: `--priority`).
+    *   `research`: Use Perplexity AI (CLI: `-r, --research`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+    *   *(Manual fields: `title`, `description`, `details`, `testStrategy`)*
+*   **Usage:** Quickly add newly identified tasks. AI-powered, may take time.
+
+### 7. Add Subtask (`add_subtask`)
+
+*   **MCP Tool:** `add_subtask`
+*   **CLI Command:** `task-master add-subtask [options]`
+*   **Description:** Add a new subtask or convert an existing task to a subtask.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Parent task ID (MCP: `id`, CLI: `-p, --parent`).
+    *   `taskId`: ID of existing task to convert (CLI: `-i, --task-id`).
+    *   `title`: Title for new subtask (Required if not converting) (CLI: `-t, --title`).
+    *   `description`: Description (CLI: `-d, --description`).
+    *   `details`: Implementation details (CLI: `--details`).
+    *   `dependencies`: Prerequisite IDs (comma-separated) (CLI: `--dependencies`).
+    *   `status`: Initial status (default: 'pending') (CLI: `-s, --status`).
+    *   `skipGenerate`: Skip regenerating task files (CLI: `--skip-generate`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Break down tasks manually or reorganize.
+
+### 8. Update Tasks (`update`)
+
+*   **MCP Tool:** `update`
+*   **CLI Command:** `task-master update [options]`
+*   **Description:** Update multiple upcoming tasks (ID >= `from`) based on new context.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `from`: **Required**. Starting task ID (inclusive) (CLI: `--from`).
+    *   `prompt`: **Required**. Explanation of changes (CLI: `-p, --prompt`).
+    *   `research`: Use Perplexity AI (CLI: `-r, --research`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Handle significant changes affecting future work. AI-powered, may take time.
+
+### 9. Update Task (`update_task`)
+
+*   **MCP Tool:** `update_task`
+*   **CLI Command:** `task-master update-task [options]`
+*   **Description:** Modify a specific task/subtask with new information.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Task/Subtask ID (e.g., '15', '15.2') (CLI: `-i, --id`).
+    *   `prompt`: **Required**. Explanation of changes (CLI: `-p, --prompt`).
+    *   `research`: Use Perplexity AI (CLI: `-r, --research`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Refine a specific task. AI-powered, may take time.
+
+### 10. Update Subtask (`update_subtask`)
+
+*   **MCP Tool:** `update_subtask`
+*   **CLI Command:** `task-master update-subtask [options]`
+*   **Description:** Append timestamped notes/details to a specific subtask (for logging).
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Subtask ID (e.g., '15.2') (CLI: `-i, --id`).
+    *   `prompt`: **Required**. Information to append (CLI: `-p, --prompt`).
+    *   `research`: Use Perplexity AI (CLI: `-r, --research`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Log implementation progress/findings iteratively. AI-powered, may take time.
+
+### 11. Set Task Status (`set_task_status`)
+
+*   **MCP Tool:** `set_task_status`
+*   **CLI Command:** `task-master set-status [options]`
+*   **Description:** Update status of one or more tasks/subtasks.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Task/Subtask ID(s) (comma-separated) (CLI: `-i, --id`).
+    *   `status`: **Required**. New status (e.g., 'done', 'pending') (CLI: `-s, --status`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Mark task progress.
+
+### 12. Remove Task (`remove_task`)
+
+*   **MCP Tool:** `remove_task`
+*   **CLI Command:** `task-master remove-task [options]`
+*   **Description:** Permanently remove a task or subtask.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Task/Subtask ID(s) to remove (comma-separated) (CLI: `-i, --id`).
+    *   `confirm`: Skip confirmation prompt (CLI: `-y, --yes`). **Use `true` for MCP if skipping.**
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Delete unneeded tasks (use status 'cancelled'/'deferred' to archive instead).
+
+---
+
+## Task Structure & Breakdown
+
+### 13. Expand Task (`expand_task`)
+
+*   **MCP Tool:** `expand_task`
+*   **CLI Command:** `task-master expand [options]`
+*   **Description:** Use AI to break down a complex task into subtasks.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Task ID to expand (CLI: `-i, --id`).
+    *   `numSubtasks`: Number of subtasks to generate (CLI: `-n, --num`).
+    *   `research`: Use Perplexity AI (CLI: `-r, --research`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** AI-assisted task breakdown. AI-powered, may take time.
+
+### 14. Expand All (`expand_all`)
+
+*   **MCP Tool:** `expand_all`
+*   **CLI Command:** `task-master expand-all [options]`
+*   **Description:** Expand all eligible tasks in the project.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `maxDepth`: Maximum expansion depth (CLI: `--max-depth`).
+    *   `research`: Use Perplexity AI (CLI: `-r, --research`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Comprehensive project task breakdown. AI-powered, may take time.
+
+### 15. Clear Subtasks (`clear_subtasks`)
+
+*   **MCP Tool:** `clear_subtasks`
+*   **CLI Command:** `task-master clear-subtasks [options]`
+*   **Description:** Remove all subtasks from a parent task.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Parent task ID (CLI: `-i, --id`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Clean slate for re-expanding tasks.
+
+---
+
+## Analysis & Reporting
+
+### 16. Analyze Complexity (`analyze_complexity`)
+
+*   **MCP Tool:** `analyze_complexity`
+*   **CLI Command:** `task-master analyze-complexity [options]`
+*   **Description:** Analyze project complexity and provide insights.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** High-level project analysis. AI-powered, may take time.
+
+### 17. Complexity Report (`complexity_report`)
+
+*   **MCP Tool:** `complexity_report`
+*   **CLI Command:** `task-master complexity-report [options]`
+*   **Description:** Generate detailed complexity analysis report.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Detailed project metrics and recommendations.
+
+---
+
+## Dependency Management
+
+### 18. Add Dependency (`add_dependency`)
+
+*   **MCP Tool:** `add_dependency`
+*   **CLI Command:** `task-master add-dependency [options]`
+*   **Description:** Add a dependency relationship between tasks.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Task ID that depends on another (CLI: `-i, --id`).
+    *   `dependsOn`: **Required**. Task ID that this task depends on (CLI: `-d, --depends-on`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Establish task prerequisites.
+
+### 19. Remove Dependency (`remove_dependency`)
+
+*   **MCP Tool:** `remove_dependency`
+*   **CLI Command:** `task-master remove-dependency [options]`
+*   **Description:** Remove a dependency relationship between tasks.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `id`: **Required**. Task ID to modify (CLI: `-i, --id`).
+    *   `dependsOn`: **Required**. Dependency to remove (CLI: `-d, --depends-on`).
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Remove incorrect or outdated dependencies.
+
+### 20. Validate Dependencies (`validate_dependencies`)
+
+*   **MCP Tool:** `validate_dependencies`
+*   **CLI Command:** `task-master validate-dependencies [options]`
+*   **Description:** Check for circular dependencies and other issues.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Ensure dependency graph integrity.
+
+### 21. Fix Dependencies (`fix_dependencies`)
+
+*   **MCP Tool:** `fix_dependencies`
+*   **CLI Command:** `task-master fix-dependencies [options]`
+*   **Description:** Automatically resolve dependency issues.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+    *   `file`: Path to `tasks.json` (CLI: `-f, --file`).
+*   **Usage:** Auto-fix common dependency problems.
+
+---
+
+## Project Analysis
+
+### 22. Analyze Project Complexity (`analyze_project_complexity`)
+
+*   **MCP Tool:** `analyze_project_complexity`
+*   **CLI Command:** `task-master analyze-project-complexity [options]`
+*   **Description:** Comprehensive project analysis including codebase structure.
+*   **Key Parameters/Options:**
+    *   `projectRoot`: **Required**. Absolute path to the project directory.
+*   **Usage:** Deep analysis of project scope and complexity. AI-powered, may take time.
+
+---
+
+## Best Practices
+
+- **Use MCP tools** when available for better integration and performance
+- **Provide clear prompts** when using AI-powered features
+- **Validate dependencies regularly** to maintain project integrity
+- **Use task IDs consistently** in commit messages and documentation
+- **Leverage research features** for complex or unfamiliar tasks
+- **Keep task descriptions focused** and actionable
+- **Update task status** as work progresses to maintain accuracy
+- **Use subtasks** to break down complex work into manageable pieces
+
+---
+
+*This reference covers the core Taskmaster functionality. Specific implementations may vary or include additional features.*
+
+*(Set in `.env` file or environment).*
+
+---
+*Refer to `../core_rules/dev_workflow.mdc` for general workflow guidelines.*

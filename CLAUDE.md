@@ -1,7 +1,7 @@
 # Research Skills Marketplace
 
 ## Purpose
-Claude Code marketplace providing plugins for academic research workflows: literature search, grant writing, scientific figure creation, and grant proposal review.
+Claude Code marketplace providing plugins for academic research workflows and development tooling: literature search, grant writing, scientific figures, grant review, project initialization, and epic/sprint workflow automation.
 
 ## Marketplace Structure
 ```
@@ -18,9 +18,19 @@ research-skills/
 │   ├── scientific-figures/           # Icons + plots + composition + QA
 │   │   ├── .claude-plugin/plugin.json
 │   │   └── skills/scientific-figures/
-│   └── grant-review/                 # Grant proposal review (NIH/NSF criteria)
+│   ├── grant-review/                 # Grant proposal review (NIH/NSF criteria)
+│   │   ├── .claude-plugin/plugin.json
+│   │   └── skills/grant-review/
+│   ├── init-project/                 # Project initialization templates
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── commands/init-project.md
+│   │   ├── skills/init-project/
+│   │   └── templates/               # Claude, Cursor, context, config, CI/CD
+│   └── workflow/                     # Epic/sprint workflow automation
 │       ├── .claude-plugin/plugin.json
-│       └── skills/grant-review/
+│       ├── commands/{epic-dev,epic-status}.md
+│       ├── skills/workflow-reference/
+│       └── scripts/
 └── .context/
     └── plan.md
 ```
@@ -30,6 +40,8 @@ research-skills/
 - **grant-writing** (v0.1.0): NIH/NSF grant proposal drafting with mechanism-specific templates
 - **scientific-figures** (v0.1.0): Publication-quality figures covering icons, plots, composition, and QA
 - **grant-review** (v0.1.0): Structured grant proposal review using NIH/NSF scoring criteria
+- **init-project** (v0.1.0): Project initialization with Claude/Cursor templates, .rules/, .context/, and config scaffolding (consolidates vibe-rules-templates)
+- **workflow** (v0.1.0): Epic/sprint development with git worktrees, GitHub issues, and phased PR delivery
 
 ## Development
 - Use Bun for any JS/TS work (react-pdf figures)

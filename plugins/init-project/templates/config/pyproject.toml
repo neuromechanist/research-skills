@@ -1,0 +1,132 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+# --- Basic Project Information --- Replace placeholders!
+name = "{{PACKAGE_NAME}}"
+version = "0.1.0" # Start with 0.1.0
+authors = [
+  { name="{{YOUR_NAME}}", email="{{YOUR_EMAIL}}" }
+]
+description = "{{PROJECT_DESCRIPTION}}"
+readme = "README.md" # Assumes README.md is in the root
+license = { text = "MIT License" } # Or choose another license like Apache-2.0, BSD 3-Clause
+requires-python = ">={{PYTHON_MIN_VERSION}}" # Specify the minimum Python version required
+keywords = ["{{PROJECT_NAME}}", "python", "library"]
+classifiers = [
+    # Choose appropriate classifiers from https://pypi.org/classifiers/
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License", # Match license field
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha", # Or Beta, Production/Stable
+    "Intended Audience :: Developers", # Or Science/Research, etc.
+    "Topic :: Software Development :: Libraries :: Python Modules", # Or other relevant topics
+]
+
+# --- Core Dependencies --- List packages your library NEEDS to run
+dependencies = [
+    # "requests>=2.20",
+    # "numpy>=1.20",
+    # "click>=8.0", # If creating a CLI
+]
+
+[project.urls]
+# --- Project Links --- Replace placeholders!
+"Homepage" = "https://github.com/{{GITHUB_USERNAME}}/{{REPO_NAME}}"
+"Repository" = "https://github.com/{{GITHUB_USERNAME}}/{{REPO_NAME}}"
+"Bug Tracker" = "https://github.com/{{GITHUB_USERNAME}}/{{REPO_NAME}}/issues"
+
+[project.optional-dependencies]
+# --- Optional Dependency Groups ---
+dev = [
+    # General development tools
+    "pytest>=7.0",
+    "pytest-cov>=4.0", # For test coverage
+    "mypy>=1.0",       # Static typing checker
+    "ruff>=0.1.0",     # Fast linter (replaces flake8, isort, black, etc.)
+    "pre-commit>=3.0", # For running checks before commit
+
+    # Build & release tools
+    "build",           # For building the package
+    "twine"            # For uploading to PyPI
+]
+test = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    # Add other testing-specific dependencies here
+    # "requests-mock>=1.9",
+]
+docs = [
+    # Documentation tools (using MkDocs Material)
+    "mkdocs>=1.4.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.20.0", # Auto-generate API docs from docstrings
+    "pymdown-extensions>=9.0",
+]
+# Add other groups as needed, e.g.:
+# web = ["flask>=2.0"]
+# cli = ["click>=8.0"]
+
+# --- Entry Points (for Command Line Scripts) ---
+#[project.scripts]
+#{{PACKAGE_NAME}}-cli = "{{PACKAGE_NAME}}.cli:main_function"
+
+# --- Packaging Configuration (using src layout) ---
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# --- Ruff Linter Configuration --- (Recommended)
+[tool.ruff]
+line-length = 88 # Default, same as Black
+# Select rule codes: https://docs.astral.sh/ruff/rules/
+# E = pycodestyle errors, W = pycodestyle warnings, F = Pyflakes, I = isort
+select = ["E", "F", "W", "I", "UP"]
+ignore = [] # Add specific rules to ignore if needed
+target-version = "py38" # Minimum Python version to target
+
+[tool.ruff.lint.isort]
+known-first-party = ["{{PACKAGE_NAME}}"] # Help isort identify your code
+
+# --- MyPy Static Typing Configuration --- (Recommended)
+[tool.mypy]
+python_version = "3.8" # Your minimum supported Python version
+warnings_as_errors = true # Treat type warnings as errors
+strict = true # Enable most strict checks
+# Add ignores for specific untyped libraries if necessary:
+# [[tool.mypy.overrides]]
+# module = "untyped_library.*"
+# ignore_missing_imports = true
+
+# --- Pytest Configuration ---
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --cov=src/{{PACKAGE_NAME}} --cov-report=term-missing --no-cov-on-fail"
+testpaths = [
+    "tests",
+]
+pythonpath = ["src"]
+filterwarnings = [
+    "ignore::DeprecationWarning", # Example: Ignore specific warnings
+]
+
+# --- Coverage Configuration ---
+[tool.coverage.run]
+source = ["src/{{PACKAGE_NAME}}"]
+omit = [
+    "src/{{PACKAGE_NAME}}/__main__.py", # Exclude CLI entry point if simple
+    "tests/*",
+]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80 # Example: Fail CI if coverage drops below 80%
+show_missing = true 

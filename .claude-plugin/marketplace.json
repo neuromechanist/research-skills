@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "description": "Claude Code plugins for academic research workflows: literature search, grant writing, scientific figures, and grant proposal review",
+  "description": "Claude Code plugins for academic research workflows and development tooling: literature search, grant writing, scientific figures, grant review, project initialization, and workflow automation",
   "owner": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
@@ -53,6 +53,30 @@
       },
       "source": "./plugins/grant-review",
       "category": "research",
+      "homepage": "https://github.com/neuromechanist/research-skills"
+    },
+    {
+      "name": "init-project",
+      "description": "Initialize new projects with structured Claude/Cursor templates, development rules, and documentation scaffolding",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/init-project",
+      "category": "development",
+      "homepage": "https://github.com/neuromechanist/research-skills"
+    },
+    {
+      "name": "workflow",
+      "description": "Epic/sprint development workflow automation with git worktrees, GitHub issues, and phased feature delivery",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/workflow",
+      "category": "development",
       "homepage": "https://github.com/neuromechanist/research-skills"
     }
   ]

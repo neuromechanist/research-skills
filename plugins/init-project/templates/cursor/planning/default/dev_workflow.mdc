@@ -1,0 +1,140 @@
+---
+title: Simple Planning Workflow for {{PROJECT_NAME}}
+description: Plan-driven development for {{PROJECT_NAME}} projects with detailed breakdown and dependency tracking.
+globs:
+alwaysApply: true
+---
+
+# Simple Planning Workflow for {{PROJECT_NAME}}
+
+## Documentation-Driven Development
+
+### Core Documents (in .context/)
+- **.context/plan.md**: Main task tracking and development phases
+- **.context/research.md**: Solution exploration and technical references
+- **.context/ideas.md**: Abstract concepts and design exploration
+- **.context/scratch_history.md**: Failed approaches and lessons learned
+
+### Document Usage
+1. **Before starting:** Check .context/ideas.md for design decisions
+2. **When stuck:** Consult .context/research.md for solutions
+3. **During work:** Update .context/plan.md task status
+4. **After failures:** Document in .context/scratch_history.md
+
+## Task Management: plan.md-Driven
+
+### Plan Tracking
+- `- [ ]` = Pending
+- `- [⚠️]` = In Progress  
+- `- [🔬]` = Researching (see research.md)
+- `- [x]` = Completed
+- Add notes below tasks for decisions/blockers
+- Reference other docs when relevant: `(see research.md#section)`
+
+### Daily Workflow
+1. **Check docs:** Review .context/plan.md priorities, .context/ideas.md for context
+2. **Pick task:** Select highest priority uncompleted item
+3. **Mark status:** `- [⚠️]` or `- [🔬]` if researching
+4. **Research if needed:** Update .context/research.md with findings
+5. **Implement:** Code following task requirements
+6. **Test:** Verify implementation
+7. **Commit:** Concise message <50 chars, no emojis
+8. **Mark complete:** `- [x] Task name`
+9. **Document:** Update relevant docs (plan/research/scratch)
+
+## Git Standards
+
+### Commits
+```bash
+git commit -m "feat: implement user auth"
+# Use: feat:, fix:, docs:, refactor:, test:, chore:
+# Keep under 50 characters, no emojis
+# Reference tasks only when critical for context
+```
+
+### Branch Strategy
+- Feature branches for multi-step tasks: `feature/short-description`
+- Direct commits to main for small fixes and docs
+- Keep commits ATOMIC and FOCUSED
+- Test before merging to main
+
+## Code Quality
+
+### Python Projects (Pre-commit Setup): We have a specific pre-commit hook for Python projects.
+```bash
+cp templates/config/pre-commit .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+# Runs ruff check/format on staged Python files only
+```
+
+### Standards
+- Follow existing code patterns and conventions
+- Write self-documenting code with clear names
+- Add type hints and minimal docstrings
+- Test core functionality (no mocks preferred)
+- Keep functions focused and simple
+- Document complex logic in research.md
+
+### File Organization
+```
+{{PROJECT_NAME}}/
+├── .context/                 # Development context (gitignored)
+│   ├── plan.md              # Task tracking and phases
+│   ├── research.md          # Technical solutions
+│   ├── ideas.md             # Design concepts
+│   └── scratch_history.md   # Failed attempts
+├── src/{{PROJECT_NAME}}/     # Source code
+├── tests/                    # Test files
+├── docs/                     # Public documentation
+├── pyproject.toml           # Project config
+├── README.md                # Project overview
+└── .gitignore               # Include: .context/
+```
+
+## Documentation Guidelines
+
+### plan.md Updates
+- Track task status in real-time
+- Add implementation notes below tasks
+- Reference other docs: `(see research.md#api-design)`
+- Keep phases organized and current
+- Location: .context/plan.md
+
+### research.md Structure
+```markdown
+# Research Notes
+
+## Problem: [Brief description]
+### Explored Solutions:
+1. **Approach A**: [Details, pros/cons]
+2. **Approach B**: [Details, pros/cons]
+### Decision: [What was chosen and why]
+### References: [Links, docs, examples]
+```
+
+### ideas.md Format
+```markdown
+# Design Ideas
+
+## Feature: [Name]
+### Concept: [High-level description]
+### Rationale: [Why this approach]
+### Considerations: [Trade-offs, alternatives]
+```
+
+### scratch_history.md Purpose
+```markdown
+# Failed Attempts Log
+
+## Attempt: [What was tried]
+### Date: [When]
+### Issue: [What went wrong]
+### Lesson: [What was learned]
+### Alternative: [What worked instead]
+```
+
+### PR Process
+- Create descriptive PR titles (no task IDs)
+- Reference relevant documentation in PR body
+- Update all docs (plan/research/ideas) when merged
+- Include test results and validation

@@ -1,0 +1,67 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+# Cancel redundant workflow runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+    - name: Set up Python
+      run: uv python install 3.12
+    - name: Install lint dependencies
+      run: uv tool install ruff
+    - name: Run linting
+      run: |
+        ruff check .
+        ruff format --check .
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: uv sync --extra test
+    - name: Run tests
+      run: uv run pytest --cov=src/{{PACKAGE_NAME}} --cov-report=xml
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        flags: python-${{ matrix.python-version }}
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+    - name: Set up Python
+      run: uv python install 3.12
+    - name: Run security tools
+      run: |
+        uv tool install safety
+        uv tool install bandit
+        safety check
+        bandit -r src/
