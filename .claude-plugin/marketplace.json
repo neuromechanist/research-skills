@@ -78,6 +78,18 @@
       "source": "./plugins/workflow",
       "category": "development",
       "homepage": "https://github.com/neuromechanist/research-skills"
+    },
+    {
+      "name": "paper-review",
+      "description": "Structured academic manuscript review with emphasis on methodological rigor, statistical validity, and reproducibility",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/paper-review",
+      "category": "research",
+      "homepage": "https://github.com/neuromechanist/research-skills"
     }
   ]
 }
