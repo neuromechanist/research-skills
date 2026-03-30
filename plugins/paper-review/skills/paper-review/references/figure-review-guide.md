@@ -8,6 +8,7 @@ Criteria for evaluating figures in academic manuscripts. Figures are often where
 - **Legends:** All elements (colors, symbols, line styles) must be defined.
 - **Consistency:** Style (fonts, colors, line weights) should be consistent across all figures.
 - **Self-contained:** A reader should be able to understand the figure from its caption alone without reading the main text.
+- **Accessibility:** Color choices should be distinguishable to colorblind readers. Prefer colorblind-safe palettes; avoid red-green-only encoding.
 
 ## Data Representation
 
@@ -22,7 +23,7 @@ Criteria for evaluating figures in academic manuscripts. Figures are often where
 - Check if the apparent trend is driven by a few outlier points.
 
 ### Spectral Plots (ERSP, power spectra, coherence)
-- Must show baseline-corrected data (change from pre-event baseline), not absolute values.
+- For event-related spectral analysis (ERSP), must show baseline-corrected data (change from pre-event baseline), not absolute values. For resting-state or continuous analyses, absolute spectral values may be appropriate.
 - Color scale must be defined with a legend showing the units (e.g., dB, percent change).
 - Frequency and time axes must be labeled with appropriate resolution.
 - Statistical masking (significance overlay) should be described in the caption.

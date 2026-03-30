@@ -6,7 +6,7 @@ Common statistical issues encountered in manuscript review and how to identify t
 
 ### Parametric vs. Non-parametric
 - **Issue:** Using parametric tests (t-test, ANOVA) on data that violates normality assumptions.
-- **How to identify:** Check if normality was tested (Shapiro-Wilk, Kolmogorov-Smirnov). For small samples (N<30), non-parametric tests are often more appropriate.
+- **How to identify:** Check if normality was tested (Shapiro-Wilk, Kolmogorov-Smirnov). For small samples (N<30), normality assumptions become more consequential because the Central Limit Theorem provides less protection; non-parametric alternatives are often more appropriate unless normality can be verified.
 - **What to recommend:** Suggest appropriate non-parametric alternatives (Mann-Whitney U, Kruskal-Wallis, Friedman) and request normality testing.
 
 ### Paired vs. Unpaired
@@ -22,7 +22,7 @@ Common statistical issues encountered in manuscript review and how to identify t
 ## Multiple Comparisons
 
 - **Issue:** Running many statistical tests without correcting for the increased false positive rate.
-- **How to identify:** Count the number of tests performed. If >3 comparisons are made on the same dataset, correction is needed.
+- **How to identify:** Count the number of tests performed. If multiple comparisons are made on the same dataset, correction is generally needed. The inflation of false positive rate begins with as few as two tests.
 - **What to recommend:** Bonferroni (conservative), Holm-Bonferroni (less conservative), or FDR/Benjamini-Hochberg (for many comparisons). State the correction method and adjusted significance threshold.
 
 ## Sample Size Issues

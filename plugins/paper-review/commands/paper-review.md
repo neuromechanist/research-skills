@@ -26,6 +26,6 @@ uvx opencite search "relevant topic" --max 10 --sort citations
 uvx opencite canonical "field or method" --max 5
 ```
 
-For PDF manuscripts, use the Read tool directly (Claude reads PDFs natively). For large PDFs (>10 pages), read in page ranges.
+For PDF manuscripts, follow the hybrid intake in the paper-review skill: convert to markdown (via `uvx opencite convert`) for text analysis and to PNG for page/line citations. Read the original PDF for figures as needed.
 
 After completing the review, present it in the structured format from `references/review-output-template.md`.

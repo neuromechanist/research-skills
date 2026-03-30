@@ -16,7 +16,7 @@ Activate when the user wants peer-review feedback on a manuscript (journal artic
 
 ## Manuscript Intake
 
-Manuscripts for peer review are typically provided as PDFs from journal submission systems. Convert to markdown first for reliable text extraction, then read figures from the PDF directly.
+Manuscripts for peer review are typically provided as PDFs from journal submission systems. Convert to both markdown and PNG for a complete review: markdown for efficient text analysis, PNG for exact page/line citations and figure inspection.
 
 **PDF (most common):** Use a hybrid approach: convert to both markdown and PNG. Markdown gives efficient searchable text for content analysis; PNG preserves exact page layout, line numbers, and figure positions for precise citations.
 
