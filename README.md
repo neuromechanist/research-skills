@@ -12,6 +12,15 @@ neuromechanist/research-skills
 
 Then select which plugins to install. Each plugin is independent.
 
+### Install all plugins via CLI
+
+```bash
+claude plugin marketplace add neuromechanist/research-skills
+for p in project grant manuscript opencite scientific-figures neuroinformatics; do
+  claude plugin install "$p@research-skills"
+done
+```
+
 ## Plugins
 
 | Plugin | Version | Description | Commands |
