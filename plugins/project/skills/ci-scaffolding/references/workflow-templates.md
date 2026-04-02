@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --dev
-      - run: uv run ruff check --fix --unsafe-fixes .
+      - run: uv run ruff check .
       - run: uv run ruff format --check .
 
   test:

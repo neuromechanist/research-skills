@@ -1,7 +1,7 @@
 ---
 name: release-prep
 description: "Use this agent to autonomously prepare a project release by running pre-release checks, validating CI, checking test coverage, and verifying changelog. Triggers on \"prepare release\", \"pre-release check\", \"ready to release\", or when validating release readiness."
-version: 0.2.0
+version: 0.1.0
 model: sonnet
 tools: Bash, Read, Glob, Grep
 color: green
@@ -15,32 +15,34 @@ Autonomously validate that a project is ready for release by running a comprehen
 
 ### 1. Identify Version and Project Type
 
-Read version from config files (`pyproject.toml`, `package.json`, `Cargo.toml`). Identify the project stack.
+Read version from config files (`pyproject.toml`, `package.json`, `Cargo.toml`). Identify the project stack. If no version is found, report an error.
 
 ### 2. Run Pre-release Checklist
 
 #### Tests
 ```bash
 # Python
-uv run pytest --tb=short 2>&1 | tail -20
+uv run pytest --tb=short; echo "TEST_EXIT=$?"
 
 # JavaScript
-bun test 2>&1 | tail -20
+bun test; echo "TEST_EXIT=$?"
 ```
+
+Check the exit code to determine pass/fail status.
 
 #### Lint
 ```bash
 # Python
-uv run ruff check . 2>&1 | tail -10
+uv run ruff check .; echo "LINT_EXIT=$?"
 
 # JavaScript
-bunx biome check . 2>&1 | tail -10
+bunx biome check .; echo "LINT_EXIT=$?"
 ```
 
 #### Coverage
 ```bash
 # Python
-uv run pytest --cov --cov-report=term-missing 2>&1 | tail -20
+uv run pytest --cov --cov-report=term-missing
 ```
 
 #### Uncommitted Changes
@@ -51,7 +53,7 @@ git diff --stat
 
 #### CI Status
 ```bash
-gh run list --limit 5
+gh run list --limit 5 || echo "WARNING: Could not check CI status"
 ```
 
 #### Changelog/Release Notes

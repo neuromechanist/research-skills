@@ -20,7 +20,7 @@ Generate and configure CI/CD pipelines following project conventions. Supports P
 
 ### Python Project Pipeline
 
-Standard Python CI with three stages:
+Standard Python CI pipeline:
 
 ```yaml
 # .github/workflows/test.yml
@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --dev
-      - run: uv run ruff check --fix --unsafe-fixes .
+      - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest --cov --cov-report=xml
 ```

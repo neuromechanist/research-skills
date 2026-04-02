@@ -6,7 +6,7 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Skill, Task, AskUserQuestion
 
 # Epic Development Workflow
 
-Orchestrate multi-phase feature development using git worktrees, GitHub issues with sub-issues, and phased PR delivery. Load the `workflow:workflow-reference` skill immediately for reference context.
+Orchestrate multi-phase feature development using git worktrees, GitHub issues with sub-issues, and phased PR delivery. Load the `project:workflow-reference` skill immediately for reference context.
 
 ## Core Principles
 

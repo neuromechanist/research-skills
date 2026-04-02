@@ -45,8 +45,6 @@ Files that must never be committed:
 
 **Python:**
 ```bash
-uv pip audit
-# or
 uv run pip-audit
 ```
 

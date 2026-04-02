@@ -9,9 +9,6 @@ Lab Streaming Layer (LSL) provides a unified system for streaming time-series da
 ```bash
 # Python bindings
 uv add pylsl
-
-# Or system-wide
-pip install pylsl
 ```
 
 ## Sending Markers from PsychoPy

@@ -122,6 +122,8 @@ for trial in trials:
     core.wait(iti)
 
 # Save data
+import os
+os.makedirs("data", exist_ok=True)
 trials.saveAsWideText(f"data/sub-{exp_info['participant']}_task-{exp_info['task']}.csv")
 win.close()
 core.quit()

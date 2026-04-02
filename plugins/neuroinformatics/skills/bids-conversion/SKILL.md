@@ -230,11 +230,11 @@ Fp2	0.0303	0.0835	-0.0083
 ### Step 6: Validate
 
 ```bash
-# Using the official BIDS validator
-bids-validator /path/to/dataset
+# Using the official BIDS validator (Node.js CLI)
+bunx bids-validator /path/to/dataset
 
-# Or the Python version
-pip install bids-validator
+# Or install globally
+bun install -g bids-validator
 bids-validator /path/to/dataset
 ```
 

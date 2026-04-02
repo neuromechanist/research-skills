@@ -1,7 +1,7 @@
 ---
 name: dependency-auditor
 description: "Use this agent to audit project dependencies for vulnerabilities, outdated packages, and compatibility issues. Triggers on \"audit dependencies\", \"check for vulnerabilities\", \"update dependencies\", \"dependency security\", or when reviewing project health."
-version: 0.2.0
+version: 0.1.0
 model: sonnet
 tools: Bash, Read, Glob, Grep
 color: red
@@ -21,33 +21,35 @@ Identify the project's dependency files:
 - `Cargo.toml` / `Cargo.lock` -> Rust (cargo)
 - `go.mod` / `go.sum` -> Go
 
+If no recognized dependency files are found, report an error and stop.
+
 ### 2. Run Vulnerability Scan
 
 **Python:**
 ```bash
-uv run pip-audit --format json 2>/dev/null || uv run pip-audit
+uv run pip-audit --format json || uv run pip-audit
 ```
 
 **JavaScript:**
 ```bash
-npm audit --json 2>/dev/null || bun pm audit
+bun pm audit || npm audit --omit=dev --json
 ```
 
 **Go:**
 ```bash
-govulncheck ./... 2>/dev/null
+govulncheck ./...
 ```
 
 ### 3. Check for Outdated Dependencies
 
 **Python:**
 ```bash
-uv pip list --outdated 2>/dev/null
+uv pip list --outdated
 ```
 
 **JavaScript:**
 ```bash
-bun outdated 2>/dev/null || npm outdated --json
+bun outdated || npm outdated --json
 ```
 
 ### 4. Check License Compatibility
@@ -55,7 +57,7 @@ bun outdated 2>/dev/null || npm outdated --json
 Scan for restrictive licenses (GPL, AGPL) that may conflict with project license:
 ```bash
 # Python
-uv run pip-licenses --format=json 2>/dev/null
+uv run pip-licenses --format=json
 ```
 
 ### 5. Generate Report
