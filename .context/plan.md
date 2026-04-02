@@ -1,14 +1,16 @@
 # Plan
 
-## Current Phase: Marketplace structure
+## Current Phase: Marketplace v0.4.0 - Domain-grouped plugins
 
 ### Plugins Status
 | Plugin | Version | Status | Notes |
 |--------|---------|--------|-------|
-| opencite | 0.1.0 | Migrated from opencite repo | Literature search and citation management |
-| grant-writing | 0.1.0 | New | Based on grant-proposals repo's rules and templates |
-| scientific-figures | 0.1.0 | New (merged) | Unified from icon-generation + pdf-figures; covers icons, plots, composition, QA |
-| grant-review | 0.1.0 | New | NIH/NSF scoring criteria-based review |
+| project | 0.2.0 | Merged init-project + workflow + new | Project lifecycle: init, workflow, CI, Docker, security, doc-processing |
+| grant | 0.2.0 | Merged grant-writing + grant-review | Grant proposals: writing, review, figure QA agent |
+| manuscript | 0.2.0 | Merged paper-review + new | Manuscripts: peer review, writing, formatting |
+| opencite | 0.2.0 | Updated | Literature search + new literature-review skill |
+| scientific-figures | 0.1.1 | Unchanged | Icons, plots, composition, QA |
+| neuroinformatics | 0.1.0 | New | BIDS, HED, experiment design, bids-validator agent |
 
 ### Completed
 - Converted from single plugin to marketplace structure
@@ -18,9 +20,15 @@
 - Added visual QA feedback loop (PDF to PNG, inspect, iterate)
 - All execution via uvx/bunx (no permanent installs)
 - Each plugin has independent versioning
+- Restructured 7 plugins into 6 domain-grouped plugins (v0.4.0)
+- Added paper-review, manuscript writing/formatting, init-project, workflow
+- Added CI/CD, Docker, security audit, doc-processing skills
+- Added dependency-auditor, release-prep, grant-figure-qa, bids-validator agents
+- Added literature-review skill to opencite
+- Created neuroinformatics plugin (BIDS, experiment design)
 
 ## Future Ideas
-- Paper writing plugin (full manuscript drafting)
 - Poster generation plugin
 - Conference abstract plugin
-- Data visualization plugin
+- HED annotation skills in neuroinformatics (hedit integration)
+- OpenNeuro/NEMAR upload workflows in neuroinformatics

@@ -4,6 +4,15 @@ HED = "HED"
 rcParams = "rcParams"
 PNGs = "PNGs"
 PN = "PN"
+# BIDS coordinate system
+CapTrak = "CapTrak"
+Trak = "Trak"
+# Medical/neuro scales
+VAS = "VAS"
+# Company name (OT Bioelettronica)
+OT = "OT"
+# LaTeX escaped characters
+Caf = "Caf"
 
 [files]
 extend-exclude = [
