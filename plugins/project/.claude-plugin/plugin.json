@@ -1,0 +1,11 @@
+{
+  "name": "project",
+  "version": "0.2.0",
+  "description": "Complete project lifecycle toolkit: initialization, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
+  "author": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "license": "BSD-3-Clause",
+  "keywords": ["project", "init", "workflow", "ci-cd", "docker", "security", "scaffolding", "epic", "sprint", "worktree", "document-processing"]
+}
