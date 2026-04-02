@@ -1,6 +1,6 @@
 # Research Skills
 
-Claude Code marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant writing, scientific figures, grant review, manuscript peer review, project initialization, and epic/sprint workflow automation.
+Claude Code marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, scientific figures, project lifecycle management, and neuroinformatics.
 
 ## Install
 
@@ -16,28 +16,42 @@ Then select which plugins to install. Each plugin is independent.
 
 | Plugin | Version | Description | Commands |
 |--------|---------|-------------|----------|
-| **opencite** | 0.1.0 | Literature search, citation graph, PDF retrieval, BibTeX export | `/opencite` |
-| **grant-writing** | 0.1.0 | NIH/NSF grant proposal drafting with mechanism-specific templates | -- |
+| **project** | 0.2.0 | Project lifecycle: init, workflow, CI/CD, Docker, security, doc-processing | `/init-project`, `/epic-dev`, `/epic-status`, `/setup-ci`, `/release-prep`, `/doc-process` |
+| **grant** | 0.2.0 | NIH/NSF grant proposal writing, review, and figure QA | `/grant-write`, `/grant-review` |
+| **manuscript** | 0.2.0 | Academic manuscript peer review, writing, and journal formatting | `/paper-review`, `/manuscript-prep` |
+| **opencite** | 0.2.0 | Literature search, citation management, PDF retrieval, literature review synthesis | `/opencite` |
 | **scientific-figures** | 0.1.1 | Full figure pipeline: icons, plots, composition, visual QA | -- |
-| **grant-review** | 0.1.1 | Structured grant proposal review using NIH/NSF scoring criteria | -- |
-| **paper-review** | 0.1.0 | Academic manuscript peer review: methodology, statistics, reproducibility | `/paper-review` |
-| **init-project** | 0.1.0 | Project scaffolding with Claude/Cursor templates, .rules/, .context/, CI/CD | `/init-project` |
-| **workflow** | 0.1.0 | Epic/sprint development with git worktrees and phased PR delivery | `/epic-dev`, `/epic-status` |
+| **neuroinformatics** | 0.1.0 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `/convert-bids`, `/validate-bids`, `/design-experiment` |
 
 ## Research Plugins
 
 ### opencite
 
-Search academic literature, explore citation graphs, download PDFs, and export BibTeX. Wraps the [`opencite`](https://github.com/neuromechanist/opencite) CLI, aggregating Semantic Scholar, OpenAlex, PubMed, arXiv, and bioRxiv.
+Search academic literature, explore citation graphs, download PDFs, and export BibTeX. Wraps the [`opencite`](https://github.com/neuromechanist/opencite) CLI, aggregating Semantic Scholar, OpenAlex, PubMed, arXiv, and bioRxiv. Includes a literature-review skill for synthesizing papers into cohesive reviews with thematic organization and gap analysis.
 
 ```
 /opencite search "motor cortex oscillations"
 "Find the top 10 most cited papers on brain-computer interfaces"
+"Write a literature review on EEG-based BCIs"
 ```
 
-### grant-writing
+### grant
 
-Draft NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, etc.). Includes references for research strategy guidelines, writing style, and budget justification.
+Draft and review NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, etc.). Includes a grant-figure-qa agent that autonomously checks figures for resolution, accessibility, and NIH/NSF compliance. Skills for research strategy guidelines, writing style, budget justification, scoring criteria, and resubmission response.
+
+```
+/grant-write significance --mechanism R01
+/grant-review proposal.pdf --mechanism R21
+```
+
+### manuscript
+
+Academic manuscript toolkit covering the full lifecycle: writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates.
+
+```
+/paper-review manuscript.pdf
+/manuscript-prep "Nature Neuroscience"
+```
 
 ### scientific-figures
 
@@ -50,41 +64,41 @@ Create publication-quality figures for Nature, Science, PNAS, Cell, and other jo
 
 All elements saved as SVG or transparent PNG. Enforces sans-serif fonts, colorblind-safe palettes, and journal-specific dimensions. Runs on-the-fly via `uvx` and `bunx`.
 
-### grant-review
+### neuroinformatics
 
-Structured grant proposal review using NIH study section and NSF panel criteria. Scores each criterion, identifies strengths/weaknesses, and provides prioritized actionable improvements. Supports PDF intake with visual layout analysis for figure sizing and space utilization.
+Neuroscience data standards, experiment design, and dataset validation:
 
-### paper-review
+- **BIDS conversion** -- convert EEG, EMG, and other modalities to Brain Imaging Data Structure (BIDS) format with proper file naming, JSON sidecars, and metadata
+- **Experiment design** -- scaffold PsychoPy experiments with stimulus presentation, LSL marker integration, and BIDS-compatible output
+- **BIDS validator agent** -- autonomously validate datasets, diagnose errors, and apply fixes
 
-Academic manuscript peer review calibrated toward methodological rigor, statistical validity, logical consistency, and reproducibility. Reviews prioritize:
+```
+/convert-bids ./raw-data --modality eeg --task rest
+/validate-bids ./bids-dataset
+/design-experiment "visual oddball ERP paradigm with 2 conditions"
+```
 
-- Experimental design and signal processing validity
-- Statistical test appropriateness (paired vs. unpaired, assumptions, corrections)
-- Logical consistency (hypothesis -> methods -> results -> conclusions)
-- Literature completeness (uses opencite for verification)
-- Reproducibility and conflict of interest transparency
-- Figure quality (bar plots for small N, baseline correction, scale appropriateness)
+## Development Plugin
 
-Outputs structured reviews with Critical/Major/Minor severity calibration. Uses hybrid PDF intake: markdown for text analysis, PNG for page/line citations.
+### project
 
-## Development Plugins
+Complete project lifecycle toolkit combining initialization, epic/sprint workflow, and CI/CD management:
 
-### init-project
+- **init-project** -- scaffold new projects with Claude/Cursor templates, `.rules/`, `.context/`, and config files
+- **workflow** -- multi-phase feature development with git worktrees, GitHub issues, and phased PR delivery
+- **CI scaffolding** -- generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
+- **Docker packaging** -- multi-stage Dockerfiles with uv/bun, health checks, and security hardening
+- **Security audit** -- credential scanning, dependency audit, OWASP checklist, configuration hardening
+- **Document processing** -- PDF/image OCR, text extraction, markdown conversion
 
-Initialize new projects with Claude/Cursor templates, `.rules/` development standards, `.context/` documentation scaffolding, config files, and GitHub Actions workflows. Consolidates the archived [vibe-rules-templates](https://github.com/neuromechanist/vibe-rules-templates) repository.
+Includes autonomous agents: **dependency-auditor** (vulnerability scanning) and **release-prep** (pre-release validation).
 
 ```
 /init-project "Python EEG analysis package"
-```
-
-### workflow
-
-Multi-phase feature development using git worktrees, GitHub issues with sub-issues, and phased PR delivery. Supports epic setup, sprint execution, and finalization with automatic state tracking.
-
-```
 /epic-dev "build a community dashboard"
-/epic-status
-/epic-dev --resume
+/setup-ci python
+/release-prep --minor
+/doc-process scanned-document.pdf
 ```
 
 ## Structure
@@ -93,13 +107,12 @@ Multi-phase feature development using git worktrees, GitHub issues with sub-issu
 research-skills/
 ├── .claude-plugin/marketplace.json
 ├── plugins/
-│   ├── opencite/                  # /opencite command + skill
-│   ├── grant-writing/             # Grant drafting skill + references
+│   ├── project/                   # Project lifecycle (init, workflow, CI, Docker, security, docs)
+│   ├── grant/                     # Grant proposals (writing, review, figure QA)
+│   ├── manuscript/                # Manuscripts (review, writing, formatting)
+│   ├── opencite/                  # Literature search and review synthesis
 │   ├── scientific-figures/        # Icons + plots + composition + QA
-│   ├── grant-review/              # NIH/NSF review criteria + templates
-│   ├── paper-review/              # Manuscript review + methodology checklist
-│   ├── init-project/              # Project templates (Claude, Cursor, CI/CD)
-│   └── workflow/                  # Epic/sprint automation + scripts
+│   └── neuroinformatics/          # BIDS, HED, experiment design
 ```
 
 ## Requirements
@@ -110,6 +123,8 @@ research-skills/
 - For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
 - For figure composition: react-pdf via `bunx` (on-the-fly)
 - For PDF conversion: poppler (`brew install poppler` on macOS)
+- For BIDS validation: bids-validator (`bunx bids-validator`)
+- For OCR: Mistral API key (optional, tesseract as offline fallback)
 
 ## Versioning
 
