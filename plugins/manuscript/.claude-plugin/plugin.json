@@ -1,0 +1,11 @@
+{
+  "name": "manuscript",
+  "version": "0.2.0",
+  "description": "Academic manuscript toolkit: peer review, manuscript writing, and journal-specific formatting for submission",
+  "author": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "license": "BSD-3-Clause",
+  "keywords": ["manuscript", "paper", "peer-review", "writing", "formatting", "journal", "latex", "submission", "academic"]
+}
