@@ -1,7 +1,7 @@
 ---
 name: document-processing
-description: "Use this skill for \"process documents\", \"extract text from PDF\", \"OCR this document\", \"convert PDF to markdown\", \"extract emails from documents\", \"parse document\", \"document conversion\", \"batch OCR\", \"extract structured data from PDF\", or when the user wants to extract, convert, or process documents."
-version: 0.2.0
+description: "This skill should be used when the user says \"process documents\", \"extract text from PDF\", \"OCR this document\", \"convert PDF to markdown\", \"extract emails from documents\", \"parse document\", \"document conversion\", \"batch OCR\", \"extract structured data from PDF\", \"read PDF\", \"extract tables from PDF\", \"convert Word document\", \"convert docx to markdown\", or wants to extract, convert, or process documents and scanned images."
+version: 0.1.0
 ---
 
 # Document Processing
@@ -42,7 +42,7 @@ pdftotext input.pdf - | head -20
 #### Native PDF Extraction
 
 ```python
-import pymupdf  # pip: pymupdf
+import pymupdf
 
 doc = pymupdf.open("input.pdf")
 for page in doc:
@@ -51,6 +51,8 @@ for page in doc:
 ```
 
 #### OCR with Mistral (for scanned documents)
+
+Requires `MISTRAL_API_KEY` environment variable. Falls back to tesseract for offline processing if unavailable.
 
 ```python
 import base64

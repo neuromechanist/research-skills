@@ -1,7 +1,7 @@
 ---
 name: ci-scaffolding
-description: "Use this skill for \"set up CI\", \"create GitHub Actions\", \"scaffold CI pipeline\", \"add CI/CD\", \"configure continuous integration\", \"create test workflow\", \"create release workflow\", \"add pre-commit hooks\", \"set up linting pipeline\", \"configure ruff in CI\", \"configure biome in CI\", or when the user wants to add or configure CI/CD pipelines for their project."
-version: 0.2.0
+description: "This skill should be used when the user says \"set up CI\", \"create GitHub Actions\", \"scaffold CI pipeline\", \"add CI/CD\", \"configure continuous integration\", \"create test workflow\", \"create release workflow\", \"add pre-commit hooks\", \"set up linting pipeline\", \"configure ruff in CI\", \"configure biome in CI\", \"add typo checking\", or wants to add, update, or customize CI/CD pipelines for their project. For initial project setup including basic CI, see init-project. Use ci-scaffolding for adding or customizing CI/CD in existing projects."
+version: 0.1.0
 ---
 
 # CI/CD Scaffolding

@@ -1,7 +1,7 @@
 ---
 name: security-audit
-description: "Use this skill for \"security audit\", \"check for vulnerabilities\", \"security review\", \"harden project\", \"dependency audit\", \"credential scan\", \"check for secrets\", \"OWASP review\", \"security checklist\", \"audit dependencies\", or when the user wants to review their project for security issues."
-version: 0.2.0
+description: "This skill should be used when the user says \"security audit\", \"check for vulnerabilities\", \"security review\", \"harden project\", \"dependency audit\", \"credential scan\", \"check for secrets\", \"scan for secrets\", \"OWASP review\", \"security checklist\", \"audit dependencies\", \"find vulnerabilities\", or wants to review their project for security issues, exposed credentials, or vulnerable dependencies."
+version: 0.1.0
 ---
 
 # Security Audit

@@ -1,7 +1,7 @@
 ---
 name: docker-packaging
-description: "Use this skill for \"create Dockerfile\", \"dockerize project\", \"Docker packaging\", \"container setup\", \"multi-stage build\", \"Docker Compose\", \"containerize application\", \"create docker-compose.yml\", \"optimize Docker image\", or when the user wants to containerize their project or create Docker configurations."
-version: 0.2.0
+description: "This skill should be used when the user says \"create Dockerfile\", \"dockerize project\", \"Docker packaging\", \"container setup\", \"multi-stage build\", \"Docker Compose\", \"containerize application\", \"create docker-compose.yml\", \"create .dockerignore\", \"optimize Docker image\", or wants to containerize their project or create Docker configurations."
+version: 0.1.0
 ---
 
 # Docker Packaging
@@ -36,10 +36,13 @@ RUN uv sync --frozen --no-dev
 # Stage 2: Runtime
 FROM python:3.12-slim AS runtime
 
+RUN addgroup --system app && adduser --system --ingroup app app
+
 COPY --from=builder /app /app
 WORKDIR /app
 ENV PATH="/app/.venv/bin:$PATH"
 
+USER app
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
