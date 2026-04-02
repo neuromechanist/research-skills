@@ -1,7 +1,7 @@
 {
   "name": "opencite",
-  "version": "0.1.0",
-  "description": "Academic literature search, citation management, and PDF retrieval using the opencite CLI",
+  "version": "0.2.0",
+  "description": "Academic literature search, citation management, PDF retrieval, and literature review synthesis",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
