@@ -18,9 +18,10 @@ Initialize this project using bundled vibe-rules templates from the init-project
 ### 2. Copy templates and set up project structure
 !project-init-templates .
 
+If the above command failed, report the exact error to the user and stop. Do not proceed with remaining steps.
+
 ### 3. Track Claude files in git
-!echo "Note: CLAUDE.md, .rules/, and .context/ are tracked in git by default."
-!echo "Add to .gitignore only if explicitly requested by the user."
+CLAUDE.md, .rules/, and .context/ are tracked in git by default. Add to .gitignore only if explicitly requested by the user.
 
 ### 4. Customize CLAUDE.md based on project context
 Now analyze the project and customize the CLAUDE.md file using the project description provided by the user: `$ARGUMENTS`
@@ -31,8 +32,6 @@ Now analyze the project and customize the CLAUDE.md file using the project descr
 - Update .context/ files with project requirements; keep minimal instructions for unused files
 - Re-read CLAUDE.md to ensure only relevant context and rules are referenced
 
-!echo "\n=== Analyzing project structure ===\n"
-!ls -la
 !if [ -f "package.json" ]; then echo "Detected: Node.js/JavaScript project"; fi
 !if [ -f "requirements.txt" ] || [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then echo "Detected: Python project"; fi
 !if [ -f "Cargo.toml" ]; then echo "Detected: Rust project"; fi

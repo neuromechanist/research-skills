@@ -1,18 +1,16 @@
 #!/bin/bash
 # Copy project init templates to the target directory.
-# Self-locates the plugin root from its own path in bin/.
+# Locates the templates directory via the sibling project-templates-path script.
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
-TEMPLATES_DIR="$PLUGIN_ROOT/templates"
-
-if [ ! -d "$TEMPLATES_DIR" ]; then
-    echo "ERROR: Templates directory not found at $TEMPLATES_DIR" >&2
-    exit 1
-fi
+TEMPLATES_DIR="$(project-templates-path)" || exit 1
 
 TARGET_DIR="${1:-.}"
+
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "ERROR: Target directory '$TARGET_DIR' does not exist or is not a directory" >&2
+    exit 1
+fi
 
 # CLAUDE.md
 if [ ! -f "$TARGET_DIR/CLAUDE.md" ]; then
@@ -26,7 +24,7 @@ fi
 if [ ! -d "$TARGET_DIR/.rules" ]; then
     mkdir -p "$TARGET_DIR/.rules"
     cp "$TEMPLATES_DIR/claude/rules/"*.md "$TARGET_DIR/.rules/"
-    echo "Created .rules directory with $(ls "$TARGET_DIR/.rules/"*.md 2>/dev/null | wc -l | tr -d ' ') rule files"
+    echo "Created .rules/ directory"
 else
     echo ".rules directory already exists, skipping"
 fi
@@ -35,23 +33,21 @@ fi
 if [ ! -d "$TARGET_DIR/.context" ]; then
     mkdir -p "$TARGET_DIR/.context"
     cp "$TEMPLATES_DIR/context/"*.md "$TARGET_DIR/.context/"
-    echo "Created .context directory with $(ls "$TARGET_DIR/.context/"*.md 2>/dev/null | wc -l | tr -d ' ') context files"
+    echo "Created .context/ directory"
 else
     echo ".context directory already exists, skipping"
 fi
 
 # Python pre-commit hook
 if [ -f "$TARGET_DIR/requirements.txt" ] || [ -f "$TARGET_DIR/pyproject.toml" ] || [ -f "$TARGET_DIR/setup.py" ]; then
-    if [ ! -d "$TARGET_DIR/.git" ]; then
+    if ! git -C "$TARGET_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         echo "Warning: Not a git repository. Skipping pre-commit hook. Run 'git init' first, then re-run."
-    elif [ ! -f "$TARGET_DIR/.git/hooks/pre-commit" ]; then
-        mkdir -p "$TARGET_DIR/.git/hooks"
-        cp "$TEMPLATES_DIR/config/pre-commit" "$TARGET_DIR/.git/hooks/pre-commit"
-        chmod +x "$TARGET_DIR/.git/hooks/pre-commit"
+    elif HOOKS_DIR="$(git -C "$TARGET_DIR" rev-parse --git-path hooks)" && [ ! -f "$HOOKS_DIR/pre-commit" ]; then
+        mkdir -p "$HOOKS_DIR"
+        cp "$TEMPLATES_DIR/config/pre-commit" "$HOOKS_DIR/pre-commit"
+        chmod +x "$HOOKS_DIR/pre-commit"
         echo "Installed pre-commit hooks with ruff"
     else
         echo "Pre-commit hook already exists"
     fi
 fi
-
-echo "TEMPLATES_DIR=$TEMPLATES_DIR"
