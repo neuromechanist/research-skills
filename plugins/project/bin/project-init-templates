@@ -1,0 +1,57 @@
+#!/bin/bash
+# Copy project init templates to the target directory.
+# Self-locates the plugin root from its own path in bin/.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
+TEMPLATES_DIR="$PLUGIN_ROOT/templates"
+
+if [ ! -d "$TEMPLATES_DIR" ]; then
+    echo "ERROR: Templates directory not found at $TEMPLATES_DIR" >&2
+    exit 1
+fi
+
+TARGET_DIR="${1:-.}"
+
+# CLAUDE.md
+if [ ! -f "$TARGET_DIR/CLAUDE.md" ]; then
+    cp "$TEMPLATES_DIR/claude/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
+    echo "Created CLAUDE.md"
+else
+    echo "CLAUDE.md already exists, skipping"
+fi
+
+# .rules/
+if [ ! -d "$TARGET_DIR/.rules" ]; then
+    mkdir -p "$TARGET_DIR/.rules"
+    cp "$TEMPLATES_DIR/claude/rules/"*.md "$TARGET_DIR/.rules/"
+    echo "Created .rules directory with $(ls "$TARGET_DIR/.rules/"*.md 2>/dev/null | wc -l | tr -d ' ') rule files"
+else
+    echo ".rules directory already exists, skipping"
+fi
+
+# .context/
+if [ ! -d "$TARGET_DIR/.context" ]; then
+    mkdir -p "$TARGET_DIR/.context"
+    cp "$TEMPLATES_DIR/context/"*.md "$TARGET_DIR/.context/"
+    echo "Created .context directory with $(ls "$TARGET_DIR/.context/"*.md 2>/dev/null | wc -l | tr -d ' ') context files"
+else
+    echo ".context directory already exists, skipping"
+fi
+
+# Python pre-commit hook
+if [ -f "$TARGET_DIR/requirements.txt" ] || [ -f "$TARGET_DIR/pyproject.toml" ] || [ -f "$TARGET_DIR/setup.py" ]; then
+    if [ ! -d "$TARGET_DIR/.git" ]; then
+        echo "Warning: Not a git repository. Skipping pre-commit hook. Run 'git init' first, then re-run."
+    elif [ ! -f "$TARGET_DIR/.git/hooks/pre-commit" ]; then
+        mkdir -p "$TARGET_DIR/.git/hooks"
+        cp "$TEMPLATES_DIR/config/pre-commit" "$TARGET_DIR/.git/hooks/pre-commit"
+        chmod +x "$TARGET_DIR/.git/hooks/pre-commit"
+        echo "Installed pre-commit hooks with ruff"
+    else
+        echo "Pre-commit hook already exists"
+    fi
+fi
+
+echo "TEMPLATES_DIR=$TEMPLATES_DIR"

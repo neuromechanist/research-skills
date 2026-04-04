@@ -1,0 +1,11 @@
+#!/bin/bash
+# Output the absolute path to the project plugin's templates directory.
+# Used by commands to locate plugin templates without CLAUDE_PLUGIN_ROOT.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TEMPLATES_DIR="$(dirname "$SCRIPT_DIR")/templates"
+if [ -d "$TEMPLATES_DIR" ]; then
+    echo "$TEMPLATES_DIR"
+else
+    echo "ERROR: Templates directory not found at $TEMPLATES_DIR" >&2
+    exit 1
+fi

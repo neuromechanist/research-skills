@@ -23,7 +23,7 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 **Goal**: Detect repo configuration and validate prerequisites.
 
 **Actions**:
-1. Run `${CLAUDE_PLUGIN_ROOT}/scripts/detect-repo-config.sh` and parse the output
+1. Run `project-detect-repo-config` and parse the output
 2. **Validate all required values are present**: `INTEGRATION_BRANCH`, `REPO_ROOT`, `CURRENT_BRANCH` must be non-empty. If any are missing or if `ERROR` is set, report the error to the user and stop.
 3. **Validate gh is functional**: If `HAS_GH=false` or `GH_ERROR` is set, tell the user what needs to be fixed and stop.
 4. If `HAS_GH_SUBISSUE=false`, install it: `gh extension install agbiotech/gh-sub-issue`
@@ -209,7 +209,7 @@ Update state: mark phase `in_progress`.
 
 ## Error Handling
 
-- **Detection script failure**: If `detect-repo-config.sh` fails or returns `ERROR`, report the exact error and stop. Do not proceed with empty configuration values.
+- **Detection script failure**: If `project-detect-repo-config` fails or returns `ERROR`, report the exact error and stop. Do not proceed with empty configuration values.
 - **Git conflicts**: Stop and present the conflict. Ask user to resolve manually, then continue.
 - **Test failures**: Present test output. Ask user whether to fix and retry or skip.
 - **PR check failures**: Wait for CI, present results. If failing, ask user how to proceed.
