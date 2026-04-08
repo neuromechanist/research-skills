@@ -8,8 +8,7 @@
       "aspectRatio": "16:9",
       "controls": {
         "slideNumbers": true,
-        "progress": true,
-        "showNotes": false
+        "progress": true
       }
     },
     "slides": [
@@ -106,12 +105,12 @@
       },
       {
         "id": "conclusion",
-        "layout": "single-column",
-        "speakerNotes": "Summarize key contributions. Mention the open-source release.",
+        "layout": "two-column",
+        "speakerNotes": "Summarize key contributions on the left, next steps on the right. Mention the open-source release.",
         "elements": [
           {
             "type": "text",
-            "content": "## Conclusions",
+            "content": "## Conclusions and Next Steps",
             "style": { "fontSize": "xl" },
             "position": { "area": "header" }
           },
@@ -124,15 +123,19 @@
               "Open-source release available on GitHub"
             ],
             "style": { "fontSize": "large" },
-            "position": { "area": "content" },
+            "position": { "area": "left" },
             "animation": { "type": "fade", "fragment": true }
           },
           {
-            "type": "callout",
-            "calloutType": "tip",
-            "title": "Thank You",
-            "content": "Questions? Contact: jane.smith@university.edu",
-            "position": { "area": "content", "order": 1 }
+            "type": "bullets",
+            "items": [
+              "Multi-session transfer learning",
+              "Online adaptation during use",
+              "Clinical trial with 20 participants"
+            ],
+            "bulletStyle": "number",
+            "style": { "fontSize": "large" },
+            "position": { "area": "right" }
           }
         ]
       }

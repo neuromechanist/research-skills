@@ -159,33 +159,6 @@ Write a `presentation.json` following the schema. See `references/schema-referen
 }
 ```
 
-**Data slide (table):**
-```json
-{
-  "id": "results",
-  "layout": "single-column",
-  "elements": [
-    {
-      "type": "text",
-      "content": "## Performance Comparison",
-      "style": { "fontSize": "xl" },
-      "position": { "area": "header" }
-    },
-    {
-      "type": "table",
-      "headers": ["Method", "Accuracy", "Latency (ms)", "F1 Score"],
-      "rows": [
-        ["Baseline", "78.2%", "245", "0.76"],
-        ["Our method", "**95.1%**", "82", "**0.94**"],
-        ["State of art", "91.3%", "120", "0.89"]
-      ],
-      "caption": "Table 1: Classification performance across methods",
-      "position": { "area": "content" }
-    }
-  ]
-}
-```
-
 ### Element types summary
 
 | Type | Required fields | Key options |
@@ -209,17 +182,7 @@ bun run validate -- path/to/presentation.json --json
 
 The `--json` flag returns structured output with `valid`, `summary.errorCount`, `summary.warningCount`, `errors[]`, and `warnings[]`. Each issue includes `code`, `severity`, `path`, `message`, and `suggestion`.
 
-Fix all schema errors. Address advisory warnings to improve slide quality:
-
-| Warning | Fix |
-|---------|-----|
-| `dense-copy` | Split text across multiple slides |
-| `dense-bullets` | Reduce to 4-6 items or split slide |
-| `dense-media` | Move some media to separate slides |
-| `fixed-image-sizing` | Use percentage widths (e.g., `55%`) instead of `px` |
-| `fragment-overuse` | Reduce animated fragments per slide |
-| `missing-image-alt` | Add `alt` text to all images |
-| `complex-mermaid` | Simplify diagram or split into multiple |
+Fix all schema errors. Address advisory warnings to improve slide quality (see `references/authoring-guide.md` for the full list and thresholds).
 
 ## Step 4: Serve and Present
 
@@ -231,25 +194,11 @@ cp path/to/presentation.json public/
 bun run dev
 ```
 
-Open in browser: `http://localhost:3000/?presentation=./public/presentation.json`
+Open in browser: `http://localhost:3000/?presentation=./presentation.json`
 
-### Presentation controls
+Press `P` to toggle between authoring and presentation modes, `S` for speaker notes, `O` for slide overview. See `references/authoring-guide.md` for the full keyboard shortcuts and delivery modes.
 
-| Key | Action |
-|-----|--------|
-| Arrow keys / Space | Navigate slides |
-| `S` | Speaker notes popup |
-| `O` | Overview (grid view) |
-| `F` | Fullscreen |
-| `P` | Toggle presentation/authoring mode |
-| `?` | Keyboard shortcuts help |
-
-### Delivery modes
-
-- **Authoring mode**: Shows diagnostics, fit overlays, and warnings
-- **Presentation mode**: Clean slide view for delivery
-- **Presenter view**: Speaker notes popup with current/next slide
-- **Audience screen**: Synced external display (open with `?role=audience&mode=presentation`)
+To open a synced audience screen, use `?presentation=./presentation.json&role=audience&mode=presentation`.
 
 ## Additional Resources
 

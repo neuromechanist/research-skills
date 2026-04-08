@@ -1,21 +1,5 @@
 # JSON Authoring Guide
 
-## Top-level structure
-
-Every presentation starts with a `presentation` object containing `metadata` and `slides`:
-
-```json
-{
-  "presentation": {
-    "metadata": {
-      "title": "My Presentation",
-      "theme": "default"
-    },
-    "slides": []
-  }
-}
-```
-
 ## Slide structure
 
 Each slide has a `layout` and an `elements` array. Use `position.area` to place elements within the layout.
@@ -36,19 +20,21 @@ Each slide has a `layout` and an `elements` array. Use `position.area` to place 
 | `two-column` | `header`, `left`, `right`, `footer` |
 | `blank` | Any (free positioning) |
 
+These are recommended area assignments. The schema allows any area value, but elements placed in non-standard areas for a layout may not render as expected.
+
 Use `position.order` to control element ordering within an area (0-based).
 
 ## Authoring best practices
 
 ### Content density
-- Keep bullet lists to 4-6 items per slide
+- Keep bullet lists to 6 or fewer items per slide (the validator fires `dense-bullets` at >6)
 - Limit text blocks to 2-3 short paragraphs
 - One Mermaid diagram per slide (complex diagrams need breathing room)
 - The validator flags `dense-copy`, `dense-bullets`, and `dense-media` warnings
 
 ### Images
 - Always include `alt` text (validator warns on `missing-image-alt`)
-- Prefer percentage widths (`55%`) over fixed pixels for responsive sizing (validator warns on `fixed-image-sizing`)
+- Prefer percentage widths (`55%`) over fixed pixels for responsive sizing (validator warns `fixed-image-sizing` when a slide has multiple media elements and any image uses fixed pixel sizing)
 - Place images in the `public/assets/` directory of the builder project
 
 ### Mermaid diagrams
@@ -66,7 +52,7 @@ Use `position.order` to control element ordering within an area (0-based).
 ### Speaker notes
 - Use `speakerNotes` for delivery guidance, not content
 - Press `S` during presentation to view notes
-- Notes support plain text
+- Notes support plain text and basic markdown
 
 ### Themes
 - `default`: Blue primary, clean and professional
@@ -88,7 +74,7 @@ For custom branding, use `customTheme.colors` and `customTheme.fonts` in metadat
 4. Serve and visually inspect:
    ```bash
    bun run dev
-   # Open http://localhost:3000/?presentation=./public/presentation.json
+   # Open http://localhost:3000/?presentation=./presentation.json
    ```
 
 ### Advisory warnings
@@ -96,9 +82,9 @@ For custom branding, use `customTheme.colors` and `customTheme.fonts` in metadat
 | Warning | Meaning |
 |---------|---------|
 | `dense-copy` | Too much text on a slide |
-| `dense-bullets` | Too many bullet items |
+| `dense-bullets` | More than 6 bullet items on a slide |
 | `dense-media` | Too many media elements |
-| `fixed-image-sizing` | Use percentage widths instead of px |
+| `fixed-image-sizing` | Fixed pixel image sizing on a slide with multiple media |
 | `fragment-overuse` | Too many animated fragments |
 | `missing-image-alt` | Image lacks alt text |
 | `complex-mermaid` | Mermaid diagram is overly complex |
@@ -114,3 +100,6 @@ For custom branding, use `customTheme.colors` and `customTheme.fonts` in metadat
 | `F` | Fullscreen |
 | `?` | Keyboard shortcuts help |
 | `Esc` | Close overlays |
+| `Home` / `End` | Jump to first / last slide |
+| `B` / `.` | Blackout screen |
+| Arrow keys / Space | Navigate slides |

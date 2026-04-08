@@ -43,6 +43,7 @@ Using the schema reference and authoring guide from the skill:
 ### 4. Validate
 
 ```bash
+cd <builder-directory>
 bun run validate -- presentation.json --json
 ```
 
@@ -51,8 +52,9 @@ Fix any schema errors and address advisory warnings (dense-copy, dense-bullets, 
 ### 5. Serve and Preview
 
 ```bash
+cd <builder-directory>
 bun run dev
-# Open http://localhost:3000/?presentation=./public/presentation.json
+# Open http://localhost:3000/?presentation=./presentation.json
 ```
 
 ### 6. Report

@@ -14,8 +14,12 @@ The source of truth is `schema/presentation.schema.json` in the Agentic Presenta
 | `controls.slideNumbers` | `boolean` | Slide number visibility |
 | `controls.progress` | `boolean` | Progress bar visibility |
 | `controls.showNotes` | `boolean` | Enables speaker notes support |
-| `customTheme.colors.*` | `string` | Hex colors only |
-| `customTheme.fonts.*` | `string` | CSS font-family values |
+| `customTheme.colors.primary` | `string` | Primary color (hex) |
+| `customTheme.colors.background` | `string` | Background color (hex) |
+| `customTheme.colors.text` | `string` | Text color (hex) |
+| `customTheme.colors.accent` | `string` | Accent color (hex) |
+| `customTheme.fonts.heading` | `string` | Heading font (CSS font-family) |
+| `customTheme.fonts.body` | `string` | Body font (CSS font-family) |
 
 ## Slide fields
 
