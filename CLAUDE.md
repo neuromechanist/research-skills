@@ -1,7 +1,7 @@
 # Research Skills Marketplace
 
 ## Purpose
-Claude Code marketplace providing plugins for academic research workflows and development tooling: literature search and review, grant writing and review, manuscript preparation, scientific figures, project lifecycle management, and neuroinformatics.
+Claude Code marketplace providing plugins for academic research workflows and development tooling: literature search and review, grant writing and review, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics.
 
 ## Marketplace Structure
 ```
@@ -31,6 +31,10 @@ research-skills/
 │   ├── scientific-figures/           # Icons + plots + composition + QA
 │   │   ├── .claude-plugin/plugin.json
 │   │   └── skills/scientific-figures/
+│   ├── presentation/                 # Interactive slide decks
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── commands/create-presentation.md
+│   │   └── skills/presentation-builder/
 │   └── neuroinformatics/             # Neuro data standards + experiments
 │       ├── .claude-plugin/plugin.json
 │       ├── commands/{convert-bids,validate-bids,design-experiment}.md
@@ -46,6 +50,7 @@ research-skills/
 - **manuscript** (v0.2.0): Academic manuscript peer review, writing guidance, and journal-specific formatting for submission
 - **opencite** (v0.2.0): Academic literature search, citation management, PDF retrieval, and literature review synthesis
 - **scientific-figures** (v0.1.1): Publication-quality figures covering icons, plots, composition, and QA
+- **presentation** (v0.1.0): Interactive Reveal.js presentations from JSON via the Agentic Presentation Builder
 - **neuroinformatics** (v0.1.0): Neuroscience data standards (BIDS, HED), experiment design (PsychoPy, LSL), and dataset validation
 
 ## Development

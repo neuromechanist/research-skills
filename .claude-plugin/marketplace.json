@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.4.1",
-  "description": "Claude Code plugins for academic research and development: literature search and review, grant writing and review, manuscript preparation, scientific figures, project lifecycle management, and neuroinformatics",
+  "version": "0.5.0",
+  "description": "Claude Code plugins for academic research and development: literature search and review, grant writing and review, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
@@ -67,6 +67,18 @@
       "source": "./plugins/scientific-figures",
       "category": "research",
       "homepage": "https://github.com/neuromechanist/research-skills"
+    },
+    {
+      "name": "presentation",
+      "description": "Presentation builder: create interactive Reveal.js presentations from JSON with Mermaid diagrams, LaTeX math, code highlighting, and animated reveals",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/presentation",
+      "category": "research",
+      "homepage": "https://github.com/neuromechanist/agentic-presentation-builder"
     },
     {
       "name": "neuroinformatics",

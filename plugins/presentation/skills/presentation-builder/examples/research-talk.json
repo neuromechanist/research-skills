@@ -1,0 +1,141 @@
+{
+  "presentation": {
+    "metadata": {
+      "title": "Neural Signal Processing with Real-Time BCI",
+      "author": "Dr. Jane Smith",
+      "description": "A research talk demonstrating the presentation builder's capabilities for academic presentations",
+      "theme": "academic",
+      "aspectRatio": "16:9",
+      "controls": {
+        "slideNumbers": true,
+        "progress": true,
+        "showNotes": false
+      }
+    },
+    "slides": [
+      {
+        "id": "title",
+        "layout": "title",
+        "speakerNotes": "Welcome the audience. Introduce yourself and the lab.",
+        "elements": [
+          {
+            "type": "text",
+            "content": "# Neural Signal Processing with Real-Time BCI",
+            "style": { "fontSize": "xxl", "alignment": "center", "fontWeight": "bold" },
+            "position": { "area": "center" }
+          },
+          {
+            "type": "text",
+            "content": "Dr. Jane Smith -- Neural Engineering Lab\n\nIEEE BCI Conference 2026",
+            "style": { "fontSize": "large", "alignment": "center", "color": "#64748B" },
+            "position": { "area": "center", "order": 1 }
+          }
+        ]
+      },
+      {
+        "id": "motivation",
+        "layout": "single-column",
+        "speakerNotes": "Set up the problem. Emphasize the latency bottleneck in existing systems.",
+        "elements": [
+          {
+            "type": "text",
+            "content": "## Motivation",
+            "style": { "fontSize": "xl" },
+            "position": { "area": "header" }
+          },
+          {
+            "type": "bullets",
+            "items": [
+              "Current BCI systems suffer from **high processing latency**",
+              "Real-time feedback requires sub-100ms response",
+              "Existing pipelines process offline, limiting clinical use",
+              "Need: lightweight, real-time signal processing pipeline"
+            ],
+            "style": { "fontSize": "large" },
+            "position": { "area": "content" }
+          }
+        ]
+      },
+      {
+        "id": "pipeline",
+        "layout": "single-column",
+        "speakerNotes": "Walk through the pipeline left to right. Highlight the LSL integration point.",
+        "elements": [
+          {
+            "type": "text",
+            "content": "## Processing Pipeline",
+            "style": { "fontSize": "xl" },
+            "position": { "area": "header" }
+          },
+          {
+            "type": "mermaid",
+            "diagram": "graph LR\n  A[EEG Amplifier] --> B[LSL Stream]\n  B --> C[Artifact Rejection]\n  C --> D[Feature Extraction]\n  D --> E[Classifier]\n  E --> F[BCI Command]",
+            "position": { "area": "content" }
+          }
+        ]
+      },
+      {
+        "id": "results",
+        "layout": "single-column",
+        "speakerNotes": "Highlight the 3x latency improvement. Note statistical significance.",
+        "elements": [
+          {
+            "type": "text",
+            "content": "## Results",
+            "style": { "fontSize": "xl" },
+            "position": { "area": "header" }
+          },
+          {
+            "type": "table",
+            "headers": ["Method", "Accuracy (%)", "Latency (ms)", "F1 Score"],
+            "rows": [
+              ["Baseline (CSP+LDA)", "78.2", "245", "0.76"],
+              ["Deep ConvNet", "88.7", "156", "0.86"],
+              ["Our method", "**95.1**", "**82**", "**0.94**"]
+            ],
+            "caption": "Table 1: Classification performance on BCI Competition IV Dataset 2a (N=9)",
+            "position": { "area": "content" }
+          },
+          {
+            "type": "callout",
+            "calloutType": "important",
+            "content": "Our method achieves **95.1% accuracy** with **82ms latency**, meeting the real-time threshold for clinical BCI applications.",
+            "position": { "area": "content", "order": 1 }
+          }
+        ]
+      },
+      {
+        "id": "conclusion",
+        "layout": "single-column",
+        "speakerNotes": "Summarize key contributions. Mention the open-source release.",
+        "elements": [
+          {
+            "type": "text",
+            "content": "## Conclusions",
+            "style": { "fontSize": "xl" },
+            "position": { "area": "header" }
+          },
+          {
+            "type": "bullets",
+            "items": [
+              "Real-time BCI pipeline with sub-100ms latency",
+              "State-of-the-art accuracy on standard benchmarks",
+              "Compatible with Lab Streaming Layer (LSL) infrastructure",
+              "Open-source release available on GitHub"
+            ],
+            "style": { "fontSize": "large" },
+            "position": { "area": "content" },
+            "animation": { "type": "fade", "fragment": true }
+          },
+          {
+            "type": "callout",
+            "calloutType": "tip",
+            "title": "Thank You",
+            "content": "Questions? Contact: jane.smith@university.edu",
+            "position": { "area": "content", "order": 1 }
+          }
+        ]
+      }
+    ]
+  }
+}
