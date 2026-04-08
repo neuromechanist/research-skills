@@ -1,6 +1,6 @@
 # Research Skills
 
-Claude Code marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, scientific figures, project lifecycle management, and neuroinformatics.
+Claude Code marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics.
 
 ## Install
 
@@ -16,7 +16,7 @@ Then select which plugins to install. Each plugin is independent.
 
 ```bash
 claude plugin marketplace add neuromechanist/research-skills
-for p in project grant manuscript opencite scientific-figures neuroinformatics; do
+for p in project grant manuscript opencite scientific-figures presentation neuroinformatics; do
   claude plugin install "$p@research-skills"
 done
 ```
@@ -30,6 +30,7 @@ done
 | **manuscript** | 0.2.0 | Academic manuscript peer review, writing, and journal formatting | `/paper-review`, `/manuscript-prep` |
 | **opencite** | 0.2.0 | Literature search, citation management, PDF retrieval, literature review synthesis | `/opencite` |
 | **scientific-figures** | 0.1.1 | Full figure pipeline: icons, plots, composition, visual QA | -- |
+| **presentation** | 0.1.0 | Interactive Reveal.js presentations from JSON | `/create-presentation` |
 | **neuroinformatics** | 0.1.0 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `/convert-bids`, `/validate-bids`, `/design-experiment` |
 
 ## Research Plugins
@@ -72,6 +73,17 @@ Create publication-quality figures for Nature, Science, PNAS, Cell, and other jo
 4. **Visual QA** -- render to PNG, read the image, verify alignment/labels/overlap, iterate
 
 All elements saved as SVG or transparent PNG. Enforces sans-serif fonts, colorblind-safe palettes, and journal-specific dimensions. Runs on-the-fly via `uvx` and `bunx`.
+
+### presentation
+
+Create interactive Reveal.js presentations from JSON using the [Agentic Presentation Builder](https://github.com/neuromechanist/agentic-presentation-builder). Supports 7 element types (text, bullets, images, Mermaid diagrams, callouts, code blocks, tables), 5 themes, animated progressive reveals, speaker notes, and LaTeX math.
+
+The skill teaches Claude the JSON schema and authoring workflow; the builder repo handles rendering.
+
+```
+/create-presentation "EEG signal processing pipeline overview" --theme academic
+"Create a 10-slide talk on brain-computer interfaces for a conference"
+```
 
 ### neuroinformatics
 
@@ -121,6 +133,7 @@ research-skills/
 │   ├── manuscript/                # Manuscripts (review, writing, formatting)
 │   ├── opencite/                  # Literature search and review synthesis
 │   ├── scientific-figures/        # Icons + plots + composition + QA
+│   ├── presentation/             # Interactive Reveal.js slide decks
 │   └── neuroinformatics/          # BIDS, HED, experiment design
 ```
 
@@ -132,6 +145,7 @@ research-skills/
 - For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
 - For figure composition: react-pdf via `bunx` (on-the-fly)
 - For PDF conversion: poppler (`brew install poppler` on macOS)
+- For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
 - For OCR: Mistral API key (optional, tesseract as offline fallback)
 
