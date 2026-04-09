@@ -10,8 +10,8 @@ research-skills/
 ├── plugins/
 │   ├── project/                      # Project lifecycle toolkit
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── commands/{init-project,epic-dev,epic-status,setup-ci,release-prep,doc-process}.md
-│   │   ├── skills/{init-project,workflow-reference,ci-scaffolding,docker-packaging,security-audit,document-processing}/
+│   │   ├── commands/{init-project,update-rules,epic-dev,epic-status,setup-ci,release-prep,doc-process}.md
+│   │   ├── skills/{init-project,update-rules,workflow-reference,ci-scaffolding,docker-packaging,security-audit,document-processing}/
 │   │   ├── agents/{dependency-auditor,release-prep}.md
 │   │   ├── templates/               # Claude, Cursor, context, config, CI/CD
 │   │   └── scripts/
@@ -45,7 +45,7 @@ research-skills/
 ```
 
 ## Plugins
-- **project** (v0.2.0): Project lifecycle toolkit with initialization, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing
+- **project** (v0.2.2): Project lifecycle toolkit with initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing
 - **grant** (v0.2.0): NIH/NSF grant proposal writing, structured review with scoring criteria, and figure quality assurance
 - **manuscript** (v0.2.0): Academic manuscript peer review, writing guidance, and journal-specific formatting for submission
 - **opencite** (v0.2.0): Academic literature search, citation management, PDF retrieval, and literature review synthesis
