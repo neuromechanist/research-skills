@@ -45,7 +45,7 @@ research-skills/
 ```
 
 ## Plugins
-- **project** (v0.2.0): Project lifecycle toolkit with initialization, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing
+- **project** (v0.2.2): Project lifecycle toolkit with initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing
 - **grant** (v0.2.0): NIH/NSF grant proposal writing, structured review with scoring criteria, and figure quality assurance
 - **manuscript** (v0.2.0): Academic manuscript peer review, writing guidance, and journal-specific formatting for submission
 - **opencite** (v0.2.0): Academic literature search, citation management, PDF retrieval, and literature review synthesis

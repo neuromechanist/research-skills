@@ -1,0 +1,111 @@
+#!/bin/bash
+# Compare existing rules/config against plugin templates.
+# Outputs structured KEY=VALUE pairs for consumption by the update-rules command.
+#
+# Usage: project-diff-rules <user|project> [target-dir]
+#   project: compares ./CLAUDE.md + .rules/ against templates
+#   user:    compares ~/.claude/CLAUDE.md against template best practices
+set -euo pipefail
+
+TEMPLATES_DIR="$(project-templates-path)" || exit 1
+LEVEL="${1:-}"
+
+if [ -z "$LEVEL" ]; then
+    echo "ERROR=No level specified. Use 'user' or 'project'." >&2
+    exit 1
+fi
+
+case "$LEVEL" in
+    project)
+        TARGET_DIR="${2:-.}"
+
+        if [ ! -d "$TARGET_DIR" ]; then
+            echo "ERROR=Target directory '$TARGET_DIR' does not exist" >&2
+            exit 1
+        fi
+
+        # --- Rules directory status ---
+        if [ -d "$TARGET_DIR/.rules" ]; then
+            echo "HAS_RULES_DIR=true"
+        else
+            echo "HAS_RULES_DIR=false"
+        fi
+
+        # --- CLAUDE.md status ---
+        if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
+            echo "HAS_CLAUDE_MD=true"
+        else
+            echo "HAS_CLAUDE_MD=false"
+        fi
+
+        # --- Rules comparison ---
+        for template_rule in "$TEMPLATES_DIR/claude/rules/"*.md; do
+            basename="$(basename "$template_rule")"
+            target_rule="$TARGET_DIR/.rules/$basename"
+
+            if [ ! -f "$target_rule" ]; then
+                echo "RULE_MISSING=$basename"
+            elif diff -q "$template_rule" "$target_rule" >/dev/null 2>&1; then
+                echo "RULE_CURRENT=$basename"
+            else
+                echo "RULE_CHANGED=$basename"
+            fi
+        done
+
+        # --- Custom rules (user-added, not in templates) ---
+        if [ -d "$TARGET_DIR/.rules" ]; then
+            for existing_rule in "$TARGET_DIR/.rules/"*.md; do
+                [ -f "$existing_rule" ] || continue
+                basename="$(basename "$existing_rule")"
+                if [ ! -f "$TEMPLATES_DIR/claude/rules/$basename" ]; then
+                    echo "RULE_CUSTOM=$basename"
+                fi
+            done
+        fi
+
+        # --- CLAUDE.md section headers ---
+        if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
+            grep -n '^## ' "$TARGET_DIR/CLAUDE.md" | while IFS= read -r line; do
+                echo "PROJECT_SECTION=$line"
+            done
+        fi
+
+        # --- Template CLAUDE.md section headers ---
+        grep -n '^## ' "$TEMPLATES_DIR/claude/CLAUDE.md" | while IFS= read -r line; do
+            echo "TEMPLATE_SECTION=$line"
+        done
+        ;;
+
+    user)
+        USER_CLAUDE="${2:-$HOME/.claude/CLAUDE.md}"
+
+        if [ ! -f "$USER_CLAUDE" ]; then
+            echo "ERROR=User CLAUDE.md not found at $USER_CLAUDE" >&2
+            exit 1
+        fi
+
+        echo "HAS_USER_CLAUDE=true"
+        echo "USER_CLAUDE_PATH=$USER_CLAUDE"
+
+        # --- User CLAUDE.md section headers ---
+        grep -n '^## ' "$USER_CLAUDE" | while IFS= read -r line; do
+            echo "USER_SECTION=$line"
+        done
+
+        # --- Template CLAUDE.md section headers ---
+        grep -n '^## ' "$TEMPLATES_DIR/claude/CLAUDE.md" | while IFS= read -r line; do
+            echo "TEMPLATE_SECTION=$line"
+        done
+
+        # --- Template rules list (for best-practice suggestions) ---
+        for template_rule in "$TEMPLATES_DIR/claude/rules/"*.md; do
+            basename="$(basename "$template_rule")"
+            echo "TEMPLATE_RULE=$basename"
+        done
+        ;;
+
+    *)
+        echo "ERROR=Invalid level '$LEVEL'. Use 'user' or 'project'." >&2
+        exit 1
+        ;;
+esac
