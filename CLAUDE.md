@@ -10,8 +10,8 @@ research-skills/
 ├── plugins/
 │   ├── project/                      # Project lifecycle toolkit
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── commands/{init-project,epic-dev,epic-status,setup-ci,release-prep,doc-process}.md
-│   │   ├── skills/{init-project,workflow-reference,ci-scaffolding,docker-packaging,security-audit,document-processing}/
+│   │   ├── commands/{init-project,update-rules,epic-dev,epic-status,setup-ci,release-prep,doc-process}.md
+│   │   ├── skills/{init-project,update-rules,workflow-reference,ci-scaffolding,docker-packaging,security-audit,document-processing}/
 │   │   ├── agents/{dependency-auditor,release-prep}.md
 │   │   ├── templates/               # Claude, Cursor, context, config, CI/CD
 │   │   └── scripts/

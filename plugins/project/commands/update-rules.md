@@ -21,15 +21,14 @@ If `$ARGUMENTS` is empty or not one of `user`/`project`, ask the user which leve
 ### 2. Run Comparison
 !project-diff-rules $ARGUMENTS
 
-If the above command failed, report the exact error to the user and stop. Do not proceed with remaining steps.
+If the above command failed or the output does not contain `STATUS=complete` as the final line, the script terminated prematurely. Report the error to the user and stop. Do not proceed with remaining steps.
 
 ### 3. Analyze Results
 
 #### For PROJECT level:
 
 **Missing rules (RULE_MISSING):**
-- Read the missing rule file from templates to understand its purpose:
-  !cat "$(project-templates-path)/claude/rules/<filename>" | head -20
+- Read the first 20 lines of the missing rule file from templates to understand its purpose
 - Determine if the rule is relevant to this project (e.g., skip python.md for a JS-only project)
 - Present each missing rule with a brief description and ask which to add
 

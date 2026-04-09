@@ -80,7 +80,7 @@ Show preview of what will change for each item. Ask user to confirm which change
 
 ### Step 4: Apply Approved Changes
 
-- For existing files: use Edit tool for surgical modifications. Never use Write to overwrite.
+- For existing files: use Edit tool for surgical modifications. Use Write only when the user explicitly approves replacing a file with the template version.
 - For new .rules/ files: use Write to create them (safe, creating new file).
 - For CLAUDE.md sections: use Edit to insert or update specific sections.
 
@@ -93,7 +93,7 @@ Run `project-diff-rules <level>` again to confirm all approved changes were appl
 - NEVER overwrite a file without showing the diff first
 - NEVER remove user-added content (custom rules, custom sections, custom guidelines)
 - NEVER replace project-specific values (project name, tech stack, architecture) with template placeholders
-- ALWAYS use Edit for existing files, never Write (except for brand-new rule files)
+- ALWAYS use Edit for existing files when merging selective changes. Write is acceptable only for new rule files or when the user explicitly approves replacing a file with the template version.
 - For changed .rules/ files, present three options: (a) accept template version, (b) merge specific changes, (c) skip
 
 ## Distinguishing Template Improvements from User Customizations

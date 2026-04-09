@@ -10,9 +10,9 @@ Maps sections between the template (project-level) CLAUDE.md and the typical use
 | Architecture Map | (none) | Project-only; skip for user level |
 | Environment Setup | Tools | Both cover tool choices (UV, Bun, gh). Compare item-by-item |
 | Development Workflow | Git Workflow | Template has 10-step; user has 7-step. Compare steps |
-| [CRITICAL] Core Principles | (distributed) | User spreads across Testing, Linting, Code & Response Style |
+| [CRITICAL] Core Principles | (distributed) | User spreads across Testing, Linting & Type Checking, Code & Response Style |
 | [NEVER DO THIS] | [NEVER DO THIS] | Direct match. Compare item-by-item for missing entries |
-| Think Like a Senior Developer | Code & Response Style | Overlapping philosophy content |
+| Think Like a Senior Developer | Code & Response Style | Loosely related; template focuses on engineering mindset, user focuses on interaction style. Compare for non-overlapping best practices |
 | Rules Directory | (none) | Project-only reference; skip for user level |
 | Context Files | Project Documentation | User describes .context/ convention |
 | Quick Commands | (none) | Project-specific; skip for user level |
