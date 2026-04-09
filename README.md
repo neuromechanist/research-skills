@@ -25,7 +25,7 @@ done
 
 | Plugin | Version | Description | Commands |
 |--------|---------|-------------|----------|
-| **project** | 0.2.0 | Project lifecycle: init, workflow, CI/CD, Docker, security, doc-processing | `/init-project`, `/epic-dev`, `/epic-status`, `/setup-ci`, `/release-prep`, `/doc-process` |
+| **project** | 0.2.2 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/setup-ci`, `/release-prep`, `/doc-process` |
 | **grant** | 0.2.0 | NIH/NSF grant proposal writing, review, and figure QA | `/grant-write`, `/grant-review` |
 | **manuscript** | 0.2.0 | Academic manuscript peer review, writing, and journal formatting | `/paper-review`, `/manuscript-prep` |
 | **opencite** | 0.2.0 | Literature search, citation management, PDF retrieval, literature review synthesis | `/opencite` |
@@ -106,6 +106,7 @@ Neuroscience data standards, experiment design, and dataset validation:
 Complete project lifecycle toolkit combining initialization, epic/sprint workflow, and CI/CD management:
 
 - **init-project** -- scaffold new projects with Claude/Cursor templates, `.rules/`, `.context/`, and config files
+- **update-rules** -- non-destructive sync of CLAUDE.md and `.rules/` against latest templates at user or project level
 - **workflow** -- multi-phase feature development with git worktrees, GitHub issues, and phased PR delivery
 - **CI scaffolding** -- generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
 - **Docker packaging** -- multi-stage Dockerfiles with uv/bun, health checks, and security hardening
@@ -116,6 +117,7 @@ Includes autonomous agents: **dependency-auditor** (vulnerability scanning) and 
 
 ```
 /init-project "Python EEG analysis package"
+/update-rules project
 /epic-dev "build a community dashboard"
 /setup-ci python
 /release-prep --minor
