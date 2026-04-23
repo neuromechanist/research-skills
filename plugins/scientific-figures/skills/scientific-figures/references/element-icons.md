@@ -1,6 +1,6 @@
 # Creating Icon Elements for Scientific Figures
 
-Generate flat, minimalist scientific icons in the style of Nature, Science, and Cell journal figures using OpenAI's gpt-image-1.5 model.
+Generate flat, minimalist scientific icons in the style of Nature, Science, and Cell journal figures using OpenAI's gpt-image-2 model.
 
 ## When to Use Icons
 

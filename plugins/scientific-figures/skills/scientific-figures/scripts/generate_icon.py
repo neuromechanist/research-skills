@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate flat scientific icons using OpenAI's gpt-image-1.5 model.
+"""Generate flat scientific icons using OpenAI's gpt-image-2 model.
 
 Usage:
     # Free-form prompt
@@ -143,20 +143,23 @@ def generate_icon(
     """Generate a single icon and return PNG bytes."""
     size_str = f"{size}x{size}"
 
-    # gpt-image-1.5 supports: 1024x1024, 1024x1536, 1536x1024, auto
-    if size_str not in ("1024x1024", "1024x1536", "1536x1024"):
+    # gpt-image-2 supports flexible sizes (multiples of 16, max edge 3840, aspect <=3:1)
+    if size_str not in ("1024x1024", "1024x1536", "1536x1024", "2048x2048"):
         size_str = "1024x1024"
 
+    # Transparent backgrounds are not supported natively by gpt-image-2;
+    # transparency is applied via post-processing when --transparent is set.
     result = client.images.generate(
-        model="gpt-image-1.5",
+        model="gpt-image-2",
         prompt=prompt,
         n=1,
         size=size_str,
         quality="high",
         output_format="png",
+        background="opaque",
+        moderation="auto",
     )
 
-    # gpt-image-1.5 returns base64 data
     image_data = base64.b64decode(result.data[0].b64_json)
 
     # Apply transparency if requested and Pillow is available
@@ -207,7 +210,7 @@ def list_templates(templates: dict[str, Any]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate flat scientific icons using OpenAI gpt-image-1.5"
+        description="Generate flat scientific icons using OpenAI gpt-image-2"
     )
     parser.add_argument(
         "prompt", nargs="?", default=None,

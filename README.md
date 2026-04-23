@@ -68,7 +68,7 @@ Academic manuscript toolkit covering the full lifecycle: writing guidance (IMRAD
 Create publication-quality figures for Nature, Science, PNAS, Cell, and other journals:
 
 1. **Plan** -- target journal, panel layout, color palette
-2. **Create elements** -- icons (gpt-image-1.5), plots (matplotlib/seaborn/plotly/ggplot2)
+2. **Create elements** -- icons (gpt-image-2), plots (matplotlib/seaborn/plotly/ggplot2)
 3. **Compose** -- assemble into PDF via react-pdf
 4. **Visual QA** -- render to PNG, read the image, verify alignment/labels/overlap, iterate
 
@@ -143,7 +143,7 @@ research-skills/
 
 - [Claude Code](https://claude.com/claude-code) CLI
 - For opencite: `opencite` CLI (`uvx opencite`)
-- For icons: OpenAI API key (gpt-image-1.5)
+- For icons: OpenAI API key (gpt-image-2)
 - For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
 - For figure composition: react-pdf via `bunx` (on-the-fly)
 - For PDF conversion: poppler (`brew install poppler` on macOS)

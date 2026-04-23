@@ -45,7 +45,7 @@ Determine before creating anything:
 
 Each panel contains one or more elements. Generate them as SVG or transparent PNG.
 
-### Icons (gpt-image-1.5)
+### Icons (gpt-image-2)
 
 Flat, minimalist scientific icons in Nature/Science style. See `references/element-icons.md` for full guide.
 
@@ -197,7 +197,7 @@ Generate a figure caption that:
 ### Reference Files
 - **`references/figure-standards.md`** - Journal dimension specs, font rules, resolution requirements
 - **`references/color-palettes.md`** - Curated publication-quality color palettes (colorblind-safe)
-- **`references/element-icons.md`** - Icon generation guide (gpt-image-1.5, templates, style)
+- **`references/element-icons.md`** - Icon generation guide (gpt-image-2, templates, style)
 - **`references/element-plots.md`** - Plot element guide (matplotlib, seaborn, plotly, ggplot2)
 - **`references/figure-composition.md`** - react-pdf composition workflow and QA loop
 - **`references/react-pdf-guide.md`** - react-pdf API quick reference
@@ -209,4 +209,4 @@ Generate a figure caption that:
 - **`examples/matplotlib-element.py`** - Publication-quality matplotlib element
 
 ### Scripts
-- **`scripts/generate_icon.py`** - Icon generation via gpt-image-1.5 (template and free-form)
+- **`scripts/generate_icon.py`** - Icon generation via gpt-image-2 (template and free-form)
