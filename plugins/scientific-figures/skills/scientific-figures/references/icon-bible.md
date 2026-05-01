@@ -176,14 +176,14 @@ The script can read templates from the icon bible:
 
 ```bash
 # Generate from a template
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template brain-eeg -o brain_eeg.png
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template brain-eeg -o brain_eeg.png
 
 # Override colors from template
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template brain-eeg --colors "#3498DB,#E74C3C" -o brain_eeg_alt.png
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template brain-eeg --colors "#3498DB,#E74C3C" -o brain_eeg_alt.png
 
 # Generate all icons in a category
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --category neuroscience -o icons/neuro/
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --category neuroscience -o icons/neuro/
 
 # List available templates
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --list-templates
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --list-templates
 ```

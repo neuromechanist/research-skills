@@ -12,7 +12,7 @@ Two backends are supported and auto-selected by default:
 Auto selection prefers codex when both `codex` is on PATH and
 ~/.codex/auth.json exists; otherwise it falls back to the API.
 
-Recommended runner (single package via --from, extras via --with):
+Recommended runner (declares all deps via --with):
     uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py ...
 
 Usage:
@@ -62,7 +62,11 @@ from typing import Any, Optional
 try:
     from dotenv import load_dotenv
 except ImportError:
-    print("Missing dependency: python-dotenv. Run via: uvx --from \"openai python-dotenv pillow\" python scripts/generate_icon.py")
+    print(
+        "Missing dependency: python-dotenv. Run via: "
+        "uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py",
+        file=sys.stderr,
+    )
     sys.exit(1)
 
 try:
@@ -159,14 +163,18 @@ def build_prompt(subject: str, colors: str | None = None, transparent: bool = Fa
 
 
 def codex_available() -> bool:
-    """Detect a usable Codex CLI install with valid auth."""
+    """Detect a usable Codex CLI install with valid auth.
+
+    Auth is gated on the Codex CLI auth file (`$CODEX_HOME/auth.json`, default
+    `~/.codex/auth.json`). Env-var-only paths are intentionally NOT treated as
+    Codex auth: a user with `OPENAI_API_KEY` set but no `codex login` would
+    otherwise be silently routed through `codex exec` and hit a runtime auth
+    error instead of the OpenAI Images API.
+    """
     if shutil.which("codex") is None:
         return False
     codex_home = Path(os.environ.get("CODEX_HOME") or (Path.home() / ".codex"))
-    if (codex_home / "auth.json").exists():
-        return True
-    # Env-only auth path also valid for Codex
-    return bool(os.environ.get("CODEX_API_KEY") or os.environ.get("OPENAI_API_KEY"))
+    return (codex_home / "auth.json").exists()
 
 
 def resolve_backend(requested: str) -> str:
@@ -175,16 +183,38 @@ def resolve_backend(requested: str) -> str:
         return "codex" if codex_available() else "api"
     if requested == "codex":
         if not codex_available():
-            print("Backend 'codex' requested but no Codex CLI/auth found. Run: codex login")
+            print(
+                "Backend 'codex' requested but no Codex CLI/auth found. "
+                "Run: codex login",
+                file=sys.stderr,
+            )
             sys.exit(1)
         return "codex"
     if requested == "api":
         if OpenAI is None:
-            print("Backend 'api' requested but `openai` is not installed.")
+            print(
+                "Backend 'api' requested but `openai` is not installed.",
+                file=sys.stderr,
+            )
             sys.exit(1)
         return "api"
-    print(f"Unknown backend: {requested}")
+    print(f"Unknown backend: {requested}", file=sys.stderr)
     sys.exit(1)
+
+
+def build_openai_client() -> Any:
+    """Construct the OpenAI client with a friendly error if no API key is set."""
+    assert OpenAI is not None  # caller routes via resolve_backend()
+    try:
+        return OpenAI()  # reads OPENAI_API_KEY from env
+    except Exception as exc:  # OpenAI raises OpenAIError when key is missing
+        print(
+            "Backend 'api' requires OPENAI_API_KEY. "
+            "Set it in your environment, .env, or ~/.env, "
+            f"or use --backend codex if you have run `codex login`. ({exc})",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def generate_icon_api(
@@ -236,6 +266,10 @@ def generate_icon_codex(
     workdir = Path(tempfile.mkdtemp(prefix="codex_icon_"))
     target = workdir / "output.png"
     try:
+        # The user-supplied `prompt` is concatenated into a natural-language
+        # instruction below. We trust the prompt because it originates from
+        # the same shell session that runs this script; if you ever surface
+        # this script over an untrusted boundary, sanitize `prompt` first.
         codex_prompt = (
             f"Use your platform-native image_gen tool to generate exactly one image. "
             f"Prompt: {prompt} "
@@ -244,30 +278,61 @@ def generate_icon_codex(
             f"Do not display the image inline. "
             f"Reply with only the absolute path on success or ERROR on failure."
         )
-        proc = subprocess.run(
-            [
-                "codex", "exec",
-                "--sandbox", "workspace-write",
-                "--skip-git-repo-check",
-                codex_prompt,
-            ],
-            cwd=workdir,
-            capture_output=True,
-            text=True,
-            timeout=timeout_s,
-        )
+        try:
+            proc = subprocess.run(
+                [
+                    "codex", "exec",
+                    "--sandbox", "workspace-write",
+                    "--skip-git-repo-check",
+                    codex_prompt,
+                ],
+                cwd=workdir,
+                capture_output=True,
+                text=True,
+                timeout=timeout_s,
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            stderr_tail = _safe_tail(exc.stderr, 300)
+            raise RuntimeError(
+                f"Codex exec timed out after {timeout_s}s. "
+                f"Try --backend api or raise the timeout. "
+                f"stderr tail: {stderr_tail}"
+            ) from exc
+
+        # Surface non-zero exits explicitly. Codex emits an unrelated
+        # "failed to record rollout items" stderr line on success too, so we
+        # rely on returncode rather than stderr scanning.
+        if proc.returncode != 0:
+            raise RuntimeError(
+                f"Codex exec exited rc={proc.returncode}. "
+                f"stderr tail: {_safe_tail(proc.stderr, 300)}"
+            )
         if not target.exists():
             raise RuntimeError(
-                "Codex did not produce ./output.png.\n"
-                f"stdout tail: {(proc.stdout or '')[-500:]}\n"
-                f"stderr tail: {(proc.stderr or '')[-500:]}"
+                "Codex exec succeeded but did not produce ./output.png. "
+                f"stderr tail: {_safe_tail(proc.stderr, 300)}"
             )
         image_data = target.read_bytes()
         if transparent and HAS_PILLOW:
             image_data = _apply_transparency(image_data)
         return image_data
     finally:
+        # Best-effort cleanup; tempfile.mkdtemp guarantees an isolated path,
+        # so a stale dir at most leaks a few MB into $TMPDIR.
         shutil.rmtree(workdir, ignore_errors=True)
+
+
+def _safe_tail(s: Any, n: int) -> str:
+    """Tail-truncate stderr for error messages without echoing the
+    user-supplied prompt. Codex echoes the prompt into stdout but not stderr,
+    so we never use stdout for diagnostics. Accepts str/bytes/None because
+    subprocess.TimeoutExpired carries bytes even under text=True."""
+    if not s:
+        return "(empty)"
+    if isinstance(s, bytes):
+        s = s.decode("utf-8", errors="replace")
+    return s[-n:]
 
 
 def generate_icon(
@@ -381,11 +446,7 @@ def main() -> None:
         args.transparent = False
 
     backend = resolve_backend(args.backend)
-    if backend == "api":
-        assert OpenAI is not None  # ensured by resolve_backend()
-        client: Any = OpenAI()  # reads OPENAI_API_KEY from env
-    else:
-        client = None
+    client: Any = build_openai_client() if backend == "api" else None
     print(f"Backend: {backend}")
 
     # Category batch mode
