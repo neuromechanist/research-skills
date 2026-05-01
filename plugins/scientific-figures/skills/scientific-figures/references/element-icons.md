@@ -2,6 +2,15 @@
 
 Generate flat, minimalist scientific icons in the style of Nature, Science, and Cell journal figures using OpenAI's gpt-image-2 model.
 
+## Backends
+
+`scripts/generate_icon.py` auto-selects one of two backends:
+
+1. **codex** (preferred): invokes the local Codex CLI's platform-native `image_gen` tool inside a temp workspace, then returns the saved PNG. Works with a ChatGPT subscription or API-key login (`codex login`); no `OPENAI_API_KEY` is required.
+2. **api**: calls `client.images.generate(model="gpt-image-2", ...)` against the OpenAI API. Requires `OPENAI_API_KEY`.
+
+Auto rule: codex is used when both the `codex` binary is on PATH and `~/.codex/auth.json` (or `CODEX_HOME/auth.json`) exists; otherwise the API path is used. Override with `--backend codex` or `--backend api`.
+
 ## When to Use Icons
 
 Icons serve as visual shorthand in multi-panel figures, graphical abstracts, and workflow diagrams. They represent concepts (brain, neuron, sensor, patient) without photographic detail.
@@ -24,16 +33,16 @@ Predefined templates in `icon-templates.json` define elements, shapes, colors, a
 
 ```bash
 # Generate from template
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template brain-eeg -o elements/brain.png --transparent
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template brain-eeg -o elements/brain.png --transparent
 
 # Override colors
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template neuron --colors "#0072B2,#D55E00" -o elements/neuron.png
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --colors "#0072B2,#D55E00" -o elements/neuron.png
 
 # Generate all icons in a category
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --category neuroscience -o elements/
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --category neuroscience -o elements/
 
 # List available templates
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --list-templates
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --list-templates
 ```
 
 ### Free-form generation
@@ -41,13 +50,13 @@ uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --list-
 For one-off icons not in the template catalog:
 
 ```bash
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py "a human brain with EEG electrodes" -o elements/brain.png --transparent
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py "a human brain with EEG electrodes" -o elements/brain.png --transparent
 
 # With specific colors
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py "a neuron" -o elements/neuron.png --colors "teal,white" --transparent
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py "a neuron" -o elements/neuron.png --colors "teal,white" --transparent
 
 # Batch generation
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py "a flat icon of a {item}" -o elements/ --batch "brain,heart,lung"
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py "a flat icon of a {item}" -o elements/ --batch "brain,heart,lung"
 ```
 
 ## Prompt Engineering
@@ -89,12 +98,14 @@ Common adjustments after generation:
 
 ## Configuration
 
-The generation script reads `OPENAI_API_KEY` from:
+When the **codex** backend is selected, the script invokes `codex exec` and relies on the existing Codex CLI login (`~/.codex/auth.json` or `CODEX_HOME/auth.json`). Run `codex login` once if not already authenticated.
+
+When the **api** backend is selected, the script reads `OPENAI_API_KEY` from:
 1. `.env` file in the current directory
 2. `~/.env` file
 3. Environment variable
 
-Dependencies are handled on-the-fly via `uvx --from "openai python-dotenv pillow"`.
+Dependencies are handled on-the-fly via `uv run --with openai --with python-dotenv --with pillow`. The `openai` package is only required for the `api` backend; `python-dotenv` and `pillow` are used by both.
 
 ## Available Template Categories
 
