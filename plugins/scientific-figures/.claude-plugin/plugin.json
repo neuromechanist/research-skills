@@ -1,6 +1,6 @@
 {
   "name": "scientific-figures",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA for Nature/Science/PNAS journals",
   "author": {
     "name": "Seyed Yahya Shirazi",

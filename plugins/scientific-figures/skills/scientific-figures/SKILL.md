@@ -1,7 +1,7 @@
 ---
 name: scientific-figures
 description: This skill should be used when the user asks to "create a figure", "make a scientific figure", "create a paper figure", "generate a figure element", "make an icon", "plot data for a figure", "compose figure panels", "create a graphical abstract", "make a multi-panel figure", "generate a PDF figure", "create a Nature-style figure", "make a publication figure", "create a figure for my grant", "make a poster figure", "create a schematic diagram", or mentions scientific figures, figure elements, figure composition, figure panels, icons for papers, matplotlib/seaborn/ggplot plots for figures, or react-pdf figures.
-version: 0.1.1
+version: 0.2.0
 ---
 
 # Scientific Figures
@@ -49,12 +49,21 @@ Each panel contains one or more elements. Generate them as SVG or transparent PN
 
 Flat, minimalist scientific icons in Nature/Science style. See `references/element-icons.md` for full guide.
 
+The script auto-selects between two backends:
+- **codex** (preferred when available): uses the local Codex CLI's platform-native image_gen tool. Requires `codex login` (ChatGPT subscription or API key in `~/.codex/auth.json`). No `OPENAI_API_KEY` needed.
+- **api** (fallback): calls the OpenAI Images API directly. Requires `OPENAI_API_KEY`.
+
+Override with `--backend codex` or `--backend api`.
+
 ```bash
-# From template (icon bible)
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template brain-eeg -o elements/brain.png --transparent
+# From template (icon bible) -- backend chosen automatically
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template brain-eeg -o elements/brain.png --transparent
 
 # Free-form
-uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py "a DNA helix" -o elements/dna.png --transparent
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py "a DNA helix" -o elements/dna.png --transparent
+
+# Force the OpenAI API path
+uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --backend api -o elements/neuron.png
 ```
 
 Template catalog: `references/icon-templates.json`. Schema: `references/icon-bible.md`.
@@ -209,4 +218,4 @@ Generate a figure caption that:
 - **`examples/matplotlib-element.py`** - Publication-quality matplotlib element
 
 ### Scripts
-- **`scripts/generate_icon.py`** - Icon generation via gpt-image-2 (template and free-form)
+- **`scripts/generate_icon.py`** - Icon generation via gpt-image-2 (template and free-form). Auto-selects between Codex CLI (`codex login`) and OpenAI API (`OPENAI_API_KEY`); override with `--backend codex|api`.

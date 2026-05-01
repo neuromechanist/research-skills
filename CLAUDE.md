@@ -49,7 +49,7 @@ research-skills/
 - **grant** (v0.2.0): NIH/NSF grant proposal writing, structured review with scoring criteria, and figure quality assurance
 - **manuscript** (v0.2.0): Academic manuscript peer review, writing guidance, and journal-specific formatting for submission
 - **opencite** (v0.2.0): Academic literature search, citation management, PDF retrieval, and literature review synthesis
-- **scientific-figures** (v0.1.1): Publication-quality figures covering icons, plots, composition, and QA
+- **scientific-figures** (v0.2.0): Publication-quality figures covering icons, plots, composition, and QA. Icon generation auto-selects between Codex CLI (`codex login`) and OpenAI API (`OPENAI_API_KEY`).
 - **presentation** (v0.1.0): Interactive Reveal.js presentations from JSON via the Agentic Presentation Builder
 - **neuroinformatics** (v0.1.0): Neuroscience data standards (BIDS, HED), experiment design (PsychoPy, LSL), and dataset validation
 

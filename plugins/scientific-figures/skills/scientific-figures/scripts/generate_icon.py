@@ -1,50 +1,78 @@
 #!/usr/bin/env python3
-"""Generate flat scientific icons using OpenAI's gpt-image-2 model.
+"""Generate flat scientific icons using gpt-image-2.
+
+Two backends are supported and auto-selected by default:
+
+  1. codex   - Uses the Codex CLI's platform-native image_gen tool. Requires a
+               valid `codex login` (ChatGPT subscription or API key in
+               ~/.codex/auth.json). No OPENAI_API_KEY needed.
+  2. api     - Calls the OpenAI Images API directly. Requires OPENAI_API_KEY
+               via environment, .env, or ~/.env.
+
+Auto selection prefers codex when both `codex` is on PATH and
+~/.codex/auth.json exists; otherwise it falls back to the API.
+
+Recommended runner (declares all deps via --with):
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py ...
 
 Usage:
     # Free-form prompt
-    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py "a human brain with EEG electrodes" -o brain_eeg.png
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py "a human brain with EEG electrodes" -o brain_eeg.png
 
     # From template (icon bible)
-    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template brain-eeg -o brain_eeg.png
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template brain-eeg -o brain_eeg.png
 
     # Override template colors
-    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template neuron --colors "#3498DB,#E74C3C" -o neuron.png
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --colors "#3498DB,#E74C3C" -o neuron.png
 
     # With transparency
-    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --template dna-helix -o dna.png --transparent
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template dna-helix -o dna.png --transparent
 
     # Batch from template category
-    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --category neuroscience -o icons/neuro/
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --category neuroscience -o icons/neuro/
 
     # Batch from free-form prompt
-    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py "a flat icon of a {item}" -o icons/ --batch "brain,heart,lung"
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py "a flat icon of a {item}" -o icons/ --batch "brain,heart,lung"
+
+    # Force a backend
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --backend codex -o neuron.png
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --backend api   -o neuron.png
 
     # List available templates
-    uvx --from "openai python-dotenv pillow" python scripts/generate_icon.py --list-templates
+    uv run --with python-dotenv python scripts/generate_icon.py --list-templates
 
 Environment:
-    OPENAI_API_KEY - Required. Read from .env file or environment variable.
+    OPENAI_API_KEY - Required for the api backend. Read from .env file or environment.
+    CODEX_HOME     - Optional; defaults to ~/.codex. Auth probed at $CODEX_HOME/auth.json.
 """
+
+from __future__ import annotations
 
 import argparse
 import base64
 import json
+import os
+import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 try:
     from dotenv import load_dotenv
 except ImportError:
-    print("Missing dependency: python-dotenv. Run via: uvx --from \"openai python-dotenv pillow\" python scripts/generate_icon.py")
+    print(
+        "Missing dependency: python-dotenv. Run via: "
+        "uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py",
+        file=sys.stderr,
+    )
     sys.exit(1)
 
 try:
     from openai import OpenAI
 except ImportError:
-    print("Missing dependency: openai. Run via: uvx --from \"openai python-dotenv pillow\" python scripts/generate_icon.py")
-    sys.exit(1)
+    OpenAI = None  # api backend unavailable; codex backend may still work
 
 try:
     from PIL import Image
@@ -134,13 +162,68 @@ def build_prompt(subject: str, colors: str | None = None, transparent: bool = Fa
     return ", ".join(parts) + "."
 
 
-def generate_icon(
-    client: OpenAI,
+def codex_available() -> bool:
+    """Detect a usable Codex CLI install with valid auth.
+
+    Auth is gated on the Codex CLI auth file (`$CODEX_HOME/auth.json`, default
+    `~/.codex/auth.json`). Env-var-only paths are intentionally NOT treated as
+    Codex auth: a user with `OPENAI_API_KEY` set but no `codex login` would
+    otherwise be silently routed through `codex exec` and hit a runtime auth
+    error instead of the OpenAI Images API.
+    """
+    if shutil.which("codex") is None:
+        return False
+    codex_home = Path(os.environ.get("CODEX_HOME") or (Path.home() / ".codex"))
+    return (codex_home / "auth.json").exists()
+
+
+def resolve_backend(requested: str) -> str:
+    """Resolve `auto` to a concrete backend; validate explicit choices."""
+    if requested == "auto":
+        return "codex" if codex_available() else "api"
+    if requested == "codex":
+        if not codex_available():
+            print(
+                "Backend 'codex' requested but no Codex CLI/auth found. "
+                "Run: codex login",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        return "codex"
+    if requested == "api":
+        if OpenAI is None:
+            print(
+                "Backend 'api' requested but `openai` is not installed.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        return "api"
+    print(f"Unknown backend: {requested}", file=sys.stderr)
+    sys.exit(1)
+
+
+def build_openai_client() -> Any:
+    """Construct the OpenAI client with a friendly error if no API key is set."""
+    assert OpenAI is not None  # caller routes via resolve_backend()
+    try:
+        return OpenAI()  # reads OPENAI_API_KEY from env
+    except Exception as exc:  # OpenAI raises OpenAIError when key is missing
+        print(
+            "Backend 'api' requires OPENAI_API_KEY. "
+            "Set it in your environment, .env, or ~/.env, "
+            f"or use --backend codex if you have run `codex login`. ({exc})",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def generate_icon_api(
+    client: Any,
     prompt: str,
     size: int = 1024,
     transparent: bool = False,
 ) -> bytes:
-    """Generate a single icon and return PNG bytes."""
+    """Generate a single icon via the OpenAI Images API."""
     size_str = f"{size}x{size}"
 
     # gpt-image-2 supports flexible sizes (multiples of 16, max edge 3840, aspect <=3:1)
@@ -162,11 +245,111 @@ def generate_icon(
 
     image_data = base64.b64decode(result.data[0].b64_json)
 
-    # Apply transparency if requested and Pillow is available
     if transparent and HAS_PILLOW:
         image_data = _apply_transparency(image_data)
 
     return image_data
+
+
+def generate_icon_codex(
+    prompt: str,
+    size: int = 1024,
+    transparent: bool = False,
+    timeout_s: int = 300,
+) -> bytes:
+    """Generate a single icon by invoking the Codex CLI's image_gen tool.
+
+    The CLI runs in a temp workspace with `--sandbox workspace-write`; the
+    selected image is saved to ./output.png inside that workspace, which we
+    then read back as bytes.
+    """
+    workdir = Path(tempfile.mkdtemp(prefix="codex_icon_"))
+    target = workdir / "output.png"
+    try:
+        # The user-supplied `prompt` is concatenated into a natural-language
+        # instruction below. We trust the prompt because it originates from
+        # the same shell session that runs this script; if you ever surface
+        # this script over an untrusted boundary, sanitize `prompt` first.
+        codex_prompt = (
+            f"Use your platform-native image_gen tool to generate exactly one image. "
+            f"Prompt: {prompt} "
+            f"Square aspect, target {size}x{size}. "
+            f"Save the final selected image to ./output.png in the current working directory. "
+            f"Do not display the image inline. "
+            f"Reply with only the absolute path on success or ERROR on failure."
+        )
+        try:
+            proc = subprocess.run(
+                [
+                    "codex", "exec",
+                    "--sandbox", "workspace-write",
+                    "--skip-git-repo-check",
+                    codex_prompt,
+                ],
+                cwd=workdir,
+                capture_output=True,
+                text=True,
+                timeout=timeout_s,
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            stderr_tail = _safe_tail(exc.stderr, 300)
+            raise RuntimeError(
+                f"Codex exec timed out after {timeout_s}s. "
+                f"Try --backend api or raise the timeout. "
+                f"stderr tail: {stderr_tail}"
+            ) from exc
+
+        # Surface non-zero exits explicitly. Codex emits an unrelated
+        # "failed to record rollout items" stderr line on success too, so we
+        # rely on returncode rather than stderr scanning.
+        if proc.returncode != 0:
+            raise RuntimeError(
+                f"Codex exec exited rc={proc.returncode}. "
+                f"stderr tail: {_safe_tail(proc.stderr, 300)}"
+            )
+        if not target.exists():
+            raise RuntimeError(
+                "Codex exec succeeded but did not produce ./output.png. "
+                f"stderr tail: {_safe_tail(proc.stderr, 300)}"
+            )
+        image_data = target.read_bytes()
+        if transparent and HAS_PILLOW:
+            image_data = _apply_transparency(image_data)
+        return image_data
+    finally:
+        # Best-effort cleanup; tempfile.mkdtemp guarantees an isolated path,
+        # so a stale dir at most leaks a few MB into $TMPDIR.
+        shutil.rmtree(workdir, ignore_errors=True)
+
+
+def _safe_tail(s: Any, n: int) -> str:
+    """Tail-truncate stderr for error messages without echoing the
+    user-supplied prompt. Codex echoes the prompt into stdout but not stderr,
+    so we never use stdout for diagnostics. Accepts str/bytes/None because
+    subprocess.TimeoutExpired carries bytes even under text=True."""
+    if not s:
+        return "(empty)"
+    if isinstance(s, bytes):
+        s = s.decode("utf-8", errors="replace")
+    return s[-n:]
+
+
+def generate_icon(
+    backend: str,
+    client: Optional[Any],
+    prompt: str,
+    size: int = 1024,
+    transparent: bool = False,
+) -> bytes:
+    """Dispatch to the selected backend."""
+    if backend == "codex":
+        return generate_icon_codex(prompt, size=size, transparent=transparent)
+    if backend == "api":
+        if client is None:
+            raise RuntimeError("OpenAI client unavailable for api backend")
+        return generate_icon_api(client, prompt, size=size, transparent=transparent)
+    raise ValueError(f"Unknown backend: {backend}")
 
 
 def _apply_transparency(png_bytes: bytes, threshold: int = 240) -> bytes:
@@ -225,6 +408,12 @@ def main() -> None:
     parser.add_argument("--batch", help="Comma-separated items for batch generation (use {item} in prompt)")
     parser.add_argument("--list-templates", action="store_true", help="List available icon templates")
     parser.add_argument("--templates-file", type=Path, help="Custom templates JSON file")
+    parser.add_argument(
+        "--backend",
+        choices=["auto", "codex", "api"],
+        default="auto",
+        help="Image generation backend (default: auto; prefers codex when authenticated)",
+    )
     args = parser.parse_args()
 
     # Load templates
@@ -252,11 +441,13 @@ def main() -> None:
         parser.error("--output is required")
 
     if args.transparent and not HAS_PILLOW:
-        print("Warning: --transparent requires Pillow. Ensure pillow is included in the uvx --from dependencies.")
+        print("Warning: --transparent requires Pillow. Ensure pillow is included in the uv run --with dependencies.")
         print("Generating without transparency.")
         args.transparent = False
 
-    client = OpenAI()  # reads OPENAI_API_KEY from env
+    backend = resolve_backend(args.backend)
+    client: Any = build_openai_client() if backend == "api" else None
+    print(f"Backend: {backend}")
 
     # Category batch mode
     if args.category:
@@ -272,7 +463,7 @@ def main() -> None:
             prompt = template_to_prompt(t, color_override=args.colors)
             transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
             print(f"Generating: {t['id']}...")
-            data = generate_icon(client, prompt, size=args.size, transparent=transparent)
+            data = generate_icon(backend, client, prompt, size=args.size, transparent=transparent)
             save_icon(data, output_dir / f"{t['id']}.png")
         return
 
@@ -287,7 +478,7 @@ def main() -> None:
         transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
         print(f"Generating from template: {args.template}")
         print(f"Prompt: {prompt[:200]}...")
-        data = generate_icon(client, prompt, size=args.size, transparent=transparent)
+        data = generate_icon(backend, client, prompt, size=args.size, transparent=transparent)
         save_icon(data, Path(args.output))
         return
 
@@ -304,7 +495,7 @@ def main() -> None:
                 transparent=args.transparent,
             )
             print(f"Generating: {item}...")
-            data = generate_icon(client, prompt, size=args.size, transparent=args.transparent)
+            data = generate_icon(backend, client, prompt, size=args.size, transparent=args.transparent)
             save_icon(data, output_dir / f"{item.replace(' ', '_')}.png")
         return
 
@@ -312,7 +503,7 @@ def main() -> None:
     prompt = build_prompt(args.prompt, colors=args.colors, transparent=args.transparent)
     print(f"Generating icon...")
     print(f"Prompt: {prompt}")
-    data = generate_icon(client, prompt, size=args.size, transparent=args.transparent)
+    data = generate_icon(backend, client, prompt, size=args.size, transparent=args.transparent)
     save_icon(data, Path(args.output))
 
 
