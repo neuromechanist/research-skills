@@ -104,9 +104,10 @@ Gap statement patterns:
 
 ```bash
 # Export BibTeX for all cited papers
-for doi in $(cat cited_dois.txt); do
+while IFS= read -r doi; do
+  [ -z "$doi" ] && continue
   uvx opencite lookup "$doi" -f bibtex --append-bib review_refs.bib
-done
+done < cited_dois.txt
 ```
 
 ## Output skeleton

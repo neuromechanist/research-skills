@@ -139,7 +139,7 @@ research-skills/
 │   ├── project/                   # Project lifecycle (init, workflow, CI, Docker, security, docs)
 │   ├── grant/                     # Grant proposals (writing, review, figure QA)
 │   ├── manuscript/                # Manuscripts (review, writing, formatting)
-│   ├── opencite/                  # Literature search and review synthesis
+│   ├── opencite/                  # Literature search and citation management
 │   ├── scientific-figures/        # Icons + plots + composition + QA
 │   ├── presentation/             # Interactive Reveal.js slide decks
 │   └── neuroinformatics/          # BIDS, HED, experiment design
