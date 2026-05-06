@@ -1,7 +1,7 @@
 {
   "name": "manuscript",
-  "version": "0.3.0",
-  "description": "Academic manuscript toolkit: multi-phase literature review, peer review, manuscript writing, and journal-specific formatting for submission",
+  "version": "0.4.0",
+  "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, and journal-specific formatting for submission",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"

@@ -1,7 +1,7 @@
 ---
 name: lit-review
-description: "Use this skill for \"literature review workflow\", \"multi-phase lit review\", \"direction paper\", \"review paper protocol\", \"strand-based literature review\", \"citation-grounded review\", \"systematic lit review with paper cards\", \"build a lit review corpus\", \"lit review pipeline\", \"orchestrate a literature review\", \"research directions document\", or when the user wants a rigorous multi-phase, citation-traceable literature review with parallel strand collection, taxonomic synthesis, and direction papers (not a single-pass synthesis; for that use opencite:literature-review)."
-version: 0.1.0
+description: "Use this skill for \"literature review workflow\", \"multi-phase lit review\", \"direction paper\", \"review paper protocol\", \"strand-based literature review\", \"citation-grounded review\", \"systematic lit review with paper cards\", \"build a lit review corpus\", \"lit review pipeline\", \"orchestrate a literature review\", \"research directions document\", \"write a literature review\", \"synthesize papers\", \"thematic review\", \"narrative review\", \"systematic review\", \"scoping review\", \"gap analysis\", or when the user wants either a rigorous multi-phase citation-traceable lit review or a single-pass thematic synthesis for an Introduction/Background section."
+version: 0.2.0
 ---
 
 # Multi-Phase Literature Review Workflow
@@ -17,10 +17,18 @@ Orchestrate a rigorous, citation-grounded literature review across phases: angle
 
 ## When NOT to Use
 
-- Single-pass thematic synthesis for a manuscript Introduction or Background section. Use `opencite:literature-review` instead.
 - Original research IMRAD writing. Use `manuscript:manuscript-writing`.
 - Peer review of a submitted manuscript. Use `manuscript:paper-review`.
 - Journal formatting. Use `manuscript:manuscript-formatting`.
+
+## Two modes
+
+This skill covers two workflows:
+
+- **Express mode (single-pass synthesis)**: thematic synthesis for an Introduction, Background section, or quick standalone review. See [references/single-pass-synthesis.md](references/single-pass-synthesis.md). Pair with [references/review-frameworks.md](references/review-frameworks.md) for PRISMA, PICO, SPIDER, scoping protocol, and risk-of-bias tools.
+- **Full protocol (multi-phase)**: citation-traceable corpus reviews and direction papers. Use the Phase 0-4 workflow below.
+
+When in doubt: if the user wants flowing prose for one section, use express mode; if they want a corpus with claim-to-card traceability, use the full protocol.
 
 ## Workflow Phases
 
@@ -130,7 +138,6 @@ Create directories on demand as work progresses; do not pre-create empty trees. 
 | Skill | Used for |
 |---|---|
 | `opencite:opencite` | DOI lookup, PDF retrieval, PDF -> markdown, BibTeX export |
-| `opencite:literature-review` | Single-pass thematic synthesis, useful as a Phase 2 seed |
 | `manuscript:manuscript-writing` | IMRAD / review-paper structure plus prose discipline (abbreviations, voice, transitions) |
 | `manuscript:manuscript-formatting` | Journal formatting / LaTeX export |
 | `manuscript:paper-review` | Self-review loops on direction-paper drafts |
@@ -144,3 +151,5 @@ Create directories on demand as work progresses; do not pre-create empty trees. 
 - [references/direction-paper-template.md](references/direction-paper-template.md): essay structure with cite-card cross-link convention
 - [references/license-rules.md](references/license-rules.md): redistribution discipline and CI rules
 - [references/rigor-checklist.md](references/rigor-checklist.md): cohesion, storyline, bias-neutrality, traceability acceptance criteria
+- [references/single-pass-synthesis.md](references/single-pass-synthesis.md): express-mode thematic synthesis pipeline for Introduction/Background sections
+- [references/review-frameworks.md](references/review-frameworks.md): PRISMA, PICO, SPIDER, scoping protocol, risk-of-bias tools
