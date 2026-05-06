@@ -23,26 +23,28 @@ done
 
 ## Plugins
 
-| Plugin | Version | Description | Commands |
-|--------|---------|-------------|----------|
-| **project** | 0.2.2 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/setup-ci`, `/release-prep`, `/doc-process` |
-| **grant** | 0.2.0 | NIH/NSF grant proposal writing, review, and figure QA | `/grant-write`, `/grant-review` |
-| **manuscript** | 0.3.0 | Academic manuscript multi-phase lit review, peer review, writing, and journal formatting | `/paper-review`, `/manuscript-prep`, `/lit-review` |
-| **opencite** | 0.2.0 | Literature search, citation management, PDF retrieval, literature review synthesis | `/opencite` |
-| **scientific-figures** | 0.1.1 | Full figure pipeline: icons, plots, composition, visual QA | -- |
-| **presentation** | 0.1.0 | Interactive Reveal.js presentations from JSON | `/create-presentation` |
-| **neuroinformatics** | 0.1.0 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `/convert-bids`, `/validate-bids`, `/design-experiment` |
+Skills auto-trigger on user intent (described per-plugin below). Slash commands are reserved for workflows that need explicit orchestration entry points.
+
+| Plugin | Version | Description | Skills | Commands |
+|--------|---------|-------------|--------|----------|
+| **project** | 0.3.0 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **grant** | 0.3.0 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
+| **manuscript** | 0.4.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
+| **opencite** | 0.3.0 | Literature search, citation management, PDF retrieval | `opencite` | -- |
+| **scientific-figures** | 0.2.0 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
+| **presentation** | 0.2.0 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
+| **neuroinformatics** | 0.2.0 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
 ## Research Plugins
 
 ### opencite
 
-Search academic literature, explore citation graphs, download PDFs, and export BibTeX. Wraps the [`opencite`](https://github.com/neuromechanist/opencite) CLI, aggregating Semantic Scholar, OpenAlex, PubMed, arXiv, and bioRxiv. Includes a literature-review skill for synthesizing papers into cohesive reviews with thematic organization and gap analysis.
+Search academic literature, explore citation graphs, download PDFs, and export BibTeX. Wraps the [`opencite`](https://github.com/neuromechanist/opencite) CLI, aggregating Semantic Scholar, OpenAlex, PubMed, arXiv, and bioRxiv.
 
 ```
-/opencite search "motor cortex oscillations"
 "Find the top 10 most cited papers on brain-computer interfaces"
-"Write a literature review on EEG-based BCIs"
+"Look up DOI 10.1038/nature12373 and download the PDF"
+"Convert this PDF to markdown"
 ```
 
 ### grant
@@ -50,21 +52,21 @@ Search academic literature, explore citation graphs, download PDFs, and export B
 Draft and review NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, etc.). Includes a grant-figure-qa agent that autonomously checks figures for resolution, accessibility, and NIH/NSF compliance. Skills for research strategy guidelines, writing style, budget justification, scoring criteria, and resubmission response.
 
 ```
-/grant-write significance --mechanism R01
-/grant-review proposal.pdf --mechanism R21
+"Write the significance section for an R01 on motor cortex"
+"Review my R21 proposal at proposal.pdf as an NIH study section"
 ```
 
 ### manuscript
 
-Academic manuscript toolkit covering the full lifecycle: multi-phase literature review (briefs, paper-card collection, taxonomic synthesis, citation-grounded direction papers), writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates.
+Academic manuscript toolkit covering the full lifecycle: literature review (both multi-phase citation-traceable corpus protocol and single-pass thematic synthesis), writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates.
 
-The lit-review skill captures a rigorous, iterable, citation-traceable workflow: every claim in a direction paper links back to a paper-card on disk. Differs from `opencite:literature-review` (single-pass synthesis) by orchestrating parallel strand collection, taxonomic synthesis with bias gates, and review loops.
+The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citation-traceable multi-phase workflow where every claim in a direction paper links back to a paper-card on disk, plus an express single-pass synthesis pipeline for writing an Introduction or Background section.
 
 ```
-/paper-review manuscript.pdf
-/manuscript-prep "Nature Neuroscience"
-/lit-review --init
-/lit-review --phase collect --strand tools
+"Review this manuscript at paper.pdf as a peer reviewer"
+"Format my paper for Nature Neuroscience"
+"Start a multi-phase lit review on EEG-based BCIs with strands tools, data, science"
+"Write a single-pass literature review on motor cortex oscillations"
 ```
 
 ### scientific-figures
@@ -85,8 +87,8 @@ Create interactive Reveal.js presentations from JSON using the [Agentic Presenta
 The skill teaches Claude the JSON schema and authoring workflow; the builder repo handles rendering.
 
 ```
-/create-presentation "EEG signal processing pipeline overview" --theme academic
-"Create a 10-slide talk on brain-computer interfaces for a conference"
+"Create a 10-slide academic presentation on EEG signal processing"
+"Build a conference talk on brain-computer interfaces"
 ```
 
 ### neuroinformatics
@@ -98,9 +100,9 @@ Neuroscience data standards, experiment design, and dataset validation:
 - **BIDS validator agent** -- autonomously validate datasets, diagnose errors, and apply fixes
 
 ```
-/convert-bids ./raw-data --modality eeg --task rest
-/validate-bids ./bids-dataset
-/design-experiment "visual oddball ERP paradigm with 2 conditions"
+"Convert ./raw-data to BIDS format, modality EEG, task rest"
+"Validate the BIDS dataset at ./bids-dataset"
+"Design a visual oddball ERP paradigm with 2 conditions"
 ```
 
 ## Development Plugin
@@ -123,9 +125,9 @@ Includes autonomous agents: **dependency-auditor** (vulnerability scanning) and 
 /init-project "Python EEG analysis package"
 /update-rules project
 /epic-dev "build a community dashboard"
-/setup-ci python
 /release-prep --minor
-/doc-process scanned-document.pdf
+"Set up CI for this Python project with ruff and pytest"
+"Process scanned-document.pdf and convert to markdown"
 ```
 
 ## Structure
@@ -154,6 +156,10 @@ research-skills/
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
 - For OCR: Mistral API key (optional, tesseract as offline fallback)
+
+## Skills vs commands
+
+Per the [official Anthropic plugin guidance](https://docs.claude.com/), skills are the preferred surface for agent-callable capabilities and auto-trigger from their description. Commands are kept only for workflows that benefit from explicit `/command args` orchestration (epic/sprint management, project init, version bumps). Each plugin's skills are listed in the table above; describe your task in natural language and the matching skill will load.
 
 ## Versioning
 
