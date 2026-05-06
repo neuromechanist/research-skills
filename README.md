@@ -27,7 +27,7 @@ done
 |--------|---------|-------------|----------|
 | **project** | 0.2.2 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/setup-ci`, `/release-prep`, `/doc-process` |
 | **grant** | 0.2.0 | NIH/NSF grant proposal writing, review, and figure QA | `/grant-write`, `/grant-review` |
-| **manuscript** | 0.2.0 | Academic manuscript peer review, writing, and journal formatting | `/paper-review`, `/manuscript-prep` |
+| **manuscript** | 0.3.0 | Academic manuscript multi-phase lit review, peer review, writing, and journal formatting | `/paper-review`, `/manuscript-prep`, `/lit-review` |
 | **opencite** | 0.2.0 | Literature search, citation management, PDF retrieval, literature review synthesis | `/opencite` |
 | **scientific-figures** | 0.1.1 | Full figure pipeline: icons, plots, composition, visual QA | -- |
 | **presentation** | 0.1.0 | Interactive Reveal.js presentations from JSON | `/create-presentation` |
@@ -56,11 +56,15 @@ Draft and review NIH and NSF grant proposals with mechanism-specific templates (
 
 ### manuscript
 
-Academic manuscript toolkit covering the full lifecycle: writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates.
+Academic manuscript toolkit covering the full lifecycle: multi-phase literature review (briefs, paper-card collection, taxonomic synthesis, citation-grounded direction papers), writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates.
+
+The lit-review skill captures a rigorous, iterable, citation-traceable workflow: every claim in a direction paper links back to a paper-card on disk. Differs from `opencite:literature-review` (single-pass synthesis) by orchestrating parallel strand collection, taxonomic synthesis with bias gates, and review loops.
 
 ```
 /paper-review manuscript.pdf
 /manuscript-prep "Nature Neuroscience"
+/lit-review --init
+/lit-review --phase collect --strand tools
 ```
 
 ### scientific-figures

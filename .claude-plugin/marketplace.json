@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Claude Code plugins for academic research and development: literature search and review, grant writing and review, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
@@ -34,8 +34,8 @@
     },
     {
       "name": "manuscript",
-      "description": "Academic manuscript toolkit: peer review, manuscript writing, and journal-specific formatting for submission",
-      "version": "0.2.0",
+      "description": "Academic manuscript toolkit: multi-phase literature review, peer review, manuscript writing, and journal-specific formatting for submission",
+      "version": "0.3.0",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"

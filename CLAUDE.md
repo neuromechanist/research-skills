@@ -22,8 +22,8 @@ research-skills/
 │   │   └── agents/grant-figure-qa.md
 │   ├── manuscript/                   # Academic manuscript toolkit
 │   │   ├── .claude-plugin/plugin.json
-│   │   ├── commands/{paper-review,manuscript-prep}.md
-│   │   └── skills/{paper-review,manuscript-writing,manuscript-formatting}/
+│   │   ├── commands/{paper-review,manuscript-prep,lit-review}.md
+│   │   └── skills/{paper-review,manuscript-writing,manuscript-formatting,lit-review}/
 │   ├── opencite/                     # Literature search and review
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── commands/opencite.md
@@ -47,7 +47,7 @@ research-skills/
 ## Plugins
 - **project** (v0.2.2): Project lifecycle toolkit with initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing
 - **grant** (v0.2.0): NIH/NSF grant proposal writing, structured review with scoring criteria, and figure quality assurance
-- **manuscript** (v0.2.0): Academic manuscript peer review, writing guidance, and journal-specific formatting for submission
+- **manuscript** (v0.3.0): Multi-phase literature review (briefs, paper-card collection, synthesis, direction papers), peer review, writing guidance, and journal-specific formatting for submission
 - **opencite** (v0.2.0): Academic literature search, citation management, PDF retrieval, and literature review synthesis
 - **scientific-figures** (v0.2.0): Publication-quality figures covering icons, plots, composition, and QA. Icon generation auto-selects between Codex CLI (`codex login`) and OpenAI API (`OPENAI_API_KEY`).
 - **presentation** (v0.1.0): Interactive Reveal.js presentations from JSON via the Agentic Presentation Builder
