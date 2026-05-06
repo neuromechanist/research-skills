@@ -11,7 +11,7 @@ A direction paper is a focused, citation-rich essay that defends a thesis, surve
 ```markdown
 # <Strand or Topic> Direction, <Headline Thesis>
 
-A focused review on the <strand> strand of <project>. <One-paragraph thesis statement that names what is missing in the literature and what this paper argues should fill the gap.> The argument was first articulated in <upstream issue or prior-work pointer>; this paper develops it into a literature-grounded position by surveying the <K> themes catalogued in the Phase 1 corpus and the Phase 2 [`<map>`](../research/synthesis/<map>.md).
+A focused review on the <strand> strand of <project>. <One-paragraph thesis statement that names what is missing in the literature and what this paper argues should fill the gap.> The argument was first articulated in <upstream issue or prior-work pointer>; this paper develops it into a literature-grounded position by surveying the <K> themes catalogued in the Phase 1 corpus and the Phase 2 [`<domain>-map`](../research/synthesis/<domain>-map.md).
 
 Abbreviations: <Define every abbreviation on first use, comma-separated, in this paragraph.>
 
@@ -24,7 +24,7 @@ Abbreviations: <Define every abbreviation on first use, comma-separated, in this
 
 ### 1.2 Gap statement
 
-<1-2 paragraphs naming what is missing. Anchor the gap with citations to corpus cards. Mirror the gap as it appears in synthesis/gap-analysis.md, do not invent a new framing.>
+<1-2 paragraphs naming what is missing. Anchor the gap with citations to corpus cards. Mirror the gap as it appears in `../research/synthesis/gap-analysis.md`, do not invent a new framing.>
 
 ### 1.3 Thesis
 
@@ -32,7 +32,7 @@ Abbreviations: <Define every abbreviation on first use, comma-separated, in this
 
 ## 2. Background, the <K> themes
 
-The Phase 1 corpus organizes <N> entries into <K> themes; the Phase 2 [`<map>`](../research/synthesis/<map>.md) inventories each theme. This section summarizes the prior-work landscape that the rest of the paper draws on.
+The Phase 1 corpus organizes <N> entries into <K> themes; the Phase 2 [`<domain>-map`](../research/synthesis/<domain>-map.md) inventories each theme. This section summarizes the prior-work landscape that the rest of the paper draws on.
 
 **Theme 1, <name>.** <2-4 sentence summary citing card paths: [<slug>](../research/collection/<strand>/<slug>/card.md).>
 
@@ -56,11 +56,11 @@ The Phase 1 corpus organizes <N> entries into <K> themes; the Phase 2 [`<map>`](
 
 ## 5. Roadmap
 
-<Phased commitments derived from gap-analysis.md. Each commitment names the artifacts it would produce.>
+<Phased commitments derived from `../research/synthesis/gap-analysis.md`. Each commitment names the artifacts it would produce.>
 
 ## 6. Coordination with adjacent efforts
 
-<How this direction relates to ANNOTATE R01 / sister grants / parallel labs. Cite cards or external pointers.>
+<How this direction relates to sister grants, parallel labs, or adjacent efforts. Cite cards or external pointers.>
 
 ## 7. Discussion
 
@@ -107,7 +107,7 @@ Apply `manuscript:manuscript-writing`:
 
 - No em-dashes; commas or semicolons.
 - Abbreviations defined on first use within the document. The Abbreviations paragraph after the thesis is the canonical first-use site.
-- Descriptive voice, not exhortatory. "AGI argues" rather than "AGI must"; "the corpus reveals" rather than "we should".
+- Descriptive voice, not exhortatory. "<Project> argues" rather than "<Project> must"; "the corpus reveals" rather than "we should".
 - Active voice for actions the paper takes. Past tense for what prior work did.
 - One idea per sentence. Topic sentence then evidence then interpretation per paragraph.
 

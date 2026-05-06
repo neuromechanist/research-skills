@@ -87,12 +87,14 @@ Values may include a parenthetical qualifier when needed, e.g. `publisher-paywal
 
 ## Storage rules
 
-- **Open-access PDFs** (CC-BY, CC0, arXiv, bioRxiv, OSF, institutional repository): commit under `source.pdf`; populate `pdf_sha256`.
-- **Paywalled / non-redistributable**: do NOT commit the PDF. Set `pdf_status: not-redistributable`, `pdf_path: null`, `pdf_sha256: null`. Still commit `source.md`; flag uncertainty about extraction in `notes`.
-- **Datasets / tools without a paper**: set `pdf_status: not-applicable`. Store the project README or canonical landing page as `source.md`.
-- **Failed downloads**: set `pdf_status: not-available`. Document the failure mode in `notes` (Cloudflare gate, broken DOI, paywall without preprint, etc.).
+The `pdf_status` enum semantics are:
 
-The `redistribution_ok` field is the single source of truth for whether `source.pdf` may exist in the repo. CI for the corpus should enforce: `redistribution_ok: false` implies no `source.pdf` file in the entry folder.
+- `archived`: `source.pdf` is committed; `pdf_sha256` populated. Used when `redistribution_ok: true` and a PDF is available.
+- `not-redistributable`: paywalled or otherwise non-redistributable. `pdf_path: null`, `pdf_sha256: null`. `source.md` is still committed.
+- `not-applicable`: no paper exists (tool / dataset / standard with only a README). `source.md` is the snapshot.
+- `not-available`: download failed. Document the failure mode in `meta.json.notes` and re-attempt later.
+
+The `redistribution_ok` field is the single source of truth for whether `source.pdf` may exist in the repo. License-to-redistribution policy and the CI rule live in [license-rules.md](license-rules.md).
 
 ## INDEX.md per strand
 

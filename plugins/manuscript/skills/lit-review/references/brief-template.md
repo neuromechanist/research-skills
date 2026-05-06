@@ -57,7 +57,6 @@ Imported entries must set `imported_from: <relative path>` in card.md.
 - [ ] >= <N> entries across all <K> categories
 - [ ] Each category has >= <M> entries
 - [ ] Every entry folder has `card.md`, `source.md`, and `meta.json`
-- [ ] `source.pdf` archived for >= 60% of entries with a redistributable paper
 - [ ] All entries have BibTeX in <strand>.bib
 - [ ] INDEX.md fully populated with categorized one-liners
 - [ ] No prose synthesis in this phase; that is Phase 2
@@ -73,5 +72,6 @@ Imported entries must set `imported_from: <relative path>` in card.md.
 
 - The brief is opinionated. Vague briefs produce vague corpora.
 - Numerical thresholds (>= N entries, >= M per category) should be set high enough to force breadth and low enough to ship in one parallel agent run. Typical: N = 20-40, M = 3-6.
+- Sanity-check (not an acceptance criterion): a healthy strand archives `source.pdf` for a meaningful share of entries with redistributable papers. If almost no PDFs are archived, the corpus may have skewed toward paywalled-only sources; consider preprint or AAM alternatives.
 - Seed material is critical. If no prior-work documents exist, the brief must enumerate canonical entries explicitly, otherwise the agent will return a generic survey rather than a thesis-aligned corpus.
 - "Out of scope" lines save more wasted work than any other section. Be specific.

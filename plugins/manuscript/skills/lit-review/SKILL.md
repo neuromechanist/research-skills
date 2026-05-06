@@ -25,15 +25,15 @@ Orchestrate a rigorous, citation-grounded literature review across phases: angle
 ## Workflow Phases
 
 ```
-Phase 0: Angles            -> _briefs/strand-*.md (one brief per angle)
-Phase 1: Collection        -> collection/<strand>/<slug>/{card.md, source.{pdf,md}, meta.json}
+Phase 0: Briefs            -> _briefs/strand-*.md (one brief per strand)
+Phase 1: Collection        -> research/collection/<strand>/<slug>/{card.md, source.{pdf,md}, meta.json}
                               + INDEX.md + <strand>.bib per strand
-Phase 2: Synthesis         -> synthesis/{taxonomy,gap-analysis,scope-diagram,map}.md
+Phase 2: Synthesis         -> research/synthesis/{<strand>-ontology, gap-analysis, scope-diagram, <domain>-map}.md
 Phase 3: Direction papers  -> direction-papers/<topic>-direction.md
 Phase 4: Review loop       -> revised direction; may reopen Phase 1 with new gaps
 ```
 
-Iteration is expected. Loop back from any phase. The directory layout is the persistence layer; treat it as the source of truth between sessions.
+Each angle is realized as a strand; the brief is the strand's dispatch document. Iteration is expected: loop back from any phase. The directory layout is the persistence layer; treat it as the source of truth between sessions.
 
 ### Phase 0: Define angles and write briefs
 
@@ -56,24 +56,9 @@ If the user names a project domain (neuro tools, clinical trials, ML methods, et
 
 ### Phase 1: Collection (parallel strand agents)
 
-For each strand, build a corpus of paper-cards. Use `opencite:opencite` for all paper operations.
+For each strand, build a corpus of paper-cards under `research/collection/<strand>/`. Each entry is a folder with `card.md` plus `source.md` plus `meta.json`, and `source.pdf` only when redistributable. Per-strand aggregates are `INDEX.md` and `<strand>.bib`. Use `opencite:opencite` for all paper operations.
 
-Per-entry artifact set (mandatory):
-```
-collection/<strand>/<slug>/
-├── card.md      # paper-card; required; see schema
-├── source.md    # markdown extraction of paper or canonical README; always required
-├── source.pdf   # only when redistribution_ok = true (open access, preprint, repo copy)
-└── meta.json    # provenance: doi, source_url, retrieved_at, license, sha256, redistribution_ok
-```
-
-Per-strand aggregates:
-- `collection/<strand>/INDEX.md` with one-line categorized entries
-- `collection/<strand>/<strand>.bib` with all BibTeX records
-
-Schema reference: [references/paper-card-schema.md](references/paper-card-schema.md).
-
-License-aware archival is non-negotiable. Paywalled PDFs are NOT committed. See [references/license-rules.md](references/license-rules.md). Markdown extractions of paywalled papers are typically committed for research-note fair use, but flag uncertainty in `meta.json.notes`.
+Schema and storage rules: [references/paper-card-schema.md](references/paper-card-schema.md). License-to-redistribution policy and CI rule: [references/license-rules.md](references/license-rules.md).
 
 When parallelizing strands, dispatch one agent per strand. Use the brief as the agent's full context. Do not let strand agents synthesize across strands; that is Phase 2's job.
 
@@ -81,10 +66,10 @@ When parallelizing strands, dispatch one agent per strand. Use the brief as the 
 
 Inputs: full collection across all strands.
 
-Outputs (in `synthesis/`):
+Outputs (in `research/synthesis/`):
 - `<strand>-ontology.md` per strand: hierarchical category tree of corpus entries
-- `science-map.md` (or domain-equivalent): theme-by-theme inventory of analytic / methodological themes
-- `dataset-hierarchy.md` (or domain-equivalent): the data layer
+- `<domain>-map.md` (e.g. `science-map.md`): theme-by-theme inventory of analytic / methodological themes
+- `<data>-hierarchy.md` (e.g. `dataset-hierarchy.md`): the data layer, when applicable
 - `gap-analysis.md`: three-column comparison of what is covered by prior efforts vs. what the synthesis reveals as uncovered. The third column is the input to Phase 3
 - `scope-diagram.md`: prose plus optional Mermaid/ASCII diagram of corpus boundaries
 
@@ -101,10 +86,9 @@ Output: `direction-papers/<topic>-direction.md` per direction (typically one per
 
 Each direction paper:
 - Defends a thesis grounded in the corpus
-- Cites every claim back to a specific card path: `[\`slug\`](../research/collection/<strand>/<slug>/card.md)`
+- Cites every claim back to a specific card path: `[<slug>](../research/collection/<strand>/<slug>/card.md)`
 - Closes with a flat references section keyed to BibTeX in the strand `.bib`
-- Follows review-paper IMRAD structure (delegate structuring to `manuscript:manuscript-prep`)
-- Follows prose discipline (delegate to `manuscript:manuscript-writing`): no em-dashes, abbreviations defined on first use, descriptive voice not exhortatory
+- Follows review-paper IMRAD structure and prose discipline (delegate to `manuscript:manuscript-writing`): no em-dashes, abbreviations defined on first use, descriptive voice not exhortatory
 
 The cite-card cross-link is the load-bearing convention. A claim that does not link to a card is a claim that has not yet been grounded; either ground it (add the card) or remove the claim.
 
@@ -147,8 +131,7 @@ Create directories on demand as work progresses; do not pre-create empty trees. 
 |---|---|
 | `opencite:opencite` | DOI lookup, PDF retrieval, PDF -> markdown, BibTeX export |
 | `opencite:literature-review` | Single-pass thematic synthesis, useful as a Phase 2 seed |
-| `manuscript:manuscript-prep` | IMRAD / review-paper structure for direction papers |
-| `manuscript:manuscript-writing` | Prose discipline (abbreviations, voice, transitions) |
+| `manuscript:manuscript-writing` | IMRAD / review-paper structure plus prose discipline (abbreviations, voice, transitions) |
 | `manuscript:manuscript-formatting` | Journal formatting / LaTeX export |
 | `manuscript:paper-review` | Self-review loops on direction-paper drafts |
 | `project:epic-dev` | Upstream source of research angles when reviewing one's own project |

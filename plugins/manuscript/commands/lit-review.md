@@ -18,15 +18,15 @@ Parse arguments:
 - `--init <path>`: bootstrap a new lit-review root at `<path>` (or current dir if omitted). Create `_briefs/`, `research/collection/_schema/`, `research/synthesis/`, `direction-papers/` on demand. Drop `paper-card.md` schema as `research/collection/_schema/paper-card.md` (copy from skill references).
 - `--phase brief`: route to Phase 0 guidance. Inputs: prior work, gap statement, epic-dev findings. Output: one brief per strand in `_briefs/strand-<name>.md`.
 - `--phase collect [--strand <name>]`: route to Phase 1. Inputs: a brief. Output: paper-cards under `research/collection/<strand>/`. Use `opencite:opencite` for paper ops.
-- `--phase synthesize`: route to Phase 2. Inputs: full collection. Outputs: `synthesis/<strand>-ontology.md`, `<domain>-map.md`, `gap-analysis.md`, `scope-diagram.md`.
+- `--phase synthesize`: route to Phase 2. Inputs: full collection. Outputs in `research/synthesis/`: `<strand>-ontology.md`, `<domain>-map.md`, `gap-analysis.md`, `scope-diagram.md`.
 - `--phase direct`: route to Phase 3. Inputs: synthesis + briefs. Output: `direction-papers/<topic>-direction.md`.
 - `--phase review`: route to Phase 4. Self-review the latest direction paper using `manuscript:paper-review`. Loop back to prior phases as needed.
 
 If no argument, infer phase from current directory state:
 - No `_briefs/` -> Phase 0 (suggest `--init` first if root is empty).
 - `_briefs/` populated, `research/collection/` empty or partial -> Phase 1.
-- `research/collection/` complete per brief acceptance, `synthesis/` empty -> Phase 2.
-- `synthesis/` populated, `direction-papers/` empty -> Phase 3.
+- `research/collection/` complete per brief acceptance, `research/synthesis/` empty -> Phase 2.
+- `research/synthesis/` populated, `direction-papers/` empty -> Phase 3.
 - `direction-papers/` populated -> Phase 4.
 
 ### 2. Locate state
@@ -44,7 +44,7 @@ Load the `manuscript:lit-review` skill and apply its phase-specific guidance:
 - Phase 0 (Briefs): use `references/brief-template.md`.
 - Phase 1 (Collection): use `references/paper-card-schema.md` and `references/license-rules.md`. Dispatch parallel strand agents if multiple briefs exist.
 - Phase 2 (Synthesis): use `references/synthesis-templates.md`. Apply bias rules.
-- Phase 3 (Direction): use `references/direction-paper-template.md`. Delegate prose discipline to `manuscript:manuscript-writing` and review-paper structuring to `manuscript:manuscript-prep`.
+- Phase 3 (Direction): use `references/direction-paper-template.md`. Delegate review-paper IMRAD structuring and prose discipline to `manuscript:manuscript-writing`. Delegate journal LaTeX export to `manuscript:manuscript-formatting`.
 - Phase 4 (Review): invoke `manuscript:paper-review` on the latest direction paper. Disposition each concern (ground / restructure / drop). Loop back as needed.
 
 ### 4. Apply rigor checklist

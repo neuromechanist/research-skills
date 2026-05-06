@@ -23,7 +23,7 @@ Apply before declaring a phase done. The checklist is per-phase; do not skip ahe
 
 ## Phase 2: Synthesis
 
-- [ ] One ontology per strand in `synthesis/<strand>-ontology.md`. Each leaf links to a card.
+- [ ] One ontology per strand in `research/synthesis/<strand>-ontology.md`. Each leaf links to a card.
 - [ ] Domain map (`<domain>-map.md`) inventories themes; each theme cites establishing cards and lists open questions.
 - [ ] Data hierarchy or domain equivalent if applicable.
 - [ ] `gap-analysis.md` is three-column with the third column as the load-bearing one. Gap count exceeds the brief's bar.
@@ -84,7 +84,7 @@ If reading openings only yields fragments rather than an argument, restructure w
 
 ### Reproducibility
 
-- [ ] A reader who clones the corpus and reads `_briefs/`, `INDEX.md`, `synthesis/`, and `direction-papers/` in order can reconstruct the argument without further context.
+- [ ] A reader who clones the corpus and reads `_briefs/`, `research/collection/<strand>/INDEX.md`, `research/synthesis/`, and `direction-papers/` in order can reconstruct the argument without further context.
 - [ ] No load-bearing claims live only in conversation history or scratch notes. Persist them to the layout.
 
 ## Final acceptance
