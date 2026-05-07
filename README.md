@@ -29,7 +29,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 |--------|---------|-------------|--------|----------|
 | **project** | 0.3.0 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
 | **grant** | 0.3.0 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
-| **manuscript** | 0.4.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
+| **manuscript** | 0.4.1 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
 | **opencite** | 0.3.0 | Literature search, citation management, PDF retrieval | `opencite` | -- |
 | **scientific-figures** | 0.2.0 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
 | **presentation** | 0.2.0 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
@@ -60,7 +60,7 @@ Draft and review NIH and NSF grant proposals with mechanism-specific templates (
 
 Academic manuscript toolkit covering the full lifecycle: literature review (both multi-phase citation-traceable corpus protocol and single-pass thematic synthesis), writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates.
 
-The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citation-traceable multi-phase workflow where every claim in a direction paper links back to a paper-card on disk, plus an express single-pass synthesis pipeline for writing an Introduction or Background section.
+The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citation-traceable multi-phase workflow where every claim in a direction paper links back to a paper-card on disk, plus an express single-pass synthesis pipeline for writing an Introduction or Background section. The multi-phase workflow can delegate phase orchestration (epic issue, sub-issues, worktrees, state file) to `project:epic-dev` for git-tracked reviews.
 
 ```
 "Review this manuscript at paper.pdf as a peer reviewer"
