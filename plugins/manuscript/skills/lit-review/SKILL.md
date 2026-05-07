@@ -1,7 +1,7 @@
 ---
 name: lit-review
 description: "Use this skill for \"literature review workflow\", \"multi-phase lit review\", \"direction paper\", \"review paper protocol\", \"strand-based literature review\", \"citation-grounded review\", \"systematic lit review with paper cards\", \"build a lit review corpus\", \"lit review pipeline\", \"orchestrate a literature review\", \"research directions document\", \"write a literature review\", \"synthesize papers\", \"thematic review\", \"narrative review\", \"systematic review\", \"scoping review\", \"gap analysis\", or when the user wants either a rigorous multi-phase citation-traceable lit review or a single-pass thematic synthesis for an Introduction/Background section."
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Multi-Phase Literature Review Workflow
@@ -133,6 +133,36 @@ When the user starts fresh, propose a top-level layout in the working directory 
 
 Create directories on demand as work progresses; do not pre-create empty trees. The `_schema/paper-card.md` should be a copy of [references/paper-card-schema.md](references/paper-card-schema.md) so that strand agents have a local reference.
 
+## Formalize phases with `project:epic-dev`
+
+The Phase 0-4 workflow maps cleanly onto the epic/sprint model. When the lit review lives in a git repository with a GitHub remote, delegate phase orchestration (issues, sub-issues, branches, worktrees, state file) to `project:epic-dev` so the review has the same tracking discipline as feature work. This is opt-in; skip it for non-git note folders or solo scratch reviews.
+
+Recommended mapping:
+
+| Lit-review artifact | epic-dev artifact |
+|---|---|
+| The lit review itself | Epic issue + epic branch (`feature/issue-{N}-epic-litreview-{slug}`) |
+| Phase 0 (briefs) | Sub-issue, single phase branch; output `_briefs/strand-*.md` |
+| Phase 1 (collection) | One sub-issue + worktree per strand for parallel agents; outputs under `research/collection/<strand>/` |
+| Phase 2 (synthesis) | Sub-issue depending on all Phase 1 phases; outputs under `research/synthesis/` |
+| Phase 3 (direction papers) | One sub-issue per direction paper, can run in parallel; outputs under `direction-papers/` |
+| Phase 4 (review loop) | Sub-issue per review pass; loop-back triggers reopen earlier-phase issues rather than mutating closed ones |
+| `.claude/epic.local.md` | Phase tracker that survives sessions; complements the directory-as-source-of-truth convention |
+
+When to invoke epic-dev:
+
+- At the start of a fresh multi-strand lit review, after the user agrees on the strand list. Delegate epic + sub-issue creation to `project:epic-dev`; it will produce the issue tree, worktrees, and state file. Continue Phase 0 brief drafting inside the resulting epic worktree.
+- When a Phase 4 review loop spawns new gaps that justify reopening Phase 1 with new strands, create new sub-issues under the existing epic via `project:epic-dev --next-phase` rather than starting a parallel epic.
+- When resuming a stalled review across sessions, `project:epic-dev --resume` reads `.claude/epic.local.md` and routes back to the active phase worktree.
+
+When NOT to invoke epic-dev:
+
+- The review is express-mode (single-pass synthesis); the overhead exceeds the value.
+- The output lives in a non-git directory (private notes, OneDrive, Notion export staging).
+- The user declines GitHub issue tracking for the review.
+
+The cite-card cross-link convention from Phase 3 still applies regardless of whether phases are tracked as epic-dev sub-issues; epic-dev tracks the *process*, not the *traceability*.
+
 ## Sister skills
 
 | Skill | Used for |
@@ -141,7 +171,7 @@ Create directories on demand as work progresses; do not pre-create empty trees. 
 | `manuscript:manuscript-writing` | IMRAD / review-paper structure plus prose discipline (abbreviations, voice, transitions) |
 | `manuscript:manuscript-formatting` | Journal formatting / LaTeX export |
 | `manuscript:paper-review` | Self-review loops on direction-paper drafts |
-| `project:epic-dev` | Upstream source of research angles when reviewing one's own project |
+| `project:epic-dev` | Formalize the lit-review phases (epic + sub-issues + worktrees + state file); also an upstream source of research angles when reviewing one's own project |
 
 ## References
 
