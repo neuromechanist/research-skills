@@ -50,6 +50,8 @@ copilot plugin install project@research-skills
 
 Copilot CLI reads plugin manifests from `.plugin/plugin.json`, `plugin.json`, `.github/plugin/plugin.json`, or `.claude-plugin/plugin.json`. The existing `.claude-plugin/plugin.json` files are therefore intentionally retained and now declare their `skills`, `agents`, and `commands` component paths where applicable.
 
+Note: Copilot CLI surfaces agents only from files ending in `.agent.md`. The current `agents/*.md` files are surfaced to Claude Code; Copilot CLI installs the plugins fine but will not list those agents until they are renamed to `*.agent.md`. Skills (`SKILL.md`) and commands work unchanged across both runtimes.
+
 ## Sources
 
 - OpenAI Codex AGENTS.md guide: https://developers.openai.com/codex/guides/agents-md

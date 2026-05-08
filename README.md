@@ -53,12 +53,12 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
 | **project** | 0.3.1 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
-| **grant** | 0.3.0 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
-| **manuscript** | 0.4.1 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
-| **opencite** | 0.3.0 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **scientific-figures** | 0.2.0 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
-| **presentation** | 0.2.0 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
-| **neuroinformatics** | 0.2.0 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
+| **grant** | 0.3.1 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
+| **manuscript** | 0.4.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
+| **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
+| **scientific-figures** | 0.2.1 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
+| **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
+| **neuroinformatics** | 0.2.1 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
 ## Research Plugins
 
