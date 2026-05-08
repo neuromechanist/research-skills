@@ -1,6 +1,6 @@
-# Section Mapping: Template vs User CLAUDE.md
+# Section Mapping: Template AGENTS.md vs User CLAUDE.md
 
-Maps sections between the template (project-level) CLAUDE.md and the typical user-level `~/.claude/CLAUDE.md` to enable intelligent comparison across levels.
+Maps sections between the template (project-level) AGENTS.md and the typical user-level `~/.claude/CLAUDE.md` to enable intelligent comparison across levels.
 
 ## Template -> User Section Mapping
 

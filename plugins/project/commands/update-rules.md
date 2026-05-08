@@ -1,12 +1,12 @@
 ---
-description: Update CLAUDE.md and .rules/ from latest templates
+description: Update AGENTS.md/CLAUDE.md and .rules/ from latest templates
 argument-hint: <user|project>
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
 # Update Rules and Configuration
 
-Update existing CLAUDE.md and .rules/ files from the latest plugin templates without overwriting user customizations. Load the `project:update-rules` skill for the full comparison strategy and non-destructive guarantees.
+Update existing AGENTS.md/CLAUDE.md and .rules/ files from the latest plugin templates without overwriting user customizations. Load the `project:update-rules` skill for the full comparison strategy and non-destructive guarantees.
 
 ## Setup Process:
 
@@ -14,7 +14,7 @@ Update existing CLAUDE.md and .rules/ files from the latest plugin templates wit
 
 Determine the level from `$ARGUMENTS`:
 - `user` -> update `~/.claude/CLAUDE.md`
-- `project` -> update `./CLAUDE.md` + `.rules/`
+- `project` -> update `./AGENTS.md` + Claude adapter `./CLAUDE.md` + `.rules/`
 
 If `$ARGUMENTS` is empty or not one of `user`/`project`, ask the user which level to update.
 
@@ -44,17 +44,18 @@ If the above command failed or the output does not contain `STATUS=complete` as 
 **Custom rules (RULE_CUSTOM):**
 - Report as user-created (preserved, no action needed)
 
-**CLAUDE.md section comparison:**
-- Read both CLAUDE.md files in full
+**AGENTS.md section comparison:**
+- Read template AGENTS.md and the project AGENTS.md in full
 - Compare H2 sections: identify sections in template missing from project
 - For matching sections, compare content for improvements
 - Respect project-specific content (replaced placeholders, architecture maps, custom guidelines)
+- If the project only has CLAUDE.md, offer to migrate shared content into AGENTS.md and replace CLAUDE.md with the `@AGENTS.md` adapter plus Claude-only additions
 
 #### For USER level:
 
 **Section comparison:**
 - Read `~/.claude/CLAUDE.md` in full
-- Read template CLAUDE.md for best-practice content
+- Read template AGENTS.md for best-practice content
 - Use `references/section-mapping.md` to map template sections to user sections
 - Read relevant template rules (testing.md, git.md) for universally applicable best practices
 
@@ -82,7 +83,8 @@ Ask the user which changes to apply. Never apply without confirmation.
 For each approved change:
 - **New .rules/ files:** use Write to create them
 - **Existing .rules/ files:** use Edit for surgical modifications, or Write if accepting full template version
-- **CLAUDE.md sections:** use Edit to insert or update specific sections
+- **AGENTS.md sections:** use Edit to insert or update specific sections
+- **CLAUDE.md adapter:** ensure it starts with `@AGENTS.md`, then preserves or appends only Claude-specific guidance
 - **New list items:** use Edit to append to existing lists
 
 ### 6. Verify

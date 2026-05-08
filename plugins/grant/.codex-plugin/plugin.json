@@ -8,6 +8,5 @@
   },
   "license": "BSD-3-Clause",
   "skills": "./skills/",
-  "agents": "./agents/",
   "keywords": ["grant", "proposal", "nih", "nsf", "review", "writing", "specific-aims", "research-strategy", "scoring"]
 }

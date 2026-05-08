@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
@@ -11,7 +11,7 @@
     {
       "name": "project",
       "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -23,7 +23,7 @@
     {
       "name": "grant",
       "description": "Grant proposal toolkit: NIH/NSF writing with mechanism-specific templates, structured review with scoring criteria, and figure quality assurance",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -35,7 +35,7 @@
     {
       "name": "manuscript",
       "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, and journal-specific formatting for submission",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -47,7 +47,7 @@
     {
       "name": "opencite",
       "description": "Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -59,7 +59,7 @@
     {
       "name": "scientific-figures",
       "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA for Nature/Science/PNAS journals",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -71,7 +71,7 @@
     {
       "name": "presentation",
       "description": "Presentation builder: create interactive Reveal.js presentations from JSON with Mermaid diagrams, LaTeX math, code highlighting, and animated reveals",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -83,7 +83,7 @@
     {
       "name": "neuroinformatics",
       "description": "Neuroscience data standards and experiment design: BIDS conversion/validation, HED annotation, and PsychoPy experiment scaffolding",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"

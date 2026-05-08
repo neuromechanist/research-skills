@@ -1,8 +1,10 @@
 # Research Skills
 
-Claude Code marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics.
+Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics.
 
 ## Install
+
+### Claude Code
 
 In Claude Code, type `/plugin`, select **Add marketplace**, enter:
 
@@ -12,7 +14,7 @@ neuromechanist/research-skills
 
 Then select which plugins to install. Each plugin is independent.
 
-### Install all plugins via CLI
+Install all plugins via CLI:
 
 ```bash
 claude plugin marketplace add neuromechanist/research-skills
@@ -21,19 +23,42 @@ for p in project grant manuscript opencite scientific-figures presentation neuro
 done
 ```
 
+### Codex
+
+Codex can use the native repo marketplace at `.agents/plugins/marketplace.json` and can also read the existing Claude-style `.claude-plugin/marketplace.json`.
+
+```bash
+codex plugin marketplace add neuromechanist/research-skills
+codex plugin marketplace add ./path/to/research-skills
+```
+
+Each plugin also has a native `.codex-plugin/plugin.json` manifest. Then open `/plugins` in Codex and install the plugins you need.
+
+### GitHub Copilot CLI
+
+Copilot CLI can use the native marketplace at `.github/plugin/marketplace.json` and also looks for `.claude-plugin/marketplace.json`.
+
+```bash
+copilot plugin marketplace add neuromechanist/research-skills
+copilot plugin marketplace browse research-skills
+copilot plugin install project@research-skills
+```
+
+See [docs/cross-agent-compatibility.md](docs/cross-agent-compatibility.md) for the researched registration paths and source links.
+
 ## Plugins
 
 Skills auto-trigger on user intent (described per-plugin below). Slash commands are reserved for workflows that need explicit orchestration entry points.
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.3.0 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
-| **grant** | 0.3.0 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
-| **manuscript** | 0.4.1 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
-| **opencite** | 0.3.0 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **scientific-figures** | 0.2.0 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
-| **presentation** | 0.2.0 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
-| **neuroinformatics** | 0.2.0 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
+| **project** | 0.3.1 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **grant** | 0.3.1 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
+| **manuscript** | 0.4.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
+| **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
+| **scientific-figures** | 0.2.1 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
+| **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
+| **neuroinformatics** | 0.2.1 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
 ## Research Plugins
 
@@ -111,8 +136,8 @@ Neuroscience data standards, experiment design, and dataset validation:
 
 Complete project lifecycle toolkit combining initialization, epic/sprint workflow, and CI/CD management:
 
-- **init-project** -- scaffold new projects with Claude/Cursor templates, `.rules/`, `.context/`, and config files
-- **update-rules** -- non-destructive sync of CLAUDE.md and `.rules/` against latest templates at user or project level
+- **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/`, and config files
+- **update-rules** -- non-destructive sync of AGENTS.md, the CLAUDE.md adapter, and `.rules/` against latest templates at user or project level
 - **workflow** -- multi-phase feature development with git worktrees, GitHub issues, and phased PR delivery
 - **CI scaffolding** -- generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
 - **Docker packaging** -- multi-stage Dockerfiles with uv/bun, health checks, and security hardening
@@ -135,6 +160,8 @@ Includes autonomous agents: **dependency-auditor** (vulnerability scanning) and 
 ```
 research-skills/
 ├── .claude-plugin/marketplace.json
+├── .agents/plugins/marketplace.json
+├── .github/plugin/marketplace.json
 ├── plugins/
 │   ├── project/                   # Project lifecycle (init, workflow, CI, Docker, security, docs)
 │   ├── grant/                     # Grant proposals (writing, review, figure QA)
@@ -147,7 +174,7 @@ research-skills/
 
 ## Requirements
 
-- [Claude Code](https://claude.com/claude-code) CLI
+- [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex), or [GitHub Copilot CLI](https://docs.github.com/en/copilot)
 - For opencite: `opencite` CLI (`uvx opencite`)
 - For icons: OpenAI API key (gpt-image-2)
 - For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
@@ -159,7 +186,11 @@ research-skills/
 
 ## Skills vs commands
 
-Per the [official Anthropic plugin guidance](https://docs.claude.com/), skills are the preferred surface for agent-callable capabilities and auto-trigger from their description. Commands are kept only for workflows that benefit from explicit `/command args` orchestration (epic/sprint management, project init, version bumps). Each plugin's skills are listed in the table above; describe your task in natural language and the matching skill will load.
+Skills are the preferred surface for agent-callable capabilities and auto-trigger from their description in Claude Code, Codex, and Copilot CLI. Commands are kept only for workflows that benefit from explicit `/command args` orchestration (epic/sprint management, project init, version bumps). Each plugin's skills are listed in the table above; describe your task in natural language and the matching skill will load.
+
+## Cross-agent instructions
+
+Use `AGENTS.md` as the shared instruction file. `CLAUDE.md` imports it with `@AGENTS.md`, then leaves room for Claude Code-only plugin, skill, command, or MCP notes. The project plugin's `init-project` workflow now generates that layout for new projects.
 
 ## Versioning
 

@@ -1,0 +1,92 @@
+{
+  "name": "research-skills",
+  "interface": {
+    "displayName": "Research Skills"
+  },
+  "plugins": [
+    {
+      "name": "project",
+      "source": {
+        "source": "local",
+        "path": "./plugins/project"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Development"
+    },
+    {
+      "name": "grant",
+      "source": {
+        "source": "local",
+        "path": "./plugins/grant"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Research"
+    },
+    {
+      "name": "manuscript",
+      "source": {
+        "source": "local",
+        "path": "./plugins/manuscript"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Research"
+    },
+    {
+      "name": "opencite",
+      "source": {
+        "source": "local",
+        "path": "./plugins/opencite"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Research"
+    },
+    {
+      "name": "scientific-figures",
+      "source": {
+        "source": "local",
+        "path": "./plugins/scientific-figures"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Research"
+    },
+    {
+      "name": "presentation",
+      "source": {
+        "source": "local",
+        "path": "./plugins/presentation"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Research"
+    },
+    {
+      "name": "neuroinformatics",
+      "source": {
+        "source": "local",
+        "path": "./plugins/neuroinformatics"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Research"
+    }
+  ]
+}
