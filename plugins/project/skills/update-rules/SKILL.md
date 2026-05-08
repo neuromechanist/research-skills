@@ -32,8 +32,8 @@ Update the current project's configuration:
 
 3. **What gets compared:**
    - Template `rules/*.md` vs `.rules/*.md`
-   - Template `AGENTS.md` sections vs `./AGENTS.md` sections
-   - Template `CLAUDE.md` adapter vs `./CLAUDE.md`
+   - Template `AGENTS.md` sections vs `./AGENTS.md` sections (script emits `PROJECT_SECTION_SOURCE=agents|claude` so a CLAUDE.md fallback is never silently treated as AGENTS.md)
+   - The CLAUDE.md adapter check is performed as an LLM read step (verify it begins with `@AGENTS.md` and contains only Claude-specific additions), not part of the script output
 
 ### User Level (`/update-rules user`)
 

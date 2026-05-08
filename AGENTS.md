@@ -20,7 +20,7 @@ research-skills/
 │   │   ├── skills/{init-project,update-rules,workflow-reference,ci-scaffolding,docker-packaging,security-audit,document-processing}/
 │   │   ├── agents/{dependency-auditor,release-prep}.md
 │   │   ├── templates/               # AGENTS, Claude, Cursor, context, config, CI/CD
-│   │   └── scripts/
+│   │   └── bin/                     # project-init-templates, project-diff-rules, project-templates-path
 │   ├── grant/                        # Grant proposal toolkit
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json

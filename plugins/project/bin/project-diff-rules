@@ -14,7 +14,8 @@
 #   RULE_CURRENT=<filename>     -- rule matches template exactly
 #   RULE_CHANGED=<filename>     -- rule differs from template
 #   RULE_CUSTOM=<filename>      -- user rule not in templates
-#   PROJECT_SECTION=<line>      -- H2 header from project AGENTS.md
+#   PROJECT_SECTION=<line>      -- H2 header from project AGENTS.md (or CLAUDE.md fallback)
+#   PROJECT_SECTION_SOURCE=agents|claude  -- which file PROJECT_SECTION lines came from
 #   TEMPLATE_SECTION=<line>     -- H2 header from template AGENTS.md
 #
 # Output keys (user level):
@@ -111,11 +112,15 @@ case "$LEVEL" in
         fi
 
         # --- Project instruction section headers ---
+        # PROJECT_SECTION_SOURCE tells the consumer which file the headers came from,
+        # so an unmigrated CLAUDE.md cannot be silently mistaken for an AGENTS.md.
         if [ -f "$TARGET_DIR/AGENTS.md" ]; then
+            echo "PROJECT_SECTION_SOURCE=agents"
             while IFS= read -r line; do
                 echo "PROJECT_SECTION=$line"
             done < <(grep -n '^## ' "$TARGET_DIR/AGENTS.md" || true)
         elif [ -f "$TARGET_DIR/CLAUDE.md" ]; then
+            echo "PROJECT_SECTION_SOURCE=claude"
             while IFS= read -r line; do
                 echo "PROJECT_SECTION=$line"
             done < <(grep -n '^## ' "$TARGET_DIR/CLAUDE.md" || true)

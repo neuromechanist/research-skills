@@ -25,6 +25,9 @@ if [ ! -f "$TARGET_DIR/CLAUDE.md" ]; then
     cp "$TEMPLATES_DIR/claude/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
     echo "Created CLAUDE.md"
 else
+    if ! grep -q '^@AGENTS\.md' "$TARGET_DIR/CLAUDE.md"; then
+        echo "Warning: existing CLAUDE.md does not import AGENTS.md. Add '@AGENTS.md' as the first line, or run /update-rules to migrate; otherwise Claude Code will read stale instructions while other agents follow AGENTS.md." >&2
+    fi
     echo "CLAUDE.md already exists, skipping"
 fi
 
@@ -50,12 +53,21 @@ fi
 if [ -f "$TARGET_DIR/requirements.txt" ] || [ -f "$TARGET_DIR/pyproject.toml" ] || [ -f "$TARGET_DIR/setup.py" ]; then
     if ! git -C "$TARGET_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         echo "Warning: Not a git repository. Skipping pre-commit hook. Run 'git init' first, then re-run."
-    elif HOOKS_DIR="$(git -C "$TARGET_DIR" rev-parse --git-path hooks)" && [ ! -f "$HOOKS_DIR/pre-commit" ]; then
-        mkdir -p "$HOOKS_DIR"
-        cp "$TEMPLATES_DIR/config/pre-commit" "$HOOKS_DIR/pre-commit"
-        chmod +x "$HOOKS_DIR/pre-commit"
-        echo "Installed pre-commit hooks with ruff"
     else
-        echo "Pre-commit hook already exists"
+        GIT_DIR="$(git -C "$TARGET_DIR" rev-parse --git-dir)"
+        COMMON_DIR="$(git -C "$TARGET_DIR" rev-parse --git-common-dir)"
+        if [ "$GIT_DIR" != "$COMMON_DIR" ]; then
+            echo "Warning: '$TARGET_DIR' is a git worktree. Hooks at $COMMON_DIR/hooks would affect every worktree of this repo. Skipping. Re-run from the main checkout if that is intended." >&2
+        else
+            HOOKS_DIR="$(git -C "$TARGET_DIR" rev-parse --git-path hooks)"
+            if [ ! -f "$HOOKS_DIR/pre-commit" ]; then
+                mkdir -p "$HOOKS_DIR"
+                cp "$TEMPLATES_DIR/config/pre-commit" "$HOOKS_DIR/pre-commit"
+                chmod +x "$HOOKS_DIR/pre-commit"
+                echo "Installed pre-commit hooks with ruff"
+            else
+                echo "Pre-commit hook already exists"
+            fi
+        fi
     fi
 fi

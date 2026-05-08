@@ -35,4 +35,4 @@ After copying the rules directory:
 2. Remove rules that do not apply (e.g., remove python.md for a pure JS project)
 3. Keep testing.md, git.md, and code_review.md for all projects
 4. Add project-specific rules as new .md files when needed
-5. Update CLAUDE.md references to match the actual rules present
+5. Update the AGENTS.md "[REFERENCE] Rules Directory" section to match the actual rules present
