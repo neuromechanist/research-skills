@@ -8,6 +8,5 @@
   },
   "license": "BSD-3-Clause",
   "skills": "./skills/",
-  "agents": "./agents/",
   "keywords": ["bids", "eeg", "emg", "hed", "psychopy", "neuroscience", "neuroinformatics", "experiment", "openneuro", "nemar", "lsl"]
 }

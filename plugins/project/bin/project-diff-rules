@@ -3,24 +3,25 @@
 # Outputs structured KEY=VALUE pairs for consumption by the update-rules command.
 #
 # Usage: project-diff-rules <user|project> [target-dir]
-#   project: compares ./CLAUDE.md + .rules/ against templates and lists template rules
+#   project: compares ./AGENTS.md + .rules/ against templates and lists template rules
 #   user:    compares ~/.claude/CLAUDE.md against template sections and lists template rules
 #
 # Output keys (project level):
 #   HAS_RULES_DIR=true|false
+#   HAS_AGENTS_MD=true|false
 #   HAS_CLAUDE_MD=true|false
 #   RULE_MISSING=<filename>     -- template rule not found in project
 #   RULE_CURRENT=<filename>     -- rule matches template exactly
 #   RULE_CHANGED=<filename>     -- rule differs from template
 #   RULE_CUSTOM=<filename>      -- user rule not in templates
-#   PROJECT_SECTION=<line>      -- H2 header from project CLAUDE.md
-#   TEMPLATE_SECTION=<line>     -- H2 header from template CLAUDE.md
+#   PROJECT_SECTION=<line>      -- H2 header from project AGENTS.md
+#   TEMPLATE_SECTION=<line>     -- H2 header from template AGENTS.md
 #
 # Output keys (user level):
 #   HAS_USER_CLAUDE=true
 #   USER_CLAUDE_PATH=<path>
 #   USER_SECTION=<line>         -- H2 header from user CLAUDE.md
-#   TEMPLATE_SECTION=<line>     -- H2 header from template CLAUDE.md
+#   TEMPLATE_SECTION=<line>     -- H2 header from template AGENTS.md
 #   TEMPLATE_RULE=<filename>    -- available template rule file
 #
 # Emits STATUS=complete as the final line on success.
@@ -38,8 +39,8 @@ if [ -z "$LEVEL" ]; then
 fi
 
 # Validate template structure
-if [ ! -f "$TEMPLATES_DIR/claude/CLAUDE.md" ]; then
-    echo "ERROR: Template CLAUDE.md not found at $TEMPLATES_DIR/claude/CLAUDE.md" >&2
+if [ ! -f "$TEMPLATES_DIR/agents/AGENTS.md" ]; then
+    echo "ERROR: Template AGENTS.md not found at $TEMPLATES_DIR/agents/AGENTS.md" >&2
     exit 1
 fi
 if [ ! -d "$TEMPLATES_DIR/claude/rules" ]; then
@@ -63,7 +64,13 @@ case "$LEVEL" in
             echo "HAS_RULES_DIR=false"
         fi
 
-        # --- CLAUDE.md status ---
+        # --- Agent instructions status ---
+        if [ -f "$TARGET_DIR/AGENTS.md" ]; then
+            echo "HAS_AGENTS_MD=true"
+        else
+            echo "HAS_AGENTS_MD=false"
+        fi
+
         if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
             echo "HAS_CLAUDE_MD=true"
         else
@@ -103,17 +110,21 @@ case "$LEVEL" in
             done
         fi
 
-        # --- CLAUDE.md section headers ---
-        if [ -f "$TARGET_DIR/CLAUDE.md" ]; then
+        # --- Project instruction section headers ---
+        if [ -f "$TARGET_DIR/AGENTS.md" ]; then
+            while IFS= read -r line; do
+                echo "PROJECT_SECTION=$line"
+            done < <(grep -n '^## ' "$TARGET_DIR/AGENTS.md" || true)
+        elif [ -f "$TARGET_DIR/CLAUDE.md" ]; then
             while IFS= read -r line; do
                 echo "PROJECT_SECTION=$line"
             done < <(grep -n '^## ' "$TARGET_DIR/CLAUDE.md" || true)
         fi
 
-        # --- Template CLAUDE.md section headers ---
+        # --- Template AGENTS.md section headers ---
         while IFS= read -r line; do
             echo "TEMPLATE_SECTION=$line"
-        done < <(grep -n '^## ' "$TEMPLATES_DIR/claude/CLAUDE.md" || true)
+        done < <(grep -n '^## ' "$TEMPLATES_DIR/agents/AGENTS.md" || true)
         ;;
 
     user)
@@ -132,10 +143,10 @@ case "$LEVEL" in
             echo "USER_SECTION=$line"
         done < <(grep -n '^## ' "$USER_CLAUDE" || true)
 
-        # --- Template CLAUDE.md section headers ---
+        # --- Template AGENTS.md section headers ---
         while IFS= read -r line; do
             echo "TEMPLATE_SECTION=$line"
-        done < <(grep -n '^## ' "$TEMPLATES_DIR/claude/CLAUDE.md" || true)
+        done < <(grep -n '^## ' "$TEMPLATES_DIR/agents/AGENTS.md" || true)
 
         # --- Template rules list (for best-practice suggestions) ---
         for template_rule in "$TEMPLATES_DIR/claude/rules/"*.md; do

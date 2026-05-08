@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
@@ -11,7 +11,7 @@
     {
       "name": "project",
       "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"

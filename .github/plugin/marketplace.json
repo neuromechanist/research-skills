@@ -1,0 +1,62 @@
+{
+  "name": "research-skills",
+  "owner": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "metadata": {
+    "description": "Research and development plugins for literature search, grants, manuscripts, scientific figures, presentations, project lifecycle management, and neuroinformatics",
+    "version": "0.6.2"
+  },
+  "plugins": [
+    {
+      "name": "project",
+      "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
+      "version": "0.3.1",
+      "source": "./plugins/project",
+      "category": "development"
+    },
+    {
+      "name": "grant",
+      "description": "Grant proposal toolkit: NIH/NSF writing with mechanism-specific templates, structured review with scoring criteria, and figure quality assurance",
+      "version": "0.3.0",
+      "source": "./plugins/grant",
+      "category": "research"
+    },
+    {
+      "name": "manuscript",
+      "description": "Academic manuscript toolkit: literature review, peer review, writing, and journal-specific formatting for submission",
+      "version": "0.4.1",
+      "source": "./plugins/manuscript",
+      "category": "research"
+    },
+    {
+      "name": "opencite",
+      "description": "Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export",
+      "version": "0.3.0",
+      "source": "./plugins/opencite",
+      "category": "research"
+    },
+    {
+      "name": "scientific-figures",
+      "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA",
+      "version": "0.2.0",
+      "source": "./plugins/scientific-figures",
+      "category": "research"
+    },
+    {
+      "name": "presentation",
+      "description": "Presentation builder: create interactive Reveal.js presentations from JSON",
+      "version": "0.2.0",
+      "source": "./plugins/presentation",
+      "category": "research"
+    },
+    {
+      "name": "neuroinformatics",
+      "description": "Neuroscience data standards and experiment design: BIDS conversion/validation, HED annotation, and PsychoPy experiment scaffolding",
+      "version": "0.2.0",
+      "source": "./plugins/neuroinformatics",
+      "category": "research"
+    }
+  ]
+}

@@ -12,7 +12,15 @@ if [ ! -d "$TARGET_DIR" ]; then
     exit 1
 fi
 
-# CLAUDE.md
+# AGENTS.md
+if [ ! -f "$TARGET_DIR/AGENTS.md" ]; then
+    cp "$TEMPLATES_DIR/agents/AGENTS.md" "$TARGET_DIR/AGENTS.md"
+    echo "Created AGENTS.md"
+else
+    echo "AGENTS.md already exists, skipping"
+fi
+
+# CLAUDE.md imports AGENTS.md, then carries Claude-only additions.
 if [ ! -f "$TARGET_DIR/CLAUDE.md" ]; then
     cp "$TEMPLATES_DIR/claude/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
     echo "Created CLAUDE.md"

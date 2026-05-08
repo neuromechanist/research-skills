@@ -7,8 +7,6 @@
     "email": "shirazi@ieee.org"
   },
   "license": "BSD-3-Clause",
-  "commands": "./commands/",
   "skills": "./skills/",
-  "agents": "./agents/",
   "keywords": ["project", "init", "workflow", "ci-cd", "docker", "security", "scaffolding", "epic", "sprint", "worktree", "document-processing"]
 }
