@@ -1,0 +1,272 @@
+#!/bin/bash
+# Bump plugin/skill/marketplace versions atomically across all manifests.
+#
+# Files touched by a plugin bump:
+#   plugins/<plugin>/.claude-plugin/plugin.json         (the plugin's version)
+#   plugins/<plugin>/.codex-plugin/plugin.json          (if present)
+#   .claude-plugin/marketplace.json                     (root version + plugin entry)
+#   .github/plugin/marketplace.json                     (metadata.version + plugin entry)
+#
+# Skill bumps additionally update:
+#   plugins/<plugin>/skills/<skill>/SKILL.md            (YAML frontmatter version)
+#
+# Per the marketplace convention: a skill bump cascades to a plugin patch bump,
+# which cascades to a marketplace patch bump. Plugin bumps cascade to a marketplace
+# patch bump. Marketplace bumps stand alone.
+#
+# Usage:
+#   project-bump-version <plugin> <patch|minor|major>
+#   project-bump-version --skill <plugin>/<skill> <patch|minor|major>
+#   project-bump-version --marketplace <patch|minor|major>
+#   project-bump-version --check                          # report current versions
+#   project-bump-version --dry-run <args>                 # show planned writes, no edits
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+cd "$REPO_ROOT"
+
+DRY_RUN=0
+
+usage() {
+    sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'
+    exit "${1:-1}"
+}
+
+die() {
+    printf 'error: %s\n' "$*" >&2
+    exit 1
+}
+
+require_jq() {
+    command -v jq >/dev/null || die "jq is required (brew install jq)"
+}
+
+bump_semver() {
+    local current="$1" level="$2"
+    local major minor patch
+    IFS='.' read -r major minor patch <<<"$current"
+    case "$level" in
+        major) major=$((major + 1)); minor=0; patch=0 ;;
+        minor) minor=$((minor + 1)); patch=0 ;;
+        patch) patch=$((patch + 1)) ;;
+        *) die "level must be patch|minor|major (got: $level)" ;;
+    esac
+    printf '%s.%s.%s' "$major" "$minor" "$patch"
+}
+
+# read_json <file> <jq_filter>
+read_json() {
+    jq -r "$2" "$1"
+}
+
+# write_json <file> <jq_filter>  (in-place via tmp)
+write_json() {
+    local file="$1" filter="$2"
+    if [ "$DRY_RUN" -eq 1 ]; then
+        printf '  [dry-run] %s  <-  jq %s\n' "$file" "$filter"
+        return
+    fi
+    local tmp
+    tmp="$(mktemp)"
+    jq "$filter" "$file" >"$tmp"
+    mv "$tmp" "$file"
+}
+
+# read_skill_version <skill_md>
+read_skill_version() {
+    awk '
+        /^---$/ { fence++; next }
+        fence == 1 && /^version:[[:space:]]/ {
+            sub(/^version:[[:space:]]*/, "")
+            print
+            exit
+        }
+    ' "$1"
+}
+
+# write_skill_version <skill_md> <new_version>
+write_skill_version() {
+    local file="$1" new="$2"
+    if [ "$DRY_RUN" -eq 1 ]; then
+        printf '  [dry-run] %s  <-  version: %s\n' "$file" "$new"
+        return
+    fi
+    local tmp
+    tmp="$(mktemp)"
+    awk -v new="$new" '
+        BEGIN { fence = 0; replaced = 0 }
+        /^---$/ {
+            fence++
+            print
+            next
+        }
+        fence == 1 && /^version:[[:space:]]/ && !replaced {
+            print "version: " new
+            replaced = 1
+            next
+        }
+        { print }
+    ' "$file" >"$tmp"
+    mv "$tmp" "$file"
+}
+
+bump_plugin_manifest() {
+    local plugin="$1" level="$2"
+    local manifest="plugins/$plugin/.claude-plugin/plugin.json"
+    [ -f "$manifest" ] || die "plugin manifest not found: $manifest"
+    local current new
+    current="$(read_json "$manifest" '.version')"
+    new="$(bump_semver "$current" "$level")"
+    printf '  %-50s %s -> %s\n' "$manifest" "$current" "$new"
+    write_json "$manifest" ".version = \"$new\""
+
+    local codex="plugins/$plugin/.codex-plugin/plugin.json"
+    if [ -f "$codex" ]; then
+        local codex_current codex_new
+        codex_current="$(read_json "$codex" '.version')"
+        codex_new="$(bump_semver "$codex_current" "$level")"
+        printf '  %-50s %s -> %s\n' "$codex" "$codex_current" "$codex_new"
+        write_json "$codex" ".version = \"$codex_new\""
+    fi
+
+    local cc_market=".claude-plugin/marketplace.json"
+    local entry_current entry_new
+    entry_current="$(read_json "$cc_market" ".plugins[] | select(.name==\"$plugin\") | .version")"
+    entry_new="$(bump_semver "$entry_current" "$level")"
+    printf '  %-50s %s -> %s\n' "$cc_market[$plugin]" "$entry_current" "$entry_new"
+    write_json "$cc_market" "(.plugins[] | select(.name==\"$plugin\") | .version) = \"$entry_new\""
+
+    local gh_market=".github/plugin/marketplace.json"
+    if [ -f "$gh_market" ] && jq -e ".plugins[] | select(.name==\"$plugin\")" "$gh_market" >/dev/null; then
+        local gh_current gh_new
+        gh_current="$(read_json "$gh_market" ".plugins[] | select(.name==\"$plugin\") | .version")"
+        gh_new="$(bump_semver "$gh_current" "$level")"
+        printf '  %-50s %s -> %s\n' "$gh_market[$plugin]" "$gh_current" "$gh_new"
+        write_json "$gh_market" "(.plugins[] | select(.name==\"$plugin\") | .version) = \"$gh_new\""
+    fi
+}
+
+bump_marketplace_root() {
+    local level="$1"
+    local cc_market=".claude-plugin/marketplace.json"
+    local current new
+    current="$(read_json "$cc_market" '.version')"
+    new="$(bump_semver "$current" "$level")"
+    printf '  %-50s %s -> %s\n' "$cc_market" "$current" "$new"
+    write_json "$cc_market" ".version = \"$new\""
+
+    local gh_market=".github/plugin/marketplace.json"
+    if [ -f "$gh_market" ]; then
+        local gh_current gh_new
+        gh_current="$(read_json "$gh_market" '.metadata.version')"
+        gh_new="$(bump_semver "$gh_current" "$level")"
+        printf '  %-50s %s -> %s\n' "$gh_market(metadata)" "$gh_current" "$gh_new"
+        write_json "$gh_market" ".metadata.version = \"$gh_new\""
+    fi
+}
+
+bump_skill() {
+    local plugin="$1" skill="$2" level="$3"
+    local skill_md="plugins/$plugin/skills/$skill/SKILL.md"
+    [ -f "$skill_md" ] || die "skill not found: $skill_md"
+    local current
+    current="$(read_skill_version "$skill_md")"
+    [ -n "$current" ] || die "no 'version:' field in $skill_md frontmatter"
+    local new
+    new="$(bump_semver "$current" "$level")"
+    printf '  %-50s %s -> %s\n' "$skill_md" "$current" "$new"
+    write_skill_version "$skill_md" "$new"
+}
+
+cmd_check() {
+    require_jq
+    printf '== marketplaces ==\n'
+    printf '  .claude-plugin/marketplace.json    %s\n' \
+        "$(read_json .claude-plugin/marketplace.json '.version')"
+    if [ -f .github/plugin/marketplace.json ]; then
+        printf '  .github/plugin/marketplace.json    %s\n' \
+            "$(read_json .github/plugin/marketplace.json '.metadata.version')"
+    fi
+
+    printf '\n== plugins ==\n'
+    for f in plugins/*/.claude-plugin/plugin.json; do
+        local name version codex_v cc_v gh_v
+        name="$(read_json "$f" '.name')"
+        version="$(read_json "$f" '.version')"
+        cc_v="$(read_json .claude-plugin/marketplace.json ".plugins[] | select(.name==\"$name\") | .version")"
+        local codex="plugins/$name/.codex-plugin/plugin.json"
+        if [ -f "$codex" ]; then
+            codex_v="$(read_json "$codex" '.version')"
+        else
+            codex_v="-"
+        fi
+        if [ -f .github/plugin/marketplace.json ]; then
+            gh_v="$(read_json .github/plugin/marketplace.json ".plugins[] | select(.name==\"$name\") | .version" 2>/dev/null || echo '-')"
+        else
+            gh_v="-"
+        fi
+        local mark=' '
+        if [ "$version" != "$cc_v" ] || { [ "$codex_v" != "-" ] && [ "$codex_v" != "$version" ]; } || { [ "$gh_v" != "-" ] && [ "$gh_v" != "$version" ]; }; then
+            mark='!'
+        fi
+        printf '  %s %-20s claude=%-7s codex=%-7s cc-market=%-7s gh-market=%-7s\n' \
+            "$mark" "$name" "$version" "$codex_v" "$cc_v" "$gh_v"
+    done
+    printf '\n(! = drift between manifests)\n'
+}
+
+# --- argument parsing ---
+
+ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run) DRY_RUN=1 ;;
+        -h|--help) usage 0 ;;
+        *) ARGS+=("$arg") ;;
+    esac
+done
+
+[ "${#ARGS[@]}" -ge 1 ] || usage
+
+case "${ARGS[0]}" in
+    --check)
+        cmd_check
+        ;;
+    --marketplace)
+        require_jq
+        [ "${#ARGS[@]}" -eq 2 ] || usage
+        printf 'bumping marketplace (%s)\n' "${ARGS[1]}"
+        bump_marketplace_root "${ARGS[1]}"
+        ;;
+    --skill)
+        require_jq
+        [ "${#ARGS[@]}" -eq 3 ] || usage
+        local_path="${ARGS[1]}"
+        case "$local_path" in
+            */*) plugin="${local_path%%/*}"; skill="${local_path#*/}" ;;
+            *) die "expected <plugin>/<skill>, got: $local_path" ;;
+        esac
+        level="${ARGS[2]}"
+        printf 'bumping skill %s/%s (%s) + plugin patch + marketplace patch\n' "$plugin" "$skill" "$level"
+        bump_skill "$plugin" "$skill" "$level"
+        bump_plugin_manifest "$plugin" patch
+        bump_marketplace_root patch
+        ;;
+    -*)
+        die "unknown flag: ${ARGS[0]}"
+        ;;
+    *)
+        require_jq
+        [ "${#ARGS[@]}" -eq 2 ] || usage
+        plugin="${ARGS[0]}"
+        level="${ARGS[1]}"
+        printf 'bumping plugin %s (%s) + marketplace patch\n' "$plugin" "$level"
+        bump_plugin_manifest "$plugin" "$level"
+        bump_marketplace_root patch
+        ;;
+esac
+
+if [ "$DRY_RUN" -eq 0 ]; then
+    printf '\nDone. Review with: git diff -- .claude-plugin .github/plugin plugins/*/.claude-plugin plugins/*/.codex-plugin\n'
+fi
