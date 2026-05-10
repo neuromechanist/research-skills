@@ -1,6 +1,6 @@
 {
   "name": "grant",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Complete grant proposal toolkit: NIH/NSF proposal writing, structured review with scoring criteria, and figure quality assurance",
   "author": {
     "name": "Seyed Yahya Shirazi",
@@ -8,5 +8,15 @@
   },
   "license": "BSD-3-Clause",
   "skills": "./skills/",
-  "keywords": ["grant", "proposal", "nih", "nsf", "review", "writing", "specific-aims", "research-strategy", "scoring"]
+  "keywords": [
+    "grant",
+    "proposal",
+    "nih",
+    "nsf",
+    "review",
+    "writing",
+    "specific-aims",
+    "research-strategy",
+    "scoring"
+  ]
 }

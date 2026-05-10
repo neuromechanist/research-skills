@@ -1,6 +1,6 @@
 {
   "name": "neuroinformatics",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Neuroscience data standards and experiment design: BIDS conversion/validation, HED annotation, and PsychoPy experiment scaffolding",
   "author": {
     "name": "Seyed Yahya Shirazi",
@@ -8,6 +8,17 @@
   },
   "license": "BSD-3-Clause",
   "skills": "./skills/",
-  "agents": "./agents/",
-  "keywords": ["bids", "eeg", "emg", "hed", "psychopy", "neuroscience", "neuroinformatics", "experiment", "openneuro", "nemar", "lsl"]
+  "keywords": [
+    "bids",
+    "eeg",
+    "emg",
+    "hed",
+    "psychopy",
+    "neuroscience",
+    "neuroinformatics",
+    "experiment",
+    "openneuro",
+    "nemar",
+    "lsl"
+  ]
 }
