@@ -6,20 +6,20 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, scientific figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.7.0"
+    "version": "0.7.1"
   },
   "plugins": [
     {
       "name": "project",
       "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "source": "./plugins/project",
       "category": "development"
     },
     {
       "name": "grant",
       "description": "Grant proposal toolkit: NIH/NSF writing with mechanism-specific templates, structured review with scoring criteria, and figure quality assurance",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "source": "./plugins/grant",
       "category": "research"
     },
@@ -54,7 +54,7 @@
     {
       "name": "neuroinformatics",
       "description": "Neuroscience data standards and experiment design: BIDS conversion/validation, HED annotation, and PsychoPy experiment scaffolding",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "source": "./plugins/neuroinformatics",
       "category": "research"
     }

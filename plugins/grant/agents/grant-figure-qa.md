@@ -1,7 +1,6 @@
 ---
 name: grant-figure-qa
 description: "Use this agent to review grant proposal figures for compliance, resolution, accessibility, and quality. Triggers on \"check grant figures\", \"review proposal figures\", \"figure QA for grant\", \"NIH figure requirements\", or when preparing a grant for submission."
-version: 0.2.0
 model: sonnet
 tools: Bash, Read, Glob, Grep
 color: blue

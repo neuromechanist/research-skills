@@ -1,7 +1,6 @@
 ---
 name: bids-validator
 description: "Use this agent to autonomously validate a BIDS dataset, interpret validation errors, and suggest fixes. Triggers on \"validate BIDS\", \"check BIDS compliance\", \"BIDS errors\", \"fix BIDS warnings\", or when preparing a dataset for OpenNeuro/NEMAR submission."
-version: 0.1.0
 model: sonnet
 tools: Bash, Read, Write, Edit, Glob, Grep
 color: purple
