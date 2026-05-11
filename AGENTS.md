@@ -29,7 +29,7 @@ research-skills/
 │   ├── manuscript/                   # Academic manuscript toolkit
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
-│   │   └── skills/{paper-review,manuscript-writing,manuscript-formatting,lit-review}/
+│   │   └── skills/{paper-review,manuscript-writing,manuscript-formatting,lit-review,humanizer}/
 │   ├── opencite/                     # Literature search and citation management
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
@@ -53,8 +53,8 @@ research-skills/
 
 ## Plugins
 - **project** (v0.3.1): Project lifecycle toolkit with initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing. Commands: `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep`.
-- **grant** (v0.3.1): NIH/NSF grant proposal writing, structured review with scoring criteria, and figure quality assurance. Skills only.
-- **manuscript** (v0.4.2): Literature review (multi-phase citation-traceable corpus protocol + single-pass thematic synthesis), peer review, writing guidance, and journal-specific formatting for submission. Skills only.
+- **grant** (v0.3.4): NIH/NSF grant proposal writing, structured review with scoring criteria, and figure quality assurance. Cross-references `manuscript:humanizer` from grant-writing and grant-review for natural-writing passes. Skills only.
+- **manuscript** (v0.5.0): Literature review (multi-phase citation-traceable corpus protocol + single-pass thematic synthesis), peer review, writing guidance, journal-specific formatting for submission, and the `humanizer` skill for a final natural-writing pass (adapted from [blader/humanizer](https://github.com/blader/humanizer), MIT, Siqi Chen). Skills only.
 - **opencite** (v0.3.1): Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export. Skills only. (Single-pass literature-review synthesis moved to `manuscript:lit-review`.)
 - **scientific-figures** (v0.2.1): Publication-quality figures covering icons, plots, composition, and QA. Icon generation auto-selects between Codex CLI (`codex login`) and OpenAI API (`OPENAI_API_KEY`).
 - **presentation** (v0.2.1): Interactive Reveal.js presentations from JSON via the Agentic Presentation Builder. Skills only.

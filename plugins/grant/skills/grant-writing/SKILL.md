@@ -1,7 +1,7 @@
 ---
 name: grant-writing
 description: This skill should be used when the user asks to "write a grant proposal", "draft specific aims", "write a research strategy", "create an NIH proposal", "create an NSF proposal", "write a significance section", "write an innovation section", "write an approach section", "draft a DP2 essay", "write an R01", "write an R21", "write a K99", "write an R03", "write a K08", "write a K23", "write an F31", "write an F32", "write a CAREER proposal", "write preliminary data", "write rigor and reproducibility", "draft potential problems and alternatives", "write a budget justification", "respond to reviewer comments", "write a resubmission introduction", "strengthen my specific aims", "format grant text", or mentions grant writing, proposal drafting, specific aims, research strategy sections, or any NIH/NSF mechanism.
-version: 0.1.0
+version: 0.1.1
 ---
 
 # Grant Writing Skill
@@ -132,6 +132,13 @@ Consult `references/writing-style-guide.md` and `references/tone-guide.md` for e
 - Quantify when possible (N=24, 6-month, etc.)
 - Bold claims backed by technical precision
 - First person for vision ("I propose"), "we" for team work
+
+After drafting, run `manuscript:humanizer` as a final natural-writing pass. Pay particular attention to:
+
+- Pattern 1 (significance inflation): strip filler ("pivotal moment", "evolving landscape") but keep evidence-backed importance ("affects 1.2M patients annually").
+- Pattern 4 (promotional language): "groundbreaking", "transformative", "paradigm-shifting" read as red flags in Innovation sections. Let the methods carry the claim.
+- Pattern 24 (excessive hedging): tighten stacked hedges, but keep appropriate uncertainty in Approach risks/alternatives.
+- Patterns 17 and 19 (title case, curly quotes): for NIH/NSF, defer to mechanism formatting in Step 6.
 
 ### Step 6: Format for submission
 

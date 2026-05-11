@@ -1,7 +1,7 @@
 ---
 name: grant-review
 description: This skill should be used when the user asks to "review a grant", "review my proposal", "score this grant", "evaluate my specific aims", "critique my research strategy", "review as an NIH reviewer", "review as an NSF panelist", "give me reviewer feedback", "check my grant proposal", "review my R01", "review my K99", "evaluate my CAREER proposal", "run a mock study section", "review my resubmission", "review this PDF", "check my proposal PDF", "analyze my grant layout", or mentions grant review, proposal critique, NIH scoring, NSF panel review, study section feedback, or proposal PDF review.
-version: 0.1.1
+version: 0.1.2
 ---
 
 # Grant Proposal Review
@@ -142,6 +142,8 @@ Adopt the viewpoint of a **senior researcher** on a study section or review pane
 
 For common reviewer comments and their meanings, consult `references/review-best-practices.md`.
 
+When the proposal text triggers reviewer comments about "writing quality", "lack of specificity", "promotional language", or "buzzwords", point the applicant to `manuscript:humanizer`. Patterns most relevant to grant prose: 1 (significance inflation), 4 (promotional language), 7 (AI vocabulary), 8 (copula avoidance), 14 (em-dash overuse), 24 (excessive hedging), 25 (generic positive conclusions).
+
 ## Additional Resources
 
 ### Reference Files
@@ -150,6 +152,7 @@ For common reviewer comments and their meanings, consult `references/review-best
 - **`references/nsf-review-criteria.md`** - Complete NSF review criteria and panel process
 - **`references/review-best-practices.md`** - Best practices from experienced reviewers, common reviewer comments, and calibration guidance
 - **`references/review-output-templates.md`** - NIH and NSF review output format templates
+- **Sister skill `manuscript:humanizer`** - 29 AI-writing patterns to flag when assessing grant prose quality
 
 ### Examples
 - **`examples/sample-nih-r01-review.md`** - Complete example review demonstrating expected format, tone, and scoring calibration
