@@ -1,7 +1,7 @@
 ---
 name: lit-review
 description: "Use this skill for \"literature review workflow\", \"multi-phase lit review\", \"direction paper\", \"review paper protocol\", \"strand-based literature review\", \"citation-grounded review\", \"systematic lit review with paper cards\", \"build a lit review corpus\", \"lit review pipeline\", \"orchestrate a literature review\", \"research directions document\", \"write a literature review\", \"synthesize papers\", \"thematic review\", \"narrative review\", \"systematic review\", \"scoping review\", \"gap analysis\", or when the user wants either a rigorous multi-phase citation-traceable lit review or a single-pass thematic synthesis for an Introduction/Background section."
-version: 0.2.1
+version: 0.2.2
 ---
 
 # Multi-Phase Literature Review Workflow
@@ -171,6 +171,7 @@ The cite-card cross-link convention from Phase 3 still applies regardless of whe
 | `manuscript:manuscript-writing` | IMRAD / review-paper structure plus prose discipline (abbreviations, voice, transitions) |
 | `manuscript:manuscript-formatting` | Journal formatting / LaTeX export |
 | `manuscript:paper-review` | Self-review loops on direction-paper drafts |
+| `manuscript:humanizer` | Final natural-writing pass on synthesized prose. Lit-review synthesis sections are particularly prone to "evolving landscape", "growing body of work", and significance-inflation patterns; run humanizer before declaring a direction paper or Phase 2 synthesis complete. |
 | `project:epic-dev` | Formalize the lit-review phases (epic + sub-issues + worktrees + state file); also an upstream source of research angles when reviewing one's own project |
 
 ## References

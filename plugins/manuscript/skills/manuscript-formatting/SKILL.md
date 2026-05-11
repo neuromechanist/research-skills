@@ -1,7 +1,7 @@
 ---
 name: manuscript-formatting
 description: "Use this skill for \"format manuscript\", \"prepare for submission\", \"journal formatting\", \"LaTeX template\", \"submission checklist\", \"format references\", \"BibTeX\", \"author guidelines\", \"page limits\", \"format for Nature\", \"format for IEEE\", or when the user wants to format a manuscript for journal submission."
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Manuscript Formatting and Submission Preparation
@@ -123,7 +123,8 @@ Figure~\ref{fig:results}  % Standard format
 - [ ] Tables formatted per journal style
 - [ ] References complete and consistently formatted
 - [ ] Supplementary materials prepared separately
-- [ ] Cover letter drafted
+- [ ] Cover letter drafted (run `manuscript:humanizer` on it; cover letters are particularly prone to AI-tell phrasing)
+- [ ] `manuscript:humanizer` natural-writing pass applied to all narrative sections, *then* journal house style (title case, citation format, etc.) re-applied where it overrides humanizer defaults
 - [ ] Conflict of interest statement
 - [ ] Data availability statement
 - [ ] Ethics approval statement (if applicable)

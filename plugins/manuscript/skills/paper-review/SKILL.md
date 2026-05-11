@@ -1,7 +1,7 @@
 ---
 name: paper-review
 description: "Use this skill for \"review this paper\", \"review this manuscript\", \"peer review\", \"review my paper\", \"critique this manuscript\", \"review this submission\", \"give me feedback on my paper\", \"check my methods\", \"review my statistics\", \"review as a peer reviewer\", \"evaluate this manuscript\", \"review this PDF\", or mentions manuscript review, peer review, paper critique, or methodological review."
-version: 0.1.0
+version: 0.1.1
 ---
 
 # Academic Manuscript Review
@@ -136,6 +136,7 @@ Read each figure and table carefully:
 - Are abbreviations defined on first use and not redefined?
 - Does the abstract accurately reflect the paper's content and findings?
 - Is the methods section complete per the target journal's guidelines?
+- Are there pervasive AI-writing tells (significance inflation, em-dashes, "evolving landscape" filler, rule-of-three padding, synonym cycling, generic positive conclusions)? When recommending writing fixes, point the author to `manuscript:humanizer` and cite specific patterns (e.g., "pattern 1, significance inflation; pattern 14, em-dash overuse").
 
 ## Review Output Format
 
