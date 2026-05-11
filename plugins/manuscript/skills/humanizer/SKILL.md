@@ -8,9 +8,18 @@ version: 0.1.0
 
 ## Attribution
 
-The 29 patterns and the "Personality and Soul" section below are adapted from the upstream `humanizer` skill at https://github.com/blader/humanizer (v2.5.1) by Siqi Chen, released under the MIT License. The upstream patterns are themselves a distillation of [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), maintained by WikiProject AI Cleanup.
+This skill is adapted from the upstream `humanizer` skill at https://github.com/blader/humanizer (v2.5.1) by Siqi Chen, released under the MIT License. The upstream patterns are themselves a distillation of [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), maintained by WikiProject AI Cleanup.
 
-Additions for the research-skills marketplace: the "Research writing context" section, the "Reconciling with research-skills conventions" notes, and cross-references to sibling skills (`manuscript-writing`, `paper-review`, `manuscript-formatting`, `lit-review`, `grant-writing`, `grant-review`). The MIT license is preserved in the `LICENSE` file in this skill directory.
+**Upstream content (preserved with minor copyedits):** the 29 AI-writing patterns and their before/after examples, the "Personality and Soul" section, the "Voice Calibration" section, the "Process" and "Output Format" sections, the "Full Example", and the closing "Reference" note.
+
+**Additions for the research-skills marketplace:**
+
+- The YAML frontmatter (rewritten in marketplace `description` style with academic-trigger phrases).
+- The "Research writing context" section (including the "When to soften or skip a pattern", "Reconciling with research-skills conventions", and "When to invoke this skill in the writing workflow" subsections).
+- The per-pattern "Research writing note" callouts on 11 of the 29 patterns.
+- The "Cross-references in the research-skills marketplace" section near the end.
+
+The MIT license is preserved in the `LICENSE` file in this skill directory; the additions above are released under MIT as well to keep upstream compatibility. National Institutes of Health (NIH), National Science Foundation (NSF), Institute of Electrical and Electronics Engineers (IEEE), American Psychological Association (APA), and American Chemical Society (ACS) referenced later in this file follow standard agency/society abbreviations.
 
 ## Your Task
 
@@ -31,7 +40,7 @@ Academic and grant writing have genre conventions that occasionally override gen
 
 - **Passive voice in Methods.** Many biomedical, clinical, and life-sciences journals still prefer passive voice in Methods ("Samples were collected"). Active voice is preferred in research-skills overall, but do not force-rewrite Methods passages that match journal style. Pattern 13 still applies to Introduction, Results interpretation, Discussion, grant Approach narrative.
 - **Hedging in Limitations and Discussion.** Pattern 24 (excessive hedging) is real, but Discussion sections legitimately use "may", "suggests", "is consistent with". Trim *stacked* hedges ("could potentially possibly") to single hedges ("may"). Do not strip hedges to bare assertions you cannot defend.
-- **Significance language in grants.** Grant Significance sections legitimately argue that work matters. Pattern 1 (significance inflation) targets meaningless filler ("pivotal moment", "evolving landscape") — not specific, evidence-backed importance claims ("affects 1.2M patients annually"). Strip the filler, keep the substance.
+- **Significance language in grants.** Grant Significance and Specific Aims sections legitimately argue that work matters. Pattern 1 (significance inflation) targets meaningless filler ("pivotal moment", "evolving landscape"), not specific, evidence-backed importance claims ("affects 1.2M patients annually"). Strip the filler, keep the substance.
 - **Title case in journal headings.** Pattern 17 prefers sentence case for headings. Defer to the journal's submission guidelines: IEEE, APA, ACS, and many others mandate title case. Apply pattern 17 only where house style is sentence case or unspecified.
 - **Curly quotes (pattern 19).** Many publishers' copyeditors convert straight quotes to curly automatically. For LaTeX submissions, use straight quotes (`` `` ... '' ``) since LaTeX renders them correctly. For Word/Markdown drafts, follow the journal's manuscript prep guide.
 - **Boldface in clinical and technical writing.** Pattern 15 targets *mechanical* bolding of every defined term. Selective bold for variable names, gene symbols (`*TP53*`), or critical warnings is fine.
@@ -53,7 +62,7 @@ If a journal's guide explicitly requires something humanizer flags (e.g., title 
 - After drafting any section with `manuscript-writing` or `grant-writing`, before peer or self-review.
 - As the final polish step before `manuscript-formatting` (which applies journal-specific formatting on top).
 - During response-to-reviewers drafting, since reviewer letters benefit heavily from natural voice.
-- On synthesized lit-review prose from `lit-review` — these passages are particularly prone to "evolving landscape" filler.
+- On synthesized lit-review prose from `lit-review`; these passages are particularly prone to "evolving landscape" filler.
 
 ## Voice Calibration (Optional)
 
@@ -120,7 +129,7 @@ In academic prose, "soul" is constrained but not absent. Choose specific example
 
 **Words to watch:** stands/serves as, is a testament/reminder, a vital/significant/crucial/pivotal/key role/moment, underscores/highlights its importance/significance, reflects broader, symbolizing its ongoing/enduring/lasting, contributing to the, setting the stage for, marking/shaping the, represents/marks a shift, key turning point, evolving landscape, focal point, indelible mark, deeply rooted
 
-**Problem:** LLM writing puffs up importance by adding statements about how arbitrary aspects represent or contribute to a broader topic.
+**Problem:** Large language model (LLM) writing puffs up importance by adding statements about how arbitrary aspects represent or contribute to a broader topic.
 
 **Before:**
 > The Statistical Institute of Catalonia was officially established in 1989, marking a pivotal moment in the evolution of regional statistics in Spain. This initiative was part of a broader movement across Spain to decentralize administrative functions and enhance regional governance.
@@ -521,7 +530,7 @@ In academic prose, "soul" is constrained but not absent. Choose specific example
 ## Process
 
 1. Read the input text carefully.
-2. If the text is academic prose, note which section it belongs to (Methods, Results, Discussion, grant Aims, grant Approach, response to reviewers, lit-review synthesis). Apply the "Research writing context" calibrations for that genre.
+2. If the text is academic prose, note which section it belongs to (Methods, Results, Discussion, grant Specific Aims, grant Significance, grant Approach, response to reviewers, lit-review synthesis). Apply the "Research writing context" calibrations for that genre.
 3. Identify all instances of the patterns above.
 4. Rewrite each problematic section.
 5. Ensure the revised text:
@@ -552,8 +561,8 @@ Provide:
 - `manuscript:paper-review` for peer-review feedback. Humanizer is often the right fix for a "writing quality" comment from a reviewer.
 - `manuscript:manuscript-formatting` for journal-specific formatting. Run humanizer first; formatting applies house style afterward (title case, citation style, etc.).
 - `manuscript:lit-review` for literature-review prose. The synthesized passages from lit-review are particularly prone to "evolving landscape" and "growing body of work" filler.
-- `grant:grant-writing` for NIH/NSF proposals. Run humanizer on Significance, Innovation, and Approach narrative. Pay extra attention to patterns 1 (significance inflation) and 4 (promotional language).
-- `grant:grant-review` for proposal critique. Patterns identified here often surface as "writing quality" or "lack of specificity" reviewer comments.
+- `grant:grant-writing` for NIH/NSF proposals. Run humanizer on Specific Aims, Significance, Innovation, and Approach narrative. Pay extra attention to patterns 1 (significance inflation), 4 (promotional language), and 24 (excessive hedging); defer to the funding mechanism's formatting for patterns 17 (title case) and 19 (curly quotes).
+- `grant:grant-review` for proposal critique. Patterns most relevant to grant prose: 1 (significance inflation), 4 (promotional language), 7 (AI vocabulary), 8 (copula avoidance), 14 (em-dash overuse), 24 (excessive hedging), 25 (generic positive conclusions). These often surface as "writing quality" or "lack of specificity" reviewer comments.
 
 ## Full Example
 

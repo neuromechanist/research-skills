@@ -25,7 +25,7 @@
     },
     {
       "name": "manuscript",
-      "description": "Academic manuscript toolkit: literature review, peer review, writing, and journal-specific formatting for submission",
+      "description": "Academic manuscript toolkit: literature review, peer review, writing, journal-specific formatting for submission, and humanizer pass to remove AI-writing tells",
       "version": "0.5.0",
       "source": "./plugins/manuscript",
       "category": "research"
