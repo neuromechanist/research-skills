@@ -99,7 +99,7 @@ BASE_STYLE = (
 def load_templates() -> dict[str, Any]:
     """Load icon templates from the icon bible JSON."""
     if not TEMPLATES_PATH.exists():
-        print(f"Warning: templates file not found at {TEMPLATES_PATH}")
+        print(f"Warning: templates file not found at {TEMPLATES_PATH}", file=sys.stderr)
         return {}
     with open(TEMPLATES_PATH) as f:
         data = json.load(f)
@@ -180,7 +180,18 @@ def codex_available() -> bool:
 def resolve_backend(requested: str) -> str:
     """Resolve `auto` to a concrete backend; validate explicit choices."""
     if requested == "auto":
-        return "codex" if codex_available() else "api"
+        if codex_available():
+            return "codex"
+        if OpenAI is not None:
+            return "api"
+        print(
+            "No usable backend found. Either:\n"
+            "  - Run `codex login` to enable the Codex backend, or\n"
+            "  - Re-run with `--with openai` to enable the API backend "
+            "(also requires OPENAI_API_KEY).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     if requested == "codex":
         if not codex_available():
             print(
@@ -193,7 +204,8 @@ def resolve_backend(requested: str) -> str:
     if requested == "api":
         if OpenAI is None:
             print(
-                "Backend 'api' requested but `openai` is not installed.",
+                "Backend 'api' requested but `openai` is not installed. "
+                "Re-run with `--with openai`.",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -205,9 +217,16 @@ def resolve_backend(requested: str) -> str:
 def build_openai_client() -> Any:
     """Construct the OpenAI client with a friendly error if no API key is set."""
     assert OpenAI is not None  # caller routes via resolve_backend()
+    # OpenAIError covers missing key, invalid key, and configuration errors. We narrow to
+    # this class rather than `except Exception` so unrelated bugs (TypeError from a future
+    # SDK signature change, etc.) surface with their real traceback.
+    try:
+        from openai import OpenAIError  # type: ignore[import-not-found]
+    except ImportError:
+        OpenAIError = Exception  # type: ignore[assignment,misc]
     try:
         return OpenAI()  # reads OPENAI_API_KEY from env
-    except Exception as exc:  # OpenAI raises OpenAIError when key is missing
+    except OpenAIError as exc:
         print(
             "Backend 'api' requires OPENAI_API_KEY. "
             "Set it in your environment, .env, or ~/.env, "
@@ -246,7 +265,7 @@ def generate_icon_api(
 
     image_data = base64.b64decode(result.data[0].b64_json)
 
-    if transparent and HAS_PILLOW:
+    if transparent:
         image_data = _apply_transparency(image_data, method=transparency_method)
 
     return image_data
@@ -316,7 +335,7 @@ def generate_icon_codex(
                 f"stderr tail: {_safe_tail(proc.stderr, 300)}"
             )
         image_data = target.read_bytes()
-        if transparent and HAS_PILLOW:
+        if transparent:
             image_data = _apply_transparency(image_data, method=transparency_method)
         return image_data
     finally:
@@ -360,9 +379,15 @@ def generate_icon(
 
 
 def _apply_transparency_threshold(png_bytes: bytes, threshold: int = 240) -> bytes:
-    """Remove near-white pixels from PNG, making them transparent. Fast and dependency-free
-    (just Pillow). Works well for flat icons on a clean white background; can leave fringes
-    on anti-aliased edges and may erase highlights where the foreground itself is near-white."""
+    """Remove near-white pixels from PNG, making them transparent. Fast (Pillow only).
+    Works well for flat icons on a clean white background; can leave fringes on anti-aliased
+    edges and may erase highlights where the foreground itself is near-white."""
+    if not HAS_PILLOW:
+        raise RuntimeError(
+            "Transparency method 'threshold' requires Pillow. Re-run with: "
+            "`uv run --with openai --with python-dotenv --with pillow "
+            "python scripts/generate_icon.py ...`"
+        )
     img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
     data = img.getdata()
 
@@ -390,7 +415,19 @@ def _apply_transparency_birefnet(png_bytes: bytes) -> bytes:
             "`uv run --with openai --with python-dotenv --with pillow "
             "--with rembg --with onnxruntime python scripts/generate_icon.py ...`"
         ) from exc
-    session = new_session("birefnet-general")
+    try:
+        session = new_session("birefnet-general")
+    except Exception as exc:
+        # One-time BiRefNet ONNX model download can fail on network, disk, proxy, or
+        # cache-permission errors. Surface an actionable hint rather than the raw
+        # onnxruntime/urllib traceback.
+        raise RuntimeError(
+            "BiRefNet model download failed. Check your network connection and that "
+            "$U2NET_HOME (or ~/.u2net) is writable; alternatively re-run with "
+            f"`--transparency-method threshold` to skip the model. Underlying: {exc}"
+        ) from exc
+    # alpha_matting_erode_size defaults to 10 px (rembg default); reasonable for 1024 px
+    # icons. Increase if foreground edges show halos after matting.
     return remove(
         png_bytes,
         session=session,
@@ -432,7 +469,7 @@ def list_templates(templates: dict[str, Any]) -> None:
             print(f"    {'':25s} {t['description'][:70]}")
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate flat scientific icons using OpenAI gpt-image-2"
     )
@@ -483,7 +520,7 @@ def main() -> None:
         else:
             print("Available icon templates:")
             list_templates(templates)
-        return
+        return 0
 
     # Validate arguments
     if not args.prompt and not args.template and not args.category:
@@ -491,10 +528,9 @@ def main() -> None:
     if not args.output and not args.list_templates:
         parser.error("--output is required")
 
-    if args.transparent and not HAS_PILLOW:
-        print("Warning: --transparent requires Pillow. Ensure pillow is included in the uv run --with dependencies.")
-        print("Generating without transparency.")
-        args.transparent = False
+    # Transparency dependency checks are performed at the use site (raise from
+    # _apply_transparency_*) so the user sees the actionable error AFTER they have
+    # confirmed which method they want, not as a coarse early-exit warning.
 
     backend = resolve_backend(args.backend)
     client: Any = build_openai_client() if backend == "api" else None
@@ -504,9 +540,14 @@ def main() -> None:
     if args.category:
         cat_templates = [t for t in templates.values() if t.get("category") == args.category]
         if not cat_templates:
-            print(f"No templates found for category: {args.category}")
-            print("Available categories:", ", ".join(sorted(set(t.get("category", "") for t in templates.values()))))
-            return
+            print(f"No templates found for category: {args.category}", file=sys.stderr)
+            print(
+                "Available categories: " + ", ".join(
+                    sorted(set(t.get("category", "") for t in templates.values()))
+                ),
+                file=sys.stderr,
+            )
+            return 1
 
         output_dir = Path(args.output)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -521,14 +562,14 @@ def main() -> None:
                 transparency_method=args.transparency_method,
             )
             save_icon(data, output_dir / f"{t['id']}.png")
-        return
+        return 0
 
     # Template mode
     if args.template:
         if args.template not in templates:
-            print(f"Template not found: {args.template}")
-            print("Available:", ", ".join(sorted(templates.keys())))
-            return
+            print(f"Template not found: {args.template}", file=sys.stderr)
+            print("Available: " + ", ".join(sorted(templates.keys())), file=sys.stderr)
+            return 1
         t = templates[args.template]
         prompt = template_to_prompt(t, color_override=args.colors)
         transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
@@ -541,7 +582,7 @@ def main() -> None:
             transparency_method=args.transparency_method,
         )
         save_icon(data, Path(args.output))
-        return
+        return 0
 
     # Free-form batch mode
     if args.batch:
@@ -563,7 +604,7 @@ def main() -> None:
                 transparency_method=args.transparency_method,
             )
             save_icon(data, output_dir / f"{item.replace(' ', '_')}.png")
-        return
+        return 0
 
     # Single free-form prompt mode
     prompt = build_prompt(args.prompt, colors=args.colors, transparent=args.transparent)
@@ -576,7 +617,8 @@ def main() -> None:
         transparency_method=args.transparency_method,
     )
     save_icon(data, Path(args.output))
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

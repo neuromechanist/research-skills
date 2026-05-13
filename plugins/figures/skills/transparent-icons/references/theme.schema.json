@@ -9,14 +9,14 @@
     "theme_id": {
       "type": "string",
       "description": "Short identifier for the theme; used to label generated artifacts.",
-      "pattern": "^[a-z0-9][a-z0-9-]*$"
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
     },
     "palette": {
       "type": "object",
-      "description": "Hex color codes referenced by the prompt. Recommended: primary, accent, neutral, bg.",
+      "description": "Hex color codes referenced by the prompt. Recommended: primary, accent, neutral, bg. Accepts 3-, 4-, 6-, or 8-digit CSS hex codes or the literal 'transparent'.",
       "additionalProperties": {
         "type": "string",
-        "pattern": "^(#[0-9a-fA-F]{3,8}|transparent)$"
+        "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|transparent)$"
       }
     },
     "stroke": {
@@ -66,7 +66,7 @@
       "type": "object",
       "description": "Post-processing pipeline applied after generation.",
       "properties": {
-        "bg_removal": {"type": "string", "enum": ["none", "threshold", "birefnet-general"]},
+        "bg_removal": {"type": "string", "enum": ["none", "threshold", "birefnet"]},
         "alpha_matting": {"type": "boolean"},
         "threshold": {"type": "integer", "minimum": 0, "maximum": 255}
       }

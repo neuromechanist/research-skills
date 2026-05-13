@@ -58,8 +58,17 @@ def build_prompt(subject: str, theme: dict) -> str:
     palette = theme["palette"]
     positive = ", ".join(theme["style_tokens"])
     negative = ", ".join(theme["negative_tokens"])
+    stroke = theme.get("stroke", {})
+    stroke_bits = []
+    if "weight_px" in stroke:
+        stroke_bits.append(f"{stroke['weight_px']} px stroke weight")
+    if "linejoin" in stroke:
+        stroke_bits.append(f"{stroke['linejoin']} line joins")
+    if "linecap" in stroke:
+        stroke_bits.append(f"{stroke['linecap']} line caps")
+    stroke_str = (" Stroke: " + ", ".join(stroke_bits) + ".") if stroke_bits else ""
     return (
-        f"{subject}. Style: {positive}. "
+        f"{subject}. Style: {positive}.{stroke_str} "
         f"Primary color {palette['primary']}, accent {palette['accent']}, "
         f"neutral {palette['neutral']}. "
         f"Negative (do not include): {negative}. "
@@ -87,7 +96,11 @@ def main() -> int:
 
     OUT.mkdir(parents=True, exist_ok=True)
     theme_path = OUT / "theme.json"
-    theme_path.write_text(json.dumps(THEME, indent=2))
+    try:
+        theme_path.write_text(json.dumps(THEME, indent=2))
+    except OSError as exc:
+        print(f"error: could not write theme file {theme_path}: {exc}", file=sys.stderr)
+        return 1
     print(f"wrote theme: {theme_path}")
 
     targets = ICONS[:1] if args.smoke else ICONS
@@ -110,8 +123,14 @@ def main() -> int:
                 args.backend,
             ],
             check=False,
+            capture_output=True,
+            text=True,
             env={**os.environ},
         )
+        if result.stdout.strip():
+            print(result.stdout.rstrip())
+        if result.stderr.strip():
+            print(result.stderr.rstrip(), file=sys.stderr)
         if result.returncode != 0:
             print(f"  failed (rc={result.returncode})", file=sys.stderr)
             failures += 1

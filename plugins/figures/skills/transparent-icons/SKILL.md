@@ -1,6 +1,6 @@
 ---
 name: transparent-icons
-description: This skill should be used when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", or wants flat scientific icons (brain, neuron, DNA, EEG cap, etc.) in the Nature/Science journal style with transparent backgrounds. Generates PNG icons via the Codex CLI image_gen tool (preferred) or the OpenAI Images API (fallback), then applies transparency via a Pillow threshold by default or rembg + BiRefNet (opt-in, higher edge quality).
+description: This skill should be used when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", "generate an icon set", "batch icons", "icon batch", "batch generate icons", or wants flat scientific icons (brain, neuron, DNA, EEG cap, etc.) in the Nature/Science journal style with transparent backgrounds. Generates PNG icons via the Codex CLI image_gen tool (preferred) or the OpenAI Images API (fallback), then applies transparency via a Pillow threshold by default or rembg + BiRefNet (opt-in, higher edge quality).
 version: 0.1.0
 ---
 
@@ -77,7 +77,7 @@ When generating multiple icons that need to look like they belong together (same
 }
 ```
 
-`examples/icon_set.py` demonstrates loading a theme and generating an icon set with consistent prompts.
+`examples/icon_set.py` demonstrates loading a theme (including stroke weight and line-join hints) and generating an icon set with consistent prompts.
 
 ## When to use this skill vs the icon bible
 
@@ -98,4 +98,4 @@ Phase 4 of epic #31 introduces the `figure-qa` agent that proactively runs on ge
 - `references/theme.schema.json` — JSON schema for the theme bible (shared with ai-full-figure)
 - `scripts/generate_icon.py` — CLI entry point with auto backend selection
 - `scripts/icon-templates.json` — bible templates loaded by `--template` / `--category`
-- `examples/icon_set.py` — generate a 3-icon set with a shared theme
+- `examples/icon_set.py` — generate a 3-icon set with a shared theme (use `--smoke` for a single-icon verification run)
