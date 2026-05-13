@@ -100,6 +100,13 @@ def _walk(root: etree._Element) -> Iterator[tuple[etree._Element, float, float]]
     stack: list[tuple[etree._Element, float, float]] = [(root, 1.0, 1.0)]
     while stack:
         el, sx, sy = stack.pop()
+        # lxml Comment and ProcessingInstruction nodes have a non-string .tag (a
+        # cython function); QName chokes on those. Skip them and recurse into
+        # their (non-existent) children harmlessly.
+        if not isinstance(el.tag, str):
+            for child in el:
+                stack.append((child, sx, sy))
+            continue
         local_sx, local_sy = _parse_transform(el.get("transform") or "")
         cur_sx, cur_sy = sx * local_sx, sy * local_sy
         tag = etree.QName(el).localname
