@@ -56,7 +56,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | **grant** | 0.3.4 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
 | **manuscript** | 0.5.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **figures** | 0.3.0 | Publication-quality figures plugin (scaffolding; SKILL.md files land in subsequent phases of epic #31) | scaffolded: `scientific-figure`, `transparent-icons`, `plot-styling` (SKILL.md pending) | -- |
+| **figures** | 0.4.0 | Publication-quality figures plugin (epic #31 in progress; active: scientific-figure composer with font validation) | active: `scientific-figure`; pending: `transparent-icons`, `svg-figure`, `ai-full-figure`, `plot-styling`, `figure-qa` agent | -- |
 | **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
 | **neuroinformatics** | 0.2.3 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
@@ -96,18 +96,21 @@ The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citati
 
 ### figures
 
-Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.3.0 is **Phase 1 scaffolding only** — the plugin manifests, skill directories, and ported reference material are in place, but no SKILL.md files or agents have landed yet. Each subsequent phase of epic [#31](https://github.com/neuromechanist/research-skills/issues/31) adds one skill or agent:
+Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.4.0 ships the first working skill (`scientific-figure`) out of the five planned for epic [#31](https://github.com/neuromechanist/research-skills/issues/31).
 
-- **Phase 2** — `scientific-figure` skill (svgutils composer with pre-export font-size validation)
-- **Phase 3** — `transparent-icons` skill (refactored icon generator)
-- **Phase 4** — `figure-qa` agent (type-dispatching QA)
-- **Phase 5** — `svg-figure` skill
-- **Phase 6** — `ai-full-figure` skill
-- **Phase 7** — `plot-styling` skill
+**Active in v0.4.0:**
 
-Design context lives in `.context/figures-research.md` and `.context/figures-design.md`. Ported references that survive the redesign are already in place: `scientific-figure/references/color-palettes.md`, `scientific-figure/references/journal-specs.md`, `transparent-icons/references/icon-bible.md`, `transparent-icons/scripts/{generate_icon.py, icon-templates.json}`, and `plot-styling/references/element-plots.md`.
+- `scientific-figure` — svgutils-based composer that places panels at exact mm coordinates and preserves text as SVG `<text>` elements so font sizes are inspectable. The pre-export `validate_fonts.py` walks the transform stack and reports anything below the journal minimum (Nature 5 pt, Science/Cell/PNAS 6 pt). The `export.py` exporter detects Inkscape on `$PATH` and uses it when present, falling back to cairosvg with a warning. End-to-end example: `examples/two-column-figure.py`.
 
-Until subsequent phases land, the plugin exposes no auto-triggering skills. The legacy `generate_icon.py` script remains directly invocable via `uv run` from its new path.
+**Pending phases of epic #31:**
+
+- Phase 3 — `transparent-icons` skill (refactored icon generator)
+- Phase 4 — `figure-qa` agent (type-dispatching QA, proactive with opt-out)
+- Phase 5 — `svg-figure` skill
+- Phase 6 — `ai-full-figure` skill
+- Phase 7 — `plot-styling` skill
+
+Design context lives in `.context/figures-research.md` and `.context/figures-design.md`. The legacy `generate_icon.py` remains invocable via `uv run` from its new path until Phase 3 refactors it.
 
 ### presentation
 
