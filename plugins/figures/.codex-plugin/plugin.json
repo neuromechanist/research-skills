@@ -1,0 +1,12 @@
+{
+  "name": "figures",
+  "version": "1.0.0",
+  "description": "Publication-quality figures: pixel-perfect journal composition (svgutils), transparent icons (gpt-image-1.5), SVG-first creation, AI-generated full figures (gpt-image-2), plot styling, and unified figure QA",
+  "author": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "license": "BSD-3-Clause",
+  "skills": "./skills/",
+  "keywords": ["figures", "publication", "svgutils", "icons", "gpt-image", "scientific", "qa", "matplotlib"]
+}

@@ -1,7 +1,7 @@
 # Research Skills Marketplace
 
 ## Purpose
-Cross-agent marketplace providing plugins and skills for academic research workflows and development tooling: literature search and review, grant writing and review, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics.
+Cross-agent marketplace providing plugins and skills for academic research workflows and development tooling: literature search and review, grant writing and review, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics.
 
 ## Skills-first model
 This marketplace follows a skills-first surface. Skills auto-trigger from natural-language intent (description matching). Commands are kept only for workflows that need explicit `/command args` orchestration: project init, epic/sprint management, version bumps. Thin command wrappers around skills have been removed; do not reintroduce them.
@@ -34,10 +34,11 @@ research-skills/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
 │   │   └── skills/opencite/
-│   ├── scientific-figures/           # Icons + plots + composition + QA
+│   ├── figures/                      # Publication-quality figures + QA
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
-│   │   └── skills/scientific-figures/
+│   │   ├── skills/{scientific-figure,transparent-icons,svg-figure,ai-full-figure,plot-styling}/
+│   │   └── agents/figure-qa.md       # type-dispatching QA agent
 │   ├── presentation/                 # Interactive slide decks
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
@@ -56,13 +57,13 @@ research-skills/
 - **grant** (v0.3.4): NIH/NSF grant proposal writing, structured review with scoring criteria, and figure quality assurance. Cross-references `manuscript:humanizer` from grant-writing and grant-review for natural-writing passes. Skills only.
 - **manuscript** (v0.5.0): Literature review (multi-phase citation-traceable corpus protocol + single-pass thematic synthesis), peer review, writing guidance, journal-specific formatting for submission, and the `humanizer` skill for a final natural-writing pass (adapted from [blader/humanizer](https://github.com/blader/humanizer), MIT, Siqi Chen). Skills only.
 - **opencite** (v0.3.1): Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export. Skills only. (Single-pass literature-review synthesis moved to `manuscript:lit-review`.)
-- **scientific-figures** (v0.2.1): Publication-quality figures covering icons, plots, composition, and QA. Icon generation auto-selects between Codex CLI (`codex login`) and OpenAI API (`OPENAI_API_KEY`).
+- **figures** (v1.0.0): Publication-quality figure pipeline split into 5 skills + 1 QA agent. Composition uses `svgutils` (text preserved as SVG `<text>` elements, font minimums validated before export) with runtime-detected Inkscape/cairosvg exporter; icons default to gpt-image-1.5 (true transparency) with `rembg`/BiRefNet fallback for gpt-image-2; AI-generated full figures use gpt-image-2 substrate + programmatic SVG label overlay. The `figure-qa` agent dispatches by input type (SVG, PNG, plot-script, composed) and runs strict programmatic checks alongside VLM judgment scoring.
 - **presentation** (v0.2.1): Interactive Reveal.js presentations from JSON via the Agentic Presentation Builder. Skills only.
 - **neuroinformatics** (v0.2.1): Neuroscience data standards (BIDS, HED), experiment design (PsychoPy, LSL), and dataset validation. Skills only.
 
 ## Development
-- Use Bun for any JS/TS work (react-pdf figures)
-- Use UV for any Python work (icon generation scripts)
+- Use Bun for any JS/TS work
+- Use UV for any Python work (svgutils composition, icon generation, figure QA)
 - Prefer uvx/bunx for on-the-fly execution
 - Each plugin has independent versioning in its own plugin.json
 - No mocks in tests

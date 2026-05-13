@@ -5,8 +5,8 @@
     "email": "shirazi@ieee.org"
   },
   "metadata": {
-    "description": "Research and development plugins for literature search, grants, manuscripts, scientific figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.7.6"
+    "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
+    "version": "0.8.0"
   },
   "plugins": [
     {
@@ -38,10 +38,10 @@
       "category": "research"
     },
     {
-      "name": "scientific-figures",
-      "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA",
-      "version": "0.2.1",
-      "source": "./plugins/scientific-figures",
+      "name": "figures",
+      "description": "Publication-quality figures: pixel-perfect journal composition (svgutils), transparent icons (gpt-image-1.5), SVG-first creation, AI-generated full figures (gpt-image-2), plot styling, and unified figure QA",
+      "version": "1.0.0",
+      "source": "./plugins/figures",
       "category": "research"
     },
     {

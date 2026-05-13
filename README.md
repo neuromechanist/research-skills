@@ -1,6 +1,6 @@
 # Research Skills
 
-Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics.
+Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics.
 
 ## Install
 
@@ -18,7 +18,7 @@ Install all plugins via CLI:
 
 ```bash
 claude plugin marketplace add neuromechanist/research-skills
-for p in project grant manuscript opencite scientific-figures presentation neuroinformatics; do
+for p in project grant manuscript opencite figures presentation neuroinformatics; do
   claude plugin install "$p@research-skills"
 done
 ```
@@ -56,7 +56,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | **grant** | 0.3.1 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
 | **manuscript** | 0.4.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **scientific-figures** | 0.2.1 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
+| **figures** | 1.0.0 | Pixel-perfect journal composition, transparent icons, SVG figures, AI-generated full figures, plot styling, and unified figure QA | `scientific-figure`, `transparent-icons`, `svg-figure`, `ai-full-figure`, `plot-styling` | -- |
 | **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
 | **neuroinformatics** | 0.2.1 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
@@ -94,16 +94,19 @@ The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citati
 "Write a single-pass literature review on motor cortex oscillations"
 ```
 
-### scientific-figures
+### figures
 
-Create publication-quality figures for Nature, Science, PNAS, Cell, and other journals:
+Publication-quality figures for Nature, Science, PNAS, Cell, and other journals. Five skills + one QA agent:
 
-1. **Plan** -- target journal, panel layout, color palette
-2. **Create elements** -- icons (gpt-image-2), plots (matplotlib/seaborn/plotly/ggplot2)
-3. **Compose** -- assemble into PDF via react-pdf
-4. **Visual QA** -- render to PNG, read the image, verify alignment/labels/overlap, iterate
+- **scientific-figure** -- `svgutils` programmatic composition with mm/pt physical dimensions; pre-export font-size validation (5pt Nature, 6-8pt Science/Cell/PNAS) that rescales individual panels rather than uniformly shrinking; Inkscape detected at runtime with cairosvg fallback.
+- **transparent-icons** -- gpt-image-1.5 for true `background=transparent`; gpt-image-2 + `rembg`/BiRefNet fallback when 1.5 unavailable; Codex CLI when no API key.
+- **svg-figure** -- SVG-first schematic creation with text-bbox alignment and arrow-tip-to-target geometry enforced.
+- **ai-full-figure** -- gpt-image-2 substrate for presentations and posters, with programmatic SVG label/arrow overlay on top. Hard rule: any figure with axis numerals, equations, multi-arrow flow, or more than 5 labels routes back to `scientific-figure` or `svg-figure`.
+- **plot-styling** -- decision tree across matplotlib, seaborn, plotnine, plotly, PyVista with SciencePlots Nature/IEEE/Science recipes.
 
-All elements saved as SVG or transparent PNG. Enforces sans-serif fonts, colorblind-safe palettes, and journal-specific dimensions. Runs on-the-fly via `uvx` and `bunx`.
+The `figure-qa` agent dispatches on input type (SVG, PNG, plot-script, composed) and runs deterministic checks (font pt minima, bbox overlap via shapely, alpha-channel correctness, palette compliance via colorthief, label legibility via RapidOCR) alongside VLM rubric scoring for aesthetic and hierarchy. Programmatic checks own anything with ground truth; VLM judgment is reserved for "does this look balanced."
+
+Runs on-the-fly via `uvx`. Inkscape (`brew install inkscape`) is detected if present; otherwise cairosvg is used.
 
 ### presentation
 
@@ -167,7 +170,7 @@ research-skills/
 │   ├── grant/                     # Grant proposals (writing, review, figure QA)
 │   ├── manuscript/                # Manuscripts (review, writing, formatting)
 │   ├── opencite/                  # Literature search and citation management
-│   ├── scientific-figures/        # Icons + plots + composition + QA
+│   ├── figures/                   # Publication-quality figures + QA
 │   ├── presentation/             # Interactive Reveal.js slide decks
 │   └── neuroinformatics/          # BIDS, HED, experiment design
 ```
@@ -176,9 +179,10 @@ research-skills/
 
 - [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex), or [GitHub Copilot CLI](https://docs.github.com/en/copilot)
 - For opencite: `opencite` CLI (`uvx opencite`)
-- For icons: OpenAI API key (gpt-image-2)
-- For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
-- For figure composition: react-pdf via `bunx` (on-the-fly)
+- For icons: OpenAI API key (gpt-image-1.5 for transparent) or `codex login` for Codex CLI fallback
+- For plots: matplotlib/seaborn/plotly/plotnine via `uvx` (on-the-fly)
+- For figure composition: `svgutils` via `uvx` plus Inkscape (`brew install inkscape`) for highest PDF text fidelity; cairosvg fallback otherwise
+- For figure QA: lxml, svgelements, svgpathtools, shapely, pillow, colorthief, rapidocr-onnxruntime, colorspacious, wcag-contrast-ratio (all on-the-fly via uv)
 - For PDF conversion: poppler (`brew install poppler` on macOS)
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)

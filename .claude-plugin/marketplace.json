@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.7.6",
-  "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics",
+  "version": "0.8.0",
+  "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
@@ -57,14 +57,14 @@
       "homepage": "https://github.com/neuromechanist/research-skills"
     },
     {
-      "name": "scientific-figures",
-      "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA for Nature/Science/PNAS journals",
-      "version": "0.2.1",
+      "name": "figures",
+      "description": "Publication-quality figures: pixel-perfect journal composition (svgutils), transparent icons (gpt-image-1.5), SVG-first creation, AI-generated full figures (gpt-image-2), plot styling, and unified figure QA",
+      "version": "1.0.0",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
       },
-      "source": "./plugins/scientific-figures",
+      "source": "./plugins/figures",
       "category": "research",
       "homepage": "https://github.com/neuromechanist/research-skills"
     },
