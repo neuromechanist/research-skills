@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.12.0"
+    "version": "0.13.0"
   },
   "plugins": [
     {
@@ -39,8 +39,8 @@
     },
     {
       "name": "figures",
-      "description": "Publication-quality figures plugin (epic #31 in progress). Active skills: scientific-figure (svgutils composer with pre-export font-size validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with text-alignment, arrow-pattern, and palette-compliance guidelines). Active agent: figure-qa (type-dispatching QA with strict programmatic-vs-VLM separation). Planned: ai-full-figure (Phase 6), plot-styling (Phase 7).",
-      "version": "0.7.0",
+      "description": "Publication-quality figures plugin (epic #31 in progress). Active skills: scientific-figure (svgutils composer with pre-export font-size validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with palette-compliance guidelines); ai-full-figure (AI substrate via Codex/OpenAI plus programmatic label/arrow/scale-bar overlay). Active agent: figure-qa (type-dispatching QA with strict programmatic-vs-VLM separation). Planned: plot-styling (Phase 7).",
+      "version": "0.8.0",
       "source": "./plugins/figures",
       "category": "research"
     },

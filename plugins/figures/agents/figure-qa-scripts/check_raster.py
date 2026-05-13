@@ -3,7 +3,9 @@
 Detects:
 - Alpha-channel correctness (does the file claim transparency? are the corners
   actually transparent?)
-- Unintended white background (file lacks RGBA, but corners are pure white)
+- Pure-white border (only reported as an issue when --expect-transparent is
+  set; otherwise informational, since ai-full-figure substrates and journal-
+  margined PNGs legitimately have white backgrounds)
 - Resolution and DPI vs the journal target
 - Dominant colors vs an allow-list (via colorthief if available)
 
@@ -77,10 +79,11 @@ def _alpha_report(img, expect_transparent: bool) -> dict[str, Any]:  # type: ign
     return info
 
 
-def _white_background_report(img) -> dict[str, Any]:  # type: ignore[no-untyped-def]
-    """For opaque images, sample corners to detect an unintended pure-white
-    background. Many journals reject white-bordered raster figures unless the
-    border was deliberate."""
+def _white_background_report(img, expect_transparent: bool) -> dict[str, Any]:  # type: ignore[no-untyped-def]
+    """For opaque images, sample corners to report whether all four are pure-white.
+    Flag as an issue only when the caller asserted `--expect-transparent`; otherwise
+    a pure-white border is plausibly intentional (e.g., ai-full-figure substrates,
+    journal-required white margins)."""
     if img.mode in ("RGBA", "LA", "PA"):
         return {"applicable": False, "reason": "image has alpha channel; use alpha_report instead"}
     rgb = img.convert("RGB")
@@ -97,10 +100,17 @@ def _white_background_report(img) -> dict[str, Any]:  # type: ignore[no-untyped-
         "corner_pixels": [list(c) for c in corners],
         "pure_white_corner_count": pure_white,
     }
-    if pure_white == 4:
+    if pure_white == 4 and expect_transparent:
         out["issue"] = (
-            "all four corners pure-white suggests an unintended white background; "
-            "consider exporting with transparent=True or cropping."
+            "expected transparent background but all four corners are pure-white; "
+            "the image appears opaque. Re-export with transparent=True or run "
+            "rembg/BiRefNet."
+        )
+    elif pure_white == 4:
+        out["note"] = (
+            "all four corners pure-white — image is opaque. Intentional for "
+            "ai-full-figure substrates and journal-margined PNGs; pass "
+            "--expect-transparent to flag as an issue."
         )
     else:
         out["note"] = "no all-white border detected."
@@ -170,7 +180,7 @@ def check_raster(
         "input": str(image_path),
         "checks": {
             "alpha": _alpha_report(img, expect_transparent),
-            "white_background": _white_background_report(img),
+            "white_background": _white_background_report(img, expect_transparent),
             "resolution": _resolution_report(img, journal),
             "palette": _palette_report(image_path),
         },
