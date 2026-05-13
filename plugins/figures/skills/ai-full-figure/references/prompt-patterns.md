@@ -79,6 +79,8 @@ Add domain-specific exclusions when needed:
 - For apparatus: `"hands", "fingers"` (unless deliberately included)
 - For abstracts: `"realistic skin texture", "photographic background"`
 
+**Note on the unconditional no-text suffix.** `generate_figure.py` always appends a final sentence to the prompt — `No text, no labels, no arrows, no captions, no watermark.` — *regardless* of what `negative_tokens` you set in the theme. This is intentional: the substrate-only rule is the contract of `ai-full-figure`, and a caller cannot opt out without editing the script. If your theme's `negative_tokens` already covers the same terms, the prompt is mildly redundant but harmless to current models. If you need a generation that *does* contain embedded text or labels, this is the wrong skill — use `[[svg-figure]]` (programmatic text overlay) or `[[transparent-icons]]` (icon set with no text).
+
 ## Reference images for style consistency
 
 `gpt-image-2` accepts up to 16 reference images for style transfer. When generating a set of substrates that need to look like siblings:

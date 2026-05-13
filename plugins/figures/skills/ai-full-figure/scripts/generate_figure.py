@@ -188,7 +188,14 @@ def _generate_api(prompt: str, w: int, h: int) -> bytes:
         background="opaque",
         moderation="auto",
     )
-    return base64.b64decode(result.data[0].b64_json)
+    b64 = result.data[0].b64_json if result.data else None
+    if not b64:
+        url = getattr(result.data[0], "url", None) if result.data else None
+        raise RuntimeError(
+            f"OpenAI Images API returned no base64 payload (url={url!r}). "
+            "Confirm output_format='png' is still accepted and that the model is reachable."
+        )
+    return base64.b64decode(b64)
 
 
 def _generate_codex(prompt: str, w: int, h: int, timeout_s: int = 600) -> bytes:

@@ -45,6 +45,10 @@ from typing import Any
 DEFAULT_FONT_SIZE_PT = 8
 DEFAULT_COLOR = "#1F3A5F"
 
+# CSS hex colors only (3/4/6/8 digits). Reject anything else so untrusted JSON
+# input cannot inject extra SVG attributes via the color field.
+_HEX_COLOR_RE = re.compile(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
+
 
 def _read_image_size(path: Path) -> tuple[int, int]:
     from PIL import Image  # type: ignore[import-not-found]
@@ -85,21 +89,39 @@ def _embed_image_data_uri(path: Path) -> str:
     return f"data:image/png;base64,{b64}"
 
 
+def _safe_color(value: str | None, default: str = DEFAULT_COLOR) -> str:
+    """Return value if it is a CSS hex color, else default. Raises ValueError when
+    a value is provided but is not a valid hex (so user-supplied JSON labels with
+    unsafe color values fail loudly instead of injecting SVG attributes)."""
+    if value is None:
+        return default
+    if not _HEX_COLOR_RE.match(value):
+        raise ValueError(f"unsafe color value (must be hex): {value!r}")
+    return value
+
+
+def _safe_marker_id(color: str) -> str:
+    """Stable, attribute-safe id derived from a validated hex color."""
+    return "overlay-arrow-" + color.lstrip("#").lower()
+
+
 def _label_svg(label: dict[str, Any], font_size: float = DEFAULT_FONT_SIZE_PT) -> str:
-    """Emit a <text> element (and optional leader arrow) for one label."""
+    """Emit a <text> element (and optional leader arrow) for one label.
+    The marker referenced is color-specific so arrowhead and stroke match."""
     text = label["text"]
     x = float(label["x"])
     y = float(label["y"])
-    color = label.get("color", DEFAULT_COLOR)
+    color = _safe_color(label.get("color"))
     size = float(label.get("font_size_pt", font_size))
     arrow_to = label.get("arrow_to")
+    marker_id = _safe_marker_id(color)
 
     out: list[str] = []
     if arrow_to:
         ax, ay = float(arrow_to[0]), float(arrow_to[1])
         out.append(
             f'<line x1="{x}" y1="{y}" x2="{ax}" y2="{ay}" '
-            f'stroke="{color}" stroke-width="1.2" marker-end="url(#overlay-arrow)"/>'
+            f'stroke="{color}" stroke-width="1.2" marker-end="url(#{marker_id})"/>'
         )
     out.append(
         f'<text x="{x}" y="{y}" text-anchor="middle" dominant-baseline="middle" '
@@ -114,7 +136,7 @@ def _scale_bar_svg(bar: dict[str, Any]) -> str:
     x = float(bar["x"])
     y = float(bar["y"])
     length_px = float(bar.get("length_px", 80))
-    color = bar.get("color", DEFAULT_COLOR)
+    color = _safe_color(bar.get("color"))
     text = bar.get("text", "")
     size = float(bar.get("font_size_pt", DEFAULT_FONT_SIZE_PT))
     return (
@@ -129,7 +151,13 @@ def _scale_bar_svg(bar: dict[str, Any]) -> str:
 
 
 def _xml_escape(s: str) -> str:
-    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return (
+        s.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&apos;")
+    )
 
 
 def compose_svg(
@@ -142,6 +170,22 @@ def compose_svg(
     height_mm = width_mm * (ph / pw)
     image_uri = _embed_image_data_uri(substrate_path)
 
+    # Collect every distinct, validated color used by labels and scale bars,
+    # plus DEFAULT_COLOR as a baseline. Emit one <marker> per color so the
+    # arrowhead matches its line's stroke rather than always being the default.
+    colors: set[str] = {DEFAULT_COLOR}
+    for lbl in labels:
+        colors.add(_safe_color(lbl.get("color")))
+    for bar in scale_bars:
+        colors.add(_safe_color(bar.get("color")))
+
+    marker_defs = "\n    ".join(
+        f'<marker id="{_safe_marker_id(c)}" viewBox="0 0 10 10" refX="9" refY="5" '
+        f'markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+        f'<path d="M 0 0 L 10 5 L 0 10 z" fill="{c}"/></marker>'
+        for c in sorted(colors)
+    )
+
     label_blocks = "\n  ".join(_label_svg(label) for label in labels)
     bar_blocks = "\n  ".join(_scale_bar_svg(bar) for bar in scale_bars)
 
@@ -150,10 +194,7 @@ def compose_svg(
      width="{width_mm}mm" height="{height_mm:.3f}mm"
      viewBox="0 0 {pw} {ph}">
   <defs>
-    <marker id="overlay-arrow" viewBox="0 0 10 10" refX="9" refY="5"
-            markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="{DEFAULT_COLOR}"/>
-    </marker>
+    {marker_defs}
   </defs>
   <image href="{image_uri}" x="0" y="0" width="{pw}" height="{ph}"/>
   {label_blocks}

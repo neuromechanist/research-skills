@@ -3,7 +3,9 @@
 Detects:
 - Alpha-channel correctness (does the file claim transparency? are the corners
   actually transparent?)
-- Unintended white background (file lacks RGBA, but corners are pure white)
+- Pure-white border (only reported as an issue when --expect-transparent is
+  set; otherwise informational, since ai-full-figure substrates and journal-
+  margined PNGs legitimately have white backgrounds)
 - Resolution and DPI vs the journal target
 - Dominant colors vs an allow-list (via colorthief if available)
 
