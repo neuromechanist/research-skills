@@ -52,13 +52,13 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.3.1 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
-| **grant** | 0.3.1 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
-| **manuscript** | 0.4.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
+| **project** | 0.3.3 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **grant** | 0.3.4 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
+| **manuscript** | 0.5.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **figures** | 1.0.0 | Pixel-perfect journal composition, transparent icons, SVG figures, AI-generated full figures, plot styling, and unified figure QA | `scientific-figure`, `transparent-icons`, `svg-figure`, `ai-full-figure`, `plot-styling` | -- |
+| **figures** | 0.3.0 | Publication-quality figures plugin (scaffolding; SKILL.md files land in subsequent phases of epic #31) | scaffolded: `scientific-figure`, `transparent-icons`, `plot-styling` (SKILL.md pending) | -- |
 | **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
-| **neuroinformatics** | 0.2.1 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
+| **neuroinformatics** | 0.2.3 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
 ## Research Plugins
 
@@ -96,17 +96,18 @@ The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citati
 
 ### figures
 
-Publication-quality figures for Nature, Science, PNAS, Cell, and other journals. Five skills + one QA agent:
+Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.3.0 is **Phase 1 scaffolding only** — the plugin manifests, skill directories, and ported reference material are in place, but no SKILL.md files or agents have landed yet. Each subsequent phase of epic [#31](https://github.com/neuromechanist/research-skills/issues/31) adds one skill or agent:
 
-- **scientific-figure** -- `svgutils` programmatic composition with mm/pt physical dimensions; pre-export font-size validation (5pt Nature, 6-8pt Science/Cell/PNAS) that rescales individual panels rather than uniformly shrinking; Inkscape detected at runtime with cairosvg fallback.
-- **transparent-icons** -- gpt-image-1.5 for true `background=transparent`; gpt-image-2 + `rembg`/BiRefNet fallback when 1.5 unavailable; Codex CLI when no API key.
-- **svg-figure** -- SVG-first schematic creation with text-bbox alignment and arrow-tip-to-target geometry enforced.
-- **ai-full-figure** -- gpt-image-2 substrate for presentations and posters, with programmatic SVG label/arrow overlay on top. Hard rule: any figure with axis numerals, equations, multi-arrow flow, or more than 5 labels routes back to `scientific-figure` or `svg-figure`.
-- **plot-styling** -- decision tree across matplotlib, seaborn, plotnine, plotly, PyVista with SciencePlots Nature/IEEE/Science recipes.
+- **Phase 2** — `scientific-figure` skill (svgutils composer with pre-export font-size validation)
+- **Phase 3** — `transparent-icons` skill (refactored icon generator)
+- **Phase 4** — `figure-qa` agent (type-dispatching QA)
+- **Phase 5** — `svg-figure` skill
+- **Phase 6** — `ai-full-figure` skill
+- **Phase 7** — `plot-styling` skill
 
-The `figure-qa` agent dispatches on input type (SVG, PNG, plot-script, composed) and runs deterministic checks (font pt minima, bbox overlap via shapely, alpha-channel correctness, palette compliance via colorthief, label legibility via RapidOCR) alongside VLM rubric scoring for aesthetic and hierarchy. Programmatic checks own anything with ground truth; VLM judgment is reserved for "does this look balanced."
+Design context lives in `.context/figures-research.md` and `.context/figures-design.md`. Ported references that survive the redesign are already in place: `scientific-figure/references/color-palettes.md`, `scientific-figure/references/journal-specs.md`, `transparent-icons/references/icon-bible.md`, `transparent-icons/scripts/{generate_icon.py, icon-templates.json}`, and `plot-styling/references/element-plots.md`.
 
-Runs on-the-fly via `uvx`. Inkscape (`brew install inkscape`) is detected if present; otherwise cairosvg is used.
+Until subsequent phases land, the plugin exposes no auto-triggering skills. The legacy `generate_icon.py` script remains directly invocable via `uv run` from its new path.
 
 ### presentation
 
@@ -179,11 +180,10 @@ research-skills/
 
 - [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex), or [GitHub Copilot CLI](https://docs.github.com/en/copilot)
 - For opencite: `opencite` CLI (`uvx opencite`)
-- For icons: OpenAI API key (gpt-image-1.5 for transparent) or `codex login` for Codex CLI fallback
-- For plots: matplotlib/seaborn/plotly/plotnine via `uvx` (on-the-fly)
-- For figure composition: `svgutils` via `uvx` plus Inkscape (`brew install inkscape`) for highest PDF text fidelity; cairosvg fallback otherwise
-- For figure QA: lxml, svgelements, svgpathtools, shapely, pillow, colorthief, rapidocr-onnxruntime, colorspacious, wcag-contrast-ratio (all on-the-fly via uv)
+- For icons (current): OpenAI API key for the OpenAI Images API, or `codex login` for the Codex CLI fallback. The active `generate_icon.py` uses the latest available OpenAI image model.
+- For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
 - For PDF conversion: poppler (`brew install poppler` on macOS)
+- Composition, full figure-QA, and additional plotting dependencies land with their respective phases of epic #31.
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
 - For OCR: Mistral API key (optional, tesseract as offline fallback)

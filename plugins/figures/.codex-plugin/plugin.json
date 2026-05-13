@@ -1,7 +1,7 @@
 {
   "name": "figures",
-  "version": "1.0.0",
-  "description": "Publication-quality figures: pixel-perfect journal composition (svgutils), transparent icons (gpt-image-1.5), SVG-first creation, AI-generated full figures (gpt-image-2), plot styling, and unified figure QA",
+  "version": "0.3.0",
+  "description": "Publication-quality figures plugin (Phase 1 scaffold of epic #31; SKILL.md files land in subsequent phases). Replaces the retired scientific-figures plugin. Planned skills: scientific-figure (svgutils composer with font-size validation), transparent-icons, svg-figure, ai-full-figure, plot-styling; plus a type-dispatching figure-qa agent.",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"

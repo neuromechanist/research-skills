@@ -285,4 +285,4 @@ Leave slight margin (0.1-0.2in) for panel label and spacing in the final composi
 | PNG (600 DPI) | When SVG rendering is inconsistent or for photographic overlays |
 | PDF | When going directly into LaTeX or as standalone figure |
 
-Always save SVG first. Convert to PNG only if needed for react-pdf composition (react-pdf supports PNG and JPG for `Image` components).
+Always save SVG first. Convert to PNG only when the composition tool needs raster input or SVG rendering is inconsistent in the target tool.

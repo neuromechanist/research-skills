@@ -34,11 +34,10 @@ research-skills/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
 │   │   └── skills/opencite/
-│   ├── figures/                      # Publication-quality figures + QA
+│   ├── figures/                      # Publication-quality figures (Phase 1 scaffold; epic #31)
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
-│   │   ├── skills/{scientific-figure,transparent-icons,svg-figure,ai-full-figure,plot-styling}/
-│   │   └── agents/figure-qa.md       # type-dispatching QA agent
+│   │   └── skills/{scientific-figure,transparent-icons,plot-styling}/   # SKILL.md files land in Phases 2, 3, 7; svg-figure (5), ai-full-figure (6), and agents/figure-qa.md (4) land later
 │   ├── presentation/                 # Interactive slide decks
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
@@ -53,13 +52,13 @@ research-skills/
 ```
 
 ## Plugins
-- **project** (v0.3.1): Project lifecycle toolkit with initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing. Commands: `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep`.
+- **project** (v0.3.3): Project lifecycle toolkit with initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing. Commands: `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep`.
 - **grant** (v0.3.4): NIH/NSF grant proposal writing, structured review with scoring criteria, and figure quality assurance. Cross-references `manuscript:humanizer` from grant-writing and grant-review for natural-writing passes. Skills only.
 - **manuscript** (v0.5.0): Literature review (multi-phase citation-traceable corpus protocol + single-pass thematic synthesis), peer review, writing guidance, journal-specific formatting for submission, and the `humanizer` skill for a final natural-writing pass (adapted from [blader/humanizer](https://github.com/blader/humanizer), MIT, Siqi Chen). Skills only.
 - **opencite** (v0.3.1): Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export. Skills only. (Single-pass literature-review synthesis moved to `manuscript:lit-review`.)
-- **figures** (v1.0.0): Publication-quality figure pipeline split into 5 skills + 1 QA agent. Composition uses `svgutils` (text preserved as SVG `<text>` elements, font minimums validated before export) with runtime-detected Inkscape/cairosvg exporter; icons default to gpt-image-1.5 (true transparency) with `rembg`/BiRefNet fallback for gpt-image-2; AI-generated full figures use gpt-image-2 substrate + programmatic SVG label overlay. The `figure-qa` agent dispatches by input type (SVG, PNG, plot-script, composed) and runs strict programmatic checks alongside VLM judgment scoring.
+- **figures** (v0.3.0, Phase 1 scaffold of epic #31): Replaces the retired `scientific-figures` plugin. Phase 1 lands the plugin manifests, three of the planned five skill directories (`scientific-figure`, `transparent-icons`, `plot-styling`) with their ported reference material, and removes the react-pdf workflow. No SKILL.md files or agents have shipped yet; subsequent phases add the svgutils composer (Phase 2), refactored icon generator (Phase 3), type-dispatching `figure-qa` agent (Phase 4), `svg-figure` skill (5), `ai-full-figure` skill (6), and `plot-styling` skill (7). Full design in `.context/figures-design.md`.
 - **presentation** (v0.2.1): Interactive Reveal.js presentations from JSON via the Agentic Presentation Builder. Skills only.
-- **neuroinformatics** (v0.2.1): Neuroscience data standards (BIDS, HED), experiment design (PsychoPy, LSL), and dataset validation. Skills only.
+- **neuroinformatics** (v0.2.3): Neuroscience data standards (BIDS, HED), experiment design (PsychoPy, LSL), and dataset validation. Skills only.
 
 ## Development
 - Use Bun for any JS/TS work
