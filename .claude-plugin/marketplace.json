@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.7.6",
-  "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics",
+  "version": "0.14.0",
+  "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
@@ -57,14 +57,14 @@
       "homepage": "https://github.com/neuromechanist/research-skills"
     },
     {
-      "name": "scientific-figures",
-      "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA for Nature/Science/PNAS journals",
-      "version": "0.2.1",
+      "name": "figures",
+      "description": "Publication-quality figures plugin. Five skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
+      "version": "0.9.0",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
       },
-      "source": "./plugins/scientific-figures",
+      "source": "./plugins/figures",
       "category": "research",
       "homepage": "https://github.com/neuromechanist/research-skills"
     },

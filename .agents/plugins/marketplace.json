@@ -53,10 +53,10 @@
       "category": "Research"
     },
     {
-      "name": "scientific-figures",
+      "name": "figures",
       "source": {
         "source": "local",
-        "path": "./plugins/scientific-figures"
+        "path": "./plugins/figures"
       },
       "policy": {
         "installation": "AVAILABLE",

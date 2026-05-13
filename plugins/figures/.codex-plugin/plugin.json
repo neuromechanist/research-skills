@@ -1,0 +1,12 @@
+{
+  "name": "figures",
+  "version": "0.9.0",
+  "description": "Publication-quality figures plugin. Five skills + one QA agent. scientific-figure: svgutils composer with pre-export font-size validation against Nature/Science/Cell/PNAS minima and Inkscape/cairosvg export. transparent-icons: flat scientific icons via Codex CLI or OpenAI Images API with Pillow-threshold or rembg/BiRefNet transparency post-process. svg-figure: hand-authored or programmatic SVG schematics with text-alignment, arrow-pattern, and palette-compliance guidelines. ai-full-figure: AI-generated pictorial substrate plus programmatic label/arrow/scale-bar overlay; hard-ceiling rules route complex figures back to scientific-figure or svg-figure. plot-styling: library decision tree (matplotlib / seaborn / plotnine / plotly / PyVista) with SciencePlots recipes for Nature, IEEE, Science, Cell, PNAS, APS. figure-qa agent: type-dispatching QA across SVG / raster / plot-script / composed-figure inputs with strict programmatic-vs-VLM separation.",
+  "author": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "license": "BSD-3-Clause",
+  "skills": "./skills/",
+  "keywords": ["figures", "publication", "svgutils", "icons", "gpt-image", "scientific", "qa", "matplotlib"]
+}

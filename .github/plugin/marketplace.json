@@ -5,8 +5,8 @@
     "email": "shirazi@ieee.org"
   },
   "metadata": {
-    "description": "Research and development plugins for literature search, grants, manuscripts, scientific figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.7.6"
+    "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
+    "version": "0.14.0"
   },
   "plugins": [
     {
@@ -38,10 +38,10 @@
       "category": "research"
     },
     {
-      "name": "scientific-figures",
-      "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA",
-      "version": "0.2.1",
-      "source": "./plugins/scientific-figures",
+      "name": "figures",
+      "description": "Publication-quality figures plugin. Five skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
+      "version": "0.9.0",
+      "source": "./plugins/figures",
       "category": "research"
     },
     {

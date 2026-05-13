@@ -1,6 +1,6 @@
 # Research Skills
 
-Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics.
+Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics.
 
 ## Install
 
@@ -18,7 +18,7 @@ Install all plugins via CLI:
 
 ```bash
 claude plugin marketplace add neuromechanist/research-skills
-for p in project grant manuscript opencite scientific-figures presentation neuroinformatics; do
+for p in project grant manuscript opencite figures presentation neuroinformatics; do
   claude plugin install "$p@research-skills"
 done
 ```
@@ -52,13 +52,13 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.3.1 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
-| **grant** | 0.3.1 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
-| **manuscript** | 0.4.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
+| **project** | 0.3.3 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **grant** | 0.3.4 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
+| **manuscript** | 0.5.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **scientific-figures** | 0.2.1 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
+| **figures** | 0.9.0 | Publication-quality figures plugin (epic #31 complete) | `scientific-figure`, `transparent-icons`, `svg-figure`, `ai-full-figure`, `plot-styling`, `figure-qa` agent | -- |
 | **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
-| **neuroinformatics** | 0.2.1 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
+| **neuroinformatics** | 0.2.3 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
 ## Research Plugins
 
@@ -94,16 +94,18 @@ The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citati
 "Write a single-pass literature review on motor cortex oscillations"
 ```
 
-### scientific-figures
+### figures
 
-Create publication-quality figures for Nature, Science, PNAS, Cell, and other journals:
+Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.9.0 completes epic [#31](https://github.com/neuromechanist/research-skills/issues/31): five skills and the unified QA agent.
 
-1. **Plan** -- target journal, panel layout, color palette
-2. **Create elements** -- icons (gpt-image-2), plots (matplotlib/seaborn/plotly/ggplot2)
-3. **Compose** -- assemble into PDF via react-pdf
-4. **Visual QA** -- render to PNG, read the image, verify alignment/labels/overlap, iterate
+- `scientific-figure` skill — svgutils-based composer that places panels at exact mm coordinates and preserves text as SVG `<text>` elements so font sizes are inspectable. `validate_fonts.py` walks the transform stack and reports anything below the journal minimum (Nature 5 pt, Science/Cell/PNAS 6 pt). `export.py` detects Inkscape on `$PATH` and uses it when present, falling back to cairosvg. End-to-end example: `examples/two-column-figure.py`.
+- `transparent-icons` skill — flat scientific icons (brain, neuron, EEG cap, DNA, etc.) via the Codex CLI `image_gen` tool (preferred when `codex login` is configured) or the OpenAI Images API (fallback). Transparency post-process: fast Pillow threshold by default or opt-in `rembg` + BiRefNet for cleaner edges on complex foregrounds. Shares a `theme.json` schema with the `ai-full-figure` skill for cross-skill style consistency.
+- `svg-figure` skill — hand-authored or programmatic SVG schematics (flowcharts, process diagrams, system diagrams). Reference docs cover element-consistency rules, arrow patterns with proper marker geometry, text alignment with bbox arithmetic, and palette compliance (with near-gray exemption for axis chrome). The included `examples/schematic.svg` is a 3-stage EEG processing chain that passes the `figure-qa` SVG branch cleanly against `--journal nature --palette okabe-ito`.
+- `ai-full-figure` skill — AI-generated pictorial substrate via Codex CLI or OpenAI Images API, plus programmatic label / arrow / scale-bar overlay producing a composable SVG. The substrate-only rule keeps the model from hallucinating labels; the overlay step places text deterministically. Hard-ceiling rules route figures that need data plots, equations, multi-arrow flows, or more than ~5 labels back to `scientific-figure` or `svg-figure`. Theme.json bible shared with `transparent-icons`.
+- `plot-styling` skill — library decision tree across matplotlib, seaborn, plotnine, plotly, and PyVista, with SciencePlots recipes for Nature, IEEE, Science, Cell, PNAS, and APS journals. End-to-end example `sciplots_panel.py` produces a Nature 1-column panel using `science + nature + bright + no-latex` that passes the `figure-qa` plot-script and SVG branches.
+- `figure-qa` agent — type-dispatches across SVG / raster / plot-script / composed-figure inputs. Helper scripts (`check_svg.py`, `check_raster.py`, `check_plot_script.py`) handle programmatic checks (font minima, palette compliance, alpha-channel correctness, DPI, library recommendations) with strict separation from VLM rubric scoring (clarity, hierarchy, alignment, palette coherence, journal-fit). Programmatic checks own anything with ground truth; VLM judgment is reserved for "does this look balanced."
 
-All elements saved as SVG or transparent PNG. Enforces sans-serif fonts, colorblind-safe palettes, and journal-specific dimensions. Runs on-the-fly via `uvx` and `bunx`.
+Design context lives in `.context/figures-research.md` and `.context/figures-design.md`.
 
 ### presentation
 
@@ -167,7 +169,7 @@ research-skills/
 │   ├── grant/                     # Grant proposals (writing, review, figure QA)
 │   ├── manuscript/                # Manuscripts (review, writing, formatting)
 │   ├── opencite/                  # Literature search and citation management
-│   ├── scientific-figures/        # Icons + plots + composition + QA
+│   ├── figures/                   # Publication-quality figures + QA
 │   ├── presentation/             # Interactive Reveal.js slide decks
 │   └── neuroinformatics/          # BIDS, HED, experiment design
 ```
@@ -176,9 +178,10 @@ research-skills/
 
 - [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex), or [GitHub Copilot CLI](https://docs.github.com/en/copilot)
 - For opencite: `opencite` CLI (`uvx opencite`)
-- For icons: OpenAI API key (gpt-image-2)
-- For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
-- For figure composition: react-pdf via `bunx` (on-the-fly)
+- For icons: OpenAI API key for the OpenAI Images API, or `codex login` for the Codex CLI fallback (preferred). The active `generate_icon.py` uses the latest available OpenAI image model. Optional: `rembg` + `onnxruntime` for the BiRefNet transparency post-process (one-time ~400 MB model download).
+- For figure composition: `svgutils` plus an exporter — Inkscape is detected at runtime (`brew install inkscape`) and `cairosvg` is the no-system-deps fallback.
+- For figure QA: `lxml`, `svgelements`, `svgpathtools`, `shapely` for the SVG branch; `pillow`, `colorthief` for the raster branch; AST analysis for the plot-script branch (no extra deps).
+- For plot styling: matplotlib, seaborn, plotly, plotnine, and SciencePlots via `uv run --with` (on-the-fly).
 - For PDF conversion: poppler (`brew install poppler` on macOS)
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
