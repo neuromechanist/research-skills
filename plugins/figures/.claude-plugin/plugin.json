@@ -1,7 +1,7 @@
 {
   "name": "figures",
-  "version": "0.7.0",
-  "description": "Publication-quality figures plugin (epic #31 in progress). Active skills: scientific-figure (svgutils composer with pre-export font-size validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with text-alignment, arrow-pattern, and palette-compliance guidelines). Active agent: figure-qa (type-dispatching QA with strict programmatic-vs-VLM separation). Planned: ai-full-figure (Phase 6), plot-styling (Phase 7).",
+  "version": "0.8.0",
+  "description": "Publication-quality figures plugin (epic #31 in progress). Active skills: scientific-figure (svgutils composer with pre-export font-size validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with palette-compliance guidelines); ai-full-figure (AI substrate via Codex/OpenAI plus programmatic label/arrow/scale-bar overlay, with hard-ceiling rules routing complex figures to scientific-figure or svg-figure). Active agent: figure-qa (type-dispatching QA with strict programmatic-vs-VLM separation). Planned: plot-styling (Phase 7).",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
