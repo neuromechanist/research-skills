@@ -22,14 +22,14 @@ from svgutils.compose import Figure, SVG, Panel, Text, Line, Grid
 | `SVG(path)` | Load an SVG file as an element |
 | `Panel(*elements)` | Group elements so they can be moved/scaled together |
 | `Text(text, x, y, size, weight, font)` | Inline text element |
-| `Line(coords, width, color)` | Decorative line |
-| `Grid(spacing_x, spacing_y, ...)` | Visible mm grid overlay for layout debugging |
+| `Line(points, width=1, color="black")` | Decorative line; `points` is a list of `(x, y)` tuples |
+| `Grid(dx, dy, size=8)` | Visible grid overlay for layout debugging; `dx`/`dy` are spacings, `size` is text size |
 
-Every primitive supports method chaining:
+Every primitive inherits the following methods from `svgutils.transform.FigureElement` and returns `self`, so they chain:
 
-- `.scale(factor)` — multiply current scale (compounds with parent panel scale)
+- `.scale(x, y=None)` — multiply current scale (compounds with parent panel scale; `y` defaults to `x`)
 - `.move(x, y)` — translate
-- `.rotate(angle)` — rotate
+- `.rotate(angle, x=0, y=0)` — rotate around the given pivot
 - `.find_id(id)` — locate a sub-element by id
 
 ## Recipe 1: two-panel side-by-side (Nature 2-column)

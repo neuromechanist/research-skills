@@ -18,7 +18,7 @@ Two interfaces:
        {
          "width_mm": 183,
          "height_mm": 120,
-         "journal": "nature",                       # optional; informs validator hint in SVG
+         "journal": "nature",                       # optional; recorded on the SVG root <g> for downstream tools
          "panels": [
            {"src": "panels/a.svg", "x_mm": 0,  "y_mm": 0, "scale": 0.5, "label": "A"},
            {"src": "panels/b.svg", "x_mm": 92, "y_mm": 0, "scale": 0.5, "label": "B"}
@@ -50,7 +50,18 @@ class Figure:
     width_mm: float
     height_mm: float
     journal: str | None = None
-    _panels: list[Panel] = field(default_factory=list)
+    _panels: list[Panel] = field(default_factory=list, init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        if self.width_mm <= 0 or self.height_mm <= 0:
+            raise ValueError(
+                f"figure dimensions must be positive, got width_mm={self.width_mm}, "
+                f"height_mm={self.height_mm}"
+            )
+
+    @property
+    def panel_count(self) -> int:
+        return len(self._panels)
 
     def add_panel(
         self,
@@ -61,6 +72,8 @@ class Figure:
         label: str | None = None,
     ) -> Figure:
         """Place an SVG at (x_mm, y_mm) with the given scale; optionally add a panel label."""
+        if scale <= 0:
+            raise ValueError(f"panel scale must be positive, got scale={scale} for '{src}'")
         src_path = Path(src)
         if not src_path.exists():
             raise FileNotFoundError(f"panel source not found: {src_path}")
@@ -76,11 +89,16 @@ class Figure:
 
     def save(self, out_path: str | Path) -> Path:
         out_path = Path(out_path)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
         fig = SvgFigure(f"{self.width_mm}mm", f"{self.height_mm}mm", *self._panels)
         if self.journal:
-            # Embed a hint the validator can read back without inspecting the config.
+            # Recorded on the root <g> so downstream tools (figure-qa agent in Phase 4) can
+            # detect the intended journal without re-reading the config.
             fig.root.set("data-journal", self.journal)
-        fig.save(str(out_path))
+        try:
+            fig.save(str(out_path))
+        except OSError as exc:
+            raise OSError(f"could not write figure to '{out_path}': {exc}") from exc
         return out_path
 
 
@@ -107,12 +125,33 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-o", "--out", type=Path, required=True, help="Output SVG path")
     args = parser.parse_args(argv)
 
-    with args.config.open() as fh:
-        config = json.load(fh)
+    try:
+        with args.config.open() as fh:
+            config = json.load(fh)
+    except FileNotFoundError:
+        print(f"error: config file not found: {args.config}", file=sys.stderr)
+        return 2
+    except json.JSONDecodeError as exc:
+        print(f"error: config file is not valid JSON: {exc}", file=sys.stderr)
+        return 2
 
-    fig = from_config(config)
-    out = fig.save(args.out)
-    print(f"wrote {out} ({fig.width_mm}mm x {fig.height_mm}mm, {len(fig._panels)} panel(s))", file=sys.stderr)
+    try:
+        fig = from_config(config)
+        out = fig.save(args.out)
+    except KeyError as exc:
+        print(f"error: missing required config key: {exc}", file=sys.stderr)
+        return 2
+    except (FileNotFoundError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    except OSError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    print(
+        f"wrote {out} ({fig.width_mm}mm x {fig.height_mm}mm, {fig.panel_count} panel(s))",
+        file=sys.stderr,
+    )
     return 0
 
 

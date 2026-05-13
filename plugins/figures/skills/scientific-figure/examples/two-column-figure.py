@@ -7,15 +7,16 @@ Run from the example directory:
         python two-column-figure.py
 
 Output files (created in `out/` next to this script):
-    panels/spectrum.svg   matplotlib panel A
-    panels/timeseries.svg matplotlib panel B
-    figure.svg            composed figure (183mm x 70mm)
-    figure.pdf            exported PDF (Inkscape if available, cairosvg otherwise)
-    font_report.json      validate_fonts.py output
+    out/panels/spectrum.svg   matplotlib panel A
+    out/panels/timeseries.svg matplotlib panel B
+    out/figure.svg            composed figure (183mm x 70mm)
+    out/figure.pdf            exported PDF (Inkscape if available, cairosvg otherwise)
+    out/font_report.json      validate_fonts.py output
 
-The panels are tuned so that everything passes Nature's 5 pt font minimum. To
-intentionally trigger a validation failure, set SOURCE_FONT_PT below to 6
-(produces 3 pt effective at scale 0.5).
+The panels are tuned so everything passes Nature's 5 pt font minimum. The
+script exits 1 when font validation fails so it can be used as a smoke test.
+For a synthetic validation-failure case, see `validate_failure_case.py` in
+this directory.
 """
 
 from __future__ import annotations
@@ -41,7 +42,7 @@ WIDTH_MM = 183.0          # Nature 2-column
 HEIGHT_MM = 70.0
 PANEL_W_MM = 90.0
 PANEL_H_MM = 70.0
-GUTTER_MM = 3.0
+GUTTER_MM = 2.0           # 0 ... 90 (panel A) ... 92 ... 182 (panel B) ... 183 (1 mm right margin)
 SOURCE_FONT_PT = 12.0     # Panels saved at 12 pt; scaled by 0.5 -> 6 pt effective (passes Nature/Science)
 PANEL_SCALE = 0.5
 
@@ -63,7 +64,6 @@ def _mpl_setup() -> None:
 
 
 def _save_spectrum(path: Path) -> None:
-    # Source panel sized at 2 x final panel (svgutils will scale by 0.5)
     fig, ax = plt.subplots(figsize=(PANEL_W_MM * 2 / 25.4, PANEL_H_MM * 2 / 25.4))
     freqs = np.linspace(0.5, 50, 500)
     psd = 10 / (freqs + 1) + 0.5 * np.exp(-((freqs - 10) ** 2) / 8)
@@ -112,13 +112,24 @@ def _compose() -> Path:
 def _validate(svg: Path) -> dict:
     result = subprocess.run(
         [sys.executable, str(SCRIPTS / "validate_fonts.py"), str(svg), "--journal", "nature"],
-        check=False,
         capture_output=True,
         text=True,
     )
+    # validate_fonts.py exits 0 (pass), 1 (issues found), or 2 (script error such as malformed SVG).
+    if result.returncode not in (0, 1):
+        raise RuntimeError(
+            f"validate_fonts.py exited {result.returncode}.\n"
+            f"stderr:\n{result.stderr.strip()}\nstdout:\n{result.stdout.strip()}"
+        )
     if result.stderr:
         print(result.stderr.strip(), file=sys.stderr)
-    report = json.loads(result.stdout)
+    try:
+        report = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"validate_fonts.py produced invalid JSON (exit {result.returncode}).\n"
+            f"stdout: {result.stdout!r}\nstderr: {result.stderr.strip()}"
+        ) from exc
     (OUT / "font_report.json").write_text(json.dumps(report, indent=2))
     return report
 
@@ -150,9 +161,13 @@ def main() -> int:
 
     report = _validate(svg)
     if report["issue_count"]:
-        print(f"font validation: {report['issue_count']} issue(s); see {OUT}/font_report.json", file=sys.stderr)
-    else:
-        print(f"font validation: all {report['checked_count']} text elements pass Nature 5 pt minimum")
+        print(
+            f"font validation: {report['issue_count']} issue(s); see {OUT}/font_report.json. "
+            "Fix source font sizes or panel scale before exporting for journal submission.",
+            file=sys.stderr,
+        )
+        return 1
+    print(f"font validation: all {report['checked_count']} text elements pass Nature 5 pt minimum")
 
     pdf = _export(svg)
     print(f"exported {pdf}")

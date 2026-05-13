@@ -82,7 +82,8 @@ def _font_size_pt(text_el: etree._Element) -> float | None:
     if unit == "px":
         return n * 72.0 / 96.0
     if unit == "em":
-        # No reliable parent-em context here; treat conservatively as pt.
+        # Heuristic: assume 12 pt parent em. Avoid em in source plots (matplotlib does
+        # not emit em); this branch exists so hand-authored SVGs do not crash the walker.
         return n * 12.0
     if unit == "%":
         return n / 100.0 * 12.0
@@ -90,20 +91,27 @@ def _font_size_pt(text_el: etree._Element) -> float | None:
 
 
 def _walk(root: etree._Element) -> Iterator[tuple[etree._Element, float, float]]:
-    """Yield (element, cumulative_scale_x, cumulative_scale_y) for every text element."""
+    """Yield (element, cumulative_scale_x, cumulative_scale_y) for every <text> and <tspan>
+    element that declares its own font-size. tspan is yielded as well as text so that
+    hand-authored SVGs (Inkscape, Illustrator) that put font-size on tspan children are checked.
+    Sibling order within a parent is reversed because the walker uses a LIFO stack; this does
+    not affect correctness since every relevant element is visited.
+    """
     stack: list[tuple[etree._Element, float, float]] = [(root, 1.0, 1.0)]
     while stack:
         el, sx, sy = stack.pop()
         local_sx, local_sy = _parse_transform(el.get("transform") or "")
         cur_sx, cur_sy = sx * local_sx, sy * local_sy
         tag = etree.QName(el).localname
-        if tag == "text":
+        if tag in ("text", "tspan"):
             yield el, cur_sx, cur_sy
         for child in el:
             stack.append((child, cur_sx, cur_sy))
 
 
 def validate(svg_path: Path, journal: str) -> dict:
+    """Validate font sizes in svg_path against the journal minimum. Raises ValueError on
+    unknown journal, etree.XMLSyntaxError on malformed SVG, and OSError on file errors."""
     minimum_pt = JOURNAL_MIN_PT.get(journal.lower())
     if minimum_pt is None:
         raise ValueError(
@@ -115,12 +123,27 @@ def validate(svg_path: Path, journal: str) -> dict:
 
     issues: list[dict] = []
     checked = 0
+    skipped = 0
     for text_el, sx, sy in _walk(root):
         specified = _font_size_pt(text_el)
         if specified is None:
+            # tspan with no own font-size inherits from its parent <text>; the parent's
+            # check (or another descendant tspan) governs. Don't count it as skipped.
+            tag = etree.QName(text_el).localname
+            if tag == "tspan":
+                continue
+            # <text> with no own font-size is only skipped if no descendant tspan
+            # supplies one; otherwise the descendant will be checked separately.
+            if any(
+                etree.QName(d).localname == "tspan" and _font_size_pt(d) is not None
+                for d in text_el.iter()
+            ):
+                continue
+            skipped += 1
             continue
         checked += 1
-        effective = specified * min(sx, sy)  # smallest axis governs legibility
+        # abs() so that mirrored panels (scale(-1, 1)) do not produce false negatives.
+        effective = specified * min(abs(sx), abs(sy))
         if effective < minimum_pt:
             issues.append(
                 {
@@ -139,6 +162,7 @@ def validate(svg_path: Path, journal: str) -> dict:
         "journal": journal,
         "minimum_pt": minimum_pt,
         "checked_count": checked,
+        "skipped_count": skipped,
         "issue_count": len(issues),
         "issues": issues,
     }
@@ -157,20 +181,33 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    report = validate(args.svg, args.journal)
+    try:
+        report = validate(args.svg, args.journal)
+    except etree.XMLSyntaxError as exc:
+        print(f"error: could not parse SVG '{args.svg}': {exc}", file=sys.stderr)
+        return 2
+    except OSError as exc:
+        print(f"error: could not open SVG '{args.svg}': {exc}", file=sys.stderr)
+        return 2
     json.dump(report, sys.stdout, indent=2)
     print(file=sys.stdout)
 
+    if report["skipped_count"]:
+        print(
+            f"WARNING: {report['skipped_count']} <text> element(s) had no parseable "
+            "font-size and were not checked (CSS class selectors or inherited styles).",
+            file=sys.stderr,
+        )
     if report["issue_count"]:
         print(
-            f"font validation: {report['issue_count']} of {report['checked_count']} <text> elements below "
-            f"{report['minimum_pt']} pt for journal '{args.journal}'.",
+            f"font validation: {report['issue_count']} of {report['checked_count']} <text>/<tspan> "
+            f"elements below {report['minimum_pt']} pt for journal '{args.journal}'.",
             file=sys.stderr,
         )
         return 1
     print(
-        f"font validation: all {report['checked_count']} <text> elements meet {report['minimum_pt']} pt "
-        f"minimum for journal '{args.journal}'.",
+        f"font validation: all {report['checked_count']} <text>/<tspan> elements meet "
+        f"{report['minimum_pt']} pt minimum for journal '{args.journal}'.",
         file=sys.stderr,
     )
     return 0

@@ -26,18 +26,18 @@ The validator enforces the **body** minimum across all `<text>` elements (panel 
 
 ## How the validator works
 
-1. **Parse the SVG** with `lxml.etree`.
-2. **Walk every element** depth-first, accumulating a scale factor from each ancestor's `transform="..."`.
+1. **Parse the SVG** with `lxml.etree`. A malformed SVG or missing file produces exit code 2 with an error message to stderr; no JSON is emitted.
+2. **Walk every element** depth-first via a LIFO stack, accumulating a scale factor from each ancestor's `transform="..."`. Sibling visit order is reversed by the stack but correctness is independent of order.
    - `scale(s)` and `scale(sx, sy)` are parsed directly.
    - `matrix(a b c d e f)` is decomposed; the x-axis scale is `sqrt(a^2 + b^2)` and y-axis is `sqrt(c^2 + d^2)`.
    - Translations and rotations do not affect font size.
-3. **For each `<text>` element**, extract the specified font size from the `font-size` attribute or the `style="font-size: ..."` property. Recognized units:
+3. **For each `<text>` and `<tspan>` element**, extract the specified font size from the `font-size` attribute or the `style="font-size: ..."` property. Recognized units:
    - `pt` (and unitless — matplotlib's SVG output is bare pt by default)
    - `px` (converted: 1 pt = 96/72 px)
-   - `em` (treated as 12 pt parent — coarse heuristic, only relevant if the source SVG used em)
-   - `%` (treated as `value/100 * 12 pt`)
-4. **Compute effective pt** = specified_pt × min(scale_x, scale_y). The smaller axis governs legibility because text always has both width and height.
-5. **Compare** to the journal minimum and emit a JSON report.
+   - `em` (heuristic only — treated as 12 pt parent; avoid em in source plots)
+   - `%` (heuristic only — treated as `value/100 * 12 pt`; avoid percent in source plots)
+4. **Compute effective pt** = specified_pt × min(|scale_x|, |scale_y|). The smaller axis governs legibility. Absolute values handle mirrored panels (`scale(-1, 1)`) so they don't produce false-positive failures.
+5. **Compare** to the journal minimum and emit a JSON report. A `<text>` with no own `font-size` is counted as `skipped` unless one of its `<tspan>` children supplies a `font-size` (in which case the tspan is checked instead).
 
 ## Reading the report
 
@@ -47,6 +47,7 @@ The validator enforces the **body** minimum across all `<text>` elements (panel 
   "journal": "nature",
   "minimum_pt": 5.0,
   "checked_count": 47,
+  "skipped_count": 0,
   "issue_count": 2,
   "issues": [
     {
@@ -71,7 +72,7 @@ The validator enforces the **body** minimum across all `<text>` elements (panel 
 }
 ```
 
-`scale_x` / `scale_y` tell you the cumulative transform applied to that text — usually the panel scale.
+`scale_x` / `scale_y` tell you the cumulative transform applied to that text — usually the panel scale. `skipped_count` flags how many text elements were not measured (e.g., font-size inherited via a CSS class selector); when non-zero, a stderr WARNING is also printed.
 
 ## Remediation
 
@@ -86,8 +87,9 @@ The remedies are mutually exclusive in priority order: try source-font fix first
 ## Limitations
 
 - The validator does not enforce the panel-label minimum separately from body text. Panel labels are typically 12 pt bold and pass trivially; if you intentionally use a tiny label, add an explicit check.
-- `font-size` set via CSS class selectors in a `<style>` element is not resolved. Matplotlib does not use class selectors by default; if a source SVG uses them, run it through `svgutils` first to inline the styles, or set font-size directly on each `<text>`.
+- `font-size` set via CSS class selectors in a `<style>` element is not resolved. Matplotlib does not use class selectors by default; if a source SVG uses them, run it through `svgutils` first to inline the styles, or set font-size directly on each `<text>`. These elements are counted in `skipped_count` so they cannot silently pass.
 - The percent-em conversion is heuristic. Avoid em/% font sizing in source plots.
+- Font-size set on a `<tspan>` child of a `<text>` is checked correctly. Font-size set via SVG `<style>` rules or external CSS is not.
 
 ## Why pt and not px
 

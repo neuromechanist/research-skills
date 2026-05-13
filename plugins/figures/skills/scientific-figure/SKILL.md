@@ -1,6 +1,6 @@
 ---
 name: scientific-figure
-description: This skill should be used when the user asks to "create a figure", "make a scientific figure", "create a paper figure", "compose figure panels", "make a multi-panel figure", "generate a PDF figure", "create a Nature-style figure", "make a publication figure", or "create a figure for my grant". The skill composes pixel-perfect multi-panel figures at exact journal dimensions (Nature 89/183 mm, Science 55/120 mm, Cell 85/174 mm, PNAS 87/180 mm) using svgutils, validates font sizes against journal minima before export, and writes PDF/PNG via Inkscape when available or cairosvg otherwise.
+description: This skill should be used when the user asks to "create a figure", "make a scientific figure", "create a paper figure", "make a figure for my paper", "make a figure for my manuscript", "compose figure panels", "assemble figure panels", "combine figure panels", "make a multi-panel figure", "figure composition", "export a figure", "generate a PDF figure", "create a Nature-style figure", "make a journal figure", "make a publication figure", or "create a figure for my grant". The skill composes multi-panel figures at exact journal dimensions (Nature 89/183 mm, Science 55/120 mm, Cell 85/174 mm, PNAS 87/180 mm) using svgutils, validates font sizes against journal minima before export, and writes PDF/PNG via Inkscape when available or cairosvg otherwise.
 version: 0.1.0
 ---
 
@@ -60,7 +60,7 @@ Save each element to a working directory (typically `panels/`), then compose the
 
 ## Step 3: Compose the figure
 
-The composer is built around [svgutils](https://svgutils.readthedocs.io/) (MIT license; `uvx svgutils`). It places panels at exact mm coordinates and preserves text as inspectable SVG `<text>` elements.
+The composer is built around [svgutils](https://svgutils.readthedocs.io/) (MIT license; `uv run --with svgutils`). It places panels at exact mm coordinates and preserves text as inspectable SVG `<text>` elements.
 
 Two ways to compose: the `Figure` helper in `scripts/compose.py` (most cases) and direct `svgutils.compose` for full control.
 
@@ -116,21 +116,31 @@ This is the step that prevents the journal-rejection scenario. Run:
 uv run --with lxml python scripts/validate_fonts.py figure.svg --journal nature
 ```
 
-The validator parses every `<text>` element, walks the accumulated transform stack to compute the effective font size at the final physical dimensions, and reports anything below the journal minimum. Output is JSON:
+The validator parses every `<text>` and `<tspan>` element with a `font-size`, walks the accumulated transform stack to compute the effective font size at the final physical dimensions, and reports anything below the journal minimum. Output is JSON:
 
 ```json
 {
+  "svg": "figure.svg",
   "journal": "nature",
   "minimum_pt": 5.0,
-  "panels": {
-    "B": {
-      "issues": [
-        {"text": "Frequency (Hz)", "specified_pt": 9.0, "effective_pt": 4.5, "panel_scale": 0.5}
-      ]
+  "checked_count": 47,
+  "skipped_count": 0,
+  "issue_count": 1,
+  "issues": [
+    {
+      "text": "Frequency (Hz)",
+      "specified_pt": 9.0,
+      "effective_pt": 4.5,
+      "scale_x": 0.5,
+      "scale_y": 0.5,
+      "minimum_pt": 5.0,
+      "tag_id": ""
     }
-  }
+  ]
 }
 ```
+
+`skipped_count` counts text elements where no `font-size` could be resolved (CSS class selectors, inherited styles). Exit codes: `0` clean, `1` issues found, `2` script error (malformed SVG, missing file).
 
 If a panel is the culprit (its `.scale()` is too small), three remedies:
 
