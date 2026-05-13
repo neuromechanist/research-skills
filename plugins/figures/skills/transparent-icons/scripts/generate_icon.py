@@ -222,6 +222,7 @@ def generate_icon_api(
     prompt: str,
     size: int = 1024,
     transparent: bool = False,
+    transparency_method: str = "threshold",
 ) -> bytes:
     """Generate a single icon via the OpenAI Images API."""
     size_str = f"{size}x{size}"
@@ -230,8 +231,8 @@ def generate_icon_api(
     if size_str not in ("1024x1024", "1024x1536", "1536x1024", "2048x2048"):
         size_str = "1024x1024"
 
-    # Transparent backgrounds are not supported natively by gpt-image-2;
-    # transparency is applied via post-processing when --transparent is set.
+    # gpt-image-2 (April 2026) rejects `background="transparent"`, so we always generate
+    # opaque and apply transparency in post when requested.
     result = client.images.generate(
         model="gpt-image-2",
         prompt=prompt,
@@ -246,7 +247,7 @@ def generate_icon_api(
     image_data = base64.b64decode(result.data[0].b64_json)
 
     if transparent and HAS_PILLOW:
-        image_data = _apply_transparency(image_data)
+        image_data = _apply_transparency(image_data, method=transparency_method)
 
     return image_data
 
@@ -255,6 +256,7 @@ def generate_icon_codex(
     prompt: str,
     size: int = 1024,
     transparent: bool = False,
+    transparency_method: str = "threshold",
     timeout_s: int = 300,
 ) -> bytes:
     """Generate a single icon by invoking the Codex CLI's image_gen tool.
@@ -315,7 +317,7 @@ def generate_icon_codex(
             )
         image_data = target.read_bytes()
         if transparent and HAS_PILLOW:
-            image_data = _apply_transparency(image_data)
+            image_data = _apply_transparency(image_data, method=transparency_method)
         return image_data
     finally:
         # Best-effort cleanup; tempfile.mkdtemp guarantees an isolated path,
@@ -341,19 +343,26 @@ def generate_icon(
     prompt: str,
     size: int = 1024,
     transparent: bool = False,
+    transparency_method: str = "threshold",
 ) -> bytes:
     """Dispatch to the selected backend."""
     if backend == "codex":
-        return generate_icon_codex(prompt, size=size, transparent=transparent)
+        return generate_icon_codex(
+            prompt, size=size, transparent=transparent, transparency_method=transparency_method
+        )
     if backend == "api":
         if client is None:
             raise RuntimeError("OpenAI client unavailable for api backend")
-        return generate_icon_api(client, prompt, size=size, transparent=transparent)
+        return generate_icon_api(
+            client, prompt, size=size, transparent=transparent, transparency_method=transparency_method
+        )
     raise ValueError(f"Unknown backend: {backend}")
 
 
-def _apply_transparency(png_bytes: bytes, threshold: int = 240) -> bytes:
-    """Remove white background from PNG, making it transparent."""
+def _apply_transparency_threshold(png_bytes: bytes, threshold: int = 240) -> bytes:
+    """Remove near-white pixels from PNG, making them transparent. Fast and dependency-free
+    (just Pillow). Works well for flat icons on a clean white background; can leave fringes
+    on anti-aliased edges and may erase highlights where the foreground itself is near-white."""
     img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
     data = img.getdata()
 
@@ -368,6 +377,38 @@ def _apply_transparency(png_bytes: bytes, threshold: int = 240) -> bytes:
     output = io.BytesIO()
     img.save(output, format="PNG")
     return output.getvalue()
+
+
+def _apply_transparency_birefnet(png_bytes: bytes) -> bytes:
+    """Remove background via rembg + BiRefNet (cleaner edges than threshold). Requires a
+    one-time ONNX model download (~400 MB on first run) and `rembg` + `onnxruntime` deps."""
+    try:
+        from rembg import new_session, remove  # type: ignore[import-not-found]
+    except ImportError as exc:
+        raise RuntimeError(
+            "Transparency method 'birefnet' requires rembg. Re-run with: "
+            "`uv run --with openai --with python-dotenv --with pillow "
+            "--with rembg --with onnxruntime python scripts/generate_icon.py ...`"
+        ) from exc
+    session = new_session("birefnet-general")
+    return remove(
+        png_bytes,
+        session=session,
+        alpha_matting=True,
+        alpha_matting_foreground_threshold=240,
+        alpha_matting_background_threshold=10,
+    )
+
+
+def _apply_transparency(png_bytes: bytes, method: str = "threshold") -> bytes:
+    """Dispatch to the requested transparency method."""
+    if method == "threshold":
+        return _apply_transparency_threshold(png_bytes)
+    if method == "birefnet":
+        return _apply_transparency_birefnet(png_bytes)
+    raise ValueError(
+        f"unknown transparency method '{method}'; expected 'threshold' or 'birefnet'"
+    )
 
 
 def save_icon(data: bytes, path: Path) -> None:
@@ -402,7 +443,17 @@ def main() -> None:
     parser.add_argument("-o", "--output", help="Output file path or directory (for batch)")
     parser.add_argument("--template", help="Template ID from icon bible (e.g., brain-eeg)")
     parser.add_argument("--category", help="Generate all templates in a category")
-    parser.add_argument("--transparent", action="store_true", help="Remove white background (requires Pillow)")
+    parser.add_argument("--transparent", action="store_true", help="Remove background (requires Pillow)")
+    parser.add_argument(
+        "--transparency-method",
+        choices=["threshold", "birefnet"],
+        default="threshold",
+        help=(
+            "Background-removal method when --transparent is set. 'threshold' (default) uses "
+            "Pillow to drop near-white pixels (fast, dep-free). 'birefnet' uses rembg + BiRefNet "
+            "for cleaner edges (one-time ~400 MB model download; pass --with rembg --with onnxruntime)."
+        ),
+    )
     parser.add_argument("--colors", help="Color palette override (e.g., 'teal,coral' or hex codes)")
     parser.add_argument("--size", type=int, default=1024, help="Icon size in pixels (default: 1024)")
     parser.add_argument("--batch", help="Comma-separated items for batch generation (use {item} in prompt)")
@@ -463,7 +514,12 @@ def main() -> None:
             prompt = template_to_prompt(t, color_override=args.colors)
             transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
             print(f"Generating: {t['id']}...")
-            data = generate_icon(backend, client, prompt, size=args.size, transparent=transparent)
+            data = generate_icon(
+                backend, client, prompt,
+                size=args.size,
+                transparent=transparent,
+                transparency_method=args.transparency_method,
+            )
             save_icon(data, output_dir / f"{t['id']}.png")
         return
 
@@ -478,7 +534,12 @@ def main() -> None:
         transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
         print(f"Generating from template: {args.template}")
         print(f"Prompt: {prompt[:200]}...")
-        data = generate_icon(backend, client, prompt, size=args.size, transparent=transparent)
+        data = generate_icon(
+            backend, client, prompt,
+            size=args.size,
+            transparent=transparent,
+            transparency_method=args.transparency_method,
+        )
         save_icon(data, Path(args.output))
         return
 
@@ -495,7 +556,12 @@ def main() -> None:
                 transparent=args.transparent,
             )
             print(f"Generating: {item}...")
-            data = generate_icon(backend, client, prompt, size=args.size, transparent=args.transparent)
+            data = generate_icon(
+                backend, client, prompt,
+                size=args.size,
+                transparent=args.transparent,
+                transparency_method=args.transparency_method,
+            )
             save_icon(data, output_dir / f"{item.replace(' ', '_')}.png")
         return
 
@@ -503,7 +569,12 @@ def main() -> None:
     prompt = build_prompt(args.prompt, colors=args.colors, transparent=args.transparent)
     print(f"Generating icon...")
     print(f"Prompt: {prompt}")
-    data = generate_icon(backend, client, prompt, size=args.size, transparent=args.transparent)
+    data = generate_icon(
+        backend, client, prompt,
+        size=args.size,
+        transparent=args.transparent,
+        transparency_method=args.transparency_method,
+    )
     save_icon(data, Path(args.output))
 
 

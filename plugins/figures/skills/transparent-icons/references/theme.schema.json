@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/neuromechanist/research-skills/figures/theme.schema.json",
+  "title": "Figure Theme Bible",
+  "description": "Shared theme specification used by transparent-icons and ai-full-figure to keep visual style consistent across a generated set. Attach the theme to each generation call so prompts derive from a single source of truth.",
+  "type": "object",
+  "required": ["theme_id", "palette", "style_tokens"],
+  "properties": {
+    "theme_id": {
+      "type": "string",
+      "description": "Short identifier for the theme; used to label generated artifacts.",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "palette": {
+      "type": "object",
+      "description": "Hex color codes referenced by the prompt. Recommended: primary, accent, neutral, bg.",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^(#[0-9a-fA-F]{3,8}|transparent)$"
+      }
+    },
+    "stroke": {
+      "type": "object",
+      "description": "Line treatment for icons and overlays.",
+      "properties": {
+        "weight_px": {"type": "number", "minimum": 0},
+        "linejoin": {"type": "string", "enum": ["miter", "round", "bevel"]},
+        "linecap": {"type": "string", "enum": ["butt", "round", "square"]}
+      }
+    },
+    "style_tokens": {
+      "type": "array",
+      "description": "Positive prompt fragments (e.g., 'flat 2D', 'single continuous line', 'no shading').",
+      "items": {"type": "string"}
+    },
+    "negative_tokens": {
+      "type": "array",
+      "description": "Negative prompt fragments (e.g., 'text', 'labels', 'watermark', 'gradient', '3D', 'shadow').",
+      "items": {"type": "string"}
+    },
+    "composition": {
+      "type": "object",
+      "description": "Layout conventions for the generated images.",
+      "properties": {
+        "aspect": {"type": "string", "description": "e.g. '1:1', '16:9'"},
+        "padding_pct": {"type": "number", "minimum": 0, "maximum": 50},
+        "perspective": {"type": "string", "enum": ["orthographic", "isometric", "perspective"]}
+      }
+    },
+    "reference_images": {
+      "type": "array",
+      "description": "Up to 16 file paths of canonical reference images attached to each generation for style transfer (gpt-image-2 multi-reference feature).",
+      "maxItems": 16,
+      "items": {"type": "string"}
+    },
+    "model_preferences": {
+      "type": "object",
+      "description": "Per-use-case model selection. Values are advisory hints consumed by the generator scripts.",
+      "properties": {
+        "icons": {"type": "string"},
+        "figures": {"type": "string"},
+        "poster_text": {"type": "string"}
+      }
+    },
+    "postprocess": {
+      "type": "object",
+      "description": "Post-processing pipeline applied after generation.",
+      "properties": {
+        "bg_removal": {"type": "string", "enum": ["none", "threshold", "birefnet-general"]},
+        "alpha_matting": {"type": "boolean"},
+        "threshold": {"type": "integer", "minimum": 0, "maximum": 255}
+      }
+    }
+  }
+}
