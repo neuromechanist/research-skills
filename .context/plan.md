@@ -10,7 +10,7 @@
 | grant | 0.3.4 | Stable. NIH/NSF writing + review + figure QA agent. |
 | manuscript | 0.5.0 | Stable. Lit review (multi-phase + single-pass), peer review, writing, formatting, humanizer. |
 | opencite | 0.3.1 | Stable. Literature search and citation management. |
-| figures | 0.5.0 | **Epic #31 in progress.** Phases 1–3 merged (scaffold, `scientific-figure` skill, `transparent-icons` skill with Codex/OpenAI backends and threshold/BiRefNet transparency). Phases 4–7 pending. |
+| figures | 0.6.0 | **Epic #31 in progress.** Phases 1–4 merged (scaffold, `scientific-figure`, `transparent-icons`, `figure-qa` agent with SVG / raster / plot-script branches and helper scripts). Phases 5–7 pending. |
 | presentation | 0.2.1 | Stable. Interactive Reveal.js slide decks. |
 | neuroinformatics | 0.2.3 | Stable. BIDS, HED, experiment design, bids-validator agent. |
 

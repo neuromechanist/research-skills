@@ -56,7 +56,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | **grant** | 0.3.4 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
 | **manuscript** | 0.5.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **figures** | 0.5.0 | Publication-quality figures plugin (epic #31 in progress; active: scientific-figure composer + transparent-icons) | active: `scientific-figure`, `transparent-icons`; pending: `svg-figure`, `ai-full-figure`, `plot-styling`, `figure-qa` agent | -- |
+| **figures** | 0.6.0 | Publication-quality figures plugin (epic #31 in progress; active: scientific-figure, transparent-icons, figure-qa agent) | active: `scientific-figure`, `transparent-icons`, `figure-qa` agent; pending: `svg-figure`, `ai-full-figure`, `plot-styling` | -- |
 | **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
 | **neuroinformatics** | 0.2.3 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
@@ -96,16 +96,16 @@ The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citati
 
 ### figures
 
-Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.5.0 ships two of the five planned skills of epic [#31](https://github.com/neuromechanist/research-skills/issues/31).
+Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.6.0 ships three components of epic [#31](https://github.com/neuromechanist/research-skills/issues/31): two skills and the unified QA agent.
 
-**Active in v0.5.0:**
+**Active in v0.6.0:**
 
-- `scientific-figure` — svgutils-based composer that places panels at exact mm coordinates and preserves text as SVG `<text>` elements so font sizes are inspectable. `validate_fonts.py` walks the transform stack and reports anything below the journal minimum (Nature 5 pt, Science/Cell/PNAS 6 pt). `export.py` detects Inkscape on `$PATH` and uses it when present, falling back to cairosvg. End-to-end example: `examples/two-column-figure.py`.
-- `transparent-icons` — flat scientific icons (brain, neuron, EEG cap, DNA, etc.) via the Codex CLI `image_gen` tool (preferred when `codex login` is configured) or the OpenAI Images API (fallback). Transparency post-process: fast Pillow threshold by default or opt-in `rembg` + BiRefNet for cleaner edges on complex foregrounds. Shares a `theme.json` schema with the upcoming `ai-full-figure` skill for cross-skill style consistency.
+- `scientific-figure` skill — svgutils-based composer that places panels at exact mm coordinates and preserves text as SVG `<text>` elements so font sizes are inspectable. `validate_fonts.py` walks the transform stack and reports anything below the journal minimum (Nature 5 pt, Science/Cell/PNAS 6 pt). `export.py` detects Inkscape on `$PATH` and uses it when present, falling back to cairosvg. End-to-end example: `examples/two-column-figure.py`.
+- `transparent-icons` skill — flat scientific icons (brain, neuron, EEG cap, DNA, etc.) via the Codex CLI `image_gen` tool (preferred when `codex login` is configured) or the OpenAI Images API (fallback). Transparency post-process: fast Pillow threshold by default or opt-in `rembg` + BiRefNet for cleaner edges on complex foregrounds. Shares a `theme.json` schema with the upcoming `ai-full-figure` skill for cross-skill style consistency.
+- `figure-qa` agent — type-dispatches across SVG / raster / plot-script / composed-figure inputs. Helper scripts (`check_svg.py`, `check_raster.py`, `check_plot_script.py`) handle programmatic checks (font minima, palette compliance, alpha-channel correctness, DPI, library recommendations) with strict separation from VLM rubric scoring (clarity, hierarchy, alignment, palette coherence, journal-fit). Programmatic checks own anything with ground truth; VLM judgment is reserved for "does this look balanced."
 
 **Pending phases of epic #31:**
 
-- Phase 4 — `figure-qa` agent (type-dispatching QA, proactive with opt-out)
 - Phase 5 — `svg-figure` skill
 - Phase 6 — `ai-full-figure` skill
 - Phase 7 — `plot-styling` skill
