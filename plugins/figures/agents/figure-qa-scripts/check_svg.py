@@ -226,12 +226,17 @@ def _bbox_overlaps_and_arrow_geometry(root) -> dict[str, Any]:  # type: ignore[n
     # can detect when the figure has nothing to check. Full bbox-overlap and
     # arrow-tip-distance logic is the natural next iteration; the structure
     # below is the contract the agent consumes.
-    text_count = sum(1 for el in root.iter() if el.tag.endswith("}text") or el.tag == "text")
+    # lxml Comment / ProcessingInstruction nodes have a non-string .tag (a
+    # cython function); coerce via _localname and skip non-element nodes.
+    def _localname(el) -> str:  # type: ignore[no-untyped-def]
+        tag = el.tag
+        if not isinstance(tag, str):
+            return ""
+        return tag.split("}")[-1] if "}" in tag else tag
+
+    text_count = sum(1 for el in root.iter() if _localname(el) == "text")
     shape_tags = {"path", "rect", "circle", "ellipse", "polygon", "polyline", "line"}
-    shape_count = sum(
-        1 for el in root.iter()
-        if (el.tag.split("}")[-1] if "}" in el.tag else el.tag) in shape_tags
-    )
+    shape_count = sum(1 for el in root.iter() if _localname(el) in shape_tags)
     return {
         "available": True,
         "text_count": text_count,
