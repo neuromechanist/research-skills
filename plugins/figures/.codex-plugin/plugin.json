@@ -1,7 +1,7 @@
 {
   "name": "figures",
-  "version": "0.3.0",
-  "description": "Publication-quality figures plugin (Phase 1 scaffold of epic #31; SKILL.md files land in subsequent phases). Replaces the retired scientific-figures plugin. Planned skills: scientific-figure (svgutils composer with font-size validation), transparent-icons, svg-figure, ai-full-figure, plot-styling; plus a type-dispatching figure-qa agent.",
+  "version": "0.4.0",
+  "description": "Publication-quality figures plugin (epic #31 in progress). Active: scientific-figure (svgutils composer with pre-export font-size validation against Nature/Science/Cell/PNAS minima; Inkscape exporter detected at runtime with cairosvg fallback). Planned: transparent-icons (Phase 3), figure-qa agent (Phase 4), svg-figure (Phase 5), ai-full-figure (Phase 6), plot-styling (Phase 7).",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
