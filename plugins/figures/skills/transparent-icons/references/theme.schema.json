@@ -66,7 +66,7 @@
       "type": "object",
       "description": "Post-processing pipeline applied after generation.",
       "properties": {
-        "bg_removal": {"type": "string", "enum": ["none", "threshold", "birefnet"]},
+        "bg_removal": {"type": "string", "enum": ["threshold", "birefnet"], "description": "Post-process transparency method. Omit --transparent on generate_icon.py if the substrate should remain opaque (e.g. ai-full-figure substrates)."},
         "alpha_matting": {"type": "boolean"},
         "threshold": {"type": "integer", "minimum": 0, "maximum": 255}
       }

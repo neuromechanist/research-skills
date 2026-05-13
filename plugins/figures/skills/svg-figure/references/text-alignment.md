@@ -1,6 +1,6 @@
 # Text Alignment
 
-How to place SVG `<text>` so it sits inside its container shape, with the right anchor and baseline. The `figure-qa` SVG branch's planned geometry section will check text-bbox-inside-shape; until then these patterns prevent the failures by construction.
+How to place SVG `<text>` so it sits inside its container shape, with the right anchor and baseline. The `figure-qa` SVG branch's geometry section will check text-bbox-inside-shape when issue #47 lands; for now these patterns prevent the failures by construction and the agent falls back to VLM judgment.
 
 ## Anchor and baseline at a glance
 
@@ -94,7 +94,7 @@ When `dominant-baseline="middle"` is unreliable, compute the offset manually:
 
 ## Bbox arithmetic for figure-qa geometry checks
 
-When the planned bbox-inside-shape check ships, it will compute:
+The bbox-inside-shape check is tracked in issue #47. When it ships, it will compute:
 
 - The text element's bbox via `svgelements.Text(...).bbox()`, which returns `(xmin, ymin, xmax, ymax)`.
 - The containing shape's bbox the same way.

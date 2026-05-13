@@ -34,10 +34,11 @@ research-skills/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
 │   │   └── skills/opencite/
-│   ├── figures/                      # Publication-quality figures (Phase 1 scaffold; epic #31)
+│   ├── figures/                      # Publication-quality figures (v0.9.0)
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
-│   │   └── skills/{scientific-figure,transparent-icons,plot-styling}/   # SKILL.md files land in Phases 2, 3, 7; svg-figure (5), ai-full-figure (6), and agents/figure-qa.md (4) land later
+│   │   ├── skills/{scientific-figure,transparent-icons,svg-figure,ai-full-figure,plot-styling}/
+│   │   └── agents/figure-qa.md + figure-qa-scripts/{check_svg,check_raster,check_plot_script}.py
 │   ├── presentation/                 # Interactive slide decks
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json

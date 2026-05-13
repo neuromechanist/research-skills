@@ -64,7 +64,7 @@ Force a specific backend:
 
 ## Theme bible: keep an icon set consistent
 
-When generating multiple icons that need to look like they belong together (same line weight, same color palette, same perspective), use a `theme.json` file. The schema is in `references/theme.schema.json` and is shared with the `[[ai-full-figure]]` skill (Phase 6). At a minimum:
+When generating multiple icons that need to look like they belong together (same line weight, same color palette, same perspective), use a `theme.json` file. The schema is in `references/theme.schema.json` and is shared with the `[[ai-full-figure]]` skill. At a minimum:
 
 ```json
 {
@@ -89,7 +89,7 @@ See `references/icon-bible.md` for the template schema and `references/prompt-pa
 
 ## Quality assurance
 
-Phase 4 of epic #31 introduces the `figure-qa` agent that proactively runs on generated icons to check for transparency correctness, palette compliance, and the absence of stray label text. Until then, inspect each icon visually before incorporating it into a figure.
+The `[[figure-qa]]` agent proactively runs on generated icons to check for transparency correctness (alpha-channel + corner sampling), palette compliance (with near-gray exemption for chrome), DPI vs the journal target, and dominant colors. Pass `--expect-transparent` so the raster branch flags any opaque output as a regression.
 
 ## Additional resources
 

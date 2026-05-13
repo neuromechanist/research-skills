@@ -49,7 +49,7 @@ When labelling a box, the label belongs **inside** the box's bounding rectangle.
       font-family="Helvetica, Arial, sans-serif" font-size="6">Cortex</text>
 ```
 
-The text x is the rect's `x + width/2 = 25`. The text y is `y + height/2 = 17`. For tighter visual alignment with the rounded `rx` corner, nudge the y by ~0.5–1 mm; verify with `[[figure-qa]]` SVG branch (its bbox-inside-shape check will catch text that bleeds past the rect).
+The text x is the rect's `x + width/2 = 25`. The text y is `y + height/2 = 17`. For tighter visual alignment with the rounded `rx` corner, nudge the y by ~0.5–1 mm; verify with `[[figure-qa]]`. Today the SVG branch's bbox-inside-shape check is not implemented; the agent falls back to VLM judgment for layered-element correctness.
 
 See `references/text-alignment.md` for the bbox arithmetic and common failure modes (text width exceeding box width, descenders dropping below the box).
 
@@ -137,7 +137,7 @@ uv run --with lxml --with svgelements --with svgpathtools --with shapely \
     --journal nature --palette okabe-ito
 ```
 
-The SVG branch checks font sizes (delegating to `validate_fonts.py`), palette compliance (with near-gray exemption for chrome), and reports geometry counts. Bbox-overlap and arrow-tip distance are stubbed in the current release; until they ship, run the agent for a VLM-based layered-element judgment.
+The SVG branch checks font sizes (delegating to `validate_fonts.py`), palette compliance (with near-gray exemption for chrome), and reports geometry counts. Bbox-overlap and arrow-tip distance are not implemented in this release; the agent falls back to VLM judgment for layered-element correctness.
 
 ## Additional resources
 

@@ -1,6 +1,6 @@
 # Plan
 
-## Current Phase: Marketplace v0.8.0 — figures plugin redesign (epic #31)
+## Current Phase: Marketplace v0.14.0 — figures plugin redesign (epic #31) complete
 
 ### Plugins Status
 
@@ -14,13 +14,13 @@
 | presentation | 0.2.1 | Stable. Interactive Reveal.js slide decks. |
 | neuroinformatics | 0.2.3 | Stable. BIDS, HED, experiment design, bids-validator agent. |
 
-### Active epic: figures plugin redesign (#31)
+### Completed epic: figures plugin redesign (#31)
 
-Multi-phase replacement of `scientific-figures` (v0.2.1, react-pdf based) with a redesigned `figures` plugin built around `svgutils` programmatic composition, type-dispatching `figure-qa` agent, and split-out skills for scientific figures, transparent icons, SVG figures, AI-generated full figures, and plot styling.
+Multi-phase replacement of `scientific-figures` (v0.2.1, react-pdf based) with the redesigned `figures` plugin built around `svgutils` programmatic composition, type-dispatching `figure-qa` agent, and split-out skills for scientific figures, transparent icons, SVG figures, AI-generated full figures, and plot styling. All seven sub-issues merged.
 
 - Research: `.context/figures-research.md`
 - Design: `.context/figures-design.md`
-- Sub-issues: #32 (scaffold), #33 (scientific-figure), #34 (transparent-icons), #35 (figure-qa), #36 (svg-figure), #37 (ai-full-figure), #38 (plot-styling)
+- Sub-issues: #32 (scaffold), #33 (scientific-figure), #34 (transparent-icons), #35 (figure-qa), #36 (svg-figure), #37 (ai-full-figure), #38 (plot-styling) — all closed.
 
 ### Recent history (summarized)
 

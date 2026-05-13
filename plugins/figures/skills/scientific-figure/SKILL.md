@@ -52,9 +52,9 @@ The validator in step 4 enforces these. Pick the journal early so the validator 
 
 Each panel is generated independently as an SVG. Common sources:
 
-- **Plots:** matplotlib/seaborn, saved with `bbox_inches='tight', transparent=True, format='svg'`. See the `[[plot-styling]]` skill for the library decision tree and SciencePlots recipes (lands in Phase 7 of epic #31; until then use the patterns in `plot-styling/references/element-plots.md`).
-- **Icons:** transparent PNGs from the `[[transparent-icons]]` skill (lands in Phase 3). Until then, the legacy `transparent-icons/scripts/generate_icon.py` is directly invocable.
-- **Schematics:** hand-authored SVG, or programmatic via the `[[svg-figure]]` skill (Phase 5).
+- **Plots:** matplotlib/seaborn, saved with `bbox_inches='tight', transparent=True, format='svg'`. See the `[[plot-styling]]` skill for the library decision tree and SciencePlots recipes.
+- **Icons:** transparent PNGs from the `[[transparent-icons]]` skill.
+- **Schematics:** hand-authored SVG, or programmatic via the `[[svg-figure]]` skill.
 
 Save each element to a working directory (typically `panels/`), then compose them in step 3.
 
@@ -179,7 +179,7 @@ Generate a figure caption that:
 
 ## Quality assurance
 
-Phase 4 of epic #31 introduces the `figure-qa` agent that proactively runs on the composed SVG to check geometric correctness, alignment, color-palette compliance, and label legibility. Until then, run `validate_fonts.py` manually and visually inspect the exported PDF at the journal's intended physical size before delivery.
+The `[[figure-qa]]` agent proactively runs on the composed SVG to check geometric correctness, alignment, color-palette compliance, and label legibility. The agent invokes `validate_fonts.py` for the font-size pass under the hood and the SVG branch's palette and geometry checks alongside.
 
 ## Additional resources
 

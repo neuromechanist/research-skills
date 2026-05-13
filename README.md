@@ -178,10 +178,11 @@ research-skills/
 
 - [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex), or [GitHub Copilot CLI](https://docs.github.com/en/copilot)
 - For opencite: `opencite` CLI (`uvx opencite`)
-- For icons (current): OpenAI API key for the OpenAI Images API, or `codex login` for the Codex CLI fallback. The active `generate_icon.py` uses the latest available OpenAI image model.
-- For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
+- For icons: OpenAI API key for the OpenAI Images API, or `codex login` for the Codex CLI fallback (preferred). The active `generate_icon.py` uses the latest available OpenAI image model. Optional: `rembg` + `onnxruntime` for the BiRefNet transparency post-process (one-time ~400 MB model download).
+- For figure composition: `svgutils` plus an exporter — Inkscape is detected at runtime (`brew install inkscape`) and `cairosvg` is the no-system-deps fallback.
+- For figure QA: `lxml`, `svgelements`, `svgpathtools`, `shapely` for the SVG branch; `pillow`, `colorthief` for the raster branch; AST analysis for the plot-script branch (no extra deps).
+- For plot styling: matplotlib, seaborn, plotly, plotnine, and SciencePlots via `uv run --with` (on-the-fly).
 - For PDF conversion: poppler (`brew install poppler` on macOS)
-- Composition, full figure-QA, and additional plotting dependencies land with their respective phases of epic #31.
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
 - For OCR: Mistral API key (optional, tesseract as offline fallback)

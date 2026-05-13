@@ -69,10 +69,10 @@ Programmatic (deterministic):
 - Palette compliance, near-gray-exempt (see above).
 - Element counts (text vs shape) for sanity.
 
-Stubbed (planned for a future iteration):
+Not yet implemented (tracked in issue #47):
 
 - Text-bbox-inside-shape using `svgelements` + `shapely`.
 - Arrow-tip-to-target distance using `svgpathtools` tangent at `t=1`.
 - Bbox overlap between sibling shapes.
 
-Until the geometry checks ship, the agent falls back to VLM judgment for layered-element correctness. Author defensively (z-order, anchored text, tight bboxes) and the figure will pass either way.
+Until #47 lands, the agent falls back to VLM judgment for layered-element correctness. Author defensively (z-order, anchored text, tight bboxes) and the figure will pass either way.

@@ -141,7 +141,7 @@ Remove the grid before final export.
 
 ## When to bypass svgutils
 
-For figures with complex annotations (curved arrows, brackets, gradient overlays), build the schematic in the `[[svg-figure]]` skill (Phase 5) and `SVG()`-import the result here as one of the panels. svgutils is a positioning composer, not an SVG editor.
+For figures with complex annotations (curved arrows, brackets, gradient overlays), build the schematic in the `[[svg-figure]]` skill and `SVG()`-import the result here as one of the panels. svgutils is a positioning composer, not an SVG editor.
 
 ## See also
 
