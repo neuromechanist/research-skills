@@ -32,14 +32,12 @@ from typing import Any
 
 
 # Curated colorblind-safe palettes (hex without alpha). The agent passes one of
-# these names via --palette; downstream checks measure CIEDE2000 distance and
-# flag samples that are too far from every allowed color.
+# these names via --palette; downstream checks compute Euclidean RGB distance and
+# flag samples that are too far from every allowed color. Near-gray colors
+# (axis spines, tick marks) are exempted before comparison so they do not
+# produce false positives.
 ALLOWED_PALETTES: dict[str, list[str]] = {
     "okabe-ito": [
-        "#000000", "#E69F00", "#56B4E9", "#009E73",
-        "#F0E442", "#0072B2", "#D55E00", "#CC79A7",
-    ],
-    "wong": [
         "#000000", "#E69F00", "#56B4E9", "#009E73",
         "#F0E442", "#0072B2", "#D55E00", "#CC79A7",
     ],
@@ -48,6 +46,9 @@ ALLOWED_PALETTES: dict[str, list[str]] = {
         "#66CCEE", "#AA3377", "#BBBBBB",
     ],
 }
+# Wong 2011 republished the Okabe-Ito 2008 palette unchanged; keep both names
+# pointing to the same list so users see the canonical citation either way.
+ALLOWED_PALETTES["wong"] = ALLOWED_PALETTES["okabe-ito"]
 
 
 def _validate_fonts(svg: Path, journal: str | None) -> dict[str, Any] | None:
@@ -66,37 +67,83 @@ def _validate_fonts(svg: Path, journal: str | None) -> dict[str, Any] | None:
     )
     if not validator.exists():
         return {"available": False, "reason": f"validator not found at {validator}"}
-    result = subprocess.run(
-        [sys.executable, str(validator), str(svg), "--journal", journal],
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            [sys.executable, str(validator), str(svg), "--journal", journal],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "available": True,
+            "error": "validate_fonts.py timed out after 60 s; the SVG may have a pathological transform stack.",
+        }
     # validate_fonts.py: 0 pass, 1 issues, 2 script error.
+    stdout = result.stdout or ""
+    stderr = (result.stderr or "").strip()
     if result.returncode not in (0, 1):
         return {
             "available": True,
-            "error": f"validate_fonts.py exit {result.returncode}: {result.stderr.strip()}",
+            "error": f"validate_fonts.py exit {result.returncode}: {stderr}",
         }
+    # Distinguish "crashed (exit 1, no JSON)" from "1 finding (exit 1, JSON output)".
+    if result.returncode == 1 and not stdout.strip():
+        return {
+            "available": True,
+            "error": f"validate_fonts.py crashed (exit 1 with empty stdout): {stderr[:400]}",
+        }
+    if not stdout.strip():
+        # exit 0 with empty stdout means "no <text> elements at all"; treat as clean.
+        return {"available": True, "issue_count": 0, "issues": [], "checked_count": 0}
     try:
-        return {"available": True, **json.loads(result.stdout)}
+        return {"available": True, **json.loads(stdout)}
     except json.JSONDecodeError as exc:
         return {
             "available": True,
-            "error": f"validate_fonts.py JSON parse error: {exc}; stdout={result.stdout!r}",
+            "error": f"validate_fonts.py JSON parse error: {exc}; stderr={stderr[:200]}",
         }
 
 
+# Valid CSS hex colors: 3, 4, 6, or 8 hex digits. 5- and 7-digit strings are not
+# valid and would crash _hex_to_rgb if accepted. Alternation is ordered
+# longest-first so finditer doesn't greedily match the 3-digit prefix of a
+# 6-digit value (e.g., "#007" inside "#0072B2").
+_HEX_RE = re.compile(
+    r"#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(?![0-9a-fA-F])"
+)
+
+
 def _hex_to_rgb(s: str) -> tuple[int, int, int]:
+    """Convert a 3/4/6/8-digit CSS hex color to an (R, G, B) triple. Alpha bytes
+    on 4- and 8-digit inputs are intentionally discarded (palette compliance
+    only checks color, not opacity)."""
     s = s.lstrip("#")
     if len(s) == 3:
         s = "".join(c * 2 for c in s)
+    elif len(s) == 4:  # RGBA shorthand
+        s = "".join(c * 2 for c in s[:3])
+    elif len(s) == 8:  # RRGGBBAA
+        s = s[:6]
+    if len(s) != 6:
+        raise ValueError(f"unexpected hex length after normalization: '#{s}'")
     return int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16)
 
 
 def _rgb_distance(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
     # Simple Euclidean in RGB — fast and good enough for "this color is way off
-    # the allowed palette." A proper CIEDE2000 belongs in a downstream sweep.
+    # the allowed palette."
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2) ** 0.5
+
+
+def _is_near_gray(rgb: tuple[int, int, int], tol: int = 15) -> bool:
+    """True when all three channels are within tol of each other (axis spines,
+    ticks, gridlines, background neutrals)."""
+    return (
+        abs(rgb[0] - rgb[1]) <= tol
+        and abs(rgb[1] - rgb[2]) <= tol
+        and abs(rgb[0] - rgb[2]) <= tol
+    )
 
 
 def _extract_fill_stroke_colors(root) -> set[str]:  # type: ignore[no-untyped-def]
@@ -105,11 +152,11 @@ def _extract_fill_stroke_colors(root) -> set[str]:  # type: ignore[no-untyped-de
     for el in root.iter():
         for attr in ("fill", "stroke"):
             val = el.get(attr)
-            if val and val.startswith("#") and re.fullmatch(r"#[0-9a-fA-F]{3,8}", val):
+            if val and val.startswith("#") and _HEX_RE.fullmatch(val):
                 colors.add(val.lower())
         style = el.get("style") or ""
-        for m in re.finditer(r"(fill|stroke)\s*:\s*(#[0-9a-fA-F]{3,8})", style):
-            colors.add(m.group(2).lower())
+        for m in re.finditer(r"(?:fill|stroke)\s*:\s*(" + _HEX_RE.pattern + ")", style):
+            colors.add(m.group(1).lower())
     return colors
 
 
@@ -127,12 +174,18 @@ def _palette_compliance(root, palette_name: str | None) -> dict[str, Any] | None
     issues = []
     seen = _extract_fill_stroke_colors(root)
     for hex_color in seen:
-        # Exclude white/transparent/none-style background colors.
+        try:
+            rgb = _hex_to_rgb(hex_color)
+        except ValueError:
+            # Skip values our regex shouldn't admit; do not crash the whole check.
+            continue
+        # Skip backgrounds and near-gray colors (axes, ticks, gridlines).
         if hex_color in ("#fff", "#ffffff", "#000", "#000000"):
             continue
-        rgb = _hex_to_rgb(hex_color)
+        if _is_near_gray(rgb):
+            continue
         nearest = min(_rgb_distance(rgb, allowed) for allowed in allowed_rgb)
-        if nearest > 30:  # somewhat permissive Euclidean cutoff
+        if nearest > 30:  # Euclidean RGB cutoff for "clearly off-palette"
             issues.append({"color": hex_color, "rgb": list(rgb), "nearest_distance": round(nearest, 2)})
     return {
         "palette": palette_name,
@@ -249,8 +302,15 @@ def main(argv: list[str] | None = None) -> int:
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
+    except ImportError as exc:
+        print(
+            f"error: missing dependency for check_svg.py — re-run with "
+            f"--with lxml --with svgelements --with svgpathtools --with shapely: {exc}",
+            file=sys.stderr,
+        )
+        return 2
     except Exception as exc:  # malformed XML or other parser failures
-        print(f"error: could not analyze '{args.svg}': {exc}", file=sys.stderr)
+        print(f"error ({type(exc).__name__}): could not analyze '{args.svg}': {exc}", file=sys.stderr)
         return 2
 
     issues, warnings = _summarize(report)

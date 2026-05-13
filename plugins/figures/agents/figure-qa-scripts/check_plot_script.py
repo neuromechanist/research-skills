@@ -62,45 +62,74 @@ def _detect_libraries(tree: ast.AST) -> list[str]:
     return sorted(detected)
 
 
-def _find_rcparam_font_sizes(tree: ast.AST) -> list[dict[str, Any]]:
-    """Find rcParams.update({'font.size': N}) and plt.rcParams['font.size'] = N
-    assignments, returning the value(s)."""
-    findings = []
+def _is_rcparams_target(receiver: ast.AST) -> bool:
+    """True when receiver looks like rcParams (e.g., plt.rcParams or matplotlib.rcParams)."""
+    if isinstance(receiver, ast.Attribute):
+        return receiver.attr == "rcParams"
+    if isinstance(receiver, ast.Name):
+        return receiver.id == "rcParams"
+    return False
+
+
+# Font-size-like rcParam keys whose values matter for journal compliance.
+_FONT_SIZE_KEYS = (
+    "font.size", "axes.labelsize", "axes.titlesize",
+    "xtick.labelsize", "ytick.labelsize", "legend.fontsize", "legend.title_fontsize",
+)
+
+
+def _find_rcparam_font_sizes(tree: ast.AST) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Find rcParams.update({...}) and rcParams['key'] = N assignments.
+
+    Returns (findings, skipped). Findings have a numeric pt value; skipped records
+    assignments whose RHS could not be resolved statically (variable, expression).
+    Only assignments on an actual rcParams target are considered, so a stray
+    `my_dict.update({"font.size": 8})` does not produce a spurious finding.
+    """
+    findings: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
     for node in ast.walk(tree):
-        # plt.rcParams.update({"font.size": 9})
+        # rcParams.update({"font.size": 9, ...})
         if (
             isinstance(node, ast.Call)
             and isinstance(node.func, ast.Attribute)
             and node.func.attr == "update"
             and node.args
             and isinstance(node.args[0], ast.Dict)
+            and _is_rcparams_target(node.func.value)
         ):
             for k, v in zip(node.args[0].keys, node.args[0].values):
-                if (
-                    isinstance(k, ast.Constant)
-                    and isinstance(k.value, str)
-                    and "font.size" in k.value
-                    and isinstance(v, ast.Constant)
-                    and isinstance(v.value, (int, float))
-                ):
+                if not (isinstance(k, ast.Constant) and isinstance(k.value, str)):
+                    continue
+                if not any(fk in k.value for fk in _FONT_SIZE_KEYS):
+                    continue
+                if isinstance(v, ast.Constant) and isinstance(v.value, (int, float)):
                     findings.append({"key": k.value, "pt": float(v.value)})
-        # plt.rcParams["font.size"] = 9
+                else:
+                    skipped.append({"key": k.value, "reason": "dynamic value not evaluated statically"})
+        # rcParams["font.size"] = 9
         if (
             isinstance(node, ast.Assign)
             and len(node.targets) == 1
             and isinstance(node.targets[0], ast.Subscript)
             and isinstance(node.targets[0].slice, ast.Constant)
             and isinstance(node.targets[0].slice.value, str)
-            and "font.size" in node.targets[0].slice.value
-            and isinstance(node.value, ast.Constant)
-            and isinstance(node.value.value, (int, float))
+            and _is_rcparams_target(node.targets[0].value)
         ):
-            findings.append({"key": node.targets[0].slice.value, "pt": float(node.value.value)})
-    return findings
+            key = node.targets[0].slice.value
+            if not any(fk in key for fk in _FONT_SIZE_KEYS):
+                continue
+            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, (int, float)):
+                findings.append({"key": key, "pt": float(node.value.value)})
+            else:
+                skipped.append({"key": key, "reason": "dynamic value not evaluated statically"})
+    return findings, skipped
 
 
 def _savefig_kwargs(tree: ast.AST) -> list[dict[str, Any]]:
-    """Find every .savefig(...) call and capture the transparent / bbox_inches kwargs."""
+    """Find every .savefig(...) call and capture the transparent / bbox_inches kwargs.
+    Records `_has_kwargs_spread` when the call uses **kwargs so the issue checker
+    does not produce false positives for kwargs we can't see statically."""
     findings = []
     for node in ast.walk(tree):
         if (
@@ -108,11 +137,18 @@ def _savefig_kwargs(tree: ast.AST) -> list[dict[str, Any]]:
             and isinstance(node.func, ast.Attribute)
             and node.func.attr == "savefig"
         ):
-            kwargs = {}
+            kwargs: dict[str, Any] = {}
             for kw in node.keywords:
+                if kw.arg is None:
+                    # **spread argument; we can't statically resolve its contents.
+                    kwargs["_has_kwargs_spread"] = True
+                    continue
                 if kw.arg in ("transparent", "bbox_inches", "dpi", "format"):
                     if isinstance(kw.value, ast.Constant):
                         kwargs[kw.arg] = kw.value.value
+                    else:
+                        # Variable / expression value; can't evaluate statically.
+                        kwargs.setdefault("_dynamic", []).append(kw.arg)
             findings.append(kwargs)
     return findings
 
@@ -144,7 +180,7 @@ def check_plot_script(script_path: Path, journal: str | None) -> dict[str, Any]:
     tree = ast.parse(source, filename=str(script_path))
 
     libs = _detect_libraries(tree)
-    rcparams = _find_rcparam_font_sizes(tree)
+    rcparams, rcparams_skipped = _find_rcparam_font_sizes(tree)
     savefigs = _savefig_kwargs(tree)
     rec = _recommend_library(libs, source)
 
@@ -164,12 +200,17 @@ def check_plot_script(script_path: Path, journal: str | None) -> dict[str, Any]:
                     })
 
     for sf in savefigs:
-        if "transparent" in sf and sf["transparent"] is False:
+        spread = sf.get("_has_kwargs_spread", False)
+        dynamic = sf.get("_dynamic", [])
+        # Flag both explicit-False and absent transparent kwarg (default in matplotlib is
+        # opaque). Suppress when **kwargs is present since we can't see those statically,
+        # and when transparent appears in _dynamic (variable value, can't evaluate).
+        if not spread and "transparent" not in dynamic and sf.get("transparent") is not True:
             issues.append({
                 "kind": "savefig_not_transparent",
                 "note": "transparent=True is recommended so the figure composites cleanly on any background.",
             })
-        if "bbox_inches" not in sf:
+        if not spread and "bbox_inches" not in dynamic and "bbox_inches" not in sf:
             issues.append({
                 "kind": "savefig_missing_bbox_inches",
                 "note": "bbox_inches='tight' avoids leftover whitespace around the saved figure.",
@@ -179,6 +220,7 @@ def check_plot_script(script_path: Path, journal: str | None) -> dict[str, Any]:
         "input": str(script_path),
         "libraries_detected": libs,
         "rcparam_font_sizes": rcparams,
+        "rcparam_font_sizes_skipped": rcparams_skipped,
         "savefig_calls": savefigs,
         "library_recommendation": rec,
         "issues": issues,
@@ -199,10 +241,31 @@ def main(argv: list[str] | None = None) -> int:
     if not args.script.exists():
         print(f"error: script not found: {args.script}", file=sys.stderr)
         return 2
+    if args.script.suffix == ".ipynb":
+        print(
+            "error: .ipynb not supported directly. Extract code cells first, e.g.:\n"
+            "  uv run --with nbformat python -c \"import nbformat,sys; "
+            "nb=nbformat.read(sys.argv[1],as_version=4); "
+            "print('\\n'.join(c.source for c in nb.cells if c.cell_type=='code'))\" "
+            f"{args.script} > /tmp/extracted.py\n"
+            "then run check_plot_script.py on /tmp/extracted.py.",
+            file=sys.stderr,
+        )
+        return 2
     try:
         report = check_plot_script(args.script, args.journal)
     except SyntaxError as exc:
         print(f"error: SyntaxError in '{args.script}': {exc}", file=sys.stderr)
+        return 2
+    except UnicodeDecodeError as exc:
+        print(
+            f"error: could not decode '{args.script}' with default encoding: {exc}\n"
+            "hint: re-save the file as UTF-8.",
+            file=sys.stderr,
+        )
+        return 2
+    except OSError as exc:
+        print(f"error: could not read '{args.script}': {exc}", file=sys.stderr)
         return 2
 
     json.dump(report, sys.stdout, indent=2)

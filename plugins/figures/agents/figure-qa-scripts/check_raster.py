@@ -92,17 +92,19 @@ def _white_background_report(img) -> dict[str, Any]:  # type: ignore[no-untyped-
         rgb.getpixel((w - 1, h - 1)),
     ]
     pure_white = sum(1 for c in corners if all(v >= 250 for v in c[:3]))
-    return {
+    out: dict[str, Any] = {
         "applicable": True,
         "corner_pixels": [list(c) for c in corners],
         "pure_white_corner_count": pure_white,
-        "note": (
-            "all four corners pure-white suggests a likely-unintended white background; "
-            "consider exporting with transparent=True or cropping."
-            if pure_white == 4
-            else "no all-white border detected."
-        ),
     }
+    if pure_white == 4:
+        out["issue"] = (
+            "all four corners pure-white suggests an unintended white background; "
+            "consider exporting with transparent=True or cropping."
+        )
+    else:
+        out["note"] = "no all-white border detected."
+    return out
 
 
 def _resolution_report(img, journal: str | None) -> dict[str, Any]:  # type: ignore[no-untyped-def]
@@ -112,12 +114,17 @@ def _resolution_report(img, journal: str | None) -> dict[str, Any]:  # type: ign
     if dpi:
         out["dpi"] = list(dpi) if isinstance(dpi, tuple) else dpi
         min_dpi = JOURNAL_MIN_DPI.get((journal or "generic").lower(), 300)
-        x_dpi = dpi[0] if isinstance(dpi, tuple) else dpi
-        # Pillow stores DPI as a float and 300 round-trips slightly under
-        # (299.9994 on save/load). Allow 0.1 DPI slack so common honest cases
-        # don't trip the threshold.
-        if x_dpi < min_dpi - 0.1:
-            out["issue"] = f"DPI {x_dpi} below journal minimum {min_dpi}."
+        # Guard against malformed metadata (e.g., empty TIFF DPI tuple).
+        if isinstance(dpi, tuple) and not dpi:
+            out["note"] = "DPI metadata present but empty; treat as missing."
+            out["dpi"] = None
+        else:
+            x_dpi = dpi[0] if isinstance(dpi, tuple) else dpi
+            # Pillow stores DPI as a float and 300 round-trips slightly under
+            # (299.9994 on save/load). Allow 0.1 DPI slack so common honest cases
+            # don't trip the threshold.
+            if x_dpi < min_dpi - 0.1:
+                out["issue"] = f"DPI {x_dpi} below journal minimum {min_dpi}."
     else:
         out["dpi"] = None
         out["note"] = (
@@ -128,8 +135,10 @@ def _resolution_report(img, journal: str | None) -> dict[str, Any]:  # type: ign
 
 
 def _palette_report(image_path: Path) -> dict[str, Any]:
-    """Use colorthief (when installed) to extract the dominant colors. The
-    agent compares these against an allow-list at synthesis time."""
+    """Use colorthief (when installed) to extract the dominant colors. This is
+    informational only — the section reports the observed palette so the agent
+    can pass it through VLM judgment. Colorthief failures are surfaced as
+    'script_error' so the caller can decide whether to fail the run."""
     try:
         from colorthief import ColorThief  # type: ignore[import-not-found]
     except ImportError:
@@ -139,7 +148,11 @@ def _palette_report(image_path: Path) -> dict[str, Any]:
         dominant = ct.get_color(quality=10)
         palette = ct.get_palette(color_count=6, quality=10)
     except Exception as exc:
-        return {"available": True, "error": f"colorthief failed: {exc}"}
+        return {
+            "available": True,
+            "script_error": True,
+            "error": f"colorthief failed: {exc}",
+        }
     return {
         "available": True,
         "dominant_rgb": list(dominant),
@@ -164,12 +177,20 @@ def check_raster(
     }
 
 
-def _summarize(report: dict[str, Any]) -> int:
+def _summarize(report: dict[str, Any]) -> tuple[int, int]:
+    """Return (issue_count, script_error_count). Script errors signal that a
+    section's check itself failed (e.g., colorthief crashed); they propagate
+    to exit code 2 in main()."""
     issues = 0
+    script_errors = 0
     for section in report.get("checks", {}).values():
-        if isinstance(section, dict) and section.get("issue"):
+        if not isinstance(section, dict):
+            continue
+        if section.get("issue"):
             issues += 1
-    return issues
+        if section.get("script_error"):
+            script_errors += 1
+    return issues, script_errors
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -192,14 +213,32 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     try:
         report = check_raster(args.image, args.journal, args.expect_transparent)
+    except ImportError as exc:
+        print(
+            f"error: missing dependency for check_raster.py — re-run with "
+            f"--with pillow [--with colorthief]: {exc}",
+            file=sys.stderr,
+        )
+        return 2
     except Exception as exc:
-        print(f"error: could not analyze '{args.image}': {exc}", file=sys.stderr)
+        # Pillow raises UnidentifiedImageError or OSError on corrupt/truncated images;
+        # name the exception so the user can self-diagnose.
+        print(
+            f"error ({type(exc).__name__}): could not analyze '{args.image}': {exc}",
+            file=sys.stderr,
+        )
         return 2
 
-    issues = _summarize(report)
-    report["summary"] = {"issue_count": issues}
+    issues, script_errors = _summarize(report)
+    report["summary"] = {"issue_count": issues, "script_error_count": script_errors}
     json.dump(report, sys.stdout, indent=2)
     print(file=sys.stdout)
+    if script_errors:
+        print(
+            f"check_raster: {script_errors} section(s) failed to run; see report.",
+            file=sys.stderr,
+        )
+        return 2
     if issues:
         print(f"check_raster: {issues} issue(s) detected.", file=sys.stderr)
         return 1

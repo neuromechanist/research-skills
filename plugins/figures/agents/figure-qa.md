@@ -12,20 +12,21 @@ Autonomously review a scientific figure for journal-submission quality. Detects 
 
 ## Procedure
 
+### 0. Honor the no-qa opt-out
+
+If the invocation includes `no-qa` in its prompt or args, return immediately with a one-line note that QA was skipped. This opt-out short-circuits all subsequent work; check it before opening any files or spawning subprocesses.
+
 ### 1. Locate the helper scripts
 
-Helper scripts live alongside this agent. Find the plugin's `agents/figure-qa-scripts/` directory:
+Helper scripts live in `figures/agents/figure-qa-scripts/`. Try the plugin-root variable first; if that is unset or the directory does not exist, fall back to a `find` scoped to the current project:
 
 ```bash
 SCRIPTS_DIR="${CLAUDE_PLUGIN_ROOT}/agents/figure-qa-scripts"
-test -d "$SCRIPTS_DIR" || SCRIPTS_DIR="$(dirname "$(realpath "$0")")/figure-qa-scripts"
+if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ] || ! test -d "$SCRIPTS_DIR"; then
+    SCRIPTS_DIR="$(find . -type d -name figure-qa-scripts -path '*/figures/agents/*' | head -1)"
+fi
+test -d "$SCRIPTS_DIR" || { echo "error: could not locate figure-qa-scripts/" >&2; exit 2; }
 ls "$SCRIPTS_DIR"  # check_svg.py, check_raster.py, check_plot_script.py
-```
-
-If neither path resolves, fall back to a `find` from the project root:
-
-```bash
-SCRIPTS_DIR="$(find . -type d -name figure-qa-scripts -path '*/figures/agents/*' | head -1)"
 ```
 
 ### 2. Detect the input type
@@ -37,7 +38,7 @@ Branch on extension and content sniff. Be explicit about which branch ran in the
 | `.svg` | **SVG** | parse XML, walk transforms, check fonts/geometry/palette |
 | `.png`, `.jpg`, `.jpeg`, `.tif`, `.tiff` | **Raster** | check alpha, white background, DPI, dominant colors |
 | `.py` matching `import matplotlib|seaborn|plotly|plotnine` | **Plot script** | AST analysis: rcParams, savefig, library choice |
-| `.ipynb` matching same imports | **Plot script** | extract code cells, then same AST analysis |
+| `.ipynb` matching same imports | **Plot script** | extract code cells first (see Step 3 plot-script section), then same AST analysis |
 | Directory with a `figure.svg`, `compose.py`, or `panels/` | **Composed figure** | run SVG branch on each component and the composed output |
 
 Sniff content when the extension is ambiguous:
@@ -53,14 +54,31 @@ grep -q -E 'import (matplotlib|seaborn|plotly|plotnine)' path && BRANCH=plot_scr
 
 Always pass `--journal` when the user (or upstream skill) indicated a target journal. The helper scripts treat `--journal` as authoritative for font-size minima, DPI minima, and palette allow-lists.
 
+**Exit-code contract across all three helpers:**
+
+- `0` — clean (no findings).
+- `1` — findings present; JSON report on stdout describes them. Surface in the Programmatic findings section as expected.
+- `2` — script error (missing dependency, malformed input, timeout, internal exception). The JSON file may be empty or incomplete. Do **not** treat as "no findings." Mark the affected section as `unavailable (script error)` in the synthesis and proceed with VLM judgment for that section.
+
+Capture stderr alongside stdout so the script error message is preserved:
+
+```bash
+"$@" > /tmp/report.json 2> /tmp/report-err.txt; RC=$?
+if [ "$RC" -eq 2 ]; then
+    echo "script error:"; cat /tmp/report-err.txt
+fi
+```
+
 #### SVG branch
 
 ```bash
 uv run --with lxml --with svgelements --with svgpathtools --with shapely \
     python "$SCRIPTS_DIR/check_svg.py" path/to/figure.svg \
     --journal nature --palette okabe-ito \
-    > /tmp/svg-report.json
-echo "exit=$?"
+    > /tmp/svg-report.json 2> /tmp/svg-err.txt
+RC=$?
+echo "exit=$RC"
+[ "$RC" -eq 2 ] && echo "script error:" && cat /tmp/svg-err.txt
 ```
 
 Read the JSON. Report `checks.fonts.issues`, `checks.palette.off_palette`, and `checks.geometry.bbox_overlaps` separately so the user can act on each. When `checks.geometry.available` is False (missing svgelements/shapely), do not fail the run — note that VLM judgment must cover layered-element correctness in this run.
@@ -71,7 +89,10 @@ Read the JSON. Report `checks.fonts.issues`, `checks.palette.off_palette`, and `
 uv run --with pillow --with colorthief \
     python "$SCRIPTS_DIR/check_raster.py" path/to/figure.png \
     --journal nature --expect-transparent \
-    > /tmp/raster-report.json
+    > /tmp/raster-report.json 2> /tmp/raster-err.txt
+RC=$?
+echo "exit=$RC"
+[ "$RC" -eq 2 ] && echo "script error:" && cat /tmp/raster-err.txt
 ```
 
 `--expect-transparent` should be set when the upstream skill (transparent-icons, ai-full-figure substrate) intended a transparent background. Without it the alpha section reports descriptively but does not flag missing transparency as an issue.
@@ -80,10 +101,20 @@ uv run --with pillow --with colorthief \
 
 ```bash
 uv run python "$SCRIPTS_DIR/check_plot_script.py" path/to/plot.py \
-    --journal nature > /tmp/plotscript-report.json
+    --journal nature > /tmp/plotscript-report.json 2> /tmp/plotscript-err.txt
+RC=$?
+echo "exit=$RC"
+[ "$RC" -eq 2 ] && echo "script error:" && cat /tmp/plotscript-err.txt
 ```
 
 Static AST analysis — no execution. If the report includes `library_recommendation`, surface it as a suggestion (not a blocker).
+
+For `.ipynb` inputs the script returns exit 2 with a hint to extract code cells first:
+
+```bash
+uv run --with nbformat python -c "import nbformat,sys; nb=nbformat.read(sys.argv[1],as_version=4); print('\n'.join(c.source for c in nb.cells if c.cell_type=='code'))" notebook.ipynb > /tmp/extracted.py
+uv run python "$SCRIPTS_DIR/check_plot_script.py" /tmp/extracted.py --journal nature > /tmp/plotscript-report.json
+```
 
 #### Composed-figure branch
 
@@ -159,9 +190,9 @@ Combine programmatic findings and VLM scores into one structured report. Use thi
 - **Highest-leverage fix:** <one concrete next step>
 ```
 
-### 6. When to skip QA
+### 6. Skip QA (moved to Step 0)
 
-If the caller passes `no-qa` in the invocation prompt, return immediately with a one-line note that QA was skipped. This is the opt-out for fast-iteration loops.
+The no-qa opt-out is checked at Step 0 before any work is done. This section is intentionally a no-op pointer to remind future maintainers that the gate is up front, not at the end.
 
 ## Constraints
 
