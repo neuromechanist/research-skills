@@ -94,7 +94,7 @@ Common adjustments after generation:
 - Always use `--transparent` flag
 - Maintain consistent canvas size across related icons (1024x1024)
 - Name files descriptively: `brain_eeg.png`, `emg_sensor.png`
-- Icons will be scaled down in react-pdf composition (typically 60-100pt display width)
+- Icons will be scaled down in figure composition (typically 60-100pt display width)
 
 ## Configuration
 

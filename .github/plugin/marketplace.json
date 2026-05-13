@@ -5,8 +5,8 @@
     "email": "shirazi@ieee.org"
   },
   "metadata": {
-    "description": "Research and development plugins for literature search, grants, manuscripts, scientific figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.7.6"
+    "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
+    "version": "0.8.0"
   },
   "plugins": [
     {
@@ -38,10 +38,10 @@
       "category": "research"
     },
     {
-      "name": "scientific-figures",
-      "description": "Publication-quality scientific figures: icons, plots, react-pdf composition, and visual QA",
-      "version": "0.2.1",
-      "source": "./plugins/scientific-figures",
+      "name": "figures",
+      "description": "Publication-quality figures plugin (Phase 1 scaffold of epic #31; SKILL.md files land in subsequent phases). Replaces the retired scientific-figures plugin. Planned skills: scientific-figure (svgutils composer with font-size validation), transparent-icons, svg-figure, ai-full-figure, plot-styling; plus a type-dispatching figure-qa agent.",
+      "version": "0.3.0",
+      "source": "./plugins/figures",
       "category": "research"
     },
     {

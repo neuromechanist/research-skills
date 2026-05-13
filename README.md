@@ -1,6 +1,6 @@
 # Research Skills
 
-Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, scientific figures, presentations, project lifecycle management, and neuroinformatics.
+Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics.
 
 ## Install
 
@@ -18,7 +18,7 @@ Install all plugins via CLI:
 
 ```bash
 claude plugin marketplace add neuromechanist/research-skills
-for p in project grant manuscript opencite scientific-figures presentation neuroinformatics; do
+for p in project grant manuscript opencite figures presentation neuroinformatics; do
   claude plugin install "$p@research-skills"
 done
 ```
@@ -52,13 +52,13 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.3.1 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
-| **grant** | 0.3.1 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
-| **manuscript** | 0.4.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, and journal formatting | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting` | -- |
+| **project** | 0.3.3 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **grant** | 0.3.4 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
+| **manuscript** | 0.5.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **scientific-figures** | 0.2.1 | Full figure pipeline: icons, plots, composition, visual QA | `scientific-figures` | -- |
+| **figures** | 0.3.0 | Publication-quality figures plugin (scaffolding; SKILL.md files land in subsequent phases of epic #31) | scaffolded: `scientific-figure`, `transparent-icons`, `plot-styling` (SKILL.md pending) | -- |
 | **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
-| **neuroinformatics** | 0.2.1 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
+| **neuroinformatics** | 0.2.3 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
 ## Research Plugins
 
@@ -94,16 +94,20 @@ The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citati
 "Write a single-pass literature review on motor cortex oscillations"
 ```
 
-### scientific-figures
+### figures
 
-Create publication-quality figures for Nature, Science, PNAS, Cell, and other journals:
+Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.3.0 is **Phase 1 scaffolding only** — the plugin manifests, skill directories, and ported reference material are in place, but no SKILL.md files or agents have landed yet. Each subsequent phase of epic [#31](https://github.com/neuromechanist/research-skills/issues/31) adds one skill or agent:
 
-1. **Plan** -- target journal, panel layout, color palette
-2. **Create elements** -- icons (gpt-image-2), plots (matplotlib/seaborn/plotly/ggplot2)
-3. **Compose** -- assemble into PDF via react-pdf
-4. **Visual QA** -- render to PNG, read the image, verify alignment/labels/overlap, iterate
+- **Phase 2** — `scientific-figure` skill (svgutils composer with pre-export font-size validation)
+- **Phase 3** — `transparent-icons` skill (refactored icon generator)
+- **Phase 4** — `figure-qa` agent (type-dispatching QA)
+- **Phase 5** — `svg-figure` skill
+- **Phase 6** — `ai-full-figure` skill
+- **Phase 7** — `plot-styling` skill
 
-All elements saved as SVG or transparent PNG. Enforces sans-serif fonts, colorblind-safe palettes, and journal-specific dimensions. Runs on-the-fly via `uvx` and `bunx`.
+Design context lives in `.context/figures-research.md` and `.context/figures-design.md`. Ported references that survive the redesign are already in place: `scientific-figure/references/color-palettes.md`, `scientific-figure/references/journal-specs.md`, `transparent-icons/references/icon-bible.md`, `transparent-icons/scripts/{generate_icon.py, icon-templates.json}`, and `plot-styling/references/element-plots.md`.
+
+Until subsequent phases land, the plugin exposes no auto-triggering skills. The legacy `generate_icon.py` script remains directly invocable via `uv run` from its new path.
 
 ### presentation
 
@@ -167,7 +171,7 @@ research-skills/
 │   ├── grant/                     # Grant proposals (writing, review, figure QA)
 │   ├── manuscript/                # Manuscripts (review, writing, formatting)
 │   ├── opencite/                  # Literature search and citation management
-│   ├── scientific-figures/        # Icons + plots + composition + QA
+│   ├── figures/                   # Publication-quality figures + QA
 │   ├── presentation/             # Interactive Reveal.js slide decks
 │   └── neuroinformatics/          # BIDS, HED, experiment design
 ```
@@ -176,10 +180,10 @@ research-skills/
 
 - [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex), or [GitHub Copilot CLI](https://docs.github.com/en/copilot)
 - For opencite: `opencite` CLI (`uvx opencite`)
-- For icons: OpenAI API key (gpt-image-2)
+- For icons (current): OpenAI API key for the OpenAI Images API, or `codex login` for the Codex CLI fallback. The active `generate_icon.py` uses the latest available OpenAI image model.
 - For plots: matplotlib/seaborn/plotly via `uvx` (on-the-fly)
-- For figure composition: react-pdf via `bunx` (on-the-fly)
 - For PDF conversion: poppler (`brew install poppler` on macOS)
+- Composition, full figure-QA, and additional plotting dependencies land with their respective phases of epic #31.
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
 - For OCR: Mistral API key (optional, tesseract as offline fallback)

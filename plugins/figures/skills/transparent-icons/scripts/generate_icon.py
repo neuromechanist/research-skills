@@ -87,7 +87,7 @@ load_dotenv()
 load_dotenv(Path.home() / ".env")
 
 # Path to icon templates relative to this script
-TEMPLATES_PATH = Path(__file__).parent.parent / "references" / "icon-templates.json"
+TEMPLATES_PATH = Path(__file__).parent / "icon-templates.json"
 
 BASE_STYLE = (
     "flat minimalist scientific icon, Nature/Science journal figure style, "
