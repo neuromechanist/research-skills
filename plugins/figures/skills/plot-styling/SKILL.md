@@ -1,6 +1,6 @@
 ---
 name: plot-styling
-description: This skill should be used when the user asks to "plot data", "make a plot for a paper", "make a publication plot", "create a journal-quality plot", "matplotlib for a figure", "use seaborn", "use plotnine", "use ggplot in Python", "improve plot quality", "fix matplotlib defaults", "use SciencePlots", "make a Nature-style plot", "make an IEEE-style plot", "make a paper-ready chart", "which plotting library should I use", or wants guidance on choosing between matplotlib / seaborn / plotnine / plotly / pyvista and applying journal-quality defaults. Produces SVG-output Python scripts whose panels are consumed by the scientific-figure composer.
+description: This skill should be used when the user asks to "plot data", "make a plot for a paper", "make a publication plot", "create a journal-quality plot", "matplotlib for a figure", "use seaborn", "use plotnine", "use ggplot in Python", "improve plot quality", "style my plot", "clean up my figure", "my matplotlib plot looks ugly", "apply journal style to existing script", "fix matplotlib defaults", "use SciencePlots", "make a Nature-style plot", "make an IEEE-style plot", "make a paper-ready chart", "which plotting library should I use", or wants guidance on choosing between matplotlib / seaborn / plotnine / plotly / pyvista and applying journal-quality defaults. Produces SVG-output Python scripts whose panels are consumed by the scientific-figure composer.
 version: 0.1.0
 ---
 
@@ -42,8 +42,10 @@ The cleanest path is to install [SciencePlots](https://github.com/garrettj403/Sc
 import matplotlib.pyplot as plt
 import scienceplots  # noqa: F401  (registers the styles)
 
-plt.style.use(["science", "nature"])
+plt.style.use(["science", "nature", "no-latex"])
 ```
+
+`no-latex` is non-optional unless you have system LaTeX installed AND want path-rendered text (in which case `validate_fonts.py` cannot inspect font sizes — see the "no-latex" note in `references/sciplots-recipes.md`).
 
 For a Nature panel at 1-column width with three lines:
 
@@ -52,7 +54,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scienceplots  # noqa: F401
 
-plt.style.use(["science", "nature"])
+plt.style.use(["science", "nature", "no-latex"])
 
 fig, ax = plt.subplots(figsize=(3.5, 2.5))  # 89 mm x ~63 mm
 t = np.linspace(0, 1, 200)
@@ -87,7 +89,7 @@ Common matplotlib output failures and the SciencePlots-style fix:
 | Axis labels are 12pt sans-serif by default — fine on screen, oversized for a Nature panel | matplotlib default `font.size` is 10 in the source, scaled to 12 at SVG export | Apply `plt.style.use(['science', 'nature'])` which sets 7 pt body |
 | Top and right spines visible | matplotlib default | SciencePlots removes them; or manually `ax.spines[['top','right']].set_visible(False)` |
 | Legend has a heavy black frame | matplotlib default | `ax.legend(frameon=False)` |
-| Tick marks point inward, hard to read | matplotlib default `xtick.direction = 'in'` | SciencePlots overrides; or `plt.rcParams['xtick.direction'] = 'out'` |
+| Tick marks point inward when you wanted outward | SciencePlots `science` style sets `xtick.direction = 'in'` (matplotlib's bare default is `'out'`) | Intentional in the SciencePlots style; override only if your journal requires outward ticks: `plt.rcParams['xtick.direction'] = 'out'` |
 | Color cycle uses default tableau colors (not colorblind-safe) | matplotlib default | SciencePlots' `bright` palette (Paul Tol), or `['#0072B2', '#D55E00', '#009E73', '#CC79A7']` (Okabe-Ito) |
 | Tick labels render at different sizes than axis labels | matplotlib defaults differ across rcparams | SciencePlots harmonizes; or set `xtick.labelsize` / `ytick.labelsize` explicitly |
 | Saved PNG is at 100 DPI | matplotlib default | `savefig(..., dpi=300)` for raster output; prefer SVG for print |

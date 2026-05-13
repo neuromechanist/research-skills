@@ -80,11 +80,11 @@ Don't ship plotly's static export to a print journal — its default fonts and c
 **PyVista** when the user *interacts* with the rendering (rotation, slicing); **matplotlib 3d** for static panels.
 
 ```python
-# Static print panel
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+# Static print panel. matplotlib auto-registers the 3D projection since 3.4;
+# no explicit `from mpl_toolkits.mplot3d import Axes3D` import is needed.
 import matplotlib.pyplot as plt
 import scienceplots  # noqa: F401
-plt.style.use(["science"])
+plt.style.use(["science", "no-latex"])
 fig = plt.figure(figsize=(3.5, 3.0))
 ax = fig.add_subplot(projection="3d")
 # ... plot ...

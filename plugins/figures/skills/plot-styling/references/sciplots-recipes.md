@@ -35,7 +35,7 @@ uv run --with matplotlib --with scienceplots python panel.py
 import matplotlib.pyplot as plt
 import scienceplots  # noqa: F401
 
-plt.style.use(["science", "nature"])
+plt.style.use(["science", "nature", "no-latex"])
 fig, ax = plt.subplots(figsize=(3.5, 2.5))  # 89 mm x ~63 mm (1-column)
 # ... plot ...
 fig.savefig("panel.svg", bbox_inches="tight", transparent=True)
@@ -43,15 +43,17 @@ fig.savefig("panel.svg", bbox_inches="tight", transparent=True)
 
 `science + nature` sets `font.size: 7`, `axes.labelsize: 7`, `xtick.labelsize: 6`, `ytick.labelsize: 6`, `legend.fontsize: 6`. All above Nature's 5 pt floor; the validator will be happy.
 
+**Why `no-latex`** — the `science` style enables `text.usetex=True`. When matplotlib renders math via LaTeX it converts every `<text>` element in the SVG output to vector paths, which `validate_fonts.py` cannot inspect (it walks `<text>` elements only). Adding `no-latex` switches to matplotlib's built-in mathtext (no system LaTeX install needed) and preserves text as `<text>`. Drop `no-latex` only when you have real LaTeX math and have verified the font sizes manually.
+
 2-column panel: `figsize=(7.0, 4.0)` (183 mm x ~100 mm).
 
 ### Science
 
 ```python
-plt.style.use(["science"])  # Nature style + Myriad fallback
+plt.style.use(["science", "no-latex"])
 plt.rcParams["font.family"] = ["Myriad Pro", "Helvetica", "Arial", "DejaVu Sans"]
 plt.rcParams["font.size"] = 7  # Science 6-8 pt range; 7 is a safe middle
-fig, ax = plt.subplots(figsize=(2.17, 1.6))  # 55 mm x ~40 mm (1-column)
+fig, ax = plt.subplots(figsize=(3.40, 2.5))  # 86 mm x ~63 mm (1-column, AAAS)
 ```
 
 Science prefers Myriad Pro. If you don't have it installed, the fallback list keeps the SVG portable.
@@ -59,17 +61,17 @@ Science prefers Myriad Pro. If you don't have it installed, the fallback list ke
 ### Cell
 
 ```python
-plt.style.use(["science"])
+plt.style.use(["science", "no-latex"])
 plt.rcParams["font.size"] = 7
 fig, ax = plt.subplots(figsize=(3.35, 2.5))  # 85 mm x ~63 mm
 ```
 
-Cell allows 85 or 112 mm 1-column. For 1.5-col, `figsize=(4.4, 3.0)`.
+Cell allows 85 mm 1-column and 114 mm 1.5-column (per scientific-figure's `journal-specs.md`). For 1.5-col, `figsize=(4.49, 3.0)`.
 
 ### PNAS
 
 ```python
-plt.style.use(["science"])
+plt.style.use(["science", "no-latex"])
 plt.rcParams["font.size"] = 7
 fig, ax = plt.subplots(figsize=(3.43, 2.5))  # 87 mm x ~63 mm
 ```
@@ -79,7 +81,7 @@ PNAS allows labels down to 2 mm physical height; SciencePlots' defaults stay abo
 ### IEEE
 
 ```python
-plt.style.use(["science", "ieee"])
+plt.style.use(["science", "ieee", "no-latex"])
 fig, ax = plt.subplots(figsize=(3.5, 2.5))
 ```
 
@@ -88,11 +90,11 @@ IEEE applies a grayscale-safe palette by default — important because IEEE ofte
 ### APS (PRL, PRX, etc.)
 
 ```python
-plt.style.use(["science", "aps"])
+plt.style.use(["science", "aps"])  # APS journals are math-heavy; keep usetex
 fig, ax = plt.subplots(figsize=(3.4, 2.5))  # 86 mm x ~63 mm
 ```
 
-APS journals lean toward Times-style math. APS style preserves SciencePlots' sans-serif body text but routes math through `\mathrm` and serif fonts.
+APS journals lean toward Times-style math. APS style preserves SciencePlots' sans-serif body text but routes math through `\mathrm` and serif fonts. APS submissions often use real LaTeX math; if you keep `text.usetex=True` you'll need to verify font sizes manually rather than via `validate_fonts.py` (which sees only `<text>` elements). Use `no-latex` if you can substitute mathtext for the journal's math expressions.
 
 ## Stacking color palettes
 
@@ -138,7 +140,7 @@ plt.rcParams.update({
 })
 ```
 
-`svg.fonttype = "none"` is the load-bearing one. If matplotlib converts text to paths during SVG export, `validate_fonts.py` cannot inspect anything and the figure ships with no font check. The Phase 2 example sets this explicitly; SciencePlots leaves it at matplotlib's default of `"path"` for some styles — override after `plt.style.use`.
+`svg.fonttype = "none"` is the load-bearing one. If matplotlib converts text to paths during SVG export, `validate_fonts.py` cannot inspect anything and the figure ships with no font check. The `examples/sciplots_panel.py` example sets this explicitly; SciencePlots leaves it at matplotlib's default of `"path"` for some styles — override after `plt.style.use`.
 
 ## Verifying with figure-qa
 
