@@ -268,22 +268,34 @@ def check_svg(svg_path: Path, journal: str | None, palette: str | None) -> dict[
     }
 
 
-def _summarize(report: dict[str, Any]) -> tuple[int, int]:
-    """Return (issue_count, warning_count) across all sections."""
+def _summarize(report: dict[str, Any]) -> tuple[int, int, int]:
+    """Return (issue_count, warning_count, script_error_count) across all sections.
+    A section with `error` set (e.g., a subprocess crashed) is counted as a
+    script error so main() can exit 2 rather than 0 when a check itself fails."""
     issues = 0
     warnings = 0
+    script_errors = 0
     fonts = (report.get("checks") or {}).get("fonts")
     if fonts and fonts.get("available") is not False:
-        issues += int(fonts.get("issue_count") or 0)
-        warnings += int(fonts.get("skipped_count") or 0)
+        if fonts.get("error"):
+            script_errors += 1
+        else:
+            issues += int(fonts.get("issue_count") or 0)
+            warnings += int(fonts.get("skipped_count") or 0)
     palette = (report.get("checks") or {}).get("palette")
     if palette and palette.get("available"):
-        issues += int(palette.get("off_palette_count") or 0)
+        if palette.get("error"):
+            script_errors += 1
+        else:
+            issues += int(palette.get("off_palette_count") or 0)
     geom = (report.get("checks") or {}).get("geometry")
     if geom and geom.get("available"):
-        issues += len(geom.get("bbox_overlaps") or [])
-        issues += len(geom.get("arrow_tip_issues") or [])
-    return issues, warnings
+        if geom.get("error"):
+            script_errors += 1
+        else:
+            issues += len(geom.get("bbox_overlaps") or [])
+            issues += len(geom.get("arrow_tip_issues") or [])
+    return issues, warnings, script_errors
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -318,10 +330,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"error ({type(exc).__name__}): could not analyze '{args.svg}': {exc}", file=sys.stderr)
         return 2
 
-    issues, warnings = _summarize(report)
-    report["summary"] = {"issue_count": issues, "warning_count": warnings}
+    issues, warnings, script_errors = _summarize(report)
+    report["summary"] = {
+        "issue_count": issues,
+        "warning_count": warnings,
+        "script_error_count": script_errors,
+    }
     json.dump(report, sys.stdout, indent=2)
     print(file=sys.stdout)
+    if script_errors:
+        print(
+            f"check_svg: {script_errors} section(s) failed to run; see report.",
+            file=sys.stderr,
+        )
+        return 2
     if issues:
         print(f"check_svg: {issues} issue(s), {warnings} warning(s).", file=sys.stderr)
         return 1

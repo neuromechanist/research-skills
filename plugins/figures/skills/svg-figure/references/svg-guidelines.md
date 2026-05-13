@@ -51,7 +51,7 @@ This makes connections visually pass **under** nodes, which is the schematic con
 ## Text
 
 - **Font family**: `Helvetica, Arial, sans-serif` is the safest cross-platform stack. Some journals require Myriad (Science) — set `font-family="Myriad Pro, Helvetica, Arial, sans-serif"` and the renderer will fall back when Myriad is absent.
-- **Font size in pt** via the unitless number `font-size="9"` (which renders as 9 user units = 9 mm with our viewBox convention — wait, that's actually pt because matplotlib's SVG output uses pt and so does standard SVG when no unit is given inside a viewBox that maps to mm). The QA agent's `validate_fonts.py` walks the transform stack to compute effective pt; trust its output over your in-head math.
+- **Font size**: `validate_fonts.py` treats a unitless `font-size` value as pt. Write `font-size="6"` and the validator records it as 6 pt; this is the value compared against the journal minimum (Nature 5 pt, Science/Cell/PNAS 6 pt). In the mm-viewBox convention, that same unitless value renders as 6 mm visually on screen or in print (well above the legibility floor), but you should size by the validator's pt interpretation, not by visual mm. Trust `validate_fonts.py` output over in-head math.
 - **`text-anchor`** controls horizontal alignment: `start` (default, like CSS left-align), `middle`, `end`. Use `middle` for box labels.
 - **`dominant-baseline`** controls vertical: `auto` (default; baseline at the given y), `middle` (centerline at the given y), `central` (similar but Unicode-aware), `hanging` (top edge at y). Use `middle` for box labels.
 

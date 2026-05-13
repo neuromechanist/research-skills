@@ -48,7 +48,7 @@
   <line x1="44" y1="32" x2="44" y2="29"
         stroke="#888888" stroke-width="0.6" stroke-dasharray="1 0.6"/>
   <text x="44" y="36" text-anchor="middle" dominant-baseline="middle"
-        font-family="Helvetica, Arial, sans-serif" font-size="4"
+        font-family="Helvetica, Arial, sans-serif" font-size="5"
         fill="#D55E00">
     artifact gate
   </text>

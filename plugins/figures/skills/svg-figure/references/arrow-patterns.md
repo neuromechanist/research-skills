@@ -10,7 +10,7 @@ Every arrow shares a single marker definition placed inside `<defs>` at the top 
 <defs>
   <marker id="arrow" viewBox="0 0 10 10"
           refX="9" refY="5"
-          markerWidth="6" markerHeight="6"
+          markerWidth="3" markerHeight="3"
           orient="auto-start-reverse">
     <path d="M 0 0 L 10 5 L 0 10 z" fill="#1F3A5F"/>
   </marker>
@@ -20,7 +20,7 @@ Every arrow shares a single marker definition placed inside `<defs>` at the top 
 Key parameters:
 
 - **`refX="9"`** places the marker's reference point one unit before the triangle's tip (the tip is at `x=10`). The line's endpoint `x2,y2` aligns with this reference, so the visual tip lands exactly at the target coordinate.
-- **`markerWidth="6" markerHeight="6"`** sets the rendered size of the marker. In our mm-viewBox SVG, this means a 6 mm × 6 mm arrowhead at scale 1, which is too large; reduce to 3 for a 3 mm head. Tune based on the line weight (~3-4× stroke width is a good rule).
+- **`markerWidth="3" markerHeight="3"`** sets the rendered size of the marker. In our mm-viewBox SVG, this means a 3 mm × 3 mm arrowhead at scale 1, which sits well alongside ~1 mm strokes. Scale with stroke weight (~3-4× stroke width is a good rule); `markerWidth="6"` is usually too large.
 - **`orient="auto-start-reverse"`** rotates the marker along the path tangent at the endpoint. The `-reverse` variant lets the same marker serve `marker-start` and `marker-end` correctly. (Older renderers may not support `-reverse`; if you support Inkscape pre-1.0, also define `arrow-start` separately.)
 - **`fill="#1F3A5F"`** matches the line color. SVG markers do not inherit `stroke` from the parent path, so set the fill explicitly.
 

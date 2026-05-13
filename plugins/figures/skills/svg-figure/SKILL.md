@@ -1,6 +1,6 @@
 ---
 name: svg-figure
-description: This skill should be used when the user asks to "create an SVG figure", "make a schematic", "draw a diagram", "create a schematic diagram", "draw a flowchart", "make an SVG schematic", "create a process diagram", "draw a system diagram", or wants a hand-authored or programmatic SVG with shapes, arrows, and labels that the figure-qa agent can verify. Outputs are SVG files that can be loaded as panel sources by the scientific-figure composer.
+description: This skill should be used when the user asks to "create an SVG figure", "make a schematic", "draw a diagram", "create a schematic diagram", "draw a flowchart", "draw a process flow", "draw a workflow", "draw a workflow diagram", "make an SVG schematic", "create a process diagram", "create a pipeline diagram", "create a block diagram", "draw a system diagram", "system architecture diagram", or wants a hand-authored or programmatic SVG with shapes, arrows, and labels that the figure-qa agent can verify. Outputs are SVG files that can be loaded as panel sources by the scientific-figure composer.
 version: 0.1.0
 ---
 
@@ -62,13 +62,15 @@ A correct arrow ends exactly at the edge of its target shape, with its head orie
 ```svg
 <defs>
   <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
-          markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          markerWidth="3" markerHeight="3" orient="auto-start-reverse">
     <path d="M 0 0 L 10 5 L 0 10 z" fill="#1F3A5F"/>
   </marker>
 </defs>
 <line x1="40" y1="17" x2="55" y2="17"
       stroke="#1F3A5F" stroke-width="0.8" marker-end="url(#arrow)"/>
 ```
+
+`markerWidth="3" markerHeight="3"` gives a ~3 mm arrowhead in the mm-viewBox convention. Scale with stroke weight (~3–4× stroke width is a good rule); `markerWidth="6"` produces an oversized head on 0.8 mm strokes.
 
 `refX="9"` places the marker's reference point near the tip of the triangle, so `x2,y2` is the visual tip. The arrow visually ends exactly at the target's x = 55.
 
@@ -135,7 +137,7 @@ uv run --with lxml --with svgelements --with svgpathtools --with shapely \
     --journal nature --palette okabe-ito
 ```
 
-The SVG branch checks font sizes (delegating to `validate_fonts.py`), palette compliance (with near-gray exemption for chrome), and reports geometry counts. Bbox-overlap and arrow-tip distance are stubbed in v0.6.0; until they ship, run the agent for a VLM-based layered-element judgment.
+The SVG branch checks font sizes (delegating to `validate_fonts.py`), palette compliance (with near-gray exemption for chrome), and reports geometry counts. Bbox-overlap and arrow-tip distance are stubbed in the current release; until they ship, run the agent for a VLM-based layered-element judgment.
 
 ## Additional resources
 
