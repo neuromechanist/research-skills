@@ -1,7 +1,7 @@
 ---
 name: svg-primitives
-description: This skill should be used when the user asks to "build an SVG schematic in Python", "programmatic SVG diagram", "auto-fit text in an SVG box", "Python flowchart with boxes and arrows", "SVG arrow that snaps to a box edge", "tangent-correct arrowhead on a curve", "SVG with controlled z-order layers", "auto-sized labeled box", "mm-precise SVG schematic", "SVG primitive layer", "draw flowchart from data in Python", or wants to author an SVG diagram in Python where text never overflows its container, arrows always touch their target box edge, and paint order is deterministic. Built on drawsvg + svgpathtools + fontTools. Output is an SVG file that can be loaded as a panel source by the scientific-figure composer and verified by the figure-qa agent's SVG branch.
-version: 0.1.0
+description: This skill should be used when the user asks to "build an SVG schematic in Python", "programmatic SVG diagram", "auto-fit text in an SVG box", "Python flowchart with boxes and arrows", "SVG arrow that snaps to a box edge", "tangent-correct arrowhead on a curve", "SVG with controlled z-order layers", "auto-sized labeled box", "mm-precise SVG schematic", "SVG primitive layer", "draw flowchart from data in Python", "orthogonal SVG arrow routing", "Manhattan-style SVG routing", "bracket group of SVG elements", "leader line annotation", "label a group of SVG shapes", or wants to author an SVG diagram in Python where text never overflows its container, arrows always touch their target box edge, paint order is deterministic, and connectors can be straight, cubic, or right-angled. Built on drawsvg + svgpathtools + fontTools. Output is an SVG file that can be loaded as a panel source by the scientific-figure composer and verified by the figure-qa agent's SVG branch.
+version: 0.2.0
 ---
 
 # SVG Primitives
@@ -12,7 +12,7 @@ Build mm-precise SVG schematics in Python with three mechanical guarantees:
 2. **Arrowheads stay tangent-correct** — arrows emit `<marker orient="auto">` so the renderer rotates the head along the path's terminal tangent; works on straight lines and cubic Beziers.
 3. **Paint order is deterministic** — layers paint in registration order; connectors visibly pass under boxes without manual reordering.
 
-The skill ships an end-to-end pytest suite (~11 tests) that renders SVGs and asserts these invariants on the rendered output, so the guarantees are enforced by construction rather than by hand-checking each figure.
+The skill ships an end-to-end pytest suite (50+ tests) that renders SVGs and asserts these invariants on the rendered output, so the guarantees are enforced by construction rather than by hand-checking each figure.
 
 ## When to use this skill
 
@@ -93,15 +93,33 @@ Variants of `LabeledBox`:
 - `Pill` — corner radius equals `height/2` after auto-sizing → flat-sided capsule. Good for terminal nodes.
 - `Diamond` — rhombus. Width and height are doubled after the text + padding measurement so the inscribed text rectangle fits. Outline is a 4-edge polygon.
 
-### `Arrow.connect(src, dst, curve="straight"|"cubic", bow=0, src_side="auto", dst_side="auto", stroke, stroke_width)`
+### `Arrow.connect(src, dst, curve=..., bow=0, src_side="auto", dst_side="auto", via=None, corner_radius=0, stroke, stroke_width)`
 
-Connector between two shapes. Returns an Arrow object that the Canvas renders as an SVG `<path>` with `marker-end` referencing a per-color marker.
+Connector between two shapes (any `Shape` — `LabeledBox`, `Pill`, `Diamond`, `Group`). Returns an Arrow object that the Canvas renders as an SVG `<path>` with `marker-end` referencing a per-color marker.
 
-- `curve="straight"` — direct line; endpoints snapped to box outlines along the chord.
-- `curve="cubic"` — Bezier with control points perpendicular to the chord at `bow` mm of bulge. Positive `bow` = upward (negative SVG y), negative = downward. Endpoints are trimmed by intersecting the Bezier with each box outline.
-- `src_side` / `dst_side` — defaults to `"auto"` (picks the side facing the other endpoint); override to force `"N"`, `"S"`, `"E"`, or `"W"`.
+- `curve="straight"` (default) — direct line; endpoints snapped to box outlines.
+- `curve="cubic"` — Bezier with control points perpendicular to the chord at `bow` mm of bulge. Positive `bow` = upward (negative SVG y), negative = downward.
+- `curve="orthogonal-h"` — three-segment right-angle path: out horizontally from `src`, vertical traverse at the x-midpoint, in horizontally to `dst`. Auto-sides become E/W.
+- `curve="orthogonal-v"` — same idea, vertical-first: out vertically, horizontal at the y-midpoint, in vertically. Auto-sides become N/S.
+- `via=[(x, y), ...]` — multi-waypoint path (straight curve only). The polyline passes through each waypoint in order between `src` and `dst`.
+- `corner_radius` — when > 0, each interior corner of a polyline (`via` mode) is replaced with a quadratic Bezier of that radius, clamped to half the shorter adjoining segment.
+- `src_side` / `dst_side` — `"auto"` picks the appropriate side; override to force `"N"`, `"S"`, `"E"`, `"W"`.
 
-Arrowhead orientation is delivered by `<marker orient="auto">`, so the head is always rotated to match the path tangent at the terminal point — including on cubic splines.
+Arrowhead orientation is delivered by `<marker orient="auto">`, so the head is always rotated to match the path tangent at the terminal point — including on cubic splines and orthogonal turns.
+
+### `Bracket(start, end, depth, label=None, label_offset=2, ...)`
+
+Square-style bracket ("rake") for grouping elements. The spine sits `depth` mm perpendicular to the start-end line; the optional label sits at the spine apex `label_offset` mm further out on the closed side of the bracket. Renders as one `<path>` plus an optional `<text>`. Useful for electrode-group labels, time-window annotations, or condition spans in EEG/EMG figures.
+
+### `Annotation(x, y, text, leader_to=None, ...)`
+
+Text label at `(x, y)` with an optional leader line drawn from the text bounding box edge to a target coordinate. When `leader_to` is `None`, just text. The leader is computed against the measured text bbox so the line starts at the visual edge of the text (not its centroid), with a configurable `leader_gap`.
+
+### `Group(*shapes)`
+
+Virtual container — not a renderable. Exposes the union-bbox geometry of its member shapes (`cx`, `cy`, `left/right/top/bottom`, `anchor_point`, `outline_path`) so `Arrow.connect(group, other_box)` works the same as connecting two boxes, but the arrow snaps to the rectangle that bounds all members. Useful when an arrow should target a cluster of boxes as one visual unit (e.g. "all frontal channels feed the regressor").
+
+The `Shape` Protocol formalizes the minimal geometry contract — anything with `cx`, `cy`, `anchor_point`, and `outline_path` is accepted by `Arrow.connect`. `LabeledBox`, `Pill`, `Diamond`, and `Group` all satisfy it.
 
 ## Anchor system
 
@@ -158,7 +176,7 @@ uv run --with pytest --with lxml --with svgelements --with svgpathtools \
     pytest plugins/figures/skills/svg-primitives/tests/ -v
 ```
 
-Expected: 11 tests pass.
+Expected: all tests pass (50+ tests covering text containment, arrow geometry, layer order, validation errors, and Phase 2 primitives).
 
 ## Quality assurance
 

@@ -30,19 +30,74 @@ import drawsvg as dw
 from svgpathtools import CubicBezier, Line, Path
 
 from .geometry import first_intersect_point, first_intersect_t
-from .shapes import LabeledBox, Side
+from .shapes import Shape, Side
 
-Curve = Literal["straight", "cubic"]
+Curve = Literal["straight", "cubic", "orthogonal-h", "orthogonal-v"]
 AutoSide = Literal["auto", "N", "S", "E", "W"]
 
 
-def _auto_side(a: LabeledBox, b: LabeledBox) -> Side:
-    """Pick the side of `a` that faces `b`."""
+def _auto_side(a: Shape, b: Shape) -> Side:
+    """Pick the side of `a` that faces `b` (free orientation)."""
     dx = b.cx - a.cx
     dy = b.cy - a.cy
     if abs(dx) > abs(dy):
         return "E" if dx > 0 else "W"
     return "S" if dy > 0 else "N"
+
+
+def _auto_side_orthogonal(a: Shape, b: Shape, axis: Literal["h", "v"]) -> Side:
+    """For orthogonal routing, force the auto-side onto the primary-traverse
+    axis ('h' → E/W, 'v' → N/S). If `b` is aligned with `a` on that axis (so
+    the strict comparison would be ambiguous), fall back to the perpendicular
+    axis so the path stays coherent instead of degenerating to W/W or N/N."""
+    if axis == "h":
+        if b.cx > a.cx:
+            return "E"
+        if b.cx < a.cx:
+            return "W"
+        return "S" if b.cy > a.cy else "N"
+    if b.cy > a.cy:
+        return "S"
+    if b.cy < a.cy:
+        return "N"
+    return "E" if b.cx > a.cx else "W"
+
+
+def _build_polyline_d(points: list[complex], corner_radius: float = 0.0) -> str:
+    """Build an SVG path string from a list of polyline vertices.
+
+    If `corner_radius > 0`, interior vertices are replaced with a quadratic
+    Bezier corner of that radius (clamped to half the shorter adjoining
+    segment so the rounding never overshoots). The path starts with M and
+    chains L/Q segments.
+    """
+    if not points:
+        return ""
+    if corner_radius <= 0 or len(points) < 3:
+        parts = [f"M {points[0].real:.3f} {points[0].imag:.3f}"]
+        for p in points[1:]:
+            parts.append(f"L {p.real:.3f} {p.imag:.3f}")
+        return " ".join(parts)
+    parts = [f"M {points[0].real:.3f} {points[0].imag:.3f}"]
+    for i in range(1, len(points) - 1):
+        prev, this, nxt = points[i - 1], points[i], points[i + 1]
+        d_in = abs(this - prev)
+        d_out = abs(nxt - this)
+        # Treat near-zero segments as zero so we don't emit a degenerate Q
+        # whose start point equals its control point.
+        if d_in < 1e-9 or d_out < 1e-9:
+            parts.append(f"L {this.real:.3f} {this.imag:.3f}")
+            continue
+        r = min(corner_radius, d_in / 2, d_out / 2)
+        in_dir = (this - prev) / d_in
+        out_dir = (nxt - this) / d_out
+        c_in = this - in_dir * r
+        c_out = this + out_dir * r
+        parts.append(f"L {c_in.real:.3f} {c_in.imag:.3f}")
+        parts.append(f"Q {this.real:.3f} {this.imag:.3f} {c_out.real:.3f} {c_out.imag:.3f}")
+    last = points[-1]
+    parts.append(f"L {last.real:.3f} {last.imag:.3f}")
+    return " ".join(parts)
 
 
 @dataclass
@@ -67,20 +122,34 @@ class Arrow:
     @classmethod
     def connect(
         cls,
-        src: LabeledBox,
-        dst: LabeledBox,
+        src: Shape,
+        dst: Shape,
         *,
         curve: Curve = "straight",
         src_side: AutoSide = "auto",
         dst_side: AutoSide = "auto",
         bow: float = 0.0,
+        via: list[tuple[float, float]] | None = None,
+        corner_radius: float = 0.0,
         stroke: str = "#1F3A5F",
         stroke_width: float = 0.6,
     ) -> "Arrow":
-        if src_side == "auto":
-            src_side = _auto_side(src, dst)
-        if dst_side == "auto":
-            dst_side = _auto_side(dst, src)
+        if curve in ("orthogonal-h", "orthogonal-v"):
+            if via:
+                raise ValueError(
+                    f"'via' waypoints are not supported with curve={curve!r}; "
+                    "use curve='straight' for multi-waypoint paths."
+                )
+            axis: Literal["h", "v"] = "h" if curve == "orthogonal-h" else "v"
+            if src_side == "auto":
+                src_side = _auto_side_orthogonal(src, dst, axis)
+            if dst_side == "auto":
+                dst_side = _auto_side_orthogonal(dst, src, axis)
+        else:
+            if src_side == "auto":
+                src_side = _auto_side(src, dst)
+            if dst_side == "auto":
+                dst_side = _auto_side(dst, src)
         p0 = src.anchor_point(src_side)
         p1 = dst.anchor_point(dst_side)
 
@@ -91,14 +160,20 @@ class Arrow:
             )
 
         if curve == "straight":
-            line = Path(Line(p0, p1))
-            p0_snap_opt = first_intersect_point(line, src.outline_path(), prefer="start")
-            p1_snap_opt = first_intersect_point(line, dst.outline_path(), prefer="end")
-            # Use the explicit None check; complex(0, 0) is falsy in Python and
-            # would otherwise drop a valid intersection at the SVG origin.
+            waypoints = [complex(x, y) for x, y in (via or [])]
+            # Snap p0 along the first segment direction; snap p1 along the
+            # last segment direction. With no waypoints, both segments are
+            # the same chord p0-p1 (original behavior).
+            first_target = waypoints[0] if waypoints else p1
+            last_source = waypoints[-1] if waypoints else p0
+            first_seg = Path(Line(p0, first_target))
+            last_seg = Path(Line(last_source, p1))
+            p0_snap_opt = first_intersect_point(first_seg, src.outline_path(), prefer="start")
+            p1_snap_opt = first_intersect_point(last_seg, dst.outline_path(), prefer="end")
             p0_snap = p0_snap_opt if p0_snap_opt is not None else p0
             p1_snap = p1_snap_opt if p1_snap_opt is not None else p1
-            d = f"M {p0_snap.real:.3f} {p0_snap.imag:.3f} L {p1_snap.real:.3f} {p1_snap.imag:.3f}"
+            polyline = [p0_snap, *waypoints, p1_snap]
+            d = _build_polyline_d(polyline, corner_radius=corner_radius)
         elif curve == "cubic":
             chord = p1 - p0
             length = abs(chord)
@@ -129,6 +204,23 @@ class Arrow:
                 f"C {trimmed.control1.real:.3f} {trimmed.control1.imag:.3f}, "
                 f"{trimmed.control2.real:.3f} {trimmed.control2.imag:.3f}, "
                 f"{trimmed.end.real:.3f} {trimmed.end.imag:.3f}"
+            )
+        elif curve == "orthogonal-h":
+            # out horizontally from p0, vertical to p1.y at chord midpoint, in horizontally
+            mid_x = (p0.real + p1.real) / 2
+            d = (
+                f"M {p0.real:.3f} {p0.imag:.3f} "
+                f"L {mid_x:.3f} {p0.imag:.3f} "
+                f"L {mid_x:.3f} {p1.imag:.3f} "
+                f"L {p1.real:.3f} {p1.imag:.3f}"
+            )
+        elif curve == "orthogonal-v":
+            mid_y = (p0.imag + p1.imag) / 2
+            d = (
+                f"M {p0.real:.3f} {p0.imag:.3f} "
+                f"L {p0.real:.3f} {mid_y:.3f} "
+                f"L {p1.real:.3f} {mid_y:.3f} "
+                f"L {p1.real:.3f} {p1.imag:.3f}"
             )
         else:
             raise ValueError(f"unsupported curve: {curve!r}")
