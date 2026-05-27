@@ -15,8 +15,9 @@ The viewBox is in mm; font_size on shapes is in pt and emitted in mm.
 Layers paint in registration order — later layers visually sit on top.
 """
 
+from .arrows import Arrow  # noqa: F401
 from .canvas import Canvas, Layer  # noqa: F401
 from .shapes import Diamond, LabeledBox, Pill, Side  # noqa: F401
 
 __version__ = "0.1.0"
-__all__ = ["Canvas", "Diamond", "Layer", "LabeledBox", "Pill", "Side"]
+__all__ = ["Arrow", "Canvas", "Diamond", "Layer", "LabeledBox", "Pill", "Side"]
