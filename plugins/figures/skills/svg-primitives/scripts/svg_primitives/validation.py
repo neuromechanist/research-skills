@@ -52,10 +52,11 @@ class Finding:
 
 class ValidationError(Exception):
     """Raised by `Canvas.save(validate='strict')` when validation produces
-    one or more findings. The full list is on `self.findings`."""
+    one or more findings. The full list is on `self.findings` (a tuple, so
+    `str(error)` does not go stale if the caller later mutates a local copy)."""
 
-    def __init__(self, findings: list[Finding]) -> None:
-        self.findings: list[Finding] = list(findings)
+    def __init__(self, findings: list[Finding] | tuple[Finding, ...]) -> None:
+        self.findings: tuple[Finding, ...] = tuple(findings)
         super().__init__(self._format())
 
     def _format(self) -> str:
@@ -120,7 +121,12 @@ class Bbox:
 
 
 def parse_svg(path_or_text):
-    """Parse an SVG from a path-like (str/Path/file) or an XML string."""
+    """Parse an SVG from a path-like (str/Path/file) or an XML string.
+
+    Strips a UTF-8 BOM if present before deciding XML-vs-path; without the
+    strip, a BOM-prefixed string falls through to the path branch and
+    raises an opaque OSError.
+    """
     try:
         from lxml import etree
     except ImportError as e:
@@ -130,8 +136,10 @@ def parse_svg(path_or_text):
         ) from e
     if hasattr(path_or_text, "read"):
         return etree.parse(path_or_text).getroot()
-    if isinstance(path_or_text, str) and path_or_text.lstrip().startswith("<"):
-        return etree.fromstring(path_or_text.encode("utf-8") if isinstance(path_or_text, str) else path_or_text)
+    if isinstance(path_or_text, str):
+        stripped = path_or_text.lstrip("﻿ \t\n\r")
+        if stripped.startswith("<"):
+            return etree.fromstring(stripped.encode("utf-8"))
     return etree.parse(str(path_or_text)).getroot()
 
 
@@ -207,6 +215,7 @@ def text_bboxes(layer, font_path: str | None = None) -> list[tuple[str, Bbox, st
     from .metrics import MM_PER_PT, measure_text_mm
 
     out: list[tuple[str, Bbox, str | None]] = []
+    skipped: list[str] = []
     for t in layer.iter(f"{{{SVG_NS}}}text"):
         content = (t.text or "").strip()
         if not content:
@@ -221,11 +230,19 @@ def text_bboxes(layer, font_path: str | None = None) -> list[tuple[str, Bbox, st
         fs_pt = fs_mm / MM_PER_PT
         text_w_mm, text_h_mm = measure_text_mm(content, fs_pt, font_path)
         if text_w_mm <= 0 or text_h_mm <= 0:
+            skipped.append(content)
             continue
         cx = float(t.get("x", "0"))
         baseline_y = float(t.get("y", "0"))
         top = baseline_y - BASELINE_ASCENT_FRACTION * text_h_mm
         out.append((content, Bbox(cx - text_w_mm / 2, top, text_w_mm, text_h_mm), t.get("id")))
+    if skipped:
+        log.warning(
+            "text_bboxes: metrics returned zero size for %d text element(s) %r — "
+            "excluded from containment checks (likely the heuristic font fallback is active; "
+            "install a system font or pass strict_metrics=True to surface this earlier)",
+            len(skipped), skipped[:3],
+        )
     return out
 
 
@@ -278,12 +295,20 @@ def path_endpoint(path_d: str) -> tuple[float, float]:
 
 
 def dist_to_rect_edge(pt: tuple[float, float], box: Bbox) -> float:
-    """Distance from point `pt` to the nearest edge of `box`."""
+    """Distance from `pt` to the bounding rect. Points inside the box return
+    0 (treated as on the shape); points outside return the Euclidean
+    distance to the nearest edge.
+
+    Earlier this returned the *interior* distance to the nearest edge for
+    points inside the box, which made `validate_arrow_tip_distance` flag
+    arrows whose tips landed inside a target by more than tol — that's
+    geometrically on-target, not off it.
+    """
     x, y = pt
     dx = max(box.left - x, 0, x - box.right)
     dy = max(box.top - y, 0, y - box.bottom)
     if dx == 0 and dy == 0:
-        return min(x - box.left, box.right - x, y - box.top, box.bottom - y)
+        return 0.0
     return (dx * dx + dy * dy) ** 0.5
 
 
@@ -345,7 +370,14 @@ def validate_arrow_tip_distance(root, *, tol: float = 0.6) -> list[Finding]:
             elif d:
                 try:
                     tip = path_endpoint(d)
-                except Exception:
+                except (ValueError, AttributeError, IndexError) as exc:
+                    # Only swallow expected svgpathtools parse failures. Log
+                    # the truncated d so a real path-emission bug doesn't
+                    # silently suppress findings for every arrow.
+                    log.warning(
+                        "validate_arrow_tip_distance: could not parse path d=%r: %s",
+                        d[:80], exc,
+                    )
                     continue
             else:
                 continue

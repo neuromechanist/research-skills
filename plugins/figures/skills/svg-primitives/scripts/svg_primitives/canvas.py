@@ -184,13 +184,16 @@ class Canvas:
                 ) from e
         return self._run_validation(d, validate, source=str(svg_path))
 
-    def validate(self) -> list:
+    def validate(self, *, emit_warnings: bool = False) -> list:
         """Render the canvas to an in-memory SVG, parse, run all validators,
-        return the finding list. Does not write to disk. Always returns the
-        findings (does not raise) — pair with `if findings: raise ...` for
-        a strict-mode equivalent."""
+        return the finding list. Does not write to disk. Does not raise.
+
+        Pair with `if findings: raise ...` for strict-mode-equivalent in
+        non-save contexts. Pass `emit_warnings=True` to ALSO log findings
+        at WARNING (useful for long-running pipelines that want audit logs
+        without disk writes)."""
         d = self.to_drawsvg()
-        return self._run_validation(d, "warn", source="<in-memory>", emit_warnings=False)
+        return self._run_validation(d, "warn", source="<in-memory>", emit_warnings=emit_warnings)
 
     def _run_validation(self, drawing, mode: ValidateMode, *, source: str, emit_warnings: bool = True) -> list:
         """Shared validation entry point used by save() and validate()."""
@@ -199,7 +202,17 @@ class Canvas:
         from .validation import parse_svg, validate_all, ValidationError
 
         svg_text = drawing.as_svg()
-        root = parse_svg(svg_text)
+        try:
+            root = parse_svg(svg_text)
+        except Exception as exc:
+            # If the rendered SVG isn't valid XML, surface a clear error
+            # that names svg-primitives and the most likely cause rather
+            # than letting a raw lxml exception escape.
+            raise RuntimeError(
+                f"svg-primitives: the rendered SVG from {source!r} is not valid XML. "
+                "This usually means a label or attribute contains an unescaped special "
+                f"character such as '&', '<', or '>'. Original error: {exc}"
+            ) from exc
         findings = validate_all(root)
         if findings and emit_warnings and mode == "warn":
             log.warning(
