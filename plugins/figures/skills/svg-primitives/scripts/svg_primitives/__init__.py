@@ -8,8 +8,8 @@ Public API:
     Layer(name)
         - .add(element) -> element
 
-    LabeledBox, Pill, Diamond — auto-sized labeled shapes (commit 3)
-    Arrow.connect(src, dst, curve=...) — tangent-correct arrows (commit 4)
+    LabeledBox, Pill, Diamond — auto-sized labeled shapes
+    Arrow.connect(src, dst, curve=...) — tangent-correct arrows
 
 The viewBox is in mm; font_size on shapes is in pt and emitted in mm.
 Layers paint in registration order — later layers visually sit on top.

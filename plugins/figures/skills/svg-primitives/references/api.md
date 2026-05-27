@@ -42,6 +42,7 @@ Auto-sized rounded rectangle with centered text.
 | `anchor` | `"top-left"` | Anchor convention: `"top-left"` or `"center"`. |
 | `line_spacing` | `1.2` | Inter-line spacing for multi-line text (em). |
 | `font_path` | `None` | Optional explicit font file. Overrides the search path. |
+| `strict_metrics` | `False` | If `True`, raise `MetricsFallbackError` instead of using the 0.55-em heuristic when no font is found. |
 
 **Computed attributes** (read after construction)
 
@@ -56,7 +57,11 @@ Auto-sized rounded rectangle with centered text.
 
 **Class method**
 
-- `LabeledBox.next_to(other: LabeledBox, side: "N"|"S"|"E"|"W", gap: float, **kwargs) -> LabeledBox` — build a new box positioned relative to `other`. `gap` is the spacing between touching edges (mm).
+- `LabeledBox.next_to(other: LabeledBox, side: "N"|"S"|"E"|"W", gap: float, **kwargs) -> LabeledBox` — build a new box positioned relative to `other`. `gap` is the spacing between touching edges (mm). Rejects `anchor="center"` in kwargs — placement is always by top-left of the new box.
+
+**Validation**
+
+`LabeledBox.__post_init__` raises `ValueError` for: non-positive `font_size`, negative `padding`, or `anchor` not in `("top-left", "center")`.
 
 ## `Pill(...)` and `Diamond(...)`
 
@@ -78,6 +83,10 @@ Connector between two shapes.
 | `stroke` | `"#1F3A5F"` | Arrow color. The Canvas generates one `<marker>` per unique stroke color. |
 | `stroke_width` | `0.6` | Stroke width (mm). |
 
+**Validation**
+
+`Arrow.connect` raises `ValueError` if `src` and `dst` resolve to coincident anchor points (e.g. `Arrow.connect(box, box, src_side="N", dst_side="N")`). Use different sides or non-overlapping boxes.
+
 **Returned object**
 
 - `Arrow.d` — SVG path "d" attribute (string).
@@ -85,6 +94,19 @@ Connector between two shapes.
 - `Arrow.to_drawsvg() -> drawsvg.Path` — rendered path with `marker-end` set.
 
 The arrowhead is delivered by the Canvas-generated `<marker orient="auto">`; the SVG renderer computes the tangent at the terminal point and rotates the marker, so curved-path arrowheads stay tangent-correct.
+
+## Validation summary
+
+| Type | Constructor raises `ValueError` for |
+| --- | --- |
+| `Canvas` | non-positive `width_mm` or `height_mm` |
+| `Canvas.add_layer` | duplicate `layer.name` (use `Canvas.layer(name)` to get-or-create) |
+| `LabeledBox` (and subclasses) | non-positive `font_size`, negative `padding`, anchor not in `("top-left", "center")` |
+| `LabeledBox.next_to` | `anchor="center"` in kwargs (placement is by top-left) |
+| `Arrow.connect` | coincident `src`/`dst` anchor points |
+| `Arrow.connect` | unsupported `curve` value (only `"straight"` and `"cubic"` are accepted) |
+
+`MetricsFallbackError` (subclass of `RuntimeError`) is raised when `strict_metrics=True` and no exact font-metric backend succeeds.
 
 ## Conventions
 

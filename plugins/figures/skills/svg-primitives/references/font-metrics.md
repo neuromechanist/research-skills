@@ -83,6 +83,19 @@ The Phase 0 prototype used Pillow only. Two problems:
 
 The Pillow path remains as a fallback for fonts that fontTools can't open (rare).
 
+## Strict mode
+
+`measure_text_mm(..., strict=True)` and `LabeledBox(..., strict_metrics=True)` raise `MetricsFallbackError` instead of falling through to the 0.55-em heuristic. Recommended for:
+
+- CI runs that must fail loudly if fonts aren't installed.
+- Journal-submission workflows where 20% measurement error in box sizing would silently overflow.
+
+For a vanilla Linux CI container without bundled fonts, install one before running the tests or building figures:
+
+```bash
+apt-get install -y fonts-liberation     # or fonts-dejavu-core / fonts-noto
+```
+
 ## Verifying the metrics
 
 The E2E tests render boxes at multiple font sizes and label lengths, then assert text containment against the rendered SVG. If a metrics regression makes labels overflow, the relevant test (`test_text_inside_box_for_all_examples` or `test_no_text_overflow_extreme`) fails.

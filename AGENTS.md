@@ -37,7 +37,7 @@ research-skills/
 │   ├── figures/                      # Publication-quality figures (v0.10.0)
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
-│   │   ├── skills/{scientific-figure,transparent-icons,svg-figure,ai-full-figure,plot-styling}/
+│   │   ├── skills/{scientific-figure,transparent-icons,svg-figure,svg-primitives,ai-full-figure,plot-styling}/
 │   │   └── agents/figure-qa.md + figure-qa-scripts/{check_svg,check_raster,check_plot_script}.py
 │   ├── presentation/                 # Interactive slide decks
 │   │   ├── .claude-plugin/plugin.json

@@ -186,4 +186,15 @@ The geometry section (bbox-overlap, arrow-tip-to-target) is stubbed today and wi
 - `[[scientific-figure]]` — multi-panel composer that loads SVGs produced here.
 - `[[plot-styling]]` — data plots (matplotlib / seaborn / plotnine / plotly / PyVista).
 - `[[ai-full-figure]]` — AI-generated pictorial substrate; overlay labels with `LabeledBox` / `Arrow` here.
+- `[[transparent-icons]]` — flat scientific icons; place them inside a `LabeledBox` neighborhood with `Arrow.connect`.
 - `[[figure-qa]]` — QA agent that validates the rendered SVG.
+
+## Running in CI
+
+`measure_text_mm` reads real font tables (fontTools/Pillow). A vanilla Linux CI container has no system fonts — install one before running the tests:
+
+```bash
+apt-get install -y fonts-liberation     # or fonts-dejavu-core
+```
+
+Without a system font, `measure_text_mm` falls back to a 0.55-em-per-character heuristic and logs a `WARNING`. Pass `strict_metrics=True` to `LabeledBox` to raise `MetricsFallbackError` instead — recommended for journal-submission workflows.

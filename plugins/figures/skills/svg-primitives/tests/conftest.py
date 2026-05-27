@@ -15,9 +15,8 @@ from typing import Iterable
 
 import pytest
 
-# Make `svg_primitives` importable in the test process. The package lives in
-# scripts/ next to tests/. Examples/ also adds itself to sys.path; we mirror
-# that here so we can import the examples' build() helpers.
+# scripts/ and examples/ are not installed; add them to sys.path so the
+# package and example build() helpers are importable in pytest.
 _SKILL_ROOT = Path(__file__).resolve().parent.parent
 _SCRIPTS = _SKILL_ROOT / "scripts"
 _EXAMPLES = _SKILL_ROOT / "examples"

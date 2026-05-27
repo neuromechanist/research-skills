@@ -39,9 +39,7 @@ TEXT_TOL = 0.5
 ARROW_TIP_TOL = 0.6
 
 
-# ---------------------------------------------------------------------------
-# 1. Text containment in canonical figures
-# ---------------------------------------------------------------------------
+# --- Text containment in canonical figures ---
 
 def test_eeg_pipeline_text_inside_boxes(render_canvas):
     import eeg_pipeline
@@ -73,9 +71,7 @@ def test_stress_test_text_inside_boxes(render_canvas):
             pytest.fail(f"text {content!r} bbox {tb} not contained in any box")
 
 
-# ---------------------------------------------------------------------------
-# 2. Arrow tips kiss target box edges
-# ---------------------------------------------------------------------------
+# --- Arrow tips kiss target box edges ---
 
 def test_arrow_tip_within_target_edge(render_canvas):
     import eeg_pipeline
@@ -94,9 +90,7 @@ def test_arrow_tip_within_target_edge(render_canvas):
         )
 
 
-# ---------------------------------------------------------------------------
-# 3. Arrow markers use orient='auto' (no hand-rotated triangles allowed)
-# ---------------------------------------------------------------------------
+# --- Arrow markers use orient='auto' (no hand-rotated triangles allowed) ---
 
 def test_arrowhead_uses_marker_orient_auto(render_canvas):
     import eeg_pipeline
@@ -111,9 +105,7 @@ def test_arrowhead_uses_marker_orient_auto(render_canvas):
         )
 
 
-# ---------------------------------------------------------------------------
-# 4. Layer paint order matches registration order
-# ---------------------------------------------------------------------------
+# --- Layer paint order matches registration order ---
 
 def test_layer_paint_order_matches_registration(render_canvas):
     canvas = Canvas(width_mm=60, height_mm=30)
@@ -128,9 +120,7 @@ def test_layer_paint_order_matches_registration(render_canvas):
     ]
 
 
-# ---------------------------------------------------------------------------
-# 5. Per-color markers, one per unique arrow stroke
-# ---------------------------------------------------------------------------
+# --- Per-color markers, one per unique arrow stroke ---
 
 def test_per_color_markers(render_canvas):
     canvas = Canvas(width_mm=80, height_mm=30)
@@ -150,9 +140,7 @@ def test_per_color_markers(render_canvas):
     assert "#2a6f3d" in fills
 
 
-# ---------------------------------------------------------------------------
-# 6. font-size is emitted in mm equal to pt * 25.4/72
-# ---------------------------------------------------------------------------
+# --- font-size emitted in mm equals pt * 25.4/72 ---
 
 def test_font_size_emitted_in_mm(render_canvas):
     canvas = Canvas(width_mm=40, height_mm=15)
@@ -165,9 +153,7 @@ def test_font_size_emitted_in_mm(render_canvas):
     assert abs(fs - expected) < 0.001, f"font-size={fs}, expected {expected}"
 
 
-# ---------------------------------------------------------------------------
-# 7. No text overflow at extreme label lengths (parametrized)
-# ---------------------------------------------------------------------------
+# --- No text overflow at extreme label lengths ---
 
 @pytest.mark.parametrize("text", ["A", "x" * 50, "y" * 200])
 def test_no_text_overflow_extreme(render_canvas, text):
@@ -185,9 +171,7 @@ def test_no_text_overflow_extreme(render_canvas, text):
         )
 
 
-# ---------------------------------------------------------------------------
-# 8. Diamond shape: text contained inside the diamond's bounding rect
-# ---------------------------------------------------------------------------
+# --- Diamond shape: text contained inside the bounding rect ---
 
 def test_diamond_text_inside_bbox(render_canvas):
     canvas = Canvas(width_mm=80, height_mm=40)

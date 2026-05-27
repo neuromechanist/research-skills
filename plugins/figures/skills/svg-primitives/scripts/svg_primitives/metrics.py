@@ -100,7 +100,6 @@ def _measure_fonttools(text: str, font_size_pt: float, font_path: str) -> tuple[
             return None
         em_mm = font_size_pt * MM_PER_PT
         width_mm = (total_units / upem) * em_mm
-        # height: use cap-height-ish (ascent - descent) for the line box
         if "hhea" in tt:
             hhea = tt["hhea"]
             height_units = hhea.ascent - hhea.descent

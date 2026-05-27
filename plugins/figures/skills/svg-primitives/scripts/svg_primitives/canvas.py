@@ -79,8 +79,6 @@ class Canvas:
         for L in self.layers:
             for el in L.elements:
                 stroke = getattr(el, "stroke", None)
-                # Arrow elements expose `stroke` and a `to_drawsvg()` that
-                # emits a path with `marker-end`. Anything else is opaque.
                 if stroke and getattr(el, "_is_arrow", False) and stroke not in seen:
                     seen.append(stroke)
         return seen
