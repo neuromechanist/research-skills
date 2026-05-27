@@ -55,6 +55,17 @@ The `.context/` directory provides structured documentation that persists across
 
 **When to update:** Immediately after a failed attempt. Capture the details while they are fresh. This file prevents repeating the same mistakes.
 
+### decisions/
+
+**Purpose:** Store Architecture Decision Records (ADRs) for durable choices that affect structure, dependencies, interfaces, deployment, data models, or operating rules.
+
+**Structure:**
+- `README.md` documents the naming convention
+- `0000-template.md` is copied for each new decision
+- New decisions use `NNNN-short-title.md` with Context, Decision, Consequences, Alternatives, and Receipts sections
+
+**When to update:** When a decision would be expensive or confusing to rediscover later. Link issues, PRs, benchmarks, incidents, or tests under Receipts.
+
 ## Usage Guidelines
 
 1. Keep entries concise but complete enough to be useful months later
@@ -62,3 +73,4 @@ The `.context/` directory provides structured documentation that persists across
 3. Cross-reference between files (e.g., a failed attempt in scratch_history might link to the research that led to a better solution)
 4. These files are tracked in git by default, providing a shared knowledge base for the team
 5. For unused context files, keep the template structure with minimal instructions on how to start using them
+6. Keep ADRs short and immutable after merge; supersede old decisions with a new record rather than rewriting history

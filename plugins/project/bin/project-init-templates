@@ -43,7 +43,7 @@ fi
 # .context/
 if [ ! -d "$TARGET_DIR/.context" ]; then
     mkdir -p "$TARGET_DIR/.context"
-    cp "$TEMPLATES_DIR/context/"*.md "$TARGET_DIR/.context/"
+    cp -R "$TEMPLATES_DIR/context/." "$TARGET_DIR/.context/"
     echo "Created .context/ directory"
 else
     echo ".context directory already exists, skipping"

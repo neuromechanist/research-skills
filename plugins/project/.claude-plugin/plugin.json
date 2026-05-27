@@ -1,6 +1,6 @@
 {
   "name": "project",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Complete project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
   "author": {
     "name": "Seyed Yahya Shirazi",

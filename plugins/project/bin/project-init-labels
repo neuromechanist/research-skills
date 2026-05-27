@@ -1,0 +1,57 @@
+#!/bin/bash
+# Install the default project label set for a GitHub repository.
+set -euo pipefail
+
+TARGET_DIR="${1:-.}"
+
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "ERROR: Target directory '$TARGET_DIR' does not exist or is not a directory" >&2
+    exit 1
+fi
+
+if ! git -C "$TARGET_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "ERROR: '$TARGET_DIR' is not a git repository" >&2
+    exit 1
+fi
+
+if ! command -v gh >/dev/null 2>&1; then
+    echo "ERROR: GitHub CLI 'gh' is required to create labels" >&2
+    exit 1
+fi
+
+REPO="$(cd "$TARGET_DIR" && gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null || true)"
+if [ -z "$REPO" ]; then
+    echo "ERROR: '$TARGET_DIR' needs a GitHub origin remote visible to gh" >&2
+    exit 1
+fi
+
+create_label() {
+    local name="$1"
+    local color="$2"
+    local description="$3"
+
+    gh label create "$name" \
+        --repo "$REPO" \
+        --color "$color" \
+        --description "$description" \
+        --force
+}
+
+create_label "feature" "0E8A16" "New capability or user-visible improvement"
+create_label "bug" "D73A4A" "Incorrect behavior or regression"
+create_label "chore" "C5DEF5" "Maintenance, tooling, or non-user-facing work"
+create_label "docs" "0075CA" "Documentation changes"
+create_label "refactor" "BFDADC" "Internal restructuring without intended behavior change"
+
+create_label "P0" "B60205" "Critical priority; address immediately"
+create_label "P1" "D93F0B" "High priority"
+create_label "P2" "FBCA04" "Normal priority"
+create_label "P3" "C2E0C6" "Low priority or backlog"
+
+create_label "epic" "5319E7" "Parent issue for a larger body of work"
+create_label "good first issue" "7057FF" "Small, well-scoped contributor task"
+create_label "help wanted" "008672" "Maintainer-approved outside contribution welcome"
+create_label "blocked" "B60205" "Cannot proceed until a dependency is resolved"
+create_label "needs-triage" "D4C5F9" "Needs maintainer classification"
+
+echo "Installed default project labels"

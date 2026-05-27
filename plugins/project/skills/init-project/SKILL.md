@@ -1,7 +1,7 @@
 ---
 name: init-project
 description: "Use this skill for \"initialize project\", \"set up project\", \"scaffold project\", \"create AGENTS.md\", \"create CLAUDE.md\", \"set up rules\", \"create context directory\", \"vibe rules\", \"project templates\", \"init new project\", \"set up development structure\", \"create .rules\", \"create .context\", \"project scaffolding\", \"set up pre-commit hooks\", or when the user wants to initialize a new project with cross-agent development templates and structured documentation."
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Project Initialization with Vibe Rules Templates
@@ -39,6 +39,9 @@ templates/
     ideas.md          # Design concepts
     research.md       # Technical explorations
     scratch_history.md # Failed attempts and lessons
+    decisions/         # Architecture Decision Records (ADRs)
+      0000-template.md # ADR template
+      README.md        # ADR naming and workflow convention
   config/           # Development configuration
     pre-commit        # Ruff pre-commit hook (Python)
     pyproject.toml    # Python project config
@@ -75,6 +78,7 @@ Copy with safety checks (never overwrite existing files):
 2. **CLAUDE.md** from `templates/claude/CLAUDE.md` (contains `@AGENTS.md`, then Claude-only guidance)
 3. **.rules/** from `templates/claude/rules/` (all .md files)
 4. **.context/** from `templates/context/` (plan, ideas, research, scratch_history)
+   including `.context/decisions/` for Architecture Decision Records (ADRs)
 
 ### Step 3: Language-specific setup
 
@@ -84,6 +88,7 @@ Copy with safety checks (never overwrite existing files):
 
 **All projects:**
 - Offer GitHub Actions workflows from `templates/github/workflows/` if `.github/workflows/` does not exist
+- If the repository has already been pushed to GitHub and the user asks for default labels, run `project-init-labels .` to create or update the standard type, priority, and workflow labels.
 
 ### Step 4: Customize AGENTS.md and keep CLAUDE.md as an adapter
 
@@ -129,3 +134,5 @@ Read `references/rules-guide.md` for detailed descriptions of each rule file and
 ## Context Directory Reference
 
 Read `references/context-guide.md` for how to use each .context/ file effectively.
+
+Architecture decisions belong in `.context/decisions/` using the `NNNN-short-title.md` naming convention and the bundled `0000-template.md`.

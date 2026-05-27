@@ -52,7 +52,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.3.3 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **project** | 0.4.0 | Project lifecycle: init, rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
 | **grant** | 0.3.4 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review` | -- |
 | **manuscript** | 0.5.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
@@ -138,7 +138,7 @@ Neuroscience data standards, experiment design, and dataset validation:
 
 Complete project lifecycle toolkit combining initialization, epic/sprint workflow, and CI/CD management:
 
-- **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/`, and config files
+- **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/` including ADR decisions, optional default GitHub labels, and config files
 - **update-rules** -- non-destructive sync of AGENTS.md, the CLAUDE.md adapter, and `.rules/` against latest templates at user or project level
 - **workflow** -- multi-phase feature development with git worktrees, GitHub issues, and phased PR delivery
 - **CI scaffolding** -- generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)

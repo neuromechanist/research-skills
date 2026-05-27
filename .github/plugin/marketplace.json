@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.14.0"
+    "version": "0.14.1"
   },
   "plugins": [
     {
       "name": "project",
       "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.3.3",
+      "version": "0.4.0",
       "source": "./plugins/project",
       "category": "development"
     },
