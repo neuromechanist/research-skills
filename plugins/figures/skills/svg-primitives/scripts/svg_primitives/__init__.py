@@ -16,6 +16,7 @@ Layers paint in registration order — later layers visually sit on top.
 """
 
 from .canvas import Canvas, Layer  # noqa: F401
+from .shapes import Diamond, LabeledBox, Pill, Side  # noqa: F401
 
 __version__ = "0.1.0"
-__all__ = ["Canvas", "Layer"]
+__all__ = ["Canvas", "Diamond", "Layer", "LabeledBox", "Pill", "Side"]
