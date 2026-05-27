@@ -1,7 +1,189 @@
 ---
 name: svg-primitives
-description: This skill should be used when the user asks to "build an SVG schematic in Python", "programmatic SVG diagram", "auto-fit text in an SVG box", "Python flowchart with boxes and arrows", "SVG arrow that snaps to a box edge", "tangent-correct arrowhead on a curve", "SVG with controlled z-order layers", "auto-sized labeled box", "mm-precise SVG schematic", "SVG primitive layer", or wants to author an SVG diagram in Python where text never overflows its container, arrows always touch their target box edge, and paint order is deterministic. Output is an SVG file that can be loaded as a panel source by the scientific-figure composer and verified by the figure-qa agent's SVG branch. (placeholder — body filled in commit 8)
+description: This skill should be used when the user asks to "build an SVG schematic in Python", "programmatic SVG diagram", "auto-fit text in an SVG box", "Python flowchart with boxes and arrows", "SVG arrow that snaps to a box edge", "tangent-correct arrowhead on a curve", "SVG with controlled z-order layers", "auto-sized labeled box", "mm-precise SVG schematic", "SVG primitive layer", "draw flowchart from data in Python", or wants to author an SVG diagram in Python where text never overflows its container, arrows always touch their target box edge, and paint order is deterministic. Built on drawsvg + svgpathtools + fontTools. Output is an SVG file that can be loaded as a panel source by the scientific-figure composer and verified by the figure-qa agent's SVG branch.
 version: 0.1.0
 ---
 
-Body filled in by commit 8 of the Phase 1 implementation.
+# SVG Primitives
+
+Build mm-precise SVG schematics in Python with three mechanical guarantees:
+
+1. **Text never overflows its container** — labeled shapes auto-size to fit measured text bbox + padding.
+2. **Arrowheads stay tangent-correct** — arrows emit `<marker orient="auto">` so the renderer rotates the head along the path's terminal tangent; works on straight lines and cubic Beziers.
+3. **Paint order is deterministic** — layers paint in registration order; connectors visibly pass under boxes without manual reordering.
+
+The skill ships an end-to-end pytest suite (~11 tests) that renders SVGs and asserts these invariants on the rendered output, so the guarantees are enforced by construction rather than by hand-checking each figure.
+
+## When to use this skill
+
+Reach for `svg-primitives` when:
+
+- The figure is a **schematic** (boxes, arrows, labels) and you're driving it from Python — e.g. nodes come from a YAML config, or the layout depends on data.
+- You need the boxes to **auto-fit** their labels (no hand-tuning widths).
+- The figure has **curved arrows** that must point cleanly at their targets.
+- You want **deterministic z-order** so connectors sit under shapes without manual element reordering.
+- The output will be **composed into a multi-panel figure** as a panel SVG that `scientific-figure/compose.py` loads.
+
+Reach for a different tool when:
+
+- The figure is **plotted from numbers** (matplotlib/seaborn/plotnine) → use `[[plot-styling]]`.
+- The figure is a **photographic / pictorial substrate** (a brain scene, microscope setup) → use `[[ai-full-figure]]` for the substrate and overlay labels via Arrow/LabeledBox here.
+- The figure is **hand-authored SVG** or the patterns are reference material for hand-authoring → use `[[svg-figure]]` (this skill's library-agnostic counterpart).
+
+## Quick start
+
+```python
+from svg_primitives import Canvas, LabeledBox, Arrow
+
+c = Canvas(width_mm=183, height_mm=80)
+boxes = c.layer("boxes")
+arrows = c.layer("connectors")
+
+raw = boxes.add(LabeledBox(x=10, y=20, text="Raw EEG", font_size=7))
+band = boxes.add(LabeledBox.next_to(raw, side="E", gap=10, text="Bandpass\nfilter", font_size=7))
+ica = boxes.add(LabeledBox.next_to(band, side="E", gap=10, text="Independent component\nanalysis", font_size=7))
+
+arrows.add(Arrow.connect(raw, band))                          # straight, snapped to edges
+arrows.add(Arrow.connect(band, ica))                          # straight
+arrows.add(Arrow.connect(ica, raw, curve="cubic", bow=14,     # feedback arc
+                          stroke="#C45146"))                  # red — gets its own red marker
+
+c.save("eeg.svg", output_png=True)
+```
+
+`examples/eeg_pipeline.py` is the canonical reference; run it to see the full output:
+
+```bash
+uv run --with drawsvg --with svgpathtools --with Pillow --with fonttools --with cairosvg \
+  python plugins/figures/skills/svg-primitives/examples/eeg_pipeline.py
+```
+
+## Primitive reference
+
+### `Canvas(width_mm, height_mm, background=None)`
+
+The root drawing surface. User units equal mm; the `viewBox` is set so coordinates inside the SVG are in mm and font-size is emitted in mm regardless of the input pt size.
+
+- `.layer(name) -> Layer` — gets or creates a named layer. Subsequent `.layer("boxes")` calls return the same layer.
+- `.add_layer(Layer) -> Canvas` — explicit insertion when registration order matters.
+- `.save(path, output_png=False, png_width=1800)` — writes the SVG; with `output_png=True`, also writes a sibling PNG via cairosvg.
+
+Layer paint order is the order layers were first registered. Typical convention: `background` → `connectors` → `boxes` → `labels`.
+
+### `Layer(name)`
+
+An ordered bucket of elements. `.add(element)` appends and returns the element so calls chain.
+
+### `LabeledBox(x, y, text, font_size=7, padding=2, ...)`
+
+Auto-sized rounded rectangle with centered text. The width and height are computed from the measured text bbox (via fontTools) plus `padding` on every side, clamped by `min_width` / `min_height`. Multi-line text (newline-separated) stacks with `line_spacing` em between baselines.
+
+- `anchor="top-left"` (default) — `x, y` is the top-left corner.
+- `anchor="center"` — `x, y` is the centroid.
+- `.anchor_point("N"|"S"|"E"|"W") -> complex` — exposed for `Arrow.connect`.
+- `.outline_path() -> svgpathtools.Path` — used internally for arrow edge snapping.
+- `.next_to(other, side, gap, **kwargs)` (classmethod) — build a sibling positioned relative to an existing box.
+
+`font_size` is in **pt** for ergonomics (`font_size=7` matches "7 pt Helvetica" in typographic terms). The emitted SVG `font-size` attribute is in mm (`pt × 25.4 / 72`).
+
+### `Pill(...)` and `Diamond(...)`
+
+Variants of `LabeledBox`:
+
+- `Pill` — corner radius equals `height/2` after auto-sizing → flat-sided capsule. Good for terminal nodes.
+- `Diamond` — rhombus. Width and height are doubled after the text + padding measurement so the inscribed text rectangle fits. Outline is a 4-edge polygon.
+
+### `Arrow.connect(src, dst, curve="straight"|"cubic", bow=0, src_side="auto", dst_side="auto", stroke, stroke_width)`
+
+Connector between two shapes. Returns an Arrow object that the Canvas renders as an SVG `<path>` with `marker-end` referencing a per-color marker.
+
+- `curve="straight"` — direct line; endpoints snapped to box outlines along the chord.
+- `curve="cubic"` — Bezier with control points perpendicular to the chord at `bow` mm of bulge. Positive `bow` = upward (negative SVG y), negative = downward. Endpoints are trimmed by intersecting the Bezier with each box outline.
+- `src_side` / `dst_side` — defaults to `"auto"` (picks the side facing the other endpoint); override to force `"N"`, `"S"`, `"E"`, or `"W"`.
+
+Arrowhead orientation is delivered by `<marker orient="auto">`, so the head is always rotated to match the path tangent at the terminal point — including on cubic splines.
+
+## Anchor system
+
+Every shape exposes four cardinal anchor points: `N` (top center), `S` (bottom center), `E` (right center), `W` (left center). When `Arrow.connect` is given `src_side="auto"`, it picks the side of `src` facing `dst` and likewise for `dst`. Override either side explicitly to draw a feedback loop:
+
+```python
+Arrow.connect(rejection, ica, curve="cubic", src_side="N", dst_side="N", bow=14)
+```
+
+## Layering rules
+
+SVG has no z-index — paint order is document order. The Canvas flushes layers in the order they were first registered, so `c.layer("background").add(...)` will sit behind `c.layer("boxes").add(...)` even if it's added later, as long as the `background` layer was registered first. Add a layer once at the top of the build function to lock its z-position:
+
+```python
+c.layer("background")    # locks z=0
+c.layer("connectors")    # locks z=1
+c.layer("boxes")         # locks z=2
+# ... add elements to any layer in any order from here
+```
+
+## Composition into a panel
+
+Once authored, the SVG is a panel source for `[[scientific-figure]]`:
+
+```python
+from compose import Figure
+
+Figure(width_mm=183, height_mm=60, journal="nature") \
+    .add_panel("schematic.svg", x_mm=0, y_mm=0, scale=1.0, label="A") \
+    .add_panel("plot.svg", x_mm=92, y_mm=0, scale=0.5, label="B") \
+    .save("figure.svg")
+```
+
+Schematics are typically sized at the **final** panel dimensions and composed at `scale=1.0` so labels stay at their authored size.
+
+## Running the examples
+
+```bash
+uv run --with drawsvg --with svgpathtools --with Pillow --with fonttools --with cairosvg \
+  python plugins/figures/skills/svg-primitives/examples/eeg_pipeline.py
+uv run --with drawsvg --with svgpathtools --with Pillow --with fonttools --with cairosvg \
+  python plugins/figures/skills/svg-primitives/examples/stress_test.py
+```
+
+Each writes `<file>.svg` and `<file>.png` into `examples/out/` (gitignored).
+
+## Running the tests
+
+The skill ships an E2E pytest suite that asserts text containment, arrow tip distance to target edges, marker orientation, layer paint order, per-color marker generation, font-size unit correctness, and Diamond text containment — all on real rendered SVGs parsed from disk. No mocks.
+
+```bash
+uv run --with pytest --with lxml --with svgelements --with svgpathtools \
+    --with drawsvg --with Pillow --with fonttools --with cairosvg --with shapely \
+    pytest plugins/figures/skills/svg-primitives/tests/ -v
+```
+
+Expected: 11 tests pass.
+
+## Quality assurance
+
+After authoring, run `[[figure-qa]]` for the standard pre-export font / palette / geometry checks:
+
+```bash
+uv run --with lxml --with svgelements --with svgpathtools --with shapely \
+    python plugins/figures/agents/figure-qa-scripts/check_svg.py \
+    schematic.svg --journal nature --palette okabe-ito
+```
+
+The geometry section (bbox-overlap, arrow-tip-to-target) is stubbed today and will land via issue #47; the primitive-layer tests in this skill cover the same invariants for SVGs built from `svg_primitives`.
+
+## Additional resources
+
+- `examples/eeg_pipeline.py` — canonical EEG preprocessing flowchart.
+- `examples/stress_test.py` — edge cases (min-size, long labels, multi-line, crossing arrows, 6 pt vs 12 pt).
+- `references/api.md` — full API reference.
+- `references/design.md` — design rationale, library choices, convention notes.
+- `references/font-metrics.md` — how fontTools advance widths feed the auto-fit logic, font search path, fallbacks.
+
+## Cross-references
+
+- `[[svg-figure]]` — hand-authored SVG patterns; reference material for writing SVG by hand or generating it ad-hoc.
+- `[[scientific-figure]]` — multi-panel composer that loads SVGs produced here.
+- `[[plot-styling]]` — data plots (matplotlib / seaborn / plotnine / plotly / PyVista).
+- `[[ai-full-figure]]` — AI-generated pictorial substrate; overlay labels with `LabeledBox` / `Arrow` here.
+- `[[figure-qa]]` — QA agent that validates the rendered SVG.

@@ -8,6 +8,12 @@ version: 0.1.0
 
 Create SVG schematics and diagrams (flowcharts, process diagrams, system diagrams, anatomical illustrations) with element-consistency guarantees: text aligned to box bounds, arrows pointing at their targets, lines passing under shapes by z-order. The output SVGs are designed to be composed as panels by the `[[scientific-figure]]` skill and verified by the `[[figure-qa]]` agent's SVG branch.
 
+## Programmatic authoring → see `[[svg-primitives]]`
+
+For any Python-driven SVG where boxes should auto-fit text, arrowheads should stay tangent-correct on curves, and paint order needs to be deterministic, reach for `[[svg-primitives]]` instead. It is the opinionated programmatic counterpart to this skill — same conventions (mm-precise viewBox, palette compliance, marker patterns), but implemented as primitives (`LabeledBox`, `Pill`, `Diamond`, `Arrow.connect`, `Layer`, `Canvas`) with end-to-end tests that enforce the invariants on the rendered SVG.
+
+The rest of this document remains the reference for **hand-authored SVG**, ad-hoc one-offs, and material the figure-qa agent expects when validating arbitrary SVG inputs.
+
 ## When to use this skill
 
 Reach for `svg-figure` when:
