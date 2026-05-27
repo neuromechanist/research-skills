@@ -39,6 +39,20 @@ A single hardcoded blue marker means red arrows get blue arrowheads — a freque
 
 SVG has no z-index in the conformance sense; paint order = document order. A `Layer` abstraction makes the intended order explicit (`background → connectors → boxes → labels`) and lets you add elements to any layer in any order during the build — the Canvas flushes them in registration order at save time. This eliminates the "I added the arrow after the box so it's on top" class of bugs.
 
+## Why in-skill validation rather than `figure-qa`?
+
+Phase 3 of epic #48 ships an in-skill `validation` module wired into `Canvas.save(validate=...)`. The `figure-qa` agent (#47) is a separate validator that works on arbitrary SVGs — including hand-authored ones and SVGs from external tools. The two are complementary, not competing:
+
+| | `svg-primitives` validation | `figure-qa` (#47) |
+| --- | --- | --- |
+| Scope | SVGs produced by `Canvas.save` | Any SVG |
+| Where | In-process, before the file hits disk | Out-of-process, via a CLI script |
+| Speed | Fast — same parse the renderer uses | Reparse from disk, separate process |
+| Triggered by | `Canvas.save(validate=...)` default | Manual / CI invocation |
+| What it knows | Has the original Canvas, knows what *should* be true | Inspects the SVG cold |
+
+The skill already had the *knowledge* to validate (the E2E test suite proves it); Phase 3 just promotes the geometry helpers out of `tests/conftest.py` into a public module and adds the warn/strict/off hook. Users of this skill get validation by default; users of any other SVG source can still run `figure-qa` separately. When `figure-qa`'s geometry section lands (#47), the two will share the same conceptual checks but operate at different layers.
+
 ## What's intentionally NOT in Phase 1
 
 - **Orthogonal/Manhattan routing** — comes in Phase 2 along with brackets, group anchors, and multi-waypoint paths.

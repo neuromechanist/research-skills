@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import drawsvg as dw
+
+ValidateMode = Literal["off", "warn", "strict"]
+
+log = logging.getLogger(__name__)
 
 
 def _color_slug(c: str) -> str:
@@ -139,10 +144,25 @@ class Canvas:
             d.append(g)
         return d
 
-    def save(self, path: str | Path, output_png: bool = False, png_width: int = 1800) -> None:
-        """Write the SVG to `path`. If `output_png` is True, also write a PNG
-        next to it via cairosvg. PNG width in px is `png_width`; height is
-        derived to preserve aspect."""
+    def save(
+        self,
+        path: str | Path,
+        output_png: bool = False,
+        png_width: int = 1800,
+        validate: ValidateMode = "warn",
+    ) -> list:
+        """Write the SVG to `path` and optionally validate the rendered output.
+
+        Returns the list of `Finding`s produced by validation (empty when
+        validate='off' or the SVG is clean).
+
+        validate:
+          * 'off'    — skip validation; return [].
+          * 'warn'   — run validation; log findings at WARNING; return them.
+          * 'strict' — run validation; raise ValidationError if any findings.
+
+        If `output_png` is True, also write a sibling PNG via cairosvg.
+        """
         d = self.to_drawsvg()
         svg_path = Path(path)
         d.save_svg(str(svg_path))
@@ -162,3 +182,45 @@ class Canvas:
                     f"cairosvg failed to render {svg_path} to PNG: {e}. "
                     "The SVG was written successfully; only the PNG export failed."
                 ) from e
+        return self._run_validation(d, validate, source=str(svg_path))
+
+    def validate(self, *, emit_warnings: bool = False) -> list:
+        """Render the canvas to an in-memory SVG, parse, run all validators,
+        return the finding list. Does not write to disk. Does not raise.
+
+        Pair with `if findings: raise ...` for strict-mode-equivalent in
+        non-save contexts. Pass `emit_warnings=True` to ALSO log findings
+        at WARNING (useful for long-running pipelines that want audit logs
+        without disk writes)."""
+        d = self.to_drawsvg()
+        return self._run_validation(d, "warn", source="<in-memory>", emit_warnings=emit_warnings)
+
+    def _run_validation(self, drawing, mode: ValidateMode, *, source: str, emit_warnings: bool = True) -> list:
+        """Shared validation entry point used by save() and validate()."""
+        if mode == "off":
+            return []
+        from .validation import parse_svg, validate_all, ValidationError
+
+        svg_text = drawing.as_svg()
+        try:
+            root = parse_svg(svg_text)
+        except Exception as exc:
+            # If the rendered SVG isn't valid XML, surface a clear error
+            # that names svg-primitives and the most likely cause rather
+            # than letting a raw lxml exception escape.
+            raise RuntimeError(
+                f"svg-primitives: the rendered SVG from {source!r} is not valid XML. "
+                "This usually means a label or attribute contains an unescaped special "
+                f"character such as '&', '<', or '>'. Original error: {exc}"
+            ) from exc
+        findings = validate_all(root)
+        if findings and emit_warnings and mode == "warn":
+            log.warning(
+                "svg-primitives validation: %d finding(s) in %s",
+                len(findings), source,
+            )
+            for f in findings:
+                log.warning("  %s", f)
+        if findings and mode == "strict":
+            raise ValidationError(findings)
+        return findings

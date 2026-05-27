@@ -748,3 +748,232 @@ def test_diamond_with_orthogonal_routing(render_canvas):
     # Arrowhead orientation should still be auto.
     for m in all_markers(root):
         assert m.get("orient") == "auto"
+
+
+# --- Phase 3: validation hooks ---
+
+from svg_primitives import Finding, ValidationError, validate_all  # noqa: E402
+
+
+def _build_clean_canvas() -> Canvas:
+    """Two boxes connected by an arrow — a known-good figure."""
+    canvas = Canvas(width_mm=80, height_mm=30)
+    a = canvas.layer("boxes").add(LabeledBox(x=5, y=5, text="A", font_size=7))
+    b = canvas.layer("boxes").add(LabeledBox(x=40, y=5, text="B", font_size=7))
+    canvas.layer("arrows").add(Arrow.connect(a, b))
+    return canvas
+
+
+def _build_overflow_canvas() -> Canvas:
+    """A box clamped smaller than its text — guaranteed text-overflow.
+
+    Direct attribute mutation (box.width = 4) is intentional: LabeledBox
+    auto-fits at construction, so producing a degenerate canvas requires
+    bypassing that invariant. Do NOT replicate this pattern in production
+    code. If LabeledBox.width/height ever become read-only properties,
+    this helper must be rewritten.
+    """
+    canvas = Canvas(width_mm=40, height_mm=20)
+    box = LabeledBox(x=5, y=5, text="overflows the box", font_size=7, padding=0)
+    box.width = 4  # crush below text bbox
+    box.height = 3
+    canvas.layer("boxes").add(box)
+    return canvas
+
+
+def test_validate_clean_canvas_returns_empty(tmp_path):
+    findings = _build_clean_canvas().save(tmp_path / "clean.svg")
+    assert findings == []
+
+
+def test_validate_warn_returns_findings_no_raise(tmp_path, caplog):
+    import logging
+    caplog.set_level(logging.WARNING, logger="svg_primitives.canvas")
+    findings = _build_overflow_canvas().save(tmp_path / "warn.svg", validate="warn")
+    assert len(findings) >= 1
+    assert any(f.category == "text-overflow" for f in findings)
+    # Verify the WARNING was emitted by the canvas logger and contains the
+    # category name. Earlier the assertion accepted any record with the
+    # word 'validation' at any level — too loose.
+    canvas_warnings = [
+        r for r in caplog.records
+        if r.levelno == logging.WARNING and r.name == "svg_primitives.canvas"
+    ]
+    assert any("text-overflow" in r.getMessage() for r in canvas_warnings), (
+        f"expected 'text-overflow' WARNING from svg_primitives.canvas; "
+        f"got {[(r.name, r.levelno, r.getMessage()) for r in canvas_warnings]}"
+    )
+
+
+def test_validate_strict_raises(tmp_path):
+    with pytest.raises(ValidationError) as excinfo:
+        _build_overflow_canvas().save(tmp_path / "strict.svg", validate="strict")
+    assert any(f.category == "text-overflow" for f in excinfo.value.findings)
+    assert "text-overflow" in str(excinfo.value)
+
+
+def test_validate_off_skips_checks(tmp_path):
+    # The file is still written; the function returns [] without checking.
+    findings = _build_overflow_canvas().save(tmp_path / "off.svg", validate="off")
+    assert findings == []
+
+
+def test_canvas_validate_method_no_disk_write():
+    canvas = _build_overflow_canvas()
+    findings = canvas.validate()
+    assert any(f.category == "text-overflow" for f in findings)
+
+
+def test_validation_finding_carries_location():
+    # Box at x=5, y=5 with crushed width=4, height=3, text "overflows the box".
+    # The text-overflow location is the text bbox center, which depends on
+    # metrics — but it should be near the overflowing box, not (0, 0) or a
+    # nonsense coordinate elsewhere on the canvas.
+    canvas = _build_overflow_canvas()
+    findings = canvas.validate()
+    overflow = [f for f in findings if f.category == "text-overflow"]
+    assert overflow, "expected at least one text-overflow finding"
+    f = overflow[0]
+    assert f.location is not None
+    assert 0 <= f.location[0] < 40, f"location.x out of canvas bounds: {f.location}"
+    assert 0 <= f.location[1] < 20, f"location.y out of canvas bounds: {f.location}"
+
+
+def test_phase1_eeg_pipeline_validates_clean(tmp_path):
+    """Locks in that the canonical Phase 1 example remains validation-clean.
+    A failure here means the example changed, not that the validator broke
+    — investigate the example diff first."""
+    import eeg_pipeline
+    findings = eeg_pipeline.build().save(tmp_path / "eeg.svg", validate="strict")
+    assert findings == []
+
+
+def test_phase1_stress_test_validates_clean(tmp_path):
+    """Same purpose as the EEG smoke test, for stress_test.py."""
+    import stress_test
+    findings = stress_test.build().save(tmp_path / "stress.svg", validate="strict")
+    assert findings == []
+
+
+def test_sibling_overlap_detected(tmp_path):
+    canvas = Canvas(width_mm=60, height_mm=40)
+    # Two boxes placed at the same coordinates — guaranteed bbox overlap.
+    canvas.layer("boxes").add(LabeledBox(x=10, y=10, text="A", font_size=7, padding=2))
+    canvas.layer("boxes").add(LabeledBox(x=11, y=11, text="B", font_size=7, padding=2))
+    findings = canvas.validate()
+    assert any(f.category == "sibling-overlap" for f in findings)
+
+
+def test_sibling_overlap_ignores_background_layer(tmp_path):
+    canvas = Canvas(width_mm=60, height_mm=40, background=None)
+    # Two overlapping rects in the BACKGROUND layer; should be ignored.
+    canvas.layer("background").add(LabeledBox(x=10, y=10, text=" ", font_size=7, padding=2))
+    canvas.layer("background").add(LabeledBox(x=11, y=11, text=" ", font_size=7, padding=2))
+    findings = canvas.validate()
+    # No sibling-overlap findings should come from the background layer.
+    assert not any(f.category == "sibling-overlap" for f in findings)
+
+
+def test_validate_all_directly_on_parsed_svg(tmp_path):
+    # Demonstrate the public validate_all() entry point can be used on an
+    # SVG that was not produced by Canvas.save (e.g. one written elsewhere).
+    canvas = _build_clean_canvas()
+    out = tmp_path / "external.svg"
+    canvas.save(out, validate="off")
+    from svg_primitives.validation import parse_svg
+    root = parse_svg(out)
+    findings = validate_all(root)
+    assert findings == []
+
+
+# --- Phase 3 review fixes: negative tests for arrow-tip and marker-orient ---
+
+def test_validate_arrow_tip_distance_fires_on_misaligned_arrow():
+    """Construct an SVG with an arrow path that terminates far from any
+    box, then run the validator directly. Locks in that the validator is
+    wired into validate_all — previously only the clean-canvas path
+    exercised it, so a bug returning early would go undetected."""
+    from svg_primitives.validation import parse_svg, validate_arrow_tip_distance
+    svg = '''<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">
+      <defs>
+        <marker id="arrow" orient="auto" viewBox="-2 -1 2 2" markerWidth="2" markerHeight="2" refX="0" refY="0">
+          <polygon points="-2,-1 0,0 -2,1" fill="#000"/>
+        </marker>
+      </defs>
+      <g id="layer-boxes">
+        <rect x="5" y="5" width="20" height="10" fill="#fff" stroke="#000"/>
+      </g>
+      <g id="layer-arrows">
+        <path d="M 30 20 L 80 40" marker-end="url(#arrow)" stroke="#000"/>
+      </g>
+    </svg>'''
+    root = parse_svg(svg)
+    findings = validate_arrow_tip_distance(root)
+    assert findings, "expected arrow-tip-distance finding for tip at (80, 40)"
+    assert all(f.category == "arrow-tip-distance" for f in findings)
+
+
+def test_validate_marker_orient_fires_on_non_auto_marker():
+    """Construct an SVG with a <marker orient='0'> and verify the
+    validator catches it. The clean-canvas path doesn't exercise this
+    validator's positive-finding branch."""
+    from svg_primitives.validation import parse_svg, validate_marker_orient
+    svg = '''<svg xmlns="http://www.w3.org/2000/svg" width="50mm" height="20mm" viewBox="0 0 50 20">
+      <defs>
+        <marker id="bad-arrow" orient="0" viewBox="-2 -1 2 2" markerWidth="2" markerHeight="2" refX="0" refY="0">
+          <polygon points="-2,-1 0,0 -2,1" fill="#000"/>
+        </marker>
+      </defs>
+    </svg>'''
+    root = parse_svg(svg)
+    findings = validate_marker_orient(root)
+    assert findings, "expected marker-orient finding for orient='0'"
+    assert findings[0].category == "marker-orient"
+    assert "orient='0'" in findings[0].message or "orient=\"0\"" in findings[0].message or "0" in findings[0].message
+
+
+def test_dist_to_rect_edge_returns_zero_for_interior_point():
+    """A point inside the box should be treated as on the shape (distance
+    0), not at the distance to the nearest edge. Earlier this returned
+    a positive interior distance, causing arrow tips that landed inside
+    a target to be flagged as off-target."""
+    from svg_primitives.validation import Bbox, dist_to_rect_edge
+    box = Bbox(x=10, y=10, w=20, h=10)
+    assert dist_to_rect_edge((20, 15), box) == 0.0  # interior
+    assert dist_to_rect_edge((10, 10), box) == 0.0  # exactly on corner
+    assert dist_to_rect_edge((30, 15), box) == 0.0  # on right edge
+    assert abs(dist_to_rect_edge((35, 15), box) - 5.0) < 1e-9  # outside
+
+
+def test_parse_svg_strips_bom():
+    """parse_svg should handle a UTF-8 BOM-prefixed SVG string. Earlier
+    the BOM defeated the lstrip-and-check heuristic, sending the call
+    into the path-as-file branch where it raised opaque OSError."""
+    from svg_primitives.validation import parse_svg
+    svg = "﻿<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect/></svg>"
+    root = parse_svg(svg)
+    assert root.tag.endswith("svg")
+
+
+def test_validation_error_findings_is_immutable():
+    """ValidationError.findings is a tuple (frozen), so str(err) doesn't
+    go stale if the caller tries to mutate."""
+    f = Finding(category="text-overflow", message="x")
+    err = ValidationError([f])
+    assert isinstance(err.findings, tuple)
+    with pytest.raises((AttributeError, TypeError)):
+        err.findings.append(f)  # type: ignore[attr-defined]
+
+
+def test_canvas_validate_emit_warnings_kwarg(caplog):
+    """Canvas.validate(emit_warnings=True) should log findings at WARNING
+    even though it doesn't touch disk; previously emit_warnings was
+    hardcoded False."""
+    import logging
+    caplog.set_level(logging.WARNING, logger="svg_primitives.canvas")
+    _build_overflow_canvas().validate(emit_warnings=True)
+    canvas_warnings = [
+        r for r in caplog.records
+        if r.levelno == logging.WARNING and r.name == "svg_primitives.canvas"
+    ]
+    assert any("text-overflow" in r.getMessage() for r in canvas_warnings)
