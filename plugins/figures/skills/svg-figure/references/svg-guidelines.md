@@ -1,5 +1,7 @@
 # SVG Guidelines
 
+> Element-consistency conventions for hand-authored SVG schematics. These patterns are now mechanically enforced by `[[svg-primitives]]` — read this document when authoring SVG by hand, when understanding what `figure-qa` validates, or when reading SVG produced by another tool.
+
 Element-consistency rules for SVG schematics in the figures plugin. The `figure-qa` agent's SVG branch enforces what it can programmatically; this document records the conventions for the rest.
 
 ## Coordinate system
@@ -69,7 +71,7 @@ Programmatic (deterministic):
 - Palette compliance, near-gray-exempt (see above).
 - Element counts (text vs shape) for sanity.
 
-Not yet implemented (tracked in issue #47):
+Not yet implemented in figure-qa's geometry section (the agent falls back to VLM judgment for these until the programmatic checks land):
 
 - Text-bbox-inside-shape using `svgelements` + `shapely`.
 - Arrow-tip-to-target distance using `svgpathtools` tangent at `t=1`.
