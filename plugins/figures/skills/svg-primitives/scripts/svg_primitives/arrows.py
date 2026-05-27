@@ -53,6 +53,41 @@ def _auto_side_orthogonal(a: Shape, b: Shape, axis: Literal["h", "v"]) -> Side:
     return "S" if b.cy > a.cy else "N"
 
 
+def _build_polyline_d(points: list[complex], corner_radius: float = 0.0) -> str:
+    """Build an SVG path string from a list of polyline vertices.
+
+    If `corner_radius > 0`, interior vertices are replaced with a quadratic
+    Bezier corner of that radius (clamped to half the shorter adjoining
+    segment so the rounding never overshoots). The path starts with M and
+    chains L/Q segments.
+    """
+    if not points:
+        return ""
+    if corner_radius <= 0 or len(points) < 3:
+        parts = [f"M {points[0].real:.3f} {points[0].imag:.3f}"]
+        for p in points[1:]:
+            parts.append(f"L {p.real:.3f} {p.imag:.3f}")
+        return " ".join(parts)
+    parts = [f"M {points[0].real:.3f} {points[0].imag:.3f}"]
+    for i in range(1, len(points) - 1):
+        prev, this, nxt = points[i - 1], points[i], points[i + 1]
+        d_in = abs(this - prev)
+        d_out = abs(nxt - this)
+        if d_in == 0 or d_out == 0:
+            parts.append(f"L {this.real:.3f} {this.imag:.3f}")
+            continue
+        r = min(corner_radius, d_in / 2, d_out / 2)
+        in_dir = (this - prev) / d_in
+        out_dir = (nxt - this) / d_out
+        c_in = this - in_dir * r
+        c_out = this + out_dir * r
+        parts.append(f"L {c_in.real:.3f} {c_in.imag:.3f}")
+        parts.append(f"Q {this.real:.3f} {this.imag:.3f} {c_out.real:.3f} {c_out.imag:.3f}")
+    last = points[-1]
+    parts.append(f"L {last.real:.3f} {last.imag:.3f}")
+    return " ".join(parts)
+
+
 @dataclass
 class Arrow:
     """A drawable arrow path with a marker-end arrowhead.
@@ -82,6 +117,8 @@ class Arrow:
         src_side: AutoSide = "auto",
         dst_side: AutoSide = "auto",
         bow: float = 0.0,
+        via: list[tuple[float, float]] | None = None,
+        corner_radius: float = 0.0,
         stroke: str = "#1F3A5F",
         stroke_width: float = 0.6,
     ) -> "Arrow":
@@ -106,14 +143,20 @@ class Arrow:
             )
 
         if curve == "straight":
-            line = Path(Line(p0, p1))
-            p0_snap_opt = first_intersect_point(line, src.outline_path(), prefer="start")
-            p1_snap_opt = first_intersect_point(line, dst.outline_path(), prefer="end")
-            # Use the explicit None check; complex(0, 0) is falsy in Python and
-            # would otherwise drop a valid intersection at the SVG origin.
+            waypoints = [complex(x, y) for x, y in (via or [])]
+            # Snap p0 along the first segment direction; snap p1 along the
+            # last segment direction. With no waypoints, both segments are
+            # the same chord p0-p1 (original behavior).
+            first_target = waypoints[0] if waypoints else p1
+            last_source = waypoints[-1] if waypoints else p0
+            first_seg = Path(Line(p0, first_target))
+            last_seg = Path(Line(last_source, p1))
+            p0_snap_opt = first_intersect_point(first_seg, src.outline_path(), prefer="start")
+            p1_snap_opt = first_intersect_point(last_seg, dst.outline_path(), prefer="end")
             p0_snap = p0_snap_opt if p0_snap_opt is not None else p0
             p1_snap = p1_snap_opt if p1_snap_opt is not None else p1
-            d = f"M {p0_snap.real:.3f} {p0_snap.imag:.3f} L {p1_snap.real:.3f} {p1_snap.imag:.3f}"
+            polyline = [p0_snap, *waypoints, p1_snap]
+            d = _build_polyline_d(polyline, corner_radius=corner_radius)
         elif curve == "cubic":
             chord = p1 - p0
             length = abs(chord)
