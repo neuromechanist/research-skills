@@ -748,3 +748,112 @@ def test_diamond_with_orthogonal_routing(render_canvas):
     # Arrowhead orientation should still be auto.
     for m in all_markers(root):
         assert m.get("orient") == "auto"
+
+
+# --- Phase 3: validation hooks ---
+
+from svg_primitives import Finding, ValidationError, validate_all  # noqa: E402
+
+
+def _build_clean_canvas() -> Canvas:
+    """Two boxes connected by an arrow — a known-good figure."""
+    canvas = Canvas(width_mm=80, height_mm=30)
+    a = canvas.layer("boxes").add(LabeledBox(x=5, y=5, text="A", font_size=7))
+    b = canvas.layer("boxes").add(LabeledBox(x=40, y=5, text="B", font_size=7))
+    canvas.layer("arrows").add(Arrow.connect(a, b))
+    return canvas
+
+
+def _build_overflow_canvas() -> Canvas:
+    """A box clamped smaller than its text — guaranteed text-overflow."""
+    canvas = Canvas(width_mm=40, height_mm=20)
+    # min_width=0 plus very long text would normally still auto-fit. To
+    # *force* overflow we shrink the box AFTER it has been built.
+    box = LabeledBox(x=5, y=5, text="overflows the box", font_size=7, padding=0)
+    box.width = 4  # crush below text bbox
+    box.height = 3
+    canvas.layer("boxes").add(box)
+    return canvas
+
+
+def test_validate_clean_canvas_returns_empty(tmp_path):
+    findings = _build_clean_canvas().save(tmp_path / "clean.svg")
+    assert findings == []
+
+
+def test_validate_warn_returns_findings_no_raise(tmp_path, caplog):
+    import logging
+    caplog.set_level(logging.WARNING, logger="svg_primitives.canvas")
+    findings = _build_overflow_canvas().save(tmp_path / "warn.svg", validate="warn")
+    assert len(findings) >= 1
+    assert any(f.category == "text-overflow" for f in findings)
+    assert any("text-overflow" in rec.message or "validation" in rec.message
+               for rec in caplog.records)
+
+
+def test_validate_strict_raises(tmp_path):
+    with pytest.raises(ValidationError) as excinfo:
+        _build_overflow_canvas().save(tmp_path / "strict.svg", validate="strict")
+    assert any(f.category == "text-overflow" for f in excinfo.value.findings)
+    assert "text-overflow" in str(excinfo.value)
+
+
+def test_validate_off_skips_checks(tmp_path):
+    # The file is still written; the function returns [] without checking.
+    findings = _build_overflow_canvas().save(tmp_path / "off.svg", validate="off")
+    assert findings == []
+
+
+def test_canvas_validate_method_no_disk_write():
+    canvas = _build_overflow_canvas()
+    findings = canvas.validate()
+    assert any(f.category == "text-overflow" for f in findings)
+
+
+def test_validation_finding_carries_location():
+    canvas = _build_overflow_canvas()
+    findings = canvas.validate()
+    assert any(f.location is not None for f in findings)
+
+
+def test_phase1_eeg_pipeline_validates_clean(tmp_path):
+    import eeg_pipeline
+    findings = eeg_pipeline.build().save(tmp_path / "eeg.svg", validate="strict")
+    assert findings == []
+
+
+def test_phase1_stress_test_validates_clean(tmp_path):
+    import stress_test
+    findings = stress_test.build().save(tmp_path / "stress.svg", validate="strict")
+    assert findings == []
+
+
+def test_sibling_overlap_detected(tmp_path):
+    canvas = Canvas(width_mm=60, height_mm=40)
+    # Two boxes placed at the same coordinates — guaranteed bbox overlap.
+    canvas.layer("boxes").add(LabeledBox(x=10, y=10, text="A", font_size=7, padding=2))
+    canvas.layer("boxes").add(LabeledBox(x=11, y=11, text="B", font_size=7, padding=2))
+    findings = canvas.validate()
+    assert any(f.category == "sibling-overlap" for f in findings)
+
+
+def test_sibling_overlap_ignores_background_layer(tmp_path):
+    canvas = Canvas(width_mm=60, height_mm=40, background=None)
+    # Two overlapping rects in the BACKGROUND layer; should be ignored.
+    canvas.layer("background").add(LabeledBox(x=10, y=10, text=" ", font_size=7, padding=2))
+    canvas.layer("background").add(LabeledBox(x=11, y=11, text=" ", font_size=7, padding=2))
+    findings = canvas.validate()
+    # No sibling-overlap findings should come from the background layer.
+    assert not any(f.category == "sibling-overlap" for f in findings)
+
+
+def test_validate_all_directly_on_parsed_svg(tmp_path):
+    # Demonstrate the public validate_all() entry point can be used on an
+    # SVG that was not produced by Canvas.save (e.g. one written elsewhere).
+    canvas = _build_clean_canvas()
+    out = tmp_path / "external.svg"
+    canvas.save(out, validate="off")
+    from svg_primitives.validation import parse_svg
+    root = parse_svg(out)
+    findings = validate_all(root)
+    assert findings == []
