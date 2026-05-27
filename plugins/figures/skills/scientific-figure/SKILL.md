@@ -54,7 +54,7 @@ Each panel is generated independently as an SVG. Common sources:
 
 - **Plots:** matplotlib/seaborn, saved with `bbox_inches='tight', transparent=True, format='svg'`. See the `[[plot-styling]]` skill for the library decision tree and SciencePlots recipes.
 - **Icons:** transparent PNGs from the `[[transparent-icons]]` skill.
-- **Schematics:** hand-authored SVG, or programmatic via the `[[svg-figure]]` skill.
+- **Schematics:** for new Python-driven work use `[[svg-primitives]]` (auto-fit boxes, validated arrows, layered z-order); for hand-authored SVG patterns see `[[svg-figure]]`.
 
 Save each element to a working directory (typically `panels/`), then compose them in step 3.
 

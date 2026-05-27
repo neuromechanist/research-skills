@@ -193,7 +193,8 @@ All accept a parsed `lxml.etree` root. Use `svg_primitives.validation.parse_svg(
 | `LabeledBox` (and subclasses) | non-positive `font_size`, negative `padding`, anchor not in `("top-left", "center")` |
 | `LabeledBox.next_to` | `anchor="center"` in kwargs (placement is by top-left) |
 | `Arrow.connect` | coincident `src`/`dst` anchor points |
-| `Arrow.connect` | unsupported `curve` value (only `"straight"` and `"cubic"` are accepted) |
+| `Arrow.connect` | unsupported `curve` value (only `"straight"`, `"cubic"`, `"orthogonal-h"`, and `"orthogonal-v"` are accepted) |
+| `Arrow.connect` | `via=[...]` combined with `curve="orthogonal-h"` or `"orthogonal-v"` (waypoints are straight-curve only) |
 
 `MetricsFallbackError` (subclass of `RuntimeError`) is raised when `strict_metrics=True` and no exact font-metric backend succeeds.
 

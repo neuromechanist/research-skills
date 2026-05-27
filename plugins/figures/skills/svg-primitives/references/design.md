@@ -53,12 +53,15 @@ Phase 3 of epic #48 ships an in-skill `validation` module wired into `Canvas.sav
 
 The skill already had the *knowledge* to validate (the E2E test suite proves it); Phase 3 just promotes the geometry helpers out of `tests/conftest.py` into a public module and adds the warn/strict/off hook. Users of this skill get validation by default; users of any other SVG source can still run `figure-qa` separately. When `figure-qa`'s geometry section lands (#47), the two will share the same conceptual checks but operate at different layers.
 
-## What's intentionally NOT in Phase 1
+## What's intentionally out of scope
 
-- **Orthogonal/Manhattan routing** — comes in Phase 2 along with brackets, group anchors, and multi-waypoint paths.
 - **Auto-layout** — never, for journal-precision reasons. Use `elkjs` or Graphviz externally if you need it, then place results manually.
 - **Animation** — out of scope; this is for static figures.
-- **Validation gates in Canvas.save()** — Phase 3 will wire `figure-qa`'s SVG checks in via a `validate="warn"|"strict"|"off"` parameter once #47 lands.
+
+## Phase history (epic #48)
+
+- Orthogonal/Manhattan routing, multi-waypoint paths, brackets, group anchors, and annotations: added after the initial primitive layer.
+- In-skill validation gates (`Canvas.save(validate="warn"|"strict"|"off")`, `Canvas.validate()`, the `Finding` + `ValidationError` types): added with the four-validator suite (text-overflow, arrow-tip-distance, marker-orient, sibling-overlap). Complementary to `figure-qa`'s SVG branch rather than dependent on it.
 
 ## Testing philosophy
 
