@@ -32,17 +32,25 @@ from svgpathtools import CubicBezier, Line, Path
 from .geometry import first_intersect_point, first_intersect_t
 from .shapes import LabeledBox, Shape, Side  # noqa: F401 — LabeledBox re-exported for back-compat
 
-Curve = Literal["straight", "cubic"]
+Curve = Literal["straight", "cubic", "orthogonal-h", "orthogonal-v"]
 AutoSide = Literal["auto", "N", "S", "E", "W"]
 
 
 def _auto_side(a: Shape, b: Shape) -> Side:
-    """Pick the side of `a` that faces `b`."""
+    """Pick the side of `a` that faces `b` (free orientation)."""
     dx = b.cx - a.cx
     dy = b.cy - a.cy
     if abs(dx) > abs(dy):
         return "E" if dx > 0 else "W"
     return "S" if dy > 0 else "N"
+
+
+def _auto_side_orthogonal(a: Shape, b: Shape, axis: Literal["h", "v"]) -> Side:
+    """For orthogonal routing, force the auto-side to lie on the
+    primary-traverse axis: 'h' (horizontal) prefers E/W, 'v' prefers N/S."""
+    if axis == "h":
+        return "E" if b.cx > a.cx else "W"
+    return "S" if b.cy > a.cy else "N"
 
 
 @dataclass
@@ -77,10 +85,17 @@ class Arrow:
         stroke: str = "#1F3A5F",
         stroke_width: float = 0.6,
     ) -> "Arrow":
-        if src_side == "auto":
-            src_side = _auto_side(src, dst)
-        if dst_side == "auto":
-            dst_side = _auto_side(dst, src)
+        if curve in ("orthogonal-h", "orthogonal-v"):
+            axis: Literal["h", "v"] = "h" if curve == "orthogonal-h" else "v"
+            if src_side == "auto":
+                src_side = _auto_side_orthogonal(src, dst, axis)
+            if dst_side == "auto":
+                dst_side = _auto_side_orthogonal(dst, src, axis)
+        else:
+            if src_side == "auto":
+                src_side = _auto_side(src, dst)
+            if dst_side == "auto":
+                dst_side = _auto_side(dst, src)
         p0 = src.anchor_point(src_side)
         p1 = dst.anchor_point(dst_side)
 
@@ -129,6 +144,23 @@ class Arrow:
                 f"C {trimmed.control1.real:.3f} {trimmed.control1.imag:.3f}, "
                 f"{trimmed.control2.real:.3f} {trimmed.control2.imag:.3f}, "
                 f"{trimmed.end.real:.3f} {trimmed.end.imag:.3f}"
+            )
+        elif curve == "orthogonal-h":
+            # out horizontally from p0, vertical to p1.y at chord midpoint, in horizontally
+            mid_x = (p0.real + p1.real) / 2
+            d = (
+                f"M {p0.real:.3f} {p0.imag:.3f} "
+                f"L {mid_x:.3f} {p0.imag:.3f} "
+                f"L {mid_x:.3f} {p1.imag:.3f} "
+                f"L {p1.real:.3f} {p1.imag:.3f}"
+            )
+        elif curve == "orthogonal-v":
+            mid_y = (p0.imag + p1.imag) / 2
+            d = (
+                f"M {p0.real:.3f} {p0.imag:.3f} "
+                f"L {p0.real:.3f} {mid_y:.3f} "
+                f"L {p1.real:.3f} {mid_y:.3f} "
+                f"L {p1.real:.3f} {p1.imag:.3f}"
             )
         else:
             raise ValueError(f"unsupported curve: {curve!r}")
