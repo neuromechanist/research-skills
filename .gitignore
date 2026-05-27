@@ -28,3 +28,4 @@ output/
 # Serena
 .serena/
 .claude/*.local.md
+.claude/
