@@ -1,7 +1,7 @@
 ---
 name: svg-primitives
-description: This skill should be used when the user asks to "build an SVG schematic in Python", "programmatic SVG diagram", "auto-fit text in an SVG box", "Python flowchart with boxes and arrows", "SVG arrow that snaps to a box edge", "tangent-correct arrowhead on a curve", "SVG with controlled z-order layers", "auto-sized labeled box", "mm-precise SVG schematic", "SVG primitive layer", "draw flowchart from data in Python", "orthogonal SVG arrow routing", "Manhattan-style SVG routing", "bracket group of SVG elements", "leader line annotation", "label a group of SVG shapes", or wants to author an SVG diagram in Python where text never overflows its container, arrows always touch their target box edge, paint order is deterministic, and connectors can be straight, cubic, or right-angled. Built on drawsvg + svgpathtools + fontTools. Output is an SVG file that can be loaded as a panel source by the scientific-figure composer and verified by the figure-qa agent's SVG branch.
-version: 0.2.0
+description: This skill should be used when the user asks to "build an SVG schematic in Python", "programmatic SVG diagram", "auto-fit text in an SVG box", "Python flowchart with boxes and arrows", "SVG arrow that snaps to a box edge", "tangent-correct arrowhead on a curve", "SVG with controlled z-order layers", "auto-sized labeled box", "mm-precise SVG schematic", "SVG primitive layer", "draw flowchart from data in Python", "orthogonal SVG arrow routing", "Manhattan-style SVG routing", "bracket group of SVG elements", "leader line annotation", "label a group of SVG shapes", "validate SVG figure", "auto-validate svg flowchart", "strict mode svg primitives", "fail on text overflow svg", "QA my svg flowchart", or wants to author an SVG diagram in Python where text never overflows its container, arrows always touch their target box edge, paint order is deterministic, and connectors can be straight, cubic, or right-angled — and where validation findings are surfaced as soon as the SVG is saved. Built on drawsvg + svgpathtools + fontTools. Output is an SVG file that can be loaded as a panel source by the scientific-figure composer and verified by the figure-qa agent's SVG branch.
+version: 0.3.0
 ---
 
 # SVG Primitives
@@ -139,6 +139,29 @@ c.layer("connectors")    # locks z=1
 c.layer("boxes")         # locks z=2
 # ... add elements to any layer in any order from here
 ```
+
+## Validation
+
+`Canvas.save(path, validate=...)` accepts three modes:
+
+| Mode | Behavior |
+| --- | --- |
+| `"warn"` (default) | Run all validators on the rendered SVG. Log each finding at WARNING. Return the list. Caller can ignore. |
+| `"strict"` | Run all validators. Raise `ValidationError` if any findings; the exception's `.findings` attribute carries the full list. |
+| `"off"` | Skip validation entirely. Return `[]`. |
+
+`Canvas.validate()` runs the same checks against an in-memory render without writing to disk and returns the findings — useful for assertion-style gates.
+
+The validators that run:
+
+- **`text-overflow`** — every `<text>` bbox must sit inside at least one rect or diamond in the same layer (0.5 mm tolerance).
+- **`arrow-tip-distance`** — every arrow tip must be within 0.6 mm of some target shape's edge.
+- **`marker-orient`** — every `<marker>` must use `orient="auto"`.
+- **`sibling-overlap`** — no two rects in the same non-background layer should overlap (use `validate_sibling_overlap(ignore_layers=...)` to whitelist additional layers).
+
+Each `Finding` carries `category`, `message`, `element_id`, and `location` (mm). See `examples/validation_demo.py` for a runnable demonstration.
+
+`svg-primitives` validation is complementary to the `[[figure-qa]]` agent: `figure-qa` validates any SVG (including hand-authored ones); this validates SVGs produced by this skill, in-process, before they hit disk.
 
 ## Composition into a panel
 

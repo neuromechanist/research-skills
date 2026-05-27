@@ -143,6 +143,47 @@ Minimal geometry contract that `Arrow.connect` and other connectors rely on. Any
 
 The arrowhead is delivered by the Canvas-generated `<marker orient="auto">`; the SVG renderer computes the tangent at the terminal point and rotates the marker, so curved-path arrowheads stay tangent-correct.
 
+## Validation API
+
+### `Canvas.save(path, output_png=False, png_width=1800, validate="warn") -> list[Finding]`
+
+Saves the SVG and runs validation according to `validate`.
+
+| `validate` | Action |
+| --- | --- |
+| `"warn"` (default) | Run all validators; log findings at WARNING; return them. |
+| `"strict"` | Run all validators; raise `ValidationError` if any findings. |
+| `"off"` | Skip validation; return `[]`. |
+
+### `Canvas.validate() -> list[Finding]`
+
+Renders the canvas to an in-memory SVG, parses, runs all validators, returns findings. Does not write to disk; does not emit warnings.
+
+### `Finding(category, message, element_id=None, location=None)`
+
+Frozen dataclass.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `category` | `Literal["text-overflow", "arrow-tip-distance", "marker-orient", "sibling-overlap"]` | What kind of finding. |
+| `message` | `str` | Human-readable description. |
+| `element_id` | `str \| None` | SVG element id where the finding applies. |
+| `location` | `tuple[float, float] \| None` | mm coordinate of the offending element. |
+
+### `ValidationError(Exception)`
+
+Raised by `Canvas.save(validate="strict")` when validation produces findings. The list is on `.findings`.
+
+### Individual validators
+
+- `validate_text_containment(svg_root, *, tol=0.5)`
+- `validate_arrow_tip_distance(svg_root, *, tol=0.6)`
+- `validate_marker_orient(svg_root)`
+- `validate_sibling_overlap(svg_root, *, tol=0.0, ignore_layers=("background",))`
+- `validate_all(svg_root, *, text_tol=0.5, arrow_tol=0.6, overlap_tol=0.0, ignore_overlap_layers=("background",))`
+
+All accept a parsed `lxml.etree` root. Use `svg_primitives.validation.parse_svg(path_or_text)` to get one — this lets the same validators run on SVGs that did not come from `Canvas`.
+
 ## Validation summary
 
 | Type | Constructor raises `ValueError` for |
