@@ -1,36 +1,46 @@
 ---
 name: svg-figure
-description: This skill should be used when the user asks to "create an SVG figure", "make a schematic", "draw a diagram", "create a schematic diagram", "draw a flowchart", "draw a process flow", "draw a workflow", "draw a workflow diagram", "make an SVG schematic", "create a process diagram", "create a pipeline diagram", "create a block diagram", "draw a system diagram", "system architecture diagram", or wants a hand-authored or programmatic SVG with shapes, arrows, and labels that the figure-qa agent can verify. Outputs are SVG files that can be loaded as panel sources by the scientific-figure composer.
-version: 0.1.0
+description: This skill should be used when the user asks to "create an SVG figure", "make a schematic", "draw a diagram", "create a schematic diagram", "draw a flowchart", "draw a process flow", "draw a workflow", "draw a workflow diagram", "make an SVG schematic", "create a process diagram", "create a pipeline diagram", "create a block diagram", "draw a system diagram", "system architecture diagram", or wants a hand-authored or programmatic SVG with shapes, arrows, and labels that the figure-qa agent can verify. **For new Python-driven figures, route to `[[svg-primitives]]` instead** — this skill is the conventions and hand-authoring reference. Outputs are SVG files that can be loaded as panel sources by the scientific-figure composer.
+version: 0.2.0
 ---
 
 # SVG Figure
 
-Create SVG schematics and diagrams (flowcharts, process diagrams, system diagrams, anatomical illustrations) with element-consistency guarantees: text aligned to box bounds, arrows pointing at their targets, lines passing under shapes by z-order. The output SVGs are designed to be composed as panels by the `[[scientific-figure]]` skill and verified by the `[[figure-qa]]` agent's SVG branch.
-
-## Programmatic authoring → see `[[svg-primitives]]`
-
-For any Python-driven SVG where boxes should auto-fit text, arrowheads should stay tangent-correct on curves, and paint order needs to be deterministic, reach for `[[svg-primitives]]` instead. It is the opinionated programmatic counterpart to this skill — same conventions (mm-precise viewBox, palette compliance, marker patterns), but implemented as primitives (`LabeledBox`, `Pill`, `Diamond`, `Arrow.connect`, `Layer`, `Canvas`) with end-to-end tests that enforce the invariants on the rendered SVG.
-
-The rest of this document remains the reference for **hand-authored SVG**, ad-hoc one-offs, and material the figure-qa agent expects when validating arbitrary SVG inputs.
+Conventions for SVG schematics and diagrams (flowcharts, process diagrams, system diagrams, anatomical illustrations) with element-consistency guarantees: text aligned to box bounds, arrows pointing at their targets, lines passing under shapes by z-order. The output SVGs are designed to be composed as panels by the `[[scientific-figure]]` skill and verified by the `[[figure-qa]]` agent's SVG branch.
 
 ## When to use this skill
 
-Reach for `svg-figure` when:
+**For new programmatic work, use `[[svg-primitives]]` instead.** It implements every convention below as a mechanical guarantee — text auto-fits boxes, arrowheads stay tangent-correct on curves, paint order is deterministic, and `Canvas.save(validate='strict')` raises if any of those invariants are violated. `examples/schematic_from_primitives.py` in this skill is the canonical migration example.
 
+Reach for **this** skill when:
+
+- You are writing SVG **by hand** or with an editor like Inkscape, and need the conventions the figure-qa agent expects.
+- You are using a non-Python tool to emit SVG and want to know what shape it should take.
+- You are reading hand-authored SVG produced by an external collaborator and want to understand the layout grammar.
+- You are debugging a figure-qa finding on an SVG that did not come from `svg-primitives`.
 - The figure is a **schematic** (boxes, arrows, labels) rather than data plotted from numbers — for plots use `[[plot-styling]]`.
-- You need precise control over every element's position and the result must reproduce identically across machines — AI image generation produces convincing pictures but cannot place a label at a specific mm coordinate.
-- The figure will be **composited into a multi-panel figure** as a panel SVG that `scientific-figure/compose.py` loads.
 
 Reach for a different tool when:
 
+- You are writing Python → use `[[svg-primitives]]`.
 - The figure is a **plot** of data → use `[[plot-styling]]`.
-- The figure is **pictorial substrate** (a brain, a microscope, a setup photo aesthetic) → use `[[ai-full-figure]]` for the substrate and overlay labels here.
+- The figure is **pictorial substrate** (a brain, a microscope, a setup photo aesthetic) → use `[[ai-full-figure]]` for the substrate and overlay labels via `[[svg-primitives]]`.
 - The figure needs **icon-style elements** repeated across panels → generate the icons via `[[transparent-icons]]` and place them as `<image>` references in the SVG.
 
-## Authoring patterns
+## Programmatic authoring (recommended path)
 
-The recipes here are deliberately library-agnostic — the SVG can be written by hand, generated from a Python script via `svgutils.transform`, or produced by Inkscape and then post-processed. The constraints below apply regardless.
+See `[[svg-primitives]]`. The canonical example in this skill is `examples/schematic_from_primitives.py` which reproduces `examples/schematic.svg` using `Canvas`, `LabeledBox`, `Arrow.connect`, and `Annotation`. Run it:
+
+```bash
+cd plugins/figures/skills
+uv run --with drawsvg --with svgpathtools --with Pillow --with fonttools \
+    --with cairosvg --with lxml \
+    python svg-figure/examples/schematic_from_primitives.py
+```
+
+## Hand-authoring conventions
+
+The recipes below apply when SVG is written by hand or emitted by a non-Python tool. `[[svg-primitives]]` enforces every one of them mechanically; this section is the reference for the underlying SVG conventions and is what the figure-qa agent expects when validating arbitrary SVG inputs.
 
 ### 1. Sizing
 
@@ -45,6 +55,8 @@ Set explicit `width`/`height` and a matching `viewBox` so user units equal mm (t
 
 Now every coordinate inside the SVG is in mm. A `<text font-size="9">` is 9 pt. A `<rect width="20" height="10">` is 20mm × 10mm.
 
+> *Done automatically by `[[svg-primitives]]`*: `Canvas(width_mm, height_mm)` sets the viewBox and units.
+
 ### 2. Text aligned to box bounds
 
 When labelling a box, the label belongs **inside** the box's bounding rectangle. Use `text-anchor="middle"` plus `dominant-baseline="middle"` and center the text at the box's centroid:
@@ -55,9 +67,11 @@ When labelling a box, the label belongs **inside** the box's bounding rectangle.
       font-family="Helvetica, Arial, sans-serif" font-size="6">Cortex</text>
 ```
 
-The text x is the rect's `x + width/2 = 25`. The text y is `y + height/2 = 17`. For tighter visual alignment with the rounded `rx` corner, nudge the y by ~0.5–1 mm; verify with `[[figure-qa]]`. Today the SVG branch's bbox-inside-shape check is not implemented; the agent falls back to VLM judgment for layered-element correctness.
+The text x is the rect's `x + width/2 = 25`. The text y is `y + height/2 = 17`. For tighter visual alignment with the rounded `rx` corner, nudge the y by ~0.5–1 mm; verify with `[[figure-qa]]`.
 
 See `references/text-alignment.md` for the bbox arithmetic and common failure modes (text width exceeding box width, descenders dropping below the box).
+
+> *Done automatically by `[[svg-primitives]]`*: `LabeledBox(text=...)` auto-sizes the rect from measured text bbox and centers the label.
 
 ### 3. Arrows that point at their target
 
@@ -91,6 +105,8 @@ The control points (`47 17, 47 30`) make a smooth S; the tangent at `t=1` runs t
 
 See `references/arrow-patterns.md` for the full svgpathtools-compatible patterns the QA agent recognizes.
 
+> *Done automatically by `[[svg-primitives]]`*: `Arrow.connect(src, dst, curve='straight'|'cubic'|'orthogonal-h'|'orthogonal-v')` snaps endpoints to box outlines and emits `<marker orient='auto'>` for tangent-correct rendering on every curve type.
+
 ### 4. Lines and arrows pass under shapes via z-order
 
 SVG renders elements in document order. To draw a connection that visually passes **under** a node:
@@ -102,21 +118,15 @@ SVG renders elements in document order. To draw a connection that visually passe
 <circle cx="45" cy="30" r="3" fill="white" stroke="#1F3A5F" stroke-width="0.8"/>
 ```
 
-Avoid `z-index` (it doesn't apply outside CSS-rendered SVG); rely on document order only. The QA agent's geometry section checks whether a connection drawn after a shape erroneously sits on top.
+Avoid `z-index` (it doesn't apply outside CSS-rendered SVG); rely on document order only.
+
+> *Done automatically by `[[svg-primitives]]`*: register layers in paint order with `Canvas.layer(name)` and `Canvas.add_layer(Layer)`; elements added to earlier-registered layers always sit behind elements in later-registered layers, regardless of when they were added.
 
 ### 5. Color palette: pick one and stick to it
 
 Reuse the palette from the `[[transparent-icons]]` theme bible when the schematic ships alongside icons. For schematics alone, `references/svg-guidelines.md` lists the colorblind-safe palettes the QA agent's `--palette` flag knows about (`okabe-ito`, `tol-bright`). Near-grays (`#888`, `#999`, `#ccc`) for axes/ticks/gridlines are exempt from palette compliance — use them freely for chrome.
 
-## Programmatic authoring (Python)
-
-For schematics that need to be reproducible from data (e.g., a flowchart whose nodes correspond to entries in a YAML config), drive the SVG from Python using `svgwrite` or directly via `svgutils.transform`:
-
-```bash
-uv run --with svgwrite python build_schematic.py --config nodes.yaml -o schematic.svg
-```
-
-`build_schematic.py` is a thin wrapper that loads the config, places rects, draws connections, and emits the SVG. See `examples/schematic.svg` for the expected output shape and use it as a template.
+> *Same convention in `[[svg-primitives]]`*: pass hex colors directly to `LabeledBox(fill=..., stroke=...)` and `Arrow.connect(stroke=...)`.
 
 ## Composition into a panel
 
@@ -143,11 +153,14 @@ uv run --with lxml --with svgelements --with svgpathtools --with shapely \
     --journal nature --palette okabe-ito
 ```
 
-The SVG branch checks font sizes (delegating to `validate_fonts.py`), palette compliance (with near-gray exemption for chrome), and reports geometry counts. Bbox-overlap and arrow-tip distance are not implemented in this release; the agent falls back to VLM judgment for layered-element correctness.
+The SVG branch checks font sizes, palette compliance (with near-gray exemption for chrome), and reports geometry counts.
+
+For SVGs built with `[[svg-primitives]]`, validation also runs in-process during `Canvas.save(validate='warn'|'strict'|'off')` — that catches the same invariants (and more) before the file is even written. The two validators are complementary: `figure-qa` works on any SVG; `svg-primitives` validation works on SVGs it produced.
 
 ## Additional resources
 
-- `references/svg-guidelines.md` — element consistency rules and palette recommendations
-- `references/arrow-patterns.md` — straight, curved, and segmented arrow recipes; svgpathtools-compatible geometry the QA agent recognizes
-- `references/text-alignment.md` — text bbox arithmetic, baseline behavior, and common failure modes (overflow, descender drop, anchor inversion)
-- `examples/schematic.svg` — annotated reference schematic
+- `examples/schematic_from_primitives.py` — programmatic example using svg-primitives (recommended starting point).
+- `examples/schematic.svg` — hand-authored reference schematic.
+- `references/svg-guidelines.md` — element consistency rules and palette recommendations.
+- `references/arrow-patterns.md` — straight, curved, and segmented arrow recipes; svgpathtools-compatible geometry the QA agent recognizes.
+- `references/text-alignment.md` — text bbox arithmetic, baseline behavior, and common failure modes (overflow, descender drop, anchor inversion).
