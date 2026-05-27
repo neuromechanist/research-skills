@@ -10,7 +10,8 @@ from __future__ import annotations
 import pytest
 
 from svg_primitives import (
-    Arrow, Canvas, Diamond, LabeledBox, Layer, MetricsFallbackError, Pill,
+    Annotation, Arrow, Bracket, Canvas, Diamond, Group, LabeledBox, Layer,
+    MetricsFallbackError, Pill,
 )
 
 from conftest import (
@@ -413,3 +414,190 @@ def test_metrics_strict_mode_raises_without_font(monkeypatch):
     monkeypatch.setattr(metrics, "_find_font_file", lambda: None)
     with pytest.raises(MetricsFallbackError):
         metrics.measure_text_mm("hello", 7.0, font_path=None, strict=True)
+
+
+# --- Phase 2: orthogonal routing ---
+
+def test_orthogonal_h_path_is_three_segments(render_canvas):
+    canvas = Canvas(width_mm=100, height_mm=30)
+    a = canvas.layer("boxes").add(LabeledBox(x=5, y=10, text="A", font_size=7))
+    b = canvas.layer("boxes").add(LabeledBox(x=70, y=10, text="B", font_size=7))
+    arrow = Arrow.connect(a, b, curve="orthogonal-h")
+    canvas.layer("arrows").add(arrow)
+    svg = render_canvas(canvas, "ortho_h")
+    # Path d has form: M x y L x1 y L x1 y2 L x2 y2 — three L segments.
+    assert arrow.d.count("L") == 3
+    # All elbows share the chord midline x.
+    parts = arrow.d.replace("M", "").replace("L", " ").split()
+    coords = [float(p) for p in parts]
+    # coords = [x0,y0,  mx,y0,  mx,y1,  x1,y1]
+    assert abs(coords[2] - coords[4]) < 0.001, "elbow xs should match"
+    assert abs(coords[2] - (coords[0] + coords[6]) / 2) < 0.01
+
+
+def test_orthogonal_v_path_is_three_segments():
+    a = LabeledBox(x=5, y=5, text="A", font_size=7)
+    b = LabeledBox(x=5, y=40, text="B", font_size=7)
+    arrow = Arrow.connect(a, b, curve="orthogonal-v")
+    assert arrow.d.count("L") == 3
+    parts = arrow.d.replace("M", "").replace("L", " ").split()
+    coords = [float(p) for p in parts]
+    # coords = [x0,y0,  x0,my,  x1,my,  x1,y1]
+    assert abs(coords[3] - coords[5]) < 0.001, "elbow ys should match"
+    assert abs(coords[3] - (coords[1] + coords[7]) / 2) < 0.01
+
+
+def test_orthogonal_arrowhead_still_tangent_correct(render_canvas):
+    canvas = Canvas(width_mm=100, height_mm=30)
+    a = canvas.layer("boxes").add(LabeledBox(x=5, y=10, text="A", font_size=7))
+    b = canvas.layer("boxes").add(LabeledBox(x=70, y=10, text="B", font_size=7))
+    canvas.layer("arrows").add(Arrow.connect(a, b, curve="orthogonal-h"))
+    svg = render_canvas(canvas, "ortho_tangent")
+    root = parse_svg(svg)
+    for m in all_markers(root):
+        assert m.get("orient") == "auto"
+    # Final segment is horizontal toward dst W edge: tip x is dst.left, y matches.
+    arrow = next(arrow_paths(get_layer(root, "arrows")))
+    tip = path_endpoint(arrow.get("d", ""))
+    boxes = rect_bboxes(get_layer(root, "boxes"))
+    dist = min(dist_to_rect_edge(tip, bx) for bx in boxes)
+    assert dist < ARROW_TIP_TOL
+
+
+# --- Phase 2: multi-waypoint paths ---
+
+def test_waypoint_path_passes_through_via_points():
+    a = LabeledBox(x=5, y=5, text="A", font_size=7)
+    b = LabeledBox(x=60, y=40, text="B", font_size=7)
+    arrow = Arrow.connect(a, b, curve="straight", via=[(40, 5)])
+    # d should contain L 40.000 5.000 as one of the segments.
+    assert "L 40.000 5.000" in arrow.d
+
+
+def test_waypoint_corner_radius_smooths_interior():
+    a = LabeledBox(x=5, y=5, text="A", font_size=7)
+    b = LabeledBox(x=80, y=40, text="B", font_size=7)
+    sharp = Arrow.connect(a, b, curve="straight", via=[(50, 5)], corner_radius=0.0)
+    rounded = Arrow.connect(a, b, curve="straight", via=[(50, 5)], corner_radius=3.0)
+    assert "Q" not in sharp.d, "sharp path should have no Q segments"
+    assert "Q " in rounded.d, "rounded path should contain a Q segment at the interior corner"
+
+
+# --- Phase 2: Bracket ---
+
+def test_bracket_spine_at_offset_depth(render_canvas):
+    canvas = Canvas(width_mm=80, height_mm=40)
+    canvas.layer("annotations").add(Bracket(
+        start=(10, 20), end=(60, 20), depth=5, label=None,
+    ))
+    svg = render_canvas(canvas, "bracket")
+    root = parse_svg(svg)
+    # Bracket emits a single <path> in layer-annotations. Parse its d.
+    layer = get_layer(root, "annotations")
+    paths = list(layer.iter(f"{{{SVG_NS}}}path"))
+    assert len(paths) == 1
+    parts = paths[0].get("d", "").replace("M", "").replace("L", " ").split()
+    coords = [float(p) for p in parts]
+    # Expect 4 points: start, spine_a, spine_b, end.
+    # start = (10, 20); spine_a should be (10, 20 + 5 * normal.y). For a
+    # horizontal chord, normal is (0, +1) in math = (0, +1) in SVG = down.
+    assert abs(coords[0] - 10) < 0.01
+    assert abs(coords[1] - 20) < 0.01
+    assert abs(coords[2] - 10) < 0.01      # spine_a.x = start.x
+    assert abs(coords[3] - 25) < 0.01      # spine_a.y = start.y + depth
+    assert abs(coords[4] - 60) < 0.01      # spine_b.x = end.x
+    assert abs(coords[5] - 25) < 0.01      # spine_b.y = end.y + depth
+
+
+def test_bracket_label_at_apex_on_closed_side(render_canvas):
+    canvas = Canvas(width_mm=80, height_mm=40)
+    canvas.layer("annotations").add(Bracket(
+        start=(10, 20), end=(60, 20), depth=5, label="grp",
+        label_offset=2, font_size=7,
+    ))
+    svg = render_canvas(canvas, "bracket_label")
+    root = parse_svg(svg)
+    layer = get_layer(root, "annotations")
+    texts = list(layer.iter(f"{{{SVG_NS}}}text"))
+    assert len(texts) == 1
+    # Apex is (35, 25); label is at apex + normal * sign(depth) * 2.
+    # Normal for horizontal chord = (0, +1); sign(+5) = +1; so label at (35, 27).
+    cx = float(texts[0].get("x"))
+    assert abs(cx - 35) < 0.01
+
+
+# --- Phase 2: Group ---
+
+def test_group_union_bbox_covers_all_members():
+    a = LabeledBox(x=10, y=5, text="A", font_size=7, padding=2)
+    b = LabeledBox(x=30, y=20, text="B", font_size=7, padding=2)
+    c = LabeledBox(x=50, y=15, text="C", font_size=7, padding=2)
+    g = Group(a, b, c)
+    assert abs(g.left - min(a.left, b.left, c.left)) < 0.001
+    assert abs(g.right - max(a.right, b.right, c.right)) < 0.001
+    assert abs(g.top - min(a.top, b.top, c.top)) < 0.001
+    assert abs(g.bottom - max(a.bottom, b.bottom, c.bottom)) < 0.001
+
+
+def test_arrow_connect_group_to_box(render_canvas):
+    canvas = Canvas(width_mm=120, height_mm=60)
+    a = LabeledBox(x=10, y=10, text="A", font_size=7, padding=2)
+    b = LabeledBox(x=30, y=10, text="B", font_size=7, padding=2)
+    c = LabeledBox(x=50, y=10, text="C", font_size=7, padding=2)
+    lonely = LabeledBox(x=10, y=40, text="lonely", font_size=7, padding=2)
+    canvas.layer("boxes").add(a)
+    canvas.layer("boxes").add(b)
+    canvas.layer("boxes").add(c)
+    canvas.layer("boxes").add(lonely)
+    g = Group(a, b, c)
+    canvas.layer("arrows").add(Arrow.connect(g, lonely))
+    svg = render_canvas(canvas, "group_arrow")
+    root = parse_svg(svg)
+    arrow = next(arrow_paths(get_layer(root, "arrows")))
+    tip = path_endpoint(arrow.get("d", ""))
+    boxes = rect_bboxes(get_layer(root, "boxes"))
+    # Tip should be on lonely's edge, not inside any of a/b/c.
+    nearest = min(dist_to_rect_edge(tip, bx) for bx in boxes)
+    assert nearest < ARROW_TIP_TOL
+
+
+def test_group_requires_at_least_one_member():
+    with pytest.raises(ValueError, match="at least one"):
+        Group()
+
+
+# --- Phase 2: Annotation ---
+
+def test_annotation_text_only_no_leader(render_canvas):
+    canvas = Canvas(width_mm=60, height_mm=30)
+    canvas.layer("annotations").add(Annotation(x=30, y=15, text="callout"))
+    svg = render_canvas(canvas, "anno_no_leader")
+    root = parse_svg(svg)
+    layer = get_layer(root, "annotations")
+    assert len(list(layer.iter(f"{{{SVG_NS}}}text"))) == 1
+    # drawsvg emits dw.Line as <path d="M x,y L x2,y2"> — count paths.
+    assert len(list(layer.iter(f"{{{SVG_NS}}}path"))) == 0
+
+
+def test_annotation_with_leader_emits_line(render_canvas):
+    canvas = Canvas(width_mm=80, height_mm=40)
+    canvas.layer("annotations").add(Annotation(
+        x=20, y=10, text="this is here", leader_to=(60, 35),
+    ))
+    svg = render_canvas(canvas, "anno_with_leader")
+    root = parse_svg(svg)
+    layer = get_layer(root, "annotations")
+    texts = list(layer.iter(f"{{{SVG_NS}}}text"))
+    paths = list(layer.iter(f"{{{SVG_NS}}}path"))
+    assert len(texts) == 1
+    assert len(paths) == 1
+    # The leader is a M->L; verify the L endpoint matches leader_to.
+    # drawsvg emits as "Mx,y Lx2,y2" — split on M/L AND commas.
+    d = paths[0].get("d", "")
+    parts = (d
+        .replace("M", " ").replace("L", " ").replace(",", " ")
+        .split())
+    coords = [float(p) for p in parts]
+    # coords = [start.x, start.y, end.x, end.y]
+    assert abs(coords[-2] - 60) < 0.01
+    assert abs(coords[-1] - 35) < 0.01
