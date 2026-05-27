@@ -24,7 +24,7 @@ from svgpathtools import Line, Path
 
 from .metrics import MM_PER_PT, measure_lines_mm, measure_text_mm
 
-_FONT_FAMILY_SVG = "Helvetica, Arial, sans-serif"
+_FONT_FAMILY_SVG = "Helvetica, Arial, sans-serif"  # re-exported by annotations.py
 
 # Fraction of single-line measured height that places the first-line baseline
 # below the visual top of the text block. Used both by _render_text (to place
