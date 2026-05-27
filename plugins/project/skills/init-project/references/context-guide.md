@@ -55,6 +55,21 @@ The `.context/` directory provides structured documentation that persists across
 
 **When to update:** Immediately after a failed attempt. Capture the details while they are fresh. This file prevents repeating the same mistakes.
 
+### decisions/
+
+**Purpose:** Architecture Decision Records (ADRs). One file per significant decision, tucked together so they are easy to find later.
+
+**Structure:**
+- `README.md` documents the convention (numbering, statuses, when to write one).
+- `0000-template.md` is the template; copy it to start a new ADR. Do not edit it directly.
+- Decisions are numbered `NNNN-short-kebab-title.md` (zero-padded to four digits, sequential).
+- Each ADR has: Status, Date, Owner, Context, Decision, Consequences, Alternatives considered, Receipts.
+- Status flows `proposed` -> `accepted` -> (later) `superseded by ADR-NNNN`. Never delete an ADR; supersede it.
+
+**When to write one:** When the decision will be hard or expensive to reverse, cuts off other reasonable paths, has been argued about more than once, or embeds a non-obvious constraint (legal, performance, schedule). Skip ADRs for routine choices already obvious from the code.
+
+**Relation to ideas.md and research.md:** `ideas.md` and `research.md` are exploratory and frequently rewritten. ADRs are the durable record of what was actually chosen and why. Promote an idea or research conclusion to an ADR once the decision is final.
+
 ## Usage Guidelines
 
 1. Keep entries concise but complete enough to be useful months later
