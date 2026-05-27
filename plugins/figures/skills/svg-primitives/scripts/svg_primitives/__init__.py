@@ -25,11 +25,12 @@ Layers paint in registration order — later layers visually sit on top.
 from .annotations import Annotation, Bracket  # noqa: F401
 from .arrows import Arrow  # noqa: F401
 from .canvas import Canvas, Layer  # noqa: F401
+from .groups import Group  # noqa: F401
 from .metrics import MetricsFallbackError  # noqa: F401
 from .shapes import Diamond, LabeledBox, Pill, Shape, Side  # noqa: F401
 
 __version__ = "0.2.0"
 __all__ = [
-    "Annotation", "Arrow", "Bracket", "Canvas", "Diamond", "Layer",
-    "LabeledBox", "MetricsFallbackError", "Pill", "Shape", "Side",
+    "Annotation", "Arrow", "Bracket", "Canvas", "Diamond", "Group",
+    "Layer", "LabeledBox", "MetricsFallbackError", "Pill", "Shape", "Side",
 ]

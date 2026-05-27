@@ -86,7 +86,14 @@ class Bracket:
         return (a + b) / 2
 
     def _label_anchor(self) -> complex:
-        return self._apex() + self._normal * self.label_offset
+        # Push the label further in the same direction the spine is offset
+        # from the start-end line so it sits on the closed side of the
+        # bracket (away from the elements being grouped), regardless of
+        # the sign of `depth`.
+        if self.depth == 0:
+            return self._apex()
+        sign = 1 if self.depth > 0 else -1
+        return self._apex() + self._normal * sign * self.label_offset
 
     def to_drawsvg(self) -> dw.Group:
         g = dw.Group()
