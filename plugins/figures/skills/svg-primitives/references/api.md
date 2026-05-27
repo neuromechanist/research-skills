@@ -70,28 +70,76 @@ Subclasses of `LabeledBox` with different geometry.
 - `Pill` — `rx` is overridden to `height/2` after auto-sizing → flat-sided capsule. Useful for terminal "start"/"end" nodes.
 - `Diamond` — rhombus. The auto-sized width and height are doubled after the text-fit pass so the inscribed text rectangle still fits without overlap. The outline is a four-edge polygon emitted as a closed SVG `<path d="M ... Z"/>`.
 
-## `Arrow.connect(src, dst, *, curve="straight", bow=0, src_side="auto", dst_side="auto", stroke, stroke_width) -> Arrow`
+## `Arrow.connect(src, dst, *, curve="straight", bow=0, src_side="auto", dst_side="auto", via=None, corner_radius=0.0, stroke, stroke_width) -> Arrow`
 
 Connector between two shapes.
 
 | Name | Default | Description |
 | --- | --- | --- |
-| `src`, `dst` | required | Two `LabeledBox` (or subclass) instances. |
-| `curve` | `"straight"` | `"straight"` for a line, `"cubic"` for a Bezier. |
+| `src`, `dst` | required | Two `Shape` instances — `LabeledBox`, `Pill`, `Diamond`, `Group`. |
+| `curve` | `"straight"` | `"straight"` line, `"cubic"` Bezier, `"orthogonal-h"` right-angle horizontal-first, `"orthogonal-v"` right-angle vertical-first. |
 | `bow` | `0.0` | Cubic only: perpendicular bulge in mm. Positive = upward in SVG y, negative = downward. The sign is normalized regardless of chord direction. |
-| `src_side`, `dst_side` | `"auto"` | Anchor sides on each shape. `"auto"` picks the side facing the other endpoint. |
+| `src_side`, `dst_side` | `"auto"` | Anchor sides. `"auto"` picks the side facing the other endpoint (or the side on the primary axis for orthogonal modes). |
+| `via` | `None` | Straight curve only. List of `(x, y)` waypoints the polyline passes through between `src` and `dst`. |
+| `corner_radius` | `0.0` | When > 0, interior polyline corners are replaced with quadratic Beziers of that radius, clamped to half the shorter adjoining segment. |
 | `stroke` | `"#1F3A5F"` | Arrow color. The Canvas generates one `<marker>` per unique stroke color. |
 | `stroke_width` | `0.6` | Stroke width (mm). |
 
 **Validation**
 
-`Arrow.connect` raises `ValueError` if `src` and `dst` resolve to coincident anchor points (e.g. `Arrow.connect(box, box, src_side="N", dst_side="N")`). Use different sides or non-overlapping boxes.
+`Arrow.connect` raises `ValueError` if `src` and `dst` resolve to coincident anchor points (e.g. `Arrow.connect(box, box, src_side="N", dst_side="N")`). Use different sides or non-overlapping boxes. Also raises on unsupported `curve` values.
 
 **Returned object**
 
 - `Arrow.d` — SVG path "d" attribute (string).
 - `Arrow.stroke`, `.stroke_width` — as constructed.
 - `Arrow.to_drawsvg() -> drawsvg.Path` — rendered path with `marker-end` set.
+
+## `Bracket(start, end, depth, label=None, label_offset=2, ...)`
+
+Square-style bracket ("rake") whose spine sits `depth` mm perpendicular to the line from `start` to `end`. The optional `label` is centered at the spine apex `label_offset` mm further out on the closed side of the bracket (same direction as the spine offset, regardless of sign).
+
+| Name | Default | Description |
+| --- | --- | --- |
+| `start`, `end` | required | `(x, y)` tuples in mm. |
+| `depth` | required | Mm offset of the spine perpendicular to start-end. Sign chooses side. |
+| `label` | `None` | Optional text at the spine apex. |
+| `label_offset` | `2.0` | Mm further out from the spine to the label. |
+| `font_size`, `font_path`, `strict_metrics` | as `LabeledBox` | Text metrics conventions. |
+| `stroke`, `stroke_width` | `"#1F3A5F"`, `0.6` | Outline. |
+
+Raises `ValueError` on non-positive `font_size`.
+
+## `Annotation(x, y, text, leader_to=None, ...)`
+
+Text label at `(x, y)` with an optional thin leader line to a target coordinate.
+
+| Name | Default | Description |
+| --- | --- | --- |
+| `x`, `y` | required | Text anchor (mm). |
+| `text` | required | Label content. |
+| `leader_to` | `None` | Target `(x, y)` for an optional leader line. Omitted means text-only. |
+| `text_anchor` | `"middle"` | SVG text-anchor: `"start"`, `"middle"`, `"end"`. |
+| `leader_gap` | `1.0` | Mm gap between text bbox and leader start so the line does not overlap the text. |
+| `leader_stroke`, `leader_stroke_width` | `"#1F3A5F"`, `0.3` | Leader-line styling. |
+| `fill`, `font_size`, `font_path`, `strict_metrics` | conventional | Text styling and metrics. |
+
+## `Group(*shapes) -> Group`
+
+Virtual container exposing the union-bbox geometry of its member shapes through the `Shape` protocol. Not added to a layer; not rendered.
+
+| Member | Description |
+| --- | --- |
+| `members` | Tuple of the grouped shapes. |
+| `left`, `right`, `top`, `bottom`, `cx`, `cy`, `width`, `height` | Union-bbox metrics (read-only properties). |
+| `anchor_point(side)` | Cardinal anchor on the union bbox edge. |
+| `outline_path()` | `svgpathtools.Path` rectangle around the union bbox. |
+
+`Group()` with no members raises `ValueError`.
+
+## `Shape` Protocol
+
+Minimal geometry contract that `Arrow.connect` and other connectors rely on. Anything with `cx`, `cy`, `anchor_point(side) -> complex`, and `outline_path() -> Path` satisfies the protocol. `LabeledBox`, `Pill`, `Diamond`, and `Group` all do.
 
 The arrowhead is delivered by the Canvas-generated `<marker orient="auto">`; the SVG renderer computes the tangent at the terminal point and rotates the marker, so curved-path arrowheads stay tangent-correct.
 
