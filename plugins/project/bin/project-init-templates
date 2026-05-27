@@ -31,10 +31,30 @@ else
     echo "CLAUDE.md already exists, skipping"
 fi
 
+# Copy every *.md from a source dir into a target dir, failing loudly under
+# `set -euo pipefail` if the source dir is missing or contains no .md files
+# (broken install, partial checkout) instead of letting an unmatched glob
+# produce a cryptic cp error.
+copy_md_files() {
+    local src="$1" dest="$2" label="$3"
+    if [ ! -d "$src" ]; then
+        echo "ERROR: template directory missing: $src" >&2
+        exit 1
+    fi
+    shopt -s nullglob
+    local files=("$src"/*.md)
+    shopt -u nullglob
+    if [ ${#files[@]} -eq 0 ]; then
+        echo "ERROR: no .md files found in $src (broken $label template install)" >&2
+        exit 1
+    fi
+    cp "${files[@]}" "$dest/"
+}
+
 # .rules/
 if [ ! -d "$TARGET_DIR/.rules" ]; then
     mkdir -p "$TARGET_DIR/.rules"
-    cp "$TEMPLATES_DIR/claude/rules/"*.md "$TARGET_DIR/.rules/"
+    copy_md_files "$TEMPLATES_DIR/claude/rules" "$TARGET_DIR/.rules" ".rules"
     echo "Created .rules/ directory"
 else
     echo ".rules directory already exists, skipping"
@@ -43,7 +63,7 @@ fi
 # .context/
 if [ ! -d "$TARGET_DIR/.context" ]; then
     mkdir -p "$TARGET_DIR/.context"
-    cp "$TEMPLATES_DIR/context/"*.md "$TARGET_DIR/.context/"
+    copy_md_files "$TEMPLATES_DIR/context" "$TARGET_DIR/.context" ".context"
     echo "Created .context/ directory"
 else
     echo ".context directory already exists, skipping top-level files"
@@ -53,7 +73,7 @@ fi
 # Created independently of .context/ so existing projects pick it up on re-run.
 if [ ! -d "$TARGET_DIR/.context/decisions" ]; then
     mkdir -p "$TARGET_DIR/.context/decisions"
-    cp "$TEMPLATES_DIR/context/decisions/"*.md "$TARGET_DIR/.context/decisions/"
+    copy_md_files "$TEMPLATES_DIR/context/decisions" "$TARGET_DIR/.context/decisions" ".context/decisions"
     echo "Created .context/decisions/ directory"
 else
     echo ".context/decisions directory already exists, skipping"

@@ -21,10 +21,12 @@ if ! git -C "$TARGET_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     exit 1
 fi
 
-if ! (cd "$TARGET_DIR" && gh repo view >/dev/null 2>&1); then
-    echo "ERROR: no GitHub remote detected for '$TARGET_DIR'. Push the repo to GitHub first, then re-run." >&2
+repo_check_err="$(cd "$TARGET_DIR" && gh repo view 2>&1 >/dev/null)" || {
+    echo "ERROR: gh could not resolve a GitHub repo for '$TARGET_DIR'." >&2
+    echo "  gh output: $repo_check_err" >&2
+    echo "  Common causes: repo not yet pushed to GitHub, expired auth (run 'gh auth status'), or no read access." >&2
     exit 1
-fi
+}
 
 # Label set: name | color (hex, no #) | description.
 # Colors follow GitHub's defaults where applicable so labels look familiar across repos.
@@ -52,12 +54,12 @@ cd "$TARGET_DIR"
 
 for entry in "${LABELS[@]}"; do
     IFS='|' read -r name color description <<<"$entry"
-    if gh label create "$name" --color "$color" --description "$description" --force >/dev/null 2>&1; then
+    if err="$(gh label create "$name" --color "$color" --description "$description" --force 2>&1 >/dev/null)"; then
         ensured=$((ensured + 1))
         echo "  [ok] $name"
     else
         failed=$((failed + 1))
-        echo "  [failed] $name" >&2
+        echo "  [failed] $name: $err" >&2
     fi
 done
 
