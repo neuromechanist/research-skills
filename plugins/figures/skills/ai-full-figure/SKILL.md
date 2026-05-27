@@ -22,7 +22,7 @@ Reach for a different skill when the figure is **information-dense**:
 | Figure type | Skill |
 |---|---|
 | Data plot (matplotlib, seaborn, plotly) | `[[plot-styling]]` for the plot, then `[[scientific-figure]]` to compose |
-| Schematic with boxes / arrows / process flow | `[[svg-figure]]` |
+| Schematic with boxes / arrows / process flow | `[[svg-primitives]]` (programmatic) or `[[svg-figure]]` (hand-authored conventions) |
 | Flat scientific icon as part of a figure | `[[transparent-icons]]` |
 | Multi-panel journal figure | `[[scientific-figure]]` as the composer |
 

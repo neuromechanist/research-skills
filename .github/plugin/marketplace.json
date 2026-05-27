@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.14.0"
+    "version": "0.15.2"
   },
   "plugins": [
     {
@@ -39,8 +39,8 @@
     },
     {
       "name": "figures",
-      "description": "Publication-quality figures plugin. Five skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
-      "version": "0.9.0",
+      "description": "Publication-quality figures plugin. Six skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); svg-primitives (mm-precise SVG builder in Python: auto-fit boxes, tangent-correct arrows on straight/cubic/orthogonal routes, multi-waypoint paths, brackets/annotations/groups, layered z-order); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
+      "version": "0.10.1",
       "source": "./plugins/figures",
       "category": "research"
     },

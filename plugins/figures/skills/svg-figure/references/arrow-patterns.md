@@ -1,5 +1,7 @@
 # Arrow Patterns
 
+> Hand-authoring recipes for SVG arrows. `[[svg-primitives]]`'s `Arrow.connect(curve='straight'|'cubic'|'orthogonal-h'|'orthogonal-v')` produces these patterns mechanically — read this document when authoring SVG by hand or when debugging arrow geometry in SVG produced by another tool.
+
 Recipes for arrows in SVG schematics that the `figure-qa` agent can validate (once the geometry section ships) and that render correctly across all common SVG renderers (Inkscape, Chrome, Firefox, Safari, librsvg, cairosvg).
 
 ## The marker definition
