@@ -23,7 +23,7 @@ stroke); Arrow only carries its stroke color via the `stroke` field.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 import drawsvg as dw
@@ -57,10 +57,12 @@ class Arrow:
     stroke: str = "#1F3A5F"
     stroke_width: float = 0.6
 
-    # Set by Canvas before rendering. Sentinel attribute lets Canvas
-    # discover Arrow elements without importing this module.
-    _is_arrow: bool = True
-    _marker_url: str = "url(#arrow-default)"
+    # Private fields sealed from constructor: Canvas discovers Arrow
+    # elements via the _is_arrow attribute (a sentinel to avoid the
+    # arrows-imports-canvas circular dependency) and writes _marker_url
+    # at render time so every arrow uses the marker matching its stroke.
+    _is_arrow: bool = field(init=False, default=True, repr=False)
+    _marker_url: str = field(init=False, default="url(#arrow-default)", repr=False)
 
     @classmethod
     def connect(
@@ -82,38 +84,52 @@ class Arrow:
         p0 = src.anchor_point(src_side)
         p1 = dst.anchor_point(dst_side)
 
+        if abs(p1 - p0) == 0:
+            raise ValueError(
+                f"Arrow.connect: src and dst anchor points are coincident at {p0}; "
+                "cannot construct an arrow (consider different src_side/dst_side or non-overlapping boxes)."
+            )
+
         if curve == "straight":
             line = Path(Line(p0, p1))
-            p0_snap = first_intersect_point(line, src.outline_path(), prefer="start") or p0
-            p1_snap = first_intersect_point(line, dst.outline_path(), prefer="end") or p1
+            p0_snap_opt = first_intersect_point(line, src.outline_path(), prefer="start")
+            p1_snap_opt = first_intersect_point(line, dst.outline_path(), prefer="end")
+            # Use the explicit None check; complex(0, 0) is falsy in Python and
+            # would otherwise drop a valid intersection at the SVG origin.
+            p0_snap = p0_snap_opt if p0_snap_opt is not None else p0
+            p1_snap = p1_snap_opt if p1_snap_opt is not None else p1
             d = f"M {p0_snap.real:.3f} {p0_snap.imag:.3f} L {p1_snap.real:.3f} {p1_snap.imag:.3f}"
         elif curve == "cubic":
             chord = p1 - p0
             length = abs(chord)
-            if length == 0:
-                d = f"M {p0.real:.3f} {p0.imag:.3f}"
-            else:
-                # Convention: positive bow = upward in SVG (negative y),
-                # negative bow = downward. We flip the perpendicular if
-                # needed so this holds regardless of chord direction.
-                normal = complex(chord.imag, -chord.real) / length
-                if normal.imag > 0:
-                    normal = -normal
-                offset = normal * bow
-                c1 = p0 + chord * 0.33 + offset
-                c2 = p0 + chord * 0.67 + offset
-                bez = CubicBezier(p0, c1, c2, p1)
-                t0 = first_intersect_t(bez, src.outline_path(), prefer="start")
-                t1 = first_intersect_t(bez, dst.outline_path(), prefer="end")
-                t0 = t0 if t0 is not None else 0.0
-                t1 = t1 if t1 is not None else 1.0
-                trimmed = bez.cropped(t0, t1)
-                d = (
-                    f"M {trimmed.start.real:.3f} {trimmed.start.imag:.3f} "
-                    f"C {trimmed.control1.real:.3f} {trimmed.control1.imag:.3f}, "
-                    f"{trimmed.control2.real:.3f} {trimmed.control2.imag:.3f}, "
-                    f"{trimmed.end.real:.3f} {trimmed.end.imag:.3f}"
-                )
+            # Convention: positive bow = upward in SVG (negative y), negative
+            # bow = downward. Approximately holds for any chord direction; for
+            # purely vertical chords positive bow bulges toward +x rather than
+            # geometrically "up", which is a known limitation of using imag>0
+            # as the orientation test.
+            normal = complex(chord.imag, -chord.real) / length
+            if normal.imag > 0:
+                normal = -normal
+            offset = normal * bow
+            c1 = p0 + chord * 0.33 + offset
+            c2 = p0 + chord * 0.67 + offset
+            bez = CubicBezier(p0, c1, c2, p1)
+            t0 = first_intersect_t(bez, src.outline_path(), prefer="start")
+            t1 = first_intersect_t(bez, dst.outline_path(), prefer="end")
+            t0 = t0 if t0 is not None else 0.0
+            t1 = t1 if t1 is not None else 1.0
+            # Overlapping boxes can produce t0 >= t1 (both intersections fall
+            # on the same side of the Bezier); fall back to the untrimmed
+            # curve rather than letting svgpathtools raise AssertionError.
+            if t0 >= t1:
+                t0, t1 = 0.0, 1.0
+            trimmed = bez.cropped(t0, t1)
+            d = (
+                f"M {trimmed.start.real:.3f} {trimmed.start.imag:.3f} "
+                f"C {trimmed.control1.real:.3f} {trimmed.control1.imag:.3f}, "
+                f"{trimmed.control2.real:.3f} {trimmed.control2.imag:.3f}, "
+                f"{trimmed.end.real:.3f} {trimmed.end.imag:.3f}"
+            )
         else:
             raise ValueError(f"unsupported curve: {curve!r}")
         return cls(d=d, stroke=stroke, stroke_width=stroke_width)

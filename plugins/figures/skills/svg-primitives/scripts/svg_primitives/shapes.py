@@ -26,6 +26,15 @@ from .metrics import MM_PER_PT, measure_lines_mm, measure_text_mm
 
 _FONT_FAMILY_SVG = "Helvetica, Arial, sans-serif"
 
+# Fraction of single-line measured height that places the first-line baseline
+# below the visual top of the text block. Used both by _render_text (to place
+# the baseline) and by the test conftest (to reverse the offset when computing
+# rendered text bboxes). Keeping it here as the single source of truth
+# prevents the two from drifting silently if the layout math changes.
+BASELINE_ASCENT_FRACTION = 0.78
+
+_VALID_ANCHORS: tuple[str, ...] = ("top-left", "center")
+
 Side = Literal["N", "S", "E", "W"]
 Anchor = Literal["top-left", "center"]
 
@@ -54,15 +63,25 @@ class LabeledBox:
     anchor: Anchor = "top-left"
     line_spacing: float = 1.2
     font_path: str | None = None  # optional override for the font search
+    strict_metrics: bool = False  # if True, raise instead of falling back to heuristic
 
     width: float = field(init=False)
     height: float = field(init=False)
     _lines: list[str] = field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
+        if self.font_size <= 0:
+            raise ValueError(f"font_size must be positive, got {self.font_size}")
+        if self.padding < 0:
+            raise ValueError(f"padding must be non-negative, got {self.padding}")
+        if self.anchor not in _VALID_ANCHORS:
+            raise ValueError(
+                f"anchor must be one of {_VALID_ANCHORS}, got {self.anchor!r}"
+            )
         self._lines = self.text.split("\n") if self.text else [""]
         text_w, text_h = measure_lines_mm(
-            self._lines, self.font_size, self.line_spacing, self.font_path,
+            self._lines, self.font_size, self.line_spacing,
+            self.font_path, self.strict_metrics,
         )
         self.width = max(text_w + 2 * self.padding, self.min_width)
         self.height = max(text_h + 2 * self.padding, self.min_height)
@@ -71,7 +90,6 @@ class LabeledBox:
             self.y -= self.height / 2
             self.anchor = "top-left"
 
-    # Geometry helpers.
     @property
     def left(self) -> float: return self.x
     @property
@@ -104,14 +122,23 @@ class LabeledBox:
         if side == "W": return complex(self.left, self.cy)
         raise ValueError(f"unknown side: {side!r}")
 
-    # Construction helper.
     @classmethod
     def next_to(
         cls, other: "LabeledBox", side: Side, gap: float, **kwargs
     ) -> "LabeledBox":
         """Build a new box positioned relative to `other` on the given side
-        with `gap` mm between the touching edges."""
-        # Build a probe to compute width/height, then place.
+        with `gap` mm between the touching edges.
+
+        `next_to` always anchors the new box from its top-left; passing
+        `anchor='center'` in `kwargs` is rejected because the centering math
+        would be done against the probe's x=0,y=0 origin and then overwritten
+        by the side-placement, producing a misleading position.
+        """
+        if kwargs.get("anchor") == "center":
+            raise ValueError(
+                "next_to() places by top-left; pass anchor='top-left' (or omit) "
+                "and let next_to compute the position."
+            )
         probe = cls(x=0, y=0, **kwargs)
         if side == "E":
             probe.x = other.right + gap
@@ -129,7 +156,6 @@ class LabeledBox:
             raise ValueError(side)
         return probe
 
-    # Rendering.
     def to_drawsvg(self) -> dw.Group:
         g = dw.Group()
         g.append(dw.Rectangle(
@@ -143,11 +169,12 @@ class LabeledBox:
     def _render_text(self, g: dw.Group) -> None:
         fs_mm = self.font_size * MM_PER_PT
         n = len(self._lines)
-        _, single_h = measure_text_mm(self._lines[0], self.font_size, self.font_path)
+        _, single_h = measure_text_mm(
+            self._lines[0], self.font_size, self.font_path, self.strict_metrics,
+        )
         line_h = single_h * self.line_spacing
         block_h = single_h + line_h * (n - 1)
-        # ascent-ish baseline offset.
-        first_baseline = self.cy - block_h / 2 + single_h * 0.78
+        first_baseline = self.cy - block_h / 2 + single_h * BASELINE_ASCENT_FRACTION
         for i, ln in enumerate(self._lines):
             g.append(dw.Text(
                 ln, x=self.cx, y=first_baseline + i * line_h,
@@ -164,7 +191,6 @@ class Pill(LabeledBox):
 
     def __post_init__(self) -> None:
         super().__post_init__()
-        # Override rx to a half-height pill after sizing is known.
         self.rx = self.height / 2
 
 
@@ -180,11 +206,17 @@ class Diamond(LabeledBox):
     """
 
     def __post_init__(self) -> None:
-        # Initial measurement (computes self.width/height for text bbox + padding)
+        # Suppress super's "center" shift so the doubled dimensions are what
+        # we shift against, not the pre-doubled inscribed rect.
+        requested_center = self.anchor == "center"
+        if requested_center:
+            self.anchor = "top-left"
         super().__post_init__()
-        # Scale up so inscribed rect (half size) still fits text + padding.
         self.width *= 2
         self.height *= 2
+        if requested_center:
+            self.x -= self.width / 2
+            self.y -= self.height / 2
 
     def outline_path(self) -> Path:
         """Diamond outline: four edges from N -> E -> S -> W -> N."""
@@ -194,12 +226,8 @@ class Diamond(LabeledBox):
         w = complex(self.left, self.cy)
         return Path(Line(n, e), Line(e, s), Line(s, w), Line(w, n))
 
-    def anchor_point(self, side: Side) -> complex:
-        if side == "N": return complex(self.cx, self.top)
-        if side == "S": return complex(self.cx, self.bottom)
-        if side == "E": return complex(self.right, self.cy)
-        if side == "W": return complex(self.left, self.cy)
-        raise ValueError(side)
+    # anchor_point is inherited; cardinal sides of the bounding rect coincide
+    # with the diamond's vertices, so the default implementation is correct.
 
     def to_drawsvg(self) -> dw.Group:
         g = dw.Group()

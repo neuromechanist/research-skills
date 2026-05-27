@@ -17,7 +17,11 @@ Layers paint in registration order — later layers visually sit on top.
 
 from .arrows import Arrow  # noqa: F401
 from .canvas import Canvas, Layer  # noqa: F401
+from .metrics import MetricsFallbackError  # noqa: F401
 from .shapes import Diamond, LabeledBox, Pill, Side  # noqa: F401
 
 __version__ = "0.1.0"
-__all__ = ["Arrow", "Canvas", "Diamond", "Layer", "LabeledBox", "Pill", "Side"]
+__all__ = [
+    "Arrow", "Canvas", "Diamond", "Layer", "LabeledBox",
+    "MetricsFallbackError", "Pill", "Side",
+]

@@ -47,8 +47,21 @@ class Canvas:
     layers: list[Layer] = field(default_factory=list)
     background: str | None = "#FFFFFF"
 
+    def __post_init__(self) -> None:
+        if self.width_mm <= 0 or self.height_mm <= 0:
+            raise ValueError(
+                f"Canvas dimensions must be positive: "
+                f"width_mm={self.width_mm}, height_mm={self.height_mm}"
+            )
+
     def add_layer(self, layer: Layer) -> "Canvas":
         """Explicit insertion. Returns self for chaining."""
+        for existing in self.layers:
+            if existing.name == layer.name:
+                raise ValueError(
+                    f"Canvas already has a layer named {layer.name!r}; "
+                    "use Canvas.layer(name) to get or create a layer by name."
+                )
         self.layers.append(layer)
         return self
 
@@ -103,7 +116,14 @@ class Canvas:
             for el in L.elements:
                 if hasattr(el, "to_drawsvg"):
                     if getattr(el, "_is_arrow", False):
-                        el._marker_url = f"url(#{marker_ids[el.stroke]})"
+                        marker_url = marker_ids.get(el.stroke)
+                        if marker_url is None:
+                            raise RuntimeError(
+                                f"Arrow with stroke={el.stroke!r} was added but its "
+                                "color was not collected — this indicates a sentinel "
+                                "or color was modified after Canvas built its marker set."
+                            )
+                        el._marker_url = f"url(#{marker_url})"
                     g.append(el.to_drawsvg())
                 else:
                     g.append(el)
@@ -126,4 +146,10 @@ class Canvas:
                     "uv add cairosvg, or include `--with cairosvg` on the uv run line."
                 ) from e
             png_path = svg_path.with_suffix(".png")
-            cairosvg.svg2png(url=str(svg_path), output_width=png_width, write_to=str(png_path))
+            try:
+                cairosvg.svg2png(url=str(svg_path), output_width=png_width, write_to=str(png_path))
+            except Exception as e:
+                raise RuntimeError(
+                    f"cairosvg failed to render {svg_path} to PNG: {e}. "
+                    "The SVG was written successfully; only the PNG export failed."
+                ) from e

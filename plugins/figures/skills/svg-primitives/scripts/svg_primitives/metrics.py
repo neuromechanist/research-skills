@@ -77,6 +77,10 @@ def _measure_fonttools(text: str, font_size_pt: float, font_path: str) -> tuple[
         except (TTLibError, OSError, IndexError):
             continue
     else:
+        log.debug(
+            "fontTools could not open any collection index (0-3) in %s; "
+            "falling back to next metric backend.", font_path,
+        )
         return None
     try:
         cmap = tt.getBestCmap()
@@ -120,26 +124,31 @@ def _measure_pillow(text: str, font_size_pt: float, font_path: str | None) -> tu
     if font_path is None:
         return None
     MEASURE_PX = 200
-    try:
-        # .ttc: try a few collection indices.
-        for idx in (0, 1, 2, 3):
-            try:
-                font = ImageFont.truetype(font_path, size=MEASURE_PX, index=idx)
-                break
-            except (OSError, IOError):
-                continue
-        else:
-            return None
-        left, top, right, bottom = font.getbbox(text)
-        width_px = right - left
-        height_px = bottom - top
-        if width_px <= 0 or height_px <= 0:
-            return None
-        height_mm = font_size_pt * MM_PER_PT
-        scale = height_mm / height_px
-        return (width_px * scale, height_mm)
-    except Exception:
+    # .ttc: try a few collection indices.
+    for idx in (0, 1, 2, 3):
+        try:
+            font = ImageFont.truetype(font_path, size=MEASURE_PX, index=idx)
+            break
+        except (OSError, IOError):
+            continue
+    else:
         return None
+    try:
+        left, top, right, bottom = font.getbbox(text)
+    except (OSError, IOError, ValueError) as e:
+        log.debug("Pillow getbbox failed on %s: %s", font_path, e)
+        return None
+    width_px = right - left
+    height_px = bottom - top
+    if width_px <= 0 or height_px <= 0:
+        return None
+    height_mm = font_size_pt * MM_PER_PT
+    scale = height_mm / height_px
+    return (width_px * scale, height_mm)
+
+
+class MetricsFallbackError(RuntimeError):
+    """Raised when `strict=True` and no exact font metric backend succeeded."""
 
 
 def _measure_heuristic(text: str, font_size_pt: float) -> tuple[float, float]:
@@ -147,21 +156,29 @@ def _measure_heuristic(text: str, font_size_pt: float) -> tuple[float, float]:
     log.warning(
         "svg_primitives.metrics: no usable font found in search path; "
         "falling back to heuristic measurement (0.55 em per character). "
-        "Text bbox may be off by up to ~20%%; install a system font or pass "
-        "an explicit font_path to LabeledBox to silence this warning."
+        "Text bbox may be off by up to ~20%%; install a system font (e.g. "
+        "`apt-get install fonts-liberation` on Linux), pass an explicit "
+        "font_path to LabeledBox, or set strict=True to raise instead."
     )
     em_mm = font_size_pt * MM_PER_PT
     return (0.55 * em_mm * max(1, len(text)), em_mm)
 
 
-def measure_text_mm(text: str, font_size_pt: float, font_path: str | None = None) -> tuple[float, float]:
+def measure_text_mm(
+    text: str,
+    font_size_pt: float,
+    font_path: str | None = None,
+    strict: bool = False,
+) -> tuple[float, float]:
     """Return (width_mm, height_mm) for `text` rendered at `font_size_pt`.
 
     `font_path` is optional; if omitted, the search path is consulted for
     Helvetica → Arial → Liberation Sans → DejaVu Sans → first available.
 
-    Tries fontTools, then Pillow, then a heuristic. Logs at WARNING level
-    once if all metric backends fail.
+    Tries fontTools, then Pillow, then a heuristic. If `strict=True`, raises
+    `MetricsFallbackError` rather than using the heuristic — recommended for
+    CI and journal-submission workflows where 20% measurement error in box
+    sizing is unacceptable.
     """
     if not text:
         return (0.0, 0.0)
@@ -174,17 +191,27 @@ def measure_text_mm(text: str, font_size_pt: float, font_path: str | None = None
         r = _measure_pillow(text, font_size_pt, font_path)
         if r is not None:
             return r
+    if strict:
+        raise MetricsFallbackError(
+            f"No exact font metric backend succeeded for text {text!r} at "
+            f"{font_size_pt} pt (font_path={font_path!r}). Install a system "
+            "font or pass an explicit font_path to use exact metrics."
+        )
     return _measure_heuristic(text, font_size_pt)
 
 
 def measure_lines_mm(
-    lines: list[str], font_size_pt: float, line_spacing: float = 1.2, font_path: str | None = None
+    lines: list[str],
+    font_size_pt: float,
+    line_spacing: float = 1.2,
+    font_path: str | None = None,
+    strict: bool = False,
 ) -> tuple[float, float]:
     """Measure a multi-line block. Width is the widest line; height is the
     block height including line spacing."""
     if not lines:
         return (0.0, 0.0)
-    widths_heights = [measure_text_mm(ln, font_size_pt, font_path) for ln in lines]
+    widths_heights = [measure_text_mm(ln, font_size_pt, font_path, strict) for ln in lines]
     max_w = max((w for w, _ in widths_heights), default=0.0)
     single_h = widths_heights[0][1] if widths_heights else 0.0
     block_h = single_h * line_spacing * (len(lines) - 1) + single_h
