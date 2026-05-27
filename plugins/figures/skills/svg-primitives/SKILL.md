@@ -12,7 +12,7 @@ Build mm-precise SVG schematics in Python with three mechanical guarantees:
 2. **Arrowheads stay tangent-correct** — arrows emit `<marker orient="auto">` so the renderer rotates the head along the path's terminal tangent; works on straight lines and cubic Beziers.
 3. **Paint order is deterministic** — layers paint in registration order; connectors visibly pass under boxes without manual reordering.
 
-The skill ships an end-to-end pytest suite (~11 tests) that renders SVGs and asserts these invariants on the rendered output, so the guarantees are enforced by construction rather than by hand-checking each figure.
+The skill ships an end-to-end pytest suite (50+ tests) that renders SVGs and asserts these invariants on the rendered output, so the guarantees are enforced by construction rather than by hand-checking each figure.
 
 ## When to use this skill
 
@@ -176,7 +176,7 @@ uv run --with pytest --with lxml --with svgelements --with svgpathtools \
     pytest plugins/figures/skills/svg-primitives/tests/ -v
 ```
 
-Expected: 11 tests pass.
+Expected: all tests pass (50+ tests covering text containment, arrow geometry, layer order, validation errors, and Phase 2 primitives).
 
 ## Quality assurance
 
