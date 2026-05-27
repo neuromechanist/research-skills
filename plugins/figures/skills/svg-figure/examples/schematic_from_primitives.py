@@ -39,18 +39,29 @@ from svg_primitives import (  # noqa: E402
 def build() -> Canvas:
     c = Canvas(width_mm=89, height_mm=40)
 
+    # Register layers up front in their intended paint order. Title is
+    # registered LAST so it paints on top of arrows and boxes — the
+    # hand-authored schematic.svg renders the title at the end of the
+    # document for the same reason.
+    c.layer("arrows")
+    c.layer("annotations")
+    c.layer("boxes")
+    c.layer("title")
+
     # svg-primitives doesn't have a title primitive (titles are usually
     # owned by scientific-figure when composing panels), so punch through
-    # to dw.Text and add it to a dedicated "title" layer. font-size in mm:
-    # 6 pt × 25.4/72 ≈ 2.117 mm.
+    # to dw.Text. The title layer has no enclosing rect; the text-overflow
+    # validator skips layers without containers, so this is validator-safe.
+    # font-size in mm: 6 pt × 25.4/72 ≈ 2.117 mm. dw.Text places its y
+    # at the SVG baseline, so y=6 (not 5) keeps the visible top of the
+    # text near y=4 mm.
     c.layer("title").add(dw.Text(
-        "EEG processing chain", x=44.5, y=5,
+        "EEG processing chain", x=44.5, y=6,
         text_anchor="middle", font_size=2.117,
         font_family="Helvetica, Arial, sans-serif", font_weight="bold",
     ))
 
-    # Three nodes with okabe-ito palette matching the hand-authored example.
-    # min_width/min_height clamp to consistent sizes regardless of label.
+    # Okabe-Ito palette (colorblind-safe) to match schematic.svg.
     acquire = LabeledBox(
         x=2, y=16, text="Acquire", font_size=5,
         fill="#ffffff", stroke="#0072B2", stroke_width=0.8,
@@ -72,11 +83,10 @@ def build() -> Canvas:
     c.layer("arrows").add(Arrow.connect(acquire, bandpass, stroke="#000000", stroke_width=0.8))
     c.layer("arrows").add(Arrow.connect(bandpass, classify, stroke="#000000", stroke_width=0.8))
 
-    # Artifact-gate annotation. The hand-authored version uses a tiny
-    # dashed segment plus a separate <text>; Annotation(leader_to=...)
-    # gives us the bbox-edge-to-target leader for free.
+    # Annotation.y is the SVG text BASELINE (matches dw.Text), not the
+    # visual center. y=37 places the visible text near the bottom edge.
     c.layer("annotations").add(Annotation(
-        x=44, y=36, text="artifact gate", font_size=5,
+        x=44, y=37, text="artifact gate", font_size=5,
         leader_to=(44, 29),
         fill="#D55E00",
         leader_stroke="#888888", leader_stroke_width=0.6,

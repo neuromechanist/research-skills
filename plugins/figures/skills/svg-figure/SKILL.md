@@ -10,7 +10,7 @@ Conventions for SVG schematics and diagrams (flowcharts, process diagrams, syste
 
 ## When to use this skill
 
-**For new programmatic work, use `[[svg-primitives]]` instead.** It implements every convention below as a mechanical guarantee — text auto-fits boxes, arrowheads stay tangent-correct on curves, paint order is deterministic, and `Canvas.save(validate='strict')` raises if any of those invariants are violated. `examples/schematic_from_primitives.py` in this skill is the canonical migration example.
+**For new programmatic work, use `[[svg-primitives]]` instead.** It implements every convention below as a mechanical guarantee — text auto-fits boxes, arrowheads stay tangent-correct on curves, paint order is deterministic, and `Canvas.save(validate='strict')` raises if any of those invariants are violated. `examples/schematic_from_primitives.py` in this skill is the canonical programmatic example.
 
 Reach for **this** skill when:
 
@@ -105,7 +105,7 @@ The control points (`47 17, 47 30`) make a smooth S; the tangent at `t=1` runs t
 
 See `references/arrow-patterns.md` for the full svgpathtools-compatible patterns the QA agent recognizes.
 
-> *Done automatically by `[[svg-primitives]]`*: `Arrow.connect(src, dst, curve='straight'|'cubic'|'orthogonal-h'|'orthogonal-v')` snaps endpoints to box outlines and emits `<marker orient='auto'>` for tangent-correct rendering on every curve type.
+> *Done automatically by `[[svg-primitives]]`*: `Arrow.connect(src, dst, curve='straight'|'cubic'|'orthogonal-h'|'orthogonal-v')` snaps straight and cubic endpoints to box outlines via path intersection (orthogonal routes use midpoint waypoints between cardinal anchors), and emits `<marker orient='auto'>` for tangent-correct rendering on every curve type.
 
 ### 4. Lines and arrows pass under shapes via z-order
 

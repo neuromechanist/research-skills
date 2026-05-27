@@ -71,7 +71,7 @@ Programmatic (deterministic):
 - Palette compliance, near-gray-exempt (see above).
 - Element counts (text vs shape) for sanity.
 
-Not yet implemented (tracked in issue #47):
+Not yet implemented in figure-qa's geometry section (the agent falls back to VLM judgment for these until the programmatic checks land):
 
 - Text-bbox-inside-shape using `svgelements` + `shapely`.
 - Arrow-tip-to-target distance using `svgpathtools` tangent at `t=1`.
