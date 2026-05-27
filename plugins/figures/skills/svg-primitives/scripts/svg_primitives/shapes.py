@@ -17,7 +17,7 @@ trim the endpoint to the visual edge.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, Protocol, runtime_checkable
 
 import drawsvg as dw
 from svgpathtools import Line, Path
@@ -37,6 +37,28 @@ _VALID_ANCHORS: tuple[str, ...] = ("top-left", "center")
 
 Side = Literal["N", "S", "E", "W"]
 Anchor = Literal["top-left", "center"]
+
+
+@runtime_checkable
+class Shape(Protocol):
+    """Minimal geometry contract that `Arrow.connect` and other connectors
+    rely on. `LabeledBox`, `Pill`, `Diamond`, and `Group` all satisfy this
+    protocol — the union lets connectors target a single box or a cluster
+    interchangeably.
+
+    A Shape exposes:
+      - cx, cy: centroid (used by the auto-side picker)
+      - anchor_point(side): point on a cardinal edge (N/S/E/W)
+      - outline_path(): an svgpathtools.Path traced around the shape
+        boundary, used to snap arrow endpoints to the visible edge.
+    """
+    @property
+    def cx(self) -> float: ...
+    @property
+    def cy(self) -> float: ...
+
+    def anchor_point(self, side: Side) -> complex: ...
+    def outline_path(self) -> Path: ...
 
 
 @dataclass
@@ -246,4 +268,4 @@ class Diamond(LabeledBox):
         return g
 
 
-__all__ = ["LabeledBox", "Pill", "Diamond", "Side"]
+__all__ = ["LabeledBox", "Pill", "Diamond", "Shape", "Side"]

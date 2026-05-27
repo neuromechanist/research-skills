@@ -30,13 +30,13 @@ import drawsvg as dw
 from svgpathtools import CubicBezier, Line, Path
 
 from .geometry import first_intersect_point, first_intersect_t
-from .shapes import LabeledBox, Side
+from .shapes import LabeledBox, Shape, Side  # noqa: F401 — LabeledBox re-exported for back-compat
 
 Curve = Literal["straight", "cubic"]
 AutoSide = Literal["auto", "N", "S", "E", "W"]
 
 
-def _auto_side(a: LabeledBox, b: LabeledBox) -> Side:
+def _auto_side(a: Shape, b: Shape) -> Side:
     """Pick the side of `a` that faces `b`."""
     dx = b.cx - a.cx
     dy = b.cy - a.cy
@@ -67,8 +67,8 @@ class Arrow:
     @classmethod
     def connect(
         cls,
-        src: LabeledBox,
-        dst: LabeledBox,
+        src: Shape,
+        dst: Shape,
         *,
         curve: Curve = "straight",
         src_side: AutoSide = "auto",
