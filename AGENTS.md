@@ -34,7 +34,7 @@ research-skills/
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
 │   │   └── skills/opencite/
-│   ├── figures/                      # Publication-quality figures (v0.10.0)
+│   ├── figures/                      # Publication-quality figures (v0.10.1)
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── .codex-plugin/plugin.json
 │   │   ├── skills/{scientific-figure,transparent-icons,svg-figure,svg-primitives,ai-full-figure,plot-styling}/
