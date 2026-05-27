@@ -208,7 +208,12 @@ def diamond_bboxes(layer) -> list[Bbox]:
 def text_bboxes(layer, font_path: str | None = None) -> list[tuple[str, Bbox, str | None]]:
     """Approximate bbox for every <text> in `layer`. Uses the svg_primitives
     metrics module so the bbox computation is consistent with how shapes
-    were sized at construction time. Returns (text_content, bbox, id) tuples.
+    were sized at construction time.
+
+    Returns a list of 3-tuples: `(text_content, bbox, element_id)`. The
+    test conftest in this skill wraps to a 2-tuple `(content, bbox)` for
+    backward compatibility with earlier tests; new callers should use the
+    3-tuple directly.
     """
     if layer is None:
         return []
@@ -328,8 +333,13 @@ def _layer_groups(root) -> Iterator:
 
 def validate_text_containment(root, *, tol: float = 0.5) -> list[Finding]:
     """Every <text> element should sit inside at least one shape (rect or
-    diamond) in the same layer. Texts whose bbox extends beyond their
-    container by more than `tol` mm produce a finding."""
+    diamond) **in the same layer**. Texts whose bbox extends beyond their
+    container by more than `tol` mm produce a finding.
+
+    Same-layer scope is intentional and asymmetric with
+    `validate_arrow_tip_distance` (which is cross-layer): labels belong
+    to the layer of the shape they decorate, but arrows commonly span
+    layers (a connectors layer pointing into a boxes layer)."""
     findings: list[Finding] = []
     for layer in _layer_groups(root):
         containers = rect_bboxes(layer) + diamond_bboxes(layer)
@@ -349,8 +359,11 @@ def validate_text_containment(root, *, tol: float = 0.5) -> list[Finding]:
 
 def validate_arrow_tip_distance(root, *, tol: float = 0.6) -> list[Finding]:
     """Every arrow (path/line with marker-end) should terminate within `tol`
-    mm of some rect or diamond outline in the SVG. Tips farther away from
-    any candidate target produce a finding."""
+    mm of some rect or diamond outline **anywhere on the canvas** (any
+    layer). Tips farther away from every candidate target produce a finding.
+
+    Cross-layer scope is intentional: arrows commonly span layers (a
+    connectors layer pointing into a boxes layer)."""
     findings: list[Finding] = []
     candidates: list[Bbox] = []
     for layer in _layer_groups(root):
