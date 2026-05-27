@@ -1,5 +1,7 @@
 # SVG Guidelines
 
+> Element-consistency conventions for hand-authored SVG schematics. These patterns are now mechanically enforced by `[[svg-primitives]]` — read this document when authoring SVG by hand, when understanding what `figure-qa` validates, or when reading SVG produced by another tool.
+
 Element-consistency rules for SVG schematics in the figures plugin. The `figure-qa` agent's SVG branch enforces what it can programmatically; this document records the conventions for the rest.
 
 ## Coordinate system
