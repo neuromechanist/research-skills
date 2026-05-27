@@ -37,6 +37,12 @@ class Bbox:
     w: float
     h: float
 
+    def __post_init__(self) -> None:
+        if self.w < 0 or self.h < 0:
+            raise ValueError(
+                f"Bbox dimensions must be non-negative: w={self.w}, h={self.h}"
+            )
+
     @property
     def left(self) -> float: return self.x
     @property
@@ -126,18 +132,22 @@ def text_bboxes(layer, font_path: str | None = None) -> list[tuple[str, Bbox]]:
     """Approximate bbox for every <text> in `layer`. Uses the same metrics
     module the primitives use, so containment checks are self-consistent.
 
+    This is the "primary" containment check. To guard against the circular
+    case where a metrics regression underestimates BOTH the box-fit and the
+    test-measurement consistently, see `text_bboxes_pillow_independent`.
+
     Returns a list of (text_content, bbox) tuples.
     """
     if layer is None:
         return []
     from svg_primitives.metrics import measure_text_mm, MM_PER_PT  # type: ignore
+    from svg_primitives.shapes import BASELINE_ASCENT_FRACTION  # type: ignore
 
     out: list[tuple[str, Bbox]] = []
     for t in layer.iter(f"{{{SVG_NS}}}text"):
         content = (t.text or "").strip()
         if not content:
             continue
-        # font-size emitted in mm by Canvas.
         fs_mm_raw = t.get("font-size", "0")
         try:
             fs_mm = float(fs_mm_raw)
@@ -145,16 +155,79 @@ def text_bboxes(layer, font_path: str | None = None) -> list[tuple[str, Bbox]]:
             fs_mm = 0.0
         if fs_mm <= 0:
             continue
-        # Re-measure using the same metrics module (in pt, then to mm).
         fs_pt = fs_mm / MM_PER_PT
         text_w_mm, text_h_mm = measure_text_mm(content, fs_pt, font_path)
-        # text-anchor=middle, baseline-ish y is at the dw.Text's y attr.
         cx = float(t.get("x", "0"))
         baseline_y = float(t.get("y", "0"))
-        # Reverse the 0.78*single_h baseline offset used in shapes._render_text:
-        # the drawn baseline sits 0.78*single_h below the visual top of the
-        # first line. Approximate visual top as baseline - 0.78 * text_h.
-        top = baseline_y - 0.78 * text_h_mm
+        top = baseline_y - BASELINE_ASCENT_FRACTION * text_h_mm
+        out.append((content, Bbox(cx - text_w_mm / 2, top, text_w_mm, text_h_mm)))
+    return out
+
+
+def text_bboxes_pillow_independent(layer) -> list[tuple[str, Bbox]]:
+    """Independent text-bbox measurement using Pillow's ImageFont.getbbox at
+    a high pixel size and rescaling, *without* touching the svg_primitives
+    metrics module.
+
+    Used by tests that need to verify the auto-fit boxes contain the text
+    even if there is a systematic error in the metrics module — closes the
+    circular-logic gap raised in PR #55 review.
+    """
+    if layer is None:
+        return []
+    from PIL import ImageFont
+
+    # Resolve a system font once. We hardcode the macOS path for the dev
+    # machine; CI can override via env var. If neither works, the test is
+    # skipped (we cannot do an independent check without an independent font).
+    import os
+    font_path = os.environ.get("SVG_PRIMITIVES_TEST_FONT")
+    if not font_path:
+        for candidate in (
+            "/System/Library/Fonts/Supplemental/Arial.ttf",
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ):
+            if os.path.exists(candidate):
+                font_path = candidate
+                break
+    if not font_path:
+        return []  # caller will see an empty list and skip
+
+    MEASURE_PX = 200
+    try:
+        font = ImageFont.truetype(font_path, size=MEASURE_PX, index=0)
+    except (OSError, IOError):
+        return []
+
+    out: list[tuple[str, Bbox]] = []
+    for t in layer.iter(f"{{{SVG_NS}}}text"):
+        content = (t.text or "").strip()
+        if not content:
+            continue
+        fs_mm_raw = t.get("font-size", "0")
+        try:
+            fs_mm = float(fs_mm_raw)
+        except ValueError:
+            fs_mm = 0.0
+        if fs_mm <= 0:
+            continue
+        # 1 pt = 25.4/72 mm; SVG attribute is in mm; the rendered height is fs_mm.
+        left, top_px, right, bottom = font.getbbox(content)
+        width_px = right - left
+        height_px = bottom - top_px
+        if width_px <= 0 or height_px <= 0:
+            continue
+        scale = fs_mm / height_px
+        text_w_mm = width_px * scale
+        text_h_mm = fs_mm
+        cx = float(t.get("x", "0"))
+        baseline_y = float(t.get("y", "0"))
+        # Best independent estimate of the visual top: subtract Pillow's
+        # ascent (top_px is negative for above-baseline).
+        ascent_mm = (-top_px) * scale if top_px < 0 else fs_mm * 0.78
+        top = baseline_y - ascent_mm
         out.append((content, Bbox(cx - text_w_mm / 2, top, text_w_mm, text_h_mm)))
     return out
 
@@ -203,6 +276,14 @@ def arrow_paths(layer) -> Iterable:
     for el in layer.iter(f"{{{SVG_NS}}}line"):
         if el.get("marker-end"):
             yield el
+
+
+def marker_id_from_url(url_value: str) -> str:
+    """Extract `arrow-foo` from `url(#arrow-foo)`."""
+    s = url_value.strip()
+    if s.startswith("url(#") and s.endswith(")"):
+        return s[len("url(#"):-1]
+    return s
 
 
 @pytest.fixture
