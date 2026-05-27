@@ -4,6 +4,8 @@ HED = "HED"
 rcParams = "rcParams"
 PNGs = "PNGs"
 PN = "PN"
+# numpy function (typos thinks it should be "arrange")
+arange = "arange"
 # BIDS coordinate system
 CapTrak = "CapTrak"
 Trak = "Trak"

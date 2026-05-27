@@ -21,7 +21,7 @@ Initialize this project using bundled vibe-rules templates from the init-project
 If the above command failed, report the exact error to the user and stop. Do not proceed with remaining steps.
 
 ### 3. Track agent files in git
-AGENTS.md, CLAUDE.md, .rules/, and .context/ are tracked in git by default. Add to .gitignore only if explicitly requested by the user.
+AGENTS.md, CLAUDE.md, .rules/, and .context/ (including `.context/decisions/`) are tracked in git by default. Add to .gitignore only if explicitly requested by the user. The `.context/decisions/` directory holds Architecture Decision Records; copy `0000-template.md` to start a new ADR.
 
 ### 4. Customize AGENTS.md based on project context
 Now analyze the project and customize the AGENTS.md file using the project description provided by the user: `$ARGUMENTS`
@@ -45,15 +45,27 @@ Use `project-templates-path` to locate the templates directory, then copy:
 - core_rules/ .mdc files
 - Planning workflow (default or advanced-taskmaster based on preference)
 
-### 6. Verify initialization
+### 6. GitHub labels (optional, post-push)
+Only after the repo has been pushed to GitHub, ask the user whether they want the default issue/PR label set installed. If yes:
+
+!project-init-labels .
+
+The script is idempotent and installs:
+- Type: `feature`, `bug`, `chore`, `docs`, `refactor`
+- Priority: `P0`, `P1`, `P2`, `P3`
+- Workflow: `epic`, `blocked`, `needs-triage`, `good first issue`, `help wanted`
+
+Skip this step if the project is not yet on GitHub, or if the user prefers to manage labels by hand. Do not run it without asking.
+
+### 7. Verify initialization
 !echo "\n=== Initialization Verification ===" && \
-  for f in AGENTS.md CLAUDE.md .rules .context; do \
+  for f in AGENTS.md CLAUDE.md .rules .context .context/decisions; do \
     if [ -e "$f" ]; then echo "[OK] $f exists"; else echo "[MISSING] $f was NOT created"; fi; \
   done
 
 Now help customize the AGENTS.md file to document:
 - Project-specific goals and instructions
-- What's in the .context directory (plan, ideas, research, scratch_history)
+- What's in the .context directory (plan, ideas, research, scratch_history, decisions/)
 - What rules are in .rules/ and which are relevant
 - References to any existing planning documents
 

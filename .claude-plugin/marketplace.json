@@ -10,8 +10,8 @@
   "plugins": [
     {
       "name": "project",
-      "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.3.3",
+      "description": "Project lifecycle toolkit: initialization (with ADR scaffold and optional GitHub label set), rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
+      "version": "0.4.0",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"

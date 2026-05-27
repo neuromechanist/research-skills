@@ -1,0 +1,69 @@
+#!/bin/bash
+# Install a default GitHub label set on the current repository.
+# Idempotent: existing labels are updated in place via `gh label create --force`.
+# Requires: gh CLI authenticated and the working directory inside a GitHub-hosted repo.
+set -euo pipefail
+
+if ! command -v gh >/dev/null 2>&1; then
+    echo "ERROR: gh CLI not found. Install GitHub CLI before running this script." >&2
+    exit 1
+fi
+
+TARGET_DIR="${1:-.}"
+
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "ERROR: Target directory '$TARGET_DIR' does not exist or is not a directory" >&2
+    exit 1
+fi
+
+if ! git -C "$TARGET_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "ERROR: '$TARGET_DIR' is not a git repository." >&2
+    exit 1
+fi
+
+repo_check_err="$(cd "$TARGET_DIR" && gh repo view 2>&1 >/dev/null)" || {
+    echo "ERROR: gh could not resolve a GitHub repo for '$TARGET_DIR'." >&2
+    echo "  gh output: $repo_check_err" >&2
+    echo "  Common causes: repo not yet pushed to GitHub, expired auth (run 'gh auth status'), or no read access." >&2
+    exit 1
+}
+
+# Label set: name | color (hex, no #) | description.
+# Colors follow GitHub's defaults where applicable so labels look familiar across repos.
+LABELS=(
+    "feature|a2eeef|New feature or enhancement"
+    "bug|d73a4a|Something isn't working"
+    "chore|cfd3d7|Maintenance, dependencies, tooling"
+    "docs|0075ca|Documentation changes"
+    "refactor|fbca04|Internal restructuring without behavior change"
+    "P0|b60205|Critical: drop everything"
+    "P1|d93f0b|High priority"
+    "P2|fbca04|Medium priority"
+    "P3|0e8a16|Low priority"
+    "epic|6B3FA0|Multi-phase feature epic"
+    "blocked|e99695|Blocked on another task or external dependency"
+    "needs-triage|ededed|Awaiting initial review"
+    "good first issue|7057ff|Good for newcomers"
+    "help wanted|008672|Extra attention is needed"
+)
+
+ensured=0
+failed=0
+
+cd "$TARGET_DIR"
+
+for entry in "${LABELS[@]}"; do
+    IFS='|' read -r name color description <<<"$entry"
+    if err="$(gh label create "$name" --color "$color" --description "$description" --force 2>&1 >/dev/null)"; then
+        ensured=$((ensured + 1))
+        echo "  [ok] $name"
+    else
+        failed=$((failed + 1))
+        echo "  [failed] $name: $err" >&2
+    fi
+done
+
+echo "Labels: ${ensured} ensured, ${failed} failed."
+if [ "$failed" -gt 0 ]; then
+    exit 1
+fi

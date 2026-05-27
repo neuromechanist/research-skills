@@ -1,7 +1,7 @@
 ---
 name: init-project
-description: "Use this skill for \"initialize project\", \"set up project\", \"scaffold project\", \"create AGENTS.md\", \"create CLAUDE.md\", \"set up rules\", \"create context directory\", \"vibe rules\", \"project templates\", \"init new project\", \"set up development structure\", \"create .rules\", \"create .context\", \"project scaffolding\", \"set up pre-commit hooks\", or when the user wants to initialize a new project with cross-agent development templates and structured documentation."
-version: 0.1.0
+description: "Use this skill for \"initialize project\", \"set up project\", \"scaffold project\", \"create AGENTS.md\", \"create CLAUDE.md\", \"set up rules\", \"create context directory\", \"vibe rules\", \"project templates\", \"init new project\", \"set up development structure\", \"create .rules\", \"create .context\", \"create ADR\", \"architecture decision records\", \"set up GitHub labels\", \"default issue labels\", \"project scaffolding\", \"set up pre-commit hooks\", or when the user wants to initialize a new project with cross-agent development templates, structured documentation, and an optional default GitHub label set."
+version: 0.2.0
 ---
 
 # Project Initialization with Vibe Rules Templates
@@ -39,6 +39,9 @@ templates/
     ideas.md          # Design concepts
     research.md       # Technical explorations
     scratch_history.md # Failed attempts and lessons
+    decisions/        # Architecture Decision Records
+      README.md         # ADR convention (numbering, statuses, when to write one)
+      0000-template.md  # Template for new ADRs (do not edit)
   config/           # Development configuration
     pre-commit        # Ruff pre-commit hook (Python)
     pyproject.toml    # Python project config
@@ -75,6 +78,7 @@ Copy with safety checks (never overwrite existing files):
 2. **CLAUDE.md** from `templates/claude/CLAUDE.md` (contains `@AGENTS.md`, then Claude-only guidance)
 3. **.rules/** from `templates/claude/rules/` (all .md files)
 4. **.context/** from `templates/context/` (plan, ideas, research, scratch_history)
+5. **.context/decisions/** from `templates/context/decisions/` (ADR template and README). Created separately so existing projects that already have `.context/` still pick it up on re-run.
 
 ### Step 3: Language-specific setup
 
@@ -107,7 +111,22 @@ Only if the user requests it or uses Cursor:
 - Copy `core_rules/` .mdc files
 - Offer planning workflow choice: default (plan-based) or advanced-taskmaster
 
-### Step 6: Verify and summarize
+### Step 6: GitHub labels (optional, post-push)
+
+If (and only if) the project has been pushed to GitHub and the user opts in, install a default issue label set:
+
+```bash
+project-init-labels .
+```
+
+The script is idempotent (uses `gh label create --force`) and installs:
+- **Type:** `feature`, `bug`, `chore`, `docs`, `refactor`
+- **Priority:** `P0` (critical), `P1` (high), `P2` (medium), `P3` (low)
+- **Workflow:** `epic`, `blocked`, `needs-triage`, `good first issue`, `help wanted`
+
+Skip this step entirely if the project is not on GitHub yet, or if the user prefers to manage labels by hand. Do not run it without asking.
+
+### Step 7: Verify and summarize
 
 List created files and directories. Confirm the structure is correct before the user starts working.
 
