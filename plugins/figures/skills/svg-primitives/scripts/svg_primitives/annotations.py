@@ -89,8 +89,9 @@ class Bracket:
         # Push the label further in the same direction the spine is offset
         # from the start-end line so it sits on the closed side of the
         # bracket (away from the elements being grouped), regardless of
-        # the sign of `depth`.
-        if self.depth == 0:
+        # the sign of `depth`. Use an epsilon comparison for robustness
+        # against computed-coordinate floating-point residuals.
+        if abs(self.depth) < 1e-9:
             return self._apex()
         sign = 1 if self.depth > 0 else -1
         return self._apex() + self._normal * sign * self.label_offset
@@ -124,7 +125,13 @@ class Bracket:
 
 @dataclass
 class Annotation:
-    """Text label at (x, y) with an optional leader line to a target point."""
+    """Text label at (x, y) with an optional leader line to a target point.
+
+    The coordinate convention follows SVG text: `y` is the **text baseline**,
+    not the visual top. The bounding-box derivation in `_text_bbox_edge_toward`
+    assumes this, so the leader line starts at the visual edge of the text,
+    not its centroid.
+    """
 
     x: float
     y: float
@@ -149,6 +156,10 @@ class Annotation:
         """Compute the point on the text bounding box edge closest to `target`,
         leaving a small gap. Used to start the leader line."""
         w, h = measure_text_mm(self.text, self.font_size, self.font_path, self.strict_metrics)
+        if w <= 0 or h <= 0:
+            # Degenerate bbox (empty string, or metrics fallback returned zero):
+            # start the leader from the text anchor rather than a nonsense edge.
+            return complex(self.x, self.y)
         # Box bounds relative to anchor and text-anchor mode.
         if self.text_anchor == "middle":
             left, right = self.x - w / 2, self.x + w / 2

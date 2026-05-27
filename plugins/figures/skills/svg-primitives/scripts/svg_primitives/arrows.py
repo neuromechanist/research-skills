@@ -30,7 +30,7 @@ import drawsvg as dw
 from svgpathtools import CubicBezier, Line, Path
 
 from .geometry import first_intersect_point, first_intersect_t
-from .shapes import LabeledBox, Shape, Side  # noqa: F401 — LabeledBox re-exported for back-compat
+from .shapes import Shape, Side
 
 Curve = Literal["straight", "cubic", "orthogonal-h", "orthogonal-v"]
 AutoSide = Literal["auto", "N", "S", "E", "W"]
@@ -46,11 +46,21 @@ def _auto_side(a: Shape, b: Shape) -> Side:
 
 
 def _auto_side_orthogonal(a: Shape, b: Shape, axis: Literal["h", "v"]) -> Side:
-    """For orthogonal routing, force the auto-side to lie on the
-    primary-traverse axis: 'h' (horizontal) prefers E/W, 'v' prefers N/S."""
+    """For orthogonal routing, force the auto-side onto the primary-traverse
+    axis ('h' → E/W, 'v' → N/S). If `b` is aligned with `a` on that axis (so
+    the strict comparison would be ambiguous), fall back to the perpendicular
+    axis so the path stays coherent instead of degenerating to W/W or N/N."""
     if axis == "h":
-        return "E" if b.cx > a.cx else "W"
-    return "S" if b.cy > a.cy else "N"
+        if b.cx > a.cx:
+            return "E"
+        if b.cx < a.cx:
+            return "W"
+        return "S" if b.cy > a.cy else "N"
+    if b.cy > a.cy:
+        return "S"
+    if b.cy < a.cy:
+        return "N"
+    return "E" if b.cx > a.cx else "W"
 
 
 def _build_polyline_d(points: list[complex], corner_radius: float = 0.0) -> str:
@@ -73,7 +83,9 @@ def _build_polyline_d(points: list[complex], corner_radius: float = 0.0) -> str:
         prev, this, nxt = points[i - 1], points[i], points[i + 1]
         d_in = abs(this - prev)
         d_out = abs(nxt - this)
-        if d_in == 0 or d_out == 0:
+        # Treat near-zero segments as zero so we don't emit a degenerate Q
+        # whose start point equals its control point.
+        if d_in < 1e-9 or d_out < 1e-9:
             parts.append(f"L {this.real:.3f} {this.imag:.3f}")
             continue
         r = min(corner_radius, d_in / 2, d_out / 2)
@@ -123,6 +135,11 @@ class Arrow:
         stroke_width: float = 0.6,
     ) -> "Arrow":
         if curve in ("orthogonal-h", "orthogonal-v"):
+            if via:
+                raise ValueError(
+                    f"'via' waypoints are not supported with curve={curve!r}; "
+                    "use curve='straight' for multi-waypoint paths."
+                )
             axis: Literal["h", "v"] = "h" if curve == "orthogonal-h" else "v"
             if src_side == "auto":
                 src_side = _auto_side_orthogonal(src, dst, axis)

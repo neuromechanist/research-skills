@@ -7,6 +7,11 @@ all members of the group.
 
 Useful when an arrow should target a cluster of boxes as one visual
 unit ("decoding pipeline") rather than picking one box arbitrarily.
+
+Group members must additionally expose `left`, `right`, `top`, `bottom`
+properties beyond the bare `Shape` Protocol — `LabeledBox`, `Pill`, and
+`Diamond` all do; a custom shape that only implements the four Protocol
+methods is not enough.
 """
 
 from __future__ import annotations
@@ -22,6 +27,20 @@ class Group:
     def __init__(self, *shapes: Shape) -> None:
         if not shapes:
             raise ValueError("Group requires at least one shape")
+        for i, s in enumerate(shapes):
+            if not isinstance(s, Shape):
+                raise TypeError(
+                    f"Group argument {i} is {type(s).__name__!r}, not a Shape. "
+                    "Pass shapes as positional args (Group(a, b, c)), not as a "
+                    "single sequence (Group([a, b, c]))."
+                )
+            for prop in ("left", "right", "top", "bottom"):
+                if not hasattr(s, prop):
+                    raise TypeError(
+                        f"Group argument {i} ({type(s).__name__!r}) does not expose "
+                        f"a {prop!r} property — required by Group beyond the bare "
+                        "Shape Protocol."
+                    )
         self._shapes: tuple[Shape, ...] = tuple(shapes)
 
     @property
@@ -30,19 +49,19 @@ class Group:
 
     @property
     def left(self) -> float:
-        return min(getattr(s, "left") for s in self._shapes)
+        return min(s.left for s in self._shapes)  # type: ignore[attr-defined]
 
     @property
     def right(self) -> float:
-        return max(getattr(s, "right") for s in self._shapes)
+        return max(s.right for s in self._shapes)  # type: ignore[attr-defined]
 
     @property
     def top(self) -> float:
-        return min(getattr(s, "top") for s in self._shapes)
+        return min(s.top for s in self._shapes)  # type: ignore[attr-defined]
 
     @property
     def bottom(self) -> float:
-        return max(getattr(s, "bottom") for s in self._shapes)
+        return max(s.bottom for s in self._shapes)  # type: ignore[attr-defined]
 
     @property
     def width(self) -> float:

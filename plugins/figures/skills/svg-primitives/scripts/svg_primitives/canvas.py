@@ -109,9 +109,20 @@ class Canvas:
         if self.background:
             d.append(dw.Rectangle(0, 0, self.width_mm, self.height_mm, fill=self.background))
 
+        # Detect Group accidentally added to a layer. Group is a virtual
+        # routing container — its members should be added individually.
+        # We import here to avoid a circular import at module load.
+        from .groups import Group as _Group
+
         for L in self.layers:
             g = dw.Group(id=f"layer-{L.name}")
             for el in L.elements:
+                if isinstance(el, _Group):
+                    raise TypeError(
+                        f"Layer {L.name!r} contains a Group object. Group is a "
+                        "virtual container for Arrow.connect; add the member "
+                        "shapes (Group.members) to the layer individually."
+                    )
                 if hasattr(el, "to_drawsvg"):
                     if getattr(el, "_is_arrow", False):
                         marker_url = marker_ids.get(el.stroke)
