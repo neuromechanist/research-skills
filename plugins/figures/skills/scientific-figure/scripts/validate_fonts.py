@@ -1,7 +1,12 @@
 """Validate that every <text> element in a composed SVG meets the target journal's font minimum.
 
 Walks the SVG transform stack so that text inside a panel scaled by 0.5 is reported at half its
-specified font size. Fonts in the source plots are assumed to be in pt (matplotlib's default).
+specified font size, and folds in the document's user-unit -> point scale from the root width and
+viewBox so the reported size is the physical point size. That scale is ~1.0 for a point-based
+viewBox (matplotlib's default export) and ~72/25.4 for an mm-based viewBox (the convention used by
+scientific-figure, svg-figure, and svg-primitives), so a bare font-size of 5 in an `89mm` /
+`viewBox 89` schematic is correctly reported as ~14 pt rather than 5 pt. An explicit unit on the
+font-size (pt/px/mm/cm/in) is treated as an absolute size; a bare number is treated as user units.
 
 Usage:
 
@@ -33,7 +38,7 @@ JOURNAL_MIN_PT: dict[str, float] = {
 SVG_NS = "http://www.w3.org/2000/svg"
 NSMAP = {"svg": SVG_NS}
 
-_FONT_SIZE_RE = re.compile(r"font-size\s*:\s*([0-9.]+)\s*(px|pt|em|%)?", re.IGNORECASE)
+_FONT_SIZE_RE = re.compile(r"font-size\s*:\s*([0-9.]+)\s*(px|pt|em|%|mm|cm|in|pc)?", re.IGNORECASE)
 _TRANSFORM_SCALE_RE = re.compile(
     r"scale\s*\(\s*(-?[0-9.]+)\s*(?:,\s*(-?[0-9.]+)\s*)?\)"
 )
@@ -60,13 +65,55 @@ def _parse_transform(value: str) -> tuple[float, float]:
     return sx, sy
 
 
-def _font_size_pt(text_el: etree._Element) -> float | None:
-    """Extract font-size in pt from a <text> element's attribute or style, or None if absent."""
+# Absolute length units -> points (1 in = 72 pt, 96 px = 1 in, 1 pc = 12 pt).
+_UNIT_TO_PT: dict[str, float] = {
+    "pt": 1.0,
+    "px": 72.0 / 96.0,
+    "mm": 72.0 / 25.4,
+    "cm": 72.0 / 2.54,
+    "in": 72.0,
+    "pc": 12.0,
+}
+
+
+def _root_unit_to_pt(root: etree._Element) -> float:
+    """Physical points per SVG user unit at the document root, from its width and viewBox.
+
+    width="89mm" with viewBox width 89 -> 1 user unit is 1 mm -> 72/25.4 pt per unit.
+    width="460.8pt" with viewBox width 460.8 -> 1 user unit is 1 pt -> 1.0 pt per unit.
+    Returns 1.0 (the prior behavior) when the width has no physical unit or there is no
+    viewBox, so unit-less SVGs are unaffected.
+    """
+    width = root.get("width")
+    vb = root.get("viewBox")
+    if not width or not vb:
+        return 1.0
+    try:
+        vb_w = float(re.split(r"[\s,]+", vb.strip())[2])
+    except (IndexError, ValueError):
+        return 1.0
+    m = re.match(r"\s*(-?[0-9.]+)\s*([a-z%]*)\s*$", width, re.IGNORECASE)
+    if not m or vb_w == 0:
+        return 1.0
+    val, unit = float(m.group(1)), m.group(2).lower()
+    if unit not in _UNIT_TO_PT:  # unit-less or "%": keep the legacy 1:1 (number == pt) reading
+        return 1.0
+    return (val * _UNIT_TO_PT[unit]) / vb_w
+
+
+def _font_size_pt(text_el: etree._Element) -> tuple[float, bool] | None:
+    """Return (size, in_user_units) for a <text>/<tspan>, or None when no font-size is present.
+
+    When `in_user_units` is True the size is in SVG user units and the caller multiplies it by the
+    root user-unit -> pt scale (see `_root_unit_to_pt`); when False the size is already an absolute
+    point value (the font-size carried an explicit pt/px/mm/cm/in/pc/em/% unit). A transform scale
+    applies in both cases.
+    """
     raw = text_el.get("font-size")
     unit: str | None = None
     value: str | None = None
     if raw:
-        m = re.match(r"\s*([0-9.]+)\s*(px|pt|em|%)?", raw)
+        m = re.match(r"\s*([0-9.]+)\s*(px|pt|em|%|mm|cm|in|pc)?", raw, re.IGNORECASE)
         if m:
             value, unit = m.group(1), m.group(2)
     if value is None:
@@ -77,17 +124,18 @@ def _font_size_pt(text_el: etree._Element) -> float | None:
     if value is None:
         return None
     n = float(value)
-    if unit in (None, "", "pt"):
-        return n
-    if unit == "px":
-        return n * 72.0 / 96.0
+    unit = (unit or "").lower()
+    if unit == "":  # bare number: user units (mm in an mm-viewBox, pt in a pt-viewBox)
+        return n, True
+    if unit in _UNIT_TO_PT:
+        return n * _UNIT_TO_PT[unit], False
     if unit == "em":
         # Heuristic: assume 12 pt parent em. Avoid em in source plots (matplotlib does
         # not emit em); this branch exists so hand-authored SVGs do not crash the walker.
-        return n * 12.0
+        return n * 12.0, False
     if unit == "%":
-        return n / 100.0 * 12.0
-    return n
+        return n / 100.0 * 12.0, False
+    return n, True
 
 
 def _walk(root: etree._Element) -> Iterator[tuple[etree._Element, float, float]]:
@@ -131,9 +179,10 @@ def validate(svg_path: Path, journal: str) -> dict:
     issues: list[dict] = []
     checked = 0
     skipped = 0
+    root_unit_to_pt = _root_unit_to_pt(root)
     for text_el, sx, sy in _walk(root):
-        specified = _font_size_pt(text_el)
-        if specified is None:
+        parsed = _font_size_pt(text_el)
+        if parsed is None:
             # tspan with no own font-size inherits from its parent <text>; the parent's
             # check (or another descendant tspan) governs. Don't count it as skipped.
             tag = etree.QName(text_el).localname
@@ -149,6 +198,10 @@ def validate(svg_path: Path, journal: str) -> dict:
             skipped += 1
             continue
         checked += 1
+        base, in_user_units = parsed
+        # A bare font-size number is in user units; convert it to physical points via the
+        # root user-unit -> pt scale. An explicit-unit size is already absolute points.
+        specified = base * (root_unit_to_pt if in_user_units else 1.0)
         # abs() so that mirrored panels (scale(-1, 1)) do not produce false negatives.
         effective = specified * min(abs(sx), abs(sy))
         if effective < minimum_pt:
@@ -168,6 +221,7 @@ def validate(svg_path: Path, journal: str) -> dict:
         "svg": str(svg_path),
         "journal": journal,
         "minimum_pt": minimum_pt,
+        "root_unit_to_pt": round(root_unit_to_pt, 4),
         "checked_count": checked,
         "skipped_count": skipped,
         "issue_count": len(issues),

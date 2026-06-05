@@ -18,7 +18,7 @@
 
   <!-- title -->
   <text x="44.5" y="5" text-anchor="middle" dominant-baseline="hanging"
-        font-family="Helvetica, Arial, sans-serif" font-weight="bold" font-size="6">
+        font-family="Helvetica, Arial, sans-serif" font-weight="bold" font-size="2.117">
     EEG processing chain
   </text>
 
@@ -32,23 +32,23 @@
   <rect id="node-acq" x="2" y="16" width="20" height="12"
         fill="#ffffff" stroke="#0072B2" stroke-width="0.8" rx="1.5"/>
   <text x="12" y="22" text-anchor="middle" dominant-baseline="middle"
-        font-family="Helvetica, Arial, sans-serif" font-size="5">Acquire</text>
+        font-family="Helvetica, Arial, sans-serif" font-size="1.764">Acquire</text>
 
   <rect id="node-filter" x="33" y="16" width="22" height="12"
         fill="#56B4E9" stroke="#0072B2" stroke-width="0.8" rx="1.5"/>
   <text x="44" y="22" text-anchor="middle" dominant-baseline="middle"
-        font-family="Helvetica, Arial, sans-serif" font-size="5">Bandpass</text>
+        font-family="Helvetica, Arial, sans-serif" font-size="1.764">Bandpass</text>
 
   <rect id="node-classify" x="66" y="16" width="20" height="12"
         fill="#009E73" stroke="#0072B2" stroke-width="0.8" rx="1.5"/>
   <text x="76" y="22" text-anchor="middle" dominant-baseline="middle"
-        font-family="Helvetica, Arial, sans-serif" font-size="5">Classify</text>
+        font-family="Helvetica, Arial, sans-serif" font-size="1.764">Classify</text>
 
   <!-- artifact-gate annotation (dashed line under nodes; #888 is near-gray, exempt) -->
   <line x1="44" y1="32" x2="44" y2="29"
         stroke="#888888" stroke-width="0.6" stroke-dasharray="1 0.6"/>
   <text x="44" y="36" text-anchor="middle" dominant-baseline="middle"
-        font-family="Helvetica, Arial, sans-serif" font-size="5"
+        font-family="Helvetica, Arial, sans-serif" font-size="1.764"
         fill="#D55E00">
     artifact gate
   </text>

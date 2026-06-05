@@ -17,67 +17,78 @@ from tempfile import TemporaryDirectory
 
 SCRIPTS = Path(__file__).parent.parent / "scripts"
 sys.path.insert(0, str(SCRIPTS))
-from validate_fonts import validate  # type: ignore[import-not-found]
+from validate_fonts import validate  # type: ignore[import-not-found]  # noqa: E402  (after sys.path setup)
 
+
+# In an mm-based viewBox (width="100mm" / viewBox 100), 1 user unit is 1 mm, so a bare
+# font-size of N is N mm = N * 72/25.4 pt (~2.835 pt per unit). In a pt-based viewBox
+# (matplotlib's export), 1 user unit is 1 pt, so the factor is 1.0. An explicit unit on
+# the font-size is absolute and is NOT scaled by the viewBox.
+_MM = '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
+_PT = '<svg xmlns="http://www.w3.org/2000/svg" width="200pt" height="100pt" viewBox="0 0 200 100">'
 
 # (label, svg body, journal, expected_issue_count, expected_checked_count, expected_skipped_count)
 CASES: list[tuple[str, str, str, int, int, int]] = [
     (
-        "scaled tiny text fails Nature 5pt",
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
-        '<g transform="scale(0.5)"><text x="10" y="20" font-size="8">tiny</text></g></svg>',
-        "nature",
-        1, 1, 0,
+        "bare mm font-size below minimum fails (3mm x scale 0.5 = 4.25pt < Nature 5pt)",
+        _MM + '<g transform="scale(0.5)"><text x="10" y="20" font-size="3">tiny</text></g></svg>',
+        "nature", 1, 1, 0,
     ),
     (
-        "scaled larger text passes Nature 5pt",
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
-        '<g transform="scale(0.5)"><text x="10" y="20" font-size="14">ok</text></g></svg>',
-        "nature",
-        0, 1, 0,
+        "bare mm font-size passes (2mm = 5.7pt >= Nature 5pt)",
+        _MM + '<text x="10" y="20" font-size="2">ok</text></svg>',
+        "nature", 0, 1, 0,
     ),
     (
-        "root-level 12pt passes Nature 5pt",
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
-        '<text x="10" y="20" font-size="12">root</text></svg>',
-        "nature",
-        0, 1, 0,
+        "explicit pt is absolute, NOT scaled by the mm viewBox (4pt < Nature 5pt fails)",
+        _MM + '<text x="10" y="20" font-size="4pt">abs</text></svg>',
+        "nature", 1, 1, 0,
     ),
     (
-        "boundary: 12pt source x scale 0.5 = 6pt effective passes Science 6pt",
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
-        '<g transform="scale(0.5)"><text x="10" y="20" font-size="12">boundary</text></g></svg>',
-        "science",
-        0, 1, 0,
+        "explicit pt passes (7pt >= Nature 5pt)",
+        _MM + '<text x="10" y="20" font-size="7pt">abs</text></svg>',
+        "nature", 0, 1, 0,
     ),
     (
-        "negative scale (mirrored panel) does not produce false positives",
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
-        '<g transform="scale(-1, 1)"><text x="10" y="20" font-size="12">mirrored</text></g></svg>',
-        "nature",
-        0, 1, 0,
+        "explicit mm unit converts to pt (1.5mm = 4.25pt < Nature 5pt fails)",
+        _MM + '<text x="10" y="20" font-size="1.5mm">mm</text></svg>',
+        "nature", 1, 1, 0,
     ),
     (
-        "matrix rotation+scale: 45deg rotation at scale 0.5 -> effective 6pt at 12pt source passes Science 6pt",
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
-        '<g transform="matrix(0.354 0.354 -0.354 0.354 0 0)">'
-        '<text x="10" y="20" font-size="12">rot</text></g></svg>',
-        "science",
-        0, 1, 0,
+        "pt-based (matplotlib) viewBox is unaffected: bare 4 = 4pt < Nature 5pt fails",
+        _PT + '<text x="10" y="20" font-size="4">mpl</text></svg>',
+        "nature", 1, 1, 0,
     ),
     (
-        "tspan font-size is checked, not just text",
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
-        '<g transform="scale(0.5)"><text x="10" y="20"><tspan font-size="8">tspan</tspan></text></g></svg>',
-        "nature",
-        1, 1, 0,
+        "pt-based (matplotlib) viewBox passes: bare 7 = 7pt >= Nature 5pt",
+        _PT + '<text x="10" y="20" font-size="7">mpl</text></svg>',
+        "nature", 0, 1, 0,
+    ),
+    (
+        "transform scale composes with the viewBox factor (4mm x scale 0.3 = 3.4pt fails)",
+        _MM + '<g transform="scale(0.3)"><text x="10" y="20" font-size="4">scaled</text></g></svg>',
+        "nature", 1, 1, 0,
+    ),
+    (
+        "negative scale (mirrored panel) does not produce false positives (3mm = 8.5pt)",
+        _MM + '<g transform="scale(-1, 1)"><text x="10" y="20" font-size="3">mirror</text></g></svg>',
+        "nature", 0, 1, 0,
+    ),
+    (
+        "matrix scale magnitude is honored (4mm at matrix scale 0.5 = 5.7pt passes)",
+        _MM + '<g transform="matrix(0.354 0.354 -0.354 0.354 0 0)">'
+        '<text x="10" y="20" font-size="4">rot</text></g></svg>',
+        "nature", 0, 1, 0,
+    ),
+    (
+        "tspan bare mm font-size is checked (1mm = 2.8pt < Nature 5pt fails)",
+        _MM + '<g transform="scale(0.5)"><text x="10" y="20"><tspan font-size="2">tspan</tspan></text></g></svg>',
+        "nature", 1, 1, 0,
     ),
     (
         "text with no font-size at all is counted as skipped, not silently passed",
-        '<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="50mm" viewBox="0 0 100 50">'
-        '<text x="10" y="20">unsized</text></svg>',
-        "nature",
-        0, 0, 1,
+        _MM + '<text x="10" y="20">unsized</text></svg>',
+        "nature", 0, 0, 1,
     ),
 ]
 

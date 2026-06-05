@@ -1,7 +1,7 @@
 ---
 name: svg-figure
 description: This skill should be used when the user asks to "create an SVG figure", "make a schematic", "draw a diagram", "create a schematic diagram", "draw a flowchart", "draw a process flow", "draw a workflow", "draw a workflow diagram", "make an SVG schematic", "create a process diagram", "create a pipeline diagram", "create a block diagram", "draw a system diagram", "system architecture diagram", or wants a hand-authored or programmatic SVG with shapes, arrows, and labels that the figure-qa agent can verify. **For new Python-driven figures, route to `[[svg-primitives]]` instead** — this skill is the conventions and hand-authoring reference. Outputs are SVG files that can be loaded as panel sources by the scientific-figure composer.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # SVG Figure
@@ -53,7 +53,7 @@ Set explicit `width`/`height` and a matching `viewBox` so user units equal mm (t
 </svg>
 ```
 
-Now every coordinate inside the SVG is in mm. A `<text font-size="9">` is 9 pt. A `<rect width="20" height="10">` is 20mm × 10mm.
+Now every coordinate inside the SVG is in mm, **including font-size** (it is a length in user units, not points). A `<rect width="20" height="10">` is 20mm × 10mm, and a `<text font-size="9">` is 9 mm tall (~25 pt). To target a physical point size, convert: `N pt = N × 25.4/72 mm`, so 6 pt is `font-size="2.1"` and Nature's 5 pt minimum is `font-size="1.76"`. `figure-qa` reports the physical point size, so keep body labels at `font-size` ≥ ~1.8.
 
 > *Done automatically by `[[svg-primitives]]`*: `Canvas(width_mm, height_mm)` sets the viewBox and units.
 
@@ -64,7 +64,7 @@ When labelling a box, the label belongs **inside** the box's bounding rectangle.
 ```svg
 <rect x="10" y="10" width="30" height="14" fill="#F4F1DE" stroke="#1F3A5F" stroke-width="0.8" rx="1.5"/>
 <text x="25" y="17" text-anchor="middle" dominant-baseline="middle"
-      font-family="Helvetica, Arial, sans-serif" font-size="6">Cortex</text>
+      font-family="Helvetica, Arial, sans-serif" font-size="2.1">Cortex</text>
 ```
 
 The text x is the rect's `x + width/2 = 25`. The text y is `y + height/2 = 17`. For tighter visual alignment with the rounded `rx` corner, nudge the y by ~0.5–1 mm; verify with `[[figure-qa]]`.
@@ -148,7 +148,7 @@ The schematic is typically sized at the **final** panel dimensions and composed 
 After authoring, invoke `[[figure-qa]]`:
 
 ```bash
-uv run --with lxml --with svgelements --with svgpathtools --with shapely \
+uv run --with lxml --with svgelements --with shapely \
     python "$FIGURE_QA_SCRIPTS/check_svg.py" schematics/circuit.svg \
     --journal nature --palette okabe-ito
 ```
