@@ -31,11 +31,13 @@ The validator enforces the **body** minimum across all `<text>` elements (panel 
    - `scale(s)` and `scale(sx, sy)` are parsed directly.
    - `matrix(a b c d e f)` is decomposed; the x-axis scale is `sqrt(a^2 + b^2)` and y-axis is `sqrt(c^2 + d^2)`.
    - Translations and rotations do not affect font size.
-3. **For each `<text>` and `<tspan>` element**, extract the specified font size from the `font-size` attribute or the `style="font-size: ..."` property. Recognized units:
-   - `pt` (and unitless — matplotlib's SVG output is bare pt by default)
-   - `px` (converted: 1 pt = 96/72 px)
-   - `em` (heuristic only — treated as 12 pt parent; avoid em in source plots)
-   - `%` (heuristic only — treated as `value/100 * 12 pt`; avoid percent in source plots)
+3. **For each `<text>` and `<tspan>` element**, extract the specified font size from the `font-size` attribute or the `style="font-size: ..."` property and convert it to physical points. A bare number is in user units and is scaled by the document's user-unit-to-point factor: 1.0 for a point-based viewBox (matplotlib's default, where bare numbers are effectively pt) and `72/25.4` for an mm-based viewBox (hand-authored and svg-primitives schematics, where a bare number is mm). An explicit unit is absolute and is not scaled by the viewBox. Recognized units:
+   - bare number (user units, scaled by the root width/viewBox factor)
+   - `pt` (absolute points)
+   - `px` (absolute; 1 pt = 96/72 px)
+   - `mm`, `cm`, `in`, `pc` (absolute physical lengths, converted to points)
+   - `em` (heuristic only, treated as 12 pt parent; avoid em in source plots)
+   - `%` (heuristic only, treated as `value/100 * 12 pt`; avoid percent in source plots)
 4. **Compute effective pt** = specified_pt × min(|scale_x|, |scale_y|). The smaller axis governs legibility. Absolute values handle mirrored panels (`scale(-1, 1)`) so they don't produce false-positive failures.
 5. **Compare** to the journal minimum and emit a JSON report. A `<text>` with no own `font-size` is counted as `skipped` unless one of its `<tspan>` children supplies a `font-size` (in which case the tspan is checked instead).
 
@@ -93,6 +95,6 @@ The remedies are mutually exclusive in priority order: try source-font fix first
 
 ## Why pt and not px
 
-The composed SVG declares its physical size in mm (e.g., `width="183mm"`). When a renderer (Inkscape, cairosvg, a browser) lays out the SVG, font-size values are interpreted as user units inside the SVG's viewBox. For matplotlib-generated SVGs the `font-size` attribute is in pt by default, so a direct pt interpretation matches the actual rendered size on a page printed at the journal's specified mm width.
+The composed SVG declares its physical size in mm (e.g., `width="183mm"`). When a renderer (Inkscape, cairosvg, a browser) lays out the SVG, font-size values are interpreted as user units inside the SVG's viewBox. For matplotlib-generated SVGs the `font-size` attribute is in pt by default, so a direct pt interpretation matches the actual rendered size on a page printed at the journal's specified mm width. `validate_fonts.py` makes this exact for every input by folding the root width/viewBox scale into the size it reports: a matplotlib panel has a point-based viewBox (scale 1.0, so bare numbers are already pt), while a hand-authored or svg-primitives schematic with `width="89mm" viewBox="0 0 89 60"` has an mm-based viewBox, so a bare font-size is in mm and is converted to physical pt (`font-size="1.764"` is 5 pt). An explicit `font-size="6pt"` is 6 pt regardless of the viewBox.
 
 If you author SVGs by hand and use `font-size="12px"`, the validator converts to pt before comparison (12 px → 9 pt).
