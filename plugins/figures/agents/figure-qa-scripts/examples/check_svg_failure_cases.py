@@ -6,7 +6,7 @@ sibling shapes whose bounding boxes collide. Also covers the cases that must NOT
 free-floating text, an arrow whose tip lands on the target edge, and intentional
 containment (an icon foreground over its background rect).
 
-    uv run --with lxml --with svgelements --with svgpathtools --with shapely \\
+    uv run --with lxml --with svgelements --with shapely \\
         python check_svg_failure_cases.py
 
 Exit 0 if every assertion passes, 1 otherwise.
@@ -104,6 +104,25 @@ CASES: list[tuple[str, str, int, int, int]] = [
             '<rect x="2" y="2" width="30" height="14" fill="#ffffff" stroke="#0072B2"/></g>'
             '<g transform="translate(55,10)">'
             '<rect x="0" y="0" width="35" height="20" fill="#ffffff" stroke="#0072B2"/></g>',
+        ),
+        0, 0, 1,
+    ),
+    (
+        "right-aligned (text-anchor=end) text overflows left out of its box",
+        _svg(
+            100, 40,
+            '<rect x="60" y="10" width="20" height="12" fill="#fff" stroke="#000"/>'
+            '<text x="78" y="16" text-anchor="end" dominant-baseline="middle" '
+            'font-size="5">overflowing right aligned label</text>',
+        ),
+        1, 0, 0,
+    ),
+    (
+        "two circles whose bboxes collide",
+        _svg(
+            60, 40,
+            '<circle cx="20" cy="20" r="12" fill="#0072B2"/>'
+            '<circle cx="35" cy="20" r="12" fill="#009E73"/>',
         ),
         0, 0, 1,
     ),

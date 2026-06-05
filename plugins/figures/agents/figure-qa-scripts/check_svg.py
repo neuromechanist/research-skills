@@ -3,14 +3,14 @@
 Detects common geometric and content problems in a composed SVG:
 - font-size violations against a journal minimum (delegated to validate_fonts.py
   in scientific-figure/scripts/ when available)
-- text elements whose bbox lies outside their containing shape, or vice versa
-- arrow tips that do not touch their intended target shape
-- panel labels that overlap data content
+- text whose estimated bbox bleeds outside its containing shape
+- arrow tips (marker-end) that do not reach their nearest target shape
+- sibling shapes whose bounding boxes collide (excluding intentional containment)
 - color palette compliance against an allow-list
 
 Run from anywhere:
 
-    uv run --with lxml --with svgelements --with svgpathtools --with shapely \\
+    uv run --with lxml --with svgelements --with shapely \\
         python check_svg.py FIGURE.svg [--journal nature] [--palette okabe-ito]
 
 Emits a single JSON document on stdout describing each check. Exit code 0 on
@@ -216,13 +216,13 @@ def _viewbox_mm_per_unit(root) -> float:  # type: ignore[no-untyped-def]
     if not vb or not width:
         return 1.0
     try:
-        vb_w = float(vb.split()[2])
+        vb_w = float(re.split(r"[\s,]+", vb.strip())[2])  # viewBox may be comma- or space-delimited
     except (IndexError, ValueError):
         return 1.0
-    m = re.match(r"\s*(-?[0-9.]+)\s*([a-z%]*)\s*$", width, re.IGNORECASE)
-    if not m or vb_w == 0:
+    match = re.match(r"\s*(-?[0-9.]+)\s*([a-z%]*)\s*$", width, re.IGNORECASE)
+    if not match or vb_w == 0:
         return 1.0
-    val, unit = float(m.group(1)), m.group(2).lower()
+    val, unit = float(match.group(1)), match.group(2).lower()
     to_mm = {"mm": 1.0, "cm": 10.0, "in": 25.4, "pt": 25.4 / 72.0, "pc": 25.4 / 6.0, "px": 25.4 / 96.0}
     if unit not in to_mm:  # unitless or "%": assume user units are already millimetres
         return 1.0
@@ -283,13 +283,17 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
       overlap, neither containing the other; containment is treated as intentional,
       e.g. an icon foreground over its background rect).
 
+    Only Rect, Circle, Ellipse, and Polygon are recognized as closed shapes/targets;
+    arbitrary closed `<path>` elements are not detected (arrows aimed at them are
+    reported via `arrows_without_targets`).
+
     Needs svgelements (resolved geometry) and shapely (distance). When a dependency is
     missing the section is marked unavailable so the agent falls back to VLM judgment.
     """
     import importlib.util
 
     missing = [
-        m for m in ("svgelements", "svgpathtools", "shapely")
+        m for m in ("svgelements", "shapely")
         if importlib.util.find_spec(m) is None
     ]
     if missing:
@@ -297,7 +301,7 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
             "available": False,
             "reason": (
                 f"missing dependencies: {missing}. Re-run with "
-                "--with svgelements --with svgpathtools --with shapely."
+                "--with svgelements --with shapely."
             ),
         }
 
@@ -310,16 +314,20 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
         factor = float(doc.width) / vb_w if vb_w else 1.0
     except Exception as exc:  # noqa: BLE001 - a geometry parse failure must not abort the report
         return {"available": True, "error": f"svgelements parse failed: {type(exc).__name__}: {exc}"}
+    if not factor:  # width="0" or similar; fall back to 1:1 rather than dividing by zero
+        factor = 1.0
 
     mm_per_unit = _viewbox_mm_per_unit(root)
     tol = _GEOM_TOL_MM / mm_per_unit if mm_per_unit else _GEOM_TOL_MM  # tolerance in user units
 
     def to_user(v: float) -> float:
-        return v / factor if factor else v
+        return v / factor
 
     closed: list[dict[str, Any]] = []  # filled shapes: bbox + id
     texts: list[dict[str, Any]] = []   # estimated text bbox + label
     arrows: list[dict[str, Any]] = []  # marker-end tip point + label
+    skipped_texts = 0   # <text> whose bbox could not be resolved
+    skipped_arrows = 0  # marker-end element whose tip could not be resolved
     closed_types = (Rect, Circle, Ellipse, Polygon)
 
     for e in doc.elements():
@@ -331,8 +339,9 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
             try:
                 bx = e.bbox()
             except Exception:  # noqa: BLE001
-                continue
+                bx = None
             if not bx:
+                skipped_texts += 1
                 continue
             ax, ay = to_user(bx[0]), to_user(bx[1])
             texts.append({"bbox": _text_bbox(e, ax, ay, fs, raw), "text": raw})
@@ -347,7 +356,7 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
                 tip = e.point(1)
                 arrows.append({"tip": (to_user(tip.x), to_user(tip.y)), "label": e.values.get("id") or "arrow"})
             except Exception:  # noqa: BLE001
-                pass
+                skipped_arrows += 1
         if isinstance(e, closed_types) and bx:
             closed.append(
                 {"bbox": tuple(to_user(v) for v in bx), "id": e.values.get("id") or type(e).__name__.lower()}
@@ -369,10 +378,13 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
                 }
             )
 
-    # 2. Arrow tips that miss every closed target shape.
+    # 2. Arrow tips that miss every closed target shape. When arrows exist but no closed
+    # target shapes were found (e.g. targets drawn as open <path> boxes), the check cannot
+    # run; report that instead of returning a falsely-clean result.
     arrow_tip_issues = []
-    if closed:
-        targets = [shapely_box(c["bbox"][0], c["bbox"][1], c["bbox"][2], c["bbox"][3]) for c in closed]
+    arrows_without_targets = len(arrows) if arrows and not closed else 0
+    if closed and arrows:
+        targets = [shapely_box(*c["bbox"]) for c in closed]
         for a in arrows:
             pt = Point(a["tip"])
             dist = min(pt.distance(poly) for poly in targets)
@@ -410,6 +422,9 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
         "available": True,
         "text_count": len(texts),
         "shape_count": len(closed),
+        "skipped_texts": skipped_texts,
+        "skipped_arrows": skipped_arrows,
+        "arrows_without_targets": arrows_without_targets,
         "units": {"mm_per_user_unit": round(mm_per_unit, 4), "tolerance_mm": _GEOM_TOL_MM},
         "text_overflow": text_overflow,
         "arrow_tip_issues": arrow_tip_issues,
@@ -463,6 +478,11 @@ def _summarize(report: dict[str, Any]) -> tuple[int, int, int]:
             issues += len(geom.get("bbox_overlaps") or [])
             issues += len(geom.get("arrow_tip_issues") or [])
             issues += len(geom.get("text_overflow") or [])
+            # Elements that could not be measured (or arrows with no target shape) are
+            # warnings, not clean: the agent should cover them with VLM judgment.
+            warnings += int(geom.get("skipped_texts") or 0)
+            warnings += int(geom.get("skipped_arrows") or 0)
+            warnings += int(geom.get("arrows_without_targets") or 0)
     return issues, warnings, script_errors
 
 
@@ -490,7 +510,7 @@ def main(argv: list[str] | None = None) -> int:
     except ImportError as exc:
         print(
             f"error: missing dependency for check_svg.py — re-run with "
-            f"--with lxml --with svgelements --with svgpathtools --with shapely: {exc}",
+            f"--with lxml --with svgelements --with shapely: {exc}",
             file=sys.stderr,
         )
         return 2
