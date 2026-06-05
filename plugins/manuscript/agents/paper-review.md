@@ -25,14 +25,14 @@ This agent is a thin shell. The review procedure, methodology and statistical ch
    ```bash
    REF="${CLAUDE_PLUGIN_ROOT}/skills/paper-review/references"
    if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ] || ! test -d "$REF"; then
-       matches="$(find . -type d -path '*/paper-review/references' 2>/dev/null)"
+       matches="$(find . -type d -path '*/skills/paper-review/references' 2>/dev/null)"
        n="$(printf '%s\n' "$matches" | grep -c .)"
        [ "$n" -eq 0 ] && { echo "FATAL: paper-review/references not found; install the manuscript plugin so the rubric is on disk" >&2; exit 2; }
        REF="$(printf '%s\n' "$matches" | head -1)"
        [ "$n" -gt 1 ] && echo "warning: $n candidate references dirs found; using $REF" >&2
        echo "warning: CLAUDE_PLUGIN_ROOT unset/invalid; using fallback rubric at $REF" >&2
    fi
-   test -d "$REF" || { echo "error: could not locate paper-review/references" >&2; exit 2; }
+   test -f "$REF/review-procedure.md" || { echo "FATAL: $REF has no review-procedure.md" >&2; exit 2; }
    echo "Using rubric at: $REF"; ls "$REF"
    ```
    If this step fails, STOP and report it. Never review from memory; a review built on a recalled checklist instead of the loaded one is invalid.

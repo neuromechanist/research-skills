@@ -23,7 +23,7 @@ In every branch the reviewer follows `references/figure-qa-procedure.md` (strict
 - **Claude Code:** `Task(subagent_type: "figure-qa", ...)` passing the figure path and target journal. Honor a `no-qa` opt-out by returning immediately.
 - **Codex CLI:** install `agents/templates/figure-qa.toml` to `~/.codex/agents/` (or project `.codex/agents/`), then run the `figure-qa` subagent (`/agent`).
 - **Copilot CLI:** install `agents/templates/figure-qa.agent.md` to `.github/agents/` (or `~/.copilot/agents/`), then run the `figure-qa` agent.
-- **Fallback** (no subagent support, or an interactive in-thread check): first locate the procedure (`$CLAUDE_PLUGIN_ROOT/skills/figure-qa/references`, else `find . -type d -path '*/figure-qa/references' | head -1`); if it cannot be found, stop and tell the user to install the figures plugin rather than guessing checks. Then follow `references/figure-qa-procedure.md` directly.
+- **Fallback** (no subagent support, or an interactive in-thread check): first locate the procedure (`$CLAUDE_PLUGIN_ROOT/skills/figure-qa/references`, else `find . -type d -path '*/skills/figure-qa/references' | head -1`); if it cannot be found, stop and tell the user to install the figures plugin rather than guessing checks. Then follow `references/figure-qa-procedure.md` directly.
 
 ## The brain (do not duplicate into dispatch or agent shells)
 

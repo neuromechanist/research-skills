@@ -28,7 +28,7 @@ Pick the branch for the current tool. In every branch the reviewer follows `refe
 - **Claude Code:** `Task(subagent_type: "paper-review", ...)` passing the manuscript path, target journal/type, and mode. For panel mode, launch one `Task` per lens in parallel, then a final synthesis `Task`.
 - **Codex CLI:** install `agents/templates/paper-review.toml` to `~/.codex/agents/` (or project `.codex/agents/`), then run the `paper-review` subagent (`/agent`). For panel mode, ensure `max_threads` covers the lens count.
 - **Copilot CLI:** install `agents/templates/paper-review.agent.md` to `.github/agents/` (or `~/.copilot/agents/`), then run the `paper-review` agent; use `/fleet` for panel mode.
-- **Fallback** (no subagent support, or the user wants an interactive in-thread review): first locate the rubric (`$CLAUDE_PLUGIN_ROOT/skills/paper-review/references`, else `find . -type d -path '*/paper-review/references' | head -1`); if it cannot be found, stop and tell the user to install the manuscript plugin rather than reviewing from memory. Then follow `references/review-procedure.md` directly in this context.
+- **Fallback** (no subagent support, or the user wants an interactive in-thread review): first locate the rubric (`$CLAUDE_PLUGIN_ROOT/skills/paper-review/references`, else `find . -type d -path '*/skills/paper-review/references' | head -1`); if it cannot be found, stop and tell the user to install the manuscript plugin rather than reviewing from memory. Then follow `references/review-procedure.md` directly in this context.
 
 ## The brain (do not duplicate into dispatch or agent shells)
 

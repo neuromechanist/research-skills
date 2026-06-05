@@ -25,14 +25,14 @@ This agent is a thin shell. All review criteria, scoring rubrics, the step-by-st
    ```bash
    REF="${CLAUDE_PLUGIN_ROOT}/skills/grant-review/references"
    if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ] || ! test -d "$REF"; then
-       matches="$(find . -type d -path '*/grant-review/references' 2>/dev/null)"
+       matches="$(find . -type d -path '*/skills/grant-review/references' 2>/dev/null)"
        n="$(printf '%s\n' "$matches" | grep -c .)"
        [ "$n" -eq 0 ] && { echo "FATAL: grant-review/references not found; install the grant plugin so the rubric is on disk" >&2; exit 2; }
        REF="$(printf '%s\n' "$matches" | head -1)"
        [ "$n" -gt 1 ] && echo "warning: $n candidate references dirs found; using $REF" >&2
        echo "warning: CLAUDE_PLUGIN_ROOT unset/invalid; using fallback rubric at $REF" >&2
    fi
-   test -d "$REF" || { echo "error: could not locate grant-review/references" >&2; exit 2; }
+   test -f "$REF/review-procedure.md" || { echo "FATAL: $REF has no review-procedure.md" >&2; exit 2; }
    echo "Using rubric at: $REF"; ls "$REF"
    ```
    If this step fails, STOP and report it. Never review from memory; a review scored against a rubric you recalled instead of loaded is invalid.
