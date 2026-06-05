@@ -211,7 +211,7 @@ uv run --with lxml --with svgelements --with svgpathtools --with shapely \
     schematic.svg --journal nature --palette okabe-ito
 ```
 
-The geometry section (bbox-overlap, arrow-tip-to-target) is stubbed today and will land via issue #47; the primitive-layer tests in this skill cover the same invariants for SVGs built from `svg_primitives`.
+The geometry section (bbox-overlap, arrow-tip-to-target, text-overflow) landed via issue #47; the primitive-layer tests in this skill cover the same invariants for SVGs built from `svg_primitives`.
 
 ## Additional resources
 

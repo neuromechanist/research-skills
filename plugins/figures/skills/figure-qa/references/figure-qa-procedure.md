@@ -61,11 +61,11 @@ Apply this `RC=$?` check after **every** per-branch command below; the per-branc
 
 ### SVG branch
 ```bash
-uv run --with lxml --with svgelements --with svgpathtools --with shapely \
+uv run --with lxml --with svgelements --with shapely \
     python "$SCRIPTS_DIR/check_svg.py" path/to/figure.svg \
     --journal nature --palette okabe-ito > /tmp/svg-report.json 2> /tmp/svg-err.txt
 ```
-Report `checks.fonts.issues`, `checks.palette.off_palette`, and `checks.geometry.bbox_overlaps` separately. Palette compliance is only evaluated when `--palette` is passed; omit it to skip that check. When `checks.geometry.available` is False (missing svgelements/shapely) **or** the geometry section reports it is stubbed (it returns empty `bbox_overlaps`/`arrow_tip_issues` from a stub, not from a real check), do not conclude the figure is geometry-clean: VLM judgment must cover layered-element correctness and overlaps. Geometry implementation is tracked in issue #47.
+Report `checks.fonts.issues`, `checks.palette.off_palette`, and `checks.geometry` (its `bbox_overlaps`, `arrow_tip_issues`, and `text_overflow` lists) separately. Palette compliance is only evaluated when `--palette` is passed; omit it to skip that check. When `checks.geometry.available` is False (missing svgelements/svgpathtools/shapely), do not conclude the figure is geometry-clean: VLM judgment must cover layered-element correctness and overlaps. `text_overflow` uses a heuristic font-size estimate, so an empty `text_overflow` is not a guarantee of sub-mm text fit.
 
 ### Raster branch
 ```bash
@@ -90,7 +90,7 @@ uv run python "$SCRIPTS_DIR/check_plot_script.py" /tmp/extracted.py --journal na
 Run the SVG branch on the composed output (if present) and on each panel SVG:
 ```bash
 test -f figure.svg && {
-    uv run --with lxml --with svgelements --with svgpathtools --with shapely \
+    uv run --with lxml --with svgelements --with shapely \
         python "$SCRIPTS_DIR/check_svg.py" figure.svg --journal nature \
         > /tmp/composed-svg.json 2> /tmp/composed-svg-err.txt
     RC=$?; [ "$RC" -eq 2 ] && { echo "script error (composed):"; cat /tmp/composed-svg-err.txt; }
@@ -98,7 +98,7 @@ test -f figure.svg && {
 for p in panels/*.svg; do
     [ -f "$p" ] || continue   # skip the literal glob when panels/ has no SVGs
     pb="$(basename "$p" .svg)"
-    uv run --with lxml --with svgelements --with svgpathtools --with shapely \
+    uv run --with lxml --with svgelements --with shapely \
         python "$SCRIPTS_DIR/check_svg.py" "$p" --journal nature \
         > "/tmp/panel-$pb.json" 2> "/tmp/panel-$pb-err.txt"
     RC=$?; [ "$RC" -eq 2 ] && { echo "script error (panel $p):"; cat "/tmp/panel-$pb-err.txt"; }
@@ -130,7 +130,7 @@ Combine programmatic findings and VLM scores into one report. Use this shape exa
 ## Programmatic findings
 - **Fonts:** <X of Y below minimum, Z skipped> -- list offending text with effective pt.
 - **Palette:** <N off-palette colors> -- list with nearest allowed distance.
-- **Geometry:** <bbox overlaps / arrow-tip issues> -- or "unavailable; VLM covered."
+- **Geometry:** <bbox overlaps / arrow-tip issues / text overflow> -- or "unavailable; VLM covered."
 - **Alpha / background:** <transparent corners count, white-background detection>.
 - **Resolution:** <px size, DPI vs journal minimum>.
 - **Plot-library recommendation:** <if applicable>.

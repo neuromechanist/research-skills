@@ -56,7 +56,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | **grant** | 0.3.5 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
 | **manuscript** | 0.5.1 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **figures** | 0.10.2 | Publication-quality figures plugin (seven skills + QA agent) | `scientific-figure`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |
+| **figures** | 0.10.3 | Publication-quality figures plugin (seven skills + QA agent) | `scientific-figure`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |
 | **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
 | **neuroinformatics** | 0.2.3 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
@@ -96,7 +96,7 @@ The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citati
 
 ### figures
 
-Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.10.2 makes `figure-qa` a cross-agent thin-dispatch skill over the existing QA agent (epic [#61](https://github.com/neuromechanist/research-skills/issues/61)). v0.10.1 closed epics [#31](https://github.com/neuromechanist/research-skills/issues/31) (plugin redesign) and [#48](https://github.com/neuromechanist/research-skills/issues/48) (svg-primitives): seven skills and the unified QA agent.
+Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.10.3 implements the `figure-qa` SVG-branch geometry section (text-overflow, arrow-tip-to-target, sibling bbox-overlap; issue [#47](https://github.com/neuromechanist/research-skills/issues/47)). v0.10.2 makes `figure-qa` a cross-agent thin-dispatch skill over the existing QA agent (epic [#61](https://github.com/neuromechanist/research-skills/issues/61)). v0.10.1 closed epics [#31](https://github.com/neuromechanist/research-skills/issues/31) (plugin redesign) and [#48](https://github.com/neuromechanist/research-skills/issues/48) (svg-primitives): seven skills and the unified QA agent.
 
 - `scientific-figure` skill — svgutils-based composer that places panels at exact mm coordinates and preserves text as SVG `<text>` elements so font sizes are inspectable. `validate_fonts.py` walks the transform stack and reports anything below the journal minimum (Nature 5 pt, Science/Cell/PNAS 6 pt). `export.py` detects Inkscape on `$PATH` and uses it when present, falling back to cairosvg. End-to-end example: `examples/two-column-figure.py`.
 - `transparent-icons` skill — flat scientific icons (brain, neuron, EEG cap, DNA, etc.) via the Codex CLI `image_gen` tool (preferred when `codex login` is configured) or the OpenAI Images API (fallback). Transparency post-process: fast Pillow threshold by default or opt-in `rembg` + BiRefNet for cleaner edges on complex foregrounds. Shares a `theme.json` schema with the `ai-full-figure` skill for cross-skill style consistency.

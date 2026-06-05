@@ -71,10 +71,10 @@ Programmatic (deterministic):
 - Palette compliance, near-gray-exempt (see above).
 - Element counts (text vs shape) for sanity.
 
-Not yet implemented in figure-qa's geometry section (the agent falls back to VLM judgment for these until the programmatic checks land):
+Implemented in figure-qa's geometry section (issue #47), using `svgelements` (resolved geometry) and `shapely` (distance/overlap):
 
-- Text-bbox-inside-shape using `svgelements` + `shapely`.
-- Arrow-tip-to-target distance using `svgpathtools` tangent at `t=1`.
-- Bbox overlap between sibling shapes.
+- Text-bbox-inside-shape (heuristic text width from font size; exact fit is validated by `svg-primitives` at save time).
+- Arrow-tip-to-target distance for any line/path with a `marker-end`.
+- Bbox overlap between sibling closed shapes (containment, e.g. an icon over its background rect, is treated as intentional).
 
-Until #47 lands, the agent falls back to VLM judgment for layered-element correctness. Author defensively (z-order, anchored text, tight bboxes) and the figure will pass either way.
+figure-qa computes these programmatically; authoring defensively (z-order, anchored text, tight bboxes) keeps figures clean either way. When a geometry dependency is missing, the agent falls back to VLM judgment for layered-element correctness.

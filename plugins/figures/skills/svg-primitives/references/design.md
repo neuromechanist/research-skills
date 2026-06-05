@@ -51,7 +51,7 @@ Phase 3 of epic #48 ships an in-skill `validation` module wired into `Canvas.sav
 | Triggered by | `Canvas.save(validate=...)` default | Manual / CI invocation |
 | What it knows | Has the original Canvas, knows what *should* be true | Inspects the SVG cold |
 
-The skill already had the *knowledge* to validate (the E2E test suite proves it); Phase 3 just promotes the geometry helpers out of `tests/conftest.py` into a public module and adds the warn/strict/off hook. Users of this skill get validation by default; users of any other SVG source can still run `figure-qa` separately. When `figure-qa`'s geometry section lands (#47), the two will share the same conceptual checks but operate at different layers.
+The skill already had the *knowledge* to validate (the E2E test suite proves it); Phase 3 just promotes the geometry helpers out of `tests/conftest.py` into a public module and adds the warn/strict/off hook. Users of this skill get validation by default; users of any other SVG source can still run `figure-qa` separately. Now that `figure-qa`'s geometry section has landed (#47), the two share the same conceptual checks but operate at different layers.
 
 ## What's intentionally out of scope
 

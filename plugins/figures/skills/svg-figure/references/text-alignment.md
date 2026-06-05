@@ -2,7 +2,7 @@
 
 > The bbox arithmetic for hand-authored SVG labels. `[[svg-primitives]]`'s `LabeledBox` auto-fits text via measured font metrics and centers automatically — read this document when authoring SVG by hand or when debugging a text-overflow finding from `figure-qa` or `Canvas.validate()`.
 
-How to place SVG `<text>` so it sits inside its container shape, with the right anchor and baseline. `figure-qa`'s SVG branch will check text-bbox-inside-shape once its programmatic geometry section ships; until then these patterns prevent the failures by construction and the agent falls back to VLM judgment. (SVGs built with `[[svg-primitives]]` already get the check at save time via `Canvas.save(validate=...)`.)
+How to place SVG `<text>` so it sits inside its container shape, with the right anchor and baseline. `figure-qa`'s SVG branch checks text-bbox-inside-shape (issue #47) with a heuristic font-size estimate, so these patterns still matter for tight fits. SVGs built with `[[svg-primitives]]` get exact text-fit validation at save time via `Canvas.save(validate=...)`.
 
 ## Anchor and baseline at a glance
 
