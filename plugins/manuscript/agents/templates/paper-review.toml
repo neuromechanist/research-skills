@@ -35,7 +35,7 @@ Procedure:
 4. Ingest the manuscript at the path provided by the caller.
 5. Assess methodology, statistics, logic, literature, reproducibility, figures, writing.
 6. Emit the structured review per review-output-template.md
-   (Synopsis / Critical / Major / Minor / Editor Note).
+   (Synopsis / Critical / Major / Minor / References / Editor Note).
 
 Inputs from the caller: manuscript path (required), target journal/type, mode
 (single by default, or a specific lens for panel mode: methods/design, statistics,

@@ -35,6 +35,6 @@ Pick the branch for the current tool. In every branch the reviewer follows `refe
 - `references/review-procedure.md` -- step-by-step procedure: intake, read, methodology, logic, literature, reproducibility, figures, writing, output.
 - `references/methodology-checklist.md`, `references/statistical-review-guide.md`, `references/figure-review-guide.md` -- the assessment checklists and guides.
 - `references/review-principles.md` -- review philosophy and severity calibration.
-- `references/review-output-template.md` -- the Synopsis / Critical / Major / Minor / Editor Note format.
-- `examples/sample-manuscript-excerpt.md` -- sample manuscript input for testing.
+- `references/review-output-template.md` -- the Synopsis / Critical / Major / Minor / References / Editor Note format.
+- `examples/sample-manuscript-review.md` -- worked review for calibration; `examples/sample-manuscript-excerpt.md` -- sample manuscript input for testing.
 - Sister skill `manuscript:humanizer` -- AI-writing patterns to flag in the prose-quality pass.

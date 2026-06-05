@@ -44,7 +44,7 @@ The core of the review. Use `methodology-checklist.md`. Key areas:
 
 **Signal processing and data analysis (when applicable):** appropriate filtering (check Nyquist: analysis bandwidth must not exceed half the sampling rate and should not exceed the low-pass cutoff); validated artifact rejection/correction; justified analysis parameters (window lengths, frequency bands); no "double-dipping" where the features used for selection/clustering are also the analysis target.
 
-**Statistical methods:** use `statistical-review-guide.md`. Appropriate tests for the distribution and design; tested parametric assumptions; correct paired vs. unpaired variant; main effects before post-hoc; multiple-comparison correction; effect sizes, not just p-values; conclusions proportional to sample size; appropriate figures (bar plots with error bars for N<5 are misleading; show individual points).
+**Statistical methods:** use `statistical-review-guide.md`. Appropriate tests for the distribution and design; tested parametric assumptions; correct paired vs. unpaired variant; main effects before post-hoc; multiple-comparison correction; effect sizes, not just p-values; conclusions proportional to sample size; appropriate figures (bar plots with error bars are unacceptable for N<5 and should overlay individual data points for N=5-9; see `figure-review-guide.md` for the full thresholds).
 
 ## 4. Check logical consistency
 

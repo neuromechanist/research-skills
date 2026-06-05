@@ -40,7 +40,7 @@ This agent is a thin shell. The review procedure, methodology and statistical ch
 3. Consult `$REF/methodology-checklist.md`, `$REF/statistical-review-guide.md`, `$REF/figure-review-guide.md`, and `$REF/review-principles.md` as the procedure directs.
 4. Ingest the manuscript at the given path (PDFs: convert or read natively per the procedure's intake step).
 5. Assess methodology, statistics, logic, literature, reproducibility, figures, and writing.
-6. Emit the structured review per `$REF/review-output-template.md` (Synopsis / Critical / Major / Minor / Editor Note).
+6. Emit the structured review per `$REF/review-output-template.md` (Synopsis / Critical / Major / Minor / References / Editor Note).
 
 ## Panel lens
 

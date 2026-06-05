@@ -30,7 +30,7 @@ This is a thin shell. Load the review procedure, checklists, statistical and fig
 3. Consult `methodology-checklist.md`, `statistical-review-guide.md`, `figure-review-guide.md`, and `review-principles.md` as the procedure directs.
 4. Ingest the manuscript at the path provided by the caller.
 5. Assess methodology, statistics, logic, literature, reproducibility, figures, and writing.
-6. Emit the structured review per `review-output-template.md` (Synopsis / Critical / Major / Minor / Editor Note).
+6. Emit the structured review per `review-output-template.md` (Synopsis / Critical / Major / Minor / References / Editor Note).
 
 ## Inputs from the caller
 
