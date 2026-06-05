@@ -16,6 +16,7 @@ Convert to markdown:
 ```bash
 uvx opencite convert manuscript.pdf -o manuscript.md
 ```
+If opencite is unavailable or the conversion fails (non-zero exit or empty output), fall back to reading the PDF natively with the Read tool (page ranges for large PDFs) and note in the review intake that markdown conversion was not run, so exact page/line citations may be imprecise. Do not proceed silently on a degraded input.
 
 Convert to PNG for page/line references and figure inspection:
 ```bash

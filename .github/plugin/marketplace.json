@@ -12,7 +12,7 @@
     {
       "name": "project",
       "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.3.3",
+      "version": "0.4.0",
       "source": "./plugins/project",
       "category": "development"
     },

@@ -31,6 +31,7 @@ Handle the proposal based on its format:
    ```bash
    uvx opencite convert proposal.pdf -o proposal.md
    ```
+   If the conversion fails (non-zero exit or empty `proposal.md`), continue with the native Read tool and note in the intake that opencite was unavailable; do not proceed silently on a degraded input.
 
 2. **Visual layout analysis** -- Convert each page to PNG for figure sizing and space utilization review:
    ```bash

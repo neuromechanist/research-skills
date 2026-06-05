@@ -89,11 +89,19 @@ uv run python "$SCRIPTS_DIR/check_plot_script.py" /tmp/extracted.py --journal na
 ### Composed-figure branch
 Run the SVG branch on the composed output (if present) and on each panel SVG:
 ```bash
-test -f figure.svg && uv run --with lxml --with svgelements --with svgpathtools --with shapely \
-    python "$SCRIPTS_DIR/check_svg.py" figure.svg --journal nature > /tmp/composed-svg.json
-for p in panels/*.svg; do
+test -f figure.svg && {
     uv run --with lxml --with svgelements --with svgpathtools --with shapely \
-        python "$SCRIPTS_DIR/check_svg.py" "$p" --journal nature > "/tmp/panel-$(basename "$p" .svg).json"
+        python "$SCRIPTS_DIR/check_svg.py" figure.svg --journal nature \
+        > /tmp/composed-svg.json 2> /tmp/composed-svg-err.txt
+    RC=$?; [ "$RC" -eq 2 ] && { echo "script error (composed):"; cat /tmp/composed-svg-err.txt; }
+}
+for p in panels/*.svg; do
+    [ -f "$p" ] || continue   # skip the literal glob when panels/ has no SVGs
+    pb="$(basename "$p" .svg)"
+    uv run --with lxml --with svgelements --with svgpathtools --with shapely \
+        python "$SCRIPTS_DIR/check_svg.py" "$p" --journal nature \
+        > "/tmp/panel-$pb.json" 2> "/tmp/panel-$pb-err.txt"
+    RC=$?; [ "$RC" -eq 2 ] && { echo "script error (panel $p):"; cat "/tmp/panel-$pb-err.txt"; }
 done
 ```
 

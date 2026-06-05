@@ -44,3 +44,4 @@ This agent is a thin shell. The no-qa opt-out, script-location logic, type detec
 - **Read-only.** Never modify the figure. Never call any image-generation API.
 - **Run the deterministic checks from the plugin's `agents/figure-qa-scripts/`.** Never hand-compute what a script measures, and never eyeball a value a script can report.
 - **Surface the programmatic JSON paths** in the report. If a section is unavailable (dependency missing or script error), say so; do not guess.
+- **Geometry stub:** when `checks.geometry.available` is true but `bbox_overlaps` and `arrow_tip_issues` are both empty, the section may be stubbed rather than clean; cover element overlap and layering with VLM judgment and do not report geometry as passing (geometry implementation tracked in #47).
