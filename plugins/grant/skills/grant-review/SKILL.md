@@ -28,7 +28,7 @@ Pick the branch for the current tool. In every branch the reviewer follows `refe
 - **Claude Code:** `Task(subagent_type: "grant-review", ...)` passing the proposal path, mechanism, and mode. For panel mode, launch one `Task` per reviewer role in parallel, then a final synthesis `Task`.
 - **Codex CLI:** install `agents/templates/grant-review.toml` to `~/.codex/agents/` (or project `.codex/agents/`), then run the `grant-review` subagent (`/agent`). For panel mode, ensure `max_threads` covers the reviewer count.
 - **Copilot CLI:** install `agents/templates/grant-review.agent.md` to `.github/agents/` (or `~/.copilot/agents/`), then run the `grant-review` agent; use `/fleet` for panel mode.
-- **Fallback** (no subagent support, or the user wants an interactive in-thread review): run the procedure directly in this context by following `references/review-procedure.md`.
+- **Fallback** (no subagent support, or the user wants an interactive in-thread review): first locate the rubric (`$CLAUDE_PLUGIN_ROOT/skills/grant-review/references`, else `find . -type d -path '*/grant-review/references' | head -1`); if it cannot be found, stop and tell the user to install the grant plugin rather than reviewing from memory. Then follow `references/review-procedure.md` directly in this context.
 
 ## The brain (do not duplicate into dispatch or agent shells)
 

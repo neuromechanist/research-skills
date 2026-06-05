@@ -25,7 +25,7 @@ This is a thin shell. Load all criteria, scoring rubrics, the procedure, and the
 
 ## Procedure
 
-1. Locate the grant-review skill's `references/` directory (for example `.../plugins/grant/skills/grant-review/references`).
+1. Locate the grant-review skill's `references/` directory (for example `.../plugins/grant/skills/grant-review/references`). If you cannot find it, STOP and tell the user to install the grant plugin so the rubric is on disk; never review from memory (a review scored against a recalled rubric is invalid).
 2. Read `review-procedure.md` and follow it exactly.
 3. Read the mechanism-matching criteria file (`nih-review-criteria.md`, `nih-career-training-criteria.md`, or `nsf-review-criteria.md`) plus `review-best-practices.md` for calibration.
 4. Ingest the proposal at the path provided by the caller.

@@ -22,9 +22,9 @@ Only Claude Code ships agents inside an installed plugin. Therefore the portable
 
 For a review/QA surface named `<name>`:
 
-- **`skills/<name>/SKILL.md` — thin dispatch.** Owns the user-facing trigger phrases. Body routes to the right execution path per tool and selects the mode. No rubric content.
-- **`skills/<name>/references/` — the brain.** Rubric, criteria, procedure, output templates. Single source of truth. This is the only artifact all three ecosystems bundle on install, so the rubric must live here and nowhere else. (Engine scripts, where applicable, live in `references/` or a sibling `scripts/`.)
-- **Per-tool shells — thin.** `agents/<name>.md` (Claude, bundled), `agents/templates/<name>.toml` (Codex), `agents/templates/<name>.agent.md` (Copilot). Each loads `references/` and emits the structured report. The Codex/Copilot templates are opt-in: the user copies them into `.codex/agents/` or `.github/agents/` because those tools do not bundle plugin agents.
+- **`skills/<name>/SKILL.md`, thin dispatch.** Owns the user-facing trigger phrases. Body routes to the right execution path per tool and selects the mode. No rubric content.
+- **`skills/<name>/references/`, the brain.** Rubric, criteria, procedure, output templates. Single source of truth. This is the only artifact all three ecosystems bundle on install, so the rubric must live here and nowhere else. (Engine scripts, where applicable, live in `references/` or a sibling `scripts/`.)
+- **Per-tool shells, thin.** `agents/<name>.md` (Claude, bundled), `agents/templates/<name>.toml` (Codex), `agents/templates/<name>.agent.md` (Copilot). Each loads `references/` and emits the structured report. The Codex/Copilot templates are opt-in: the user copies them into `.codex/agents/` or `.github/agents/` because those tools do not bundle plugin agents.
 
 ## Trigger ownership
 

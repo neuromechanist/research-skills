@@ -62,7 +62,7 @@ For NSF proposals:
 - Project Description
 - Data Management Plan
 
-**Partial submissions.** If only some sections are provided (for example, a Specific Aims page alone, or no biosketch), score what is present and explicitly flag each missing section as "not available for review; assessed from the provided material only." Do not suspend the review. For the Investigator criterion with no biosketch, score on the strength of the preliminary data alone and note the limitation in Additional Review Criteria rather than inventing a track record.
+**Partial submissions.** If only some sections are provided (for example, a Specific Aims page alone, or no biosketch), score what is present rather than suspending the review, but make the partial scope unmistakable: begin the output with a bold **PARTIAL REVIEW** banner, placed above the summary and scores (not buried in Additional Review Criteria), that lists the missing sections and warns that scores for criteria depending on them are based on available material only and are not predictive of a study-section outcome. For the Investigator criterion with no biosketch, score on the strength of the preliminary data alone, note the limitation, and do not invent a track record.
 
 ## 3. Score each criterion
 
