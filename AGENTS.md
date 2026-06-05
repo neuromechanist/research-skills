@@ -72,4 +72,7 @@ research-skills/
 ## Cross-agent compatibility
 - Keep shared project and marketplace instructions in AGENTS.md.
 - Keep CLAUDE.md as `@AGENTS.md`, followed only by Claude Code-specific additions.
-- Prefer shared `skills/*/SKILL.md` directories across Claude Code, Codex, and Copilot CLI. Keep `agents/*` declared only in manifests for agents that support them.
+- Prefer shared `skills/*/SKILL.md` directories across Claude Code, Codex, and Copilot CLI. Agents are not equally portable: only Claude Code auto-bundles an agent from an installed plugin (Codex reads `.codex/agents/*.toml`, Copilot reads `.github/agents/*.agent.md`, both at project/user level). So a skill, never an agent, is the cross-agent install-time artifact.
+
+### Review-subagent pattern
+Review and QA surfaces follow a thin-dispatch pattern so review runs as an independent, fresh-context subagent on every tool while installing from one shared artifact: `skills/<name>/SKILL.md` is thin dispatch (routing + single/panel mode) and owns the triggers; `skills/<name>/references/` holds the rubric (the single source of truth, bundled on install for all three tools); `agents/<name>.md` (Claude, bundled) plus `agents/templates/<name>.{toml,agent.md}` (Codex/Copilot, opt-in) are thin shells that load `references/`. Agent descriptions are scoped to "invoked by the `<name>` skill" so they never compete for triggers. Full design in `.context/review-subagent-design.md`; reference implementation is `grant:grant-review`.
