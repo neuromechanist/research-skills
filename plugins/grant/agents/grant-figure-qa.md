@@ -30,6 +30,7 @@ This agent is a thin shell. The full checklist (resolution, dimensions, fonts, c
        [ "$n" -eq 0 ] && { echo "FATAL: grant-figure-qa/references not found; install the grant plugin" >&2; exit 2; }
        REF="$(printf '%s\n' "$matches" | head -1)"
        [ "$n" -gt 1 ] && echo "warning: $n candidate references dirs found; using $REF" >&2
+       echo "warning: CLAUDE_PLUGIN_ROOT unset/invalid; using fallback at $REF" >&2
    fi
    test -f "$REF/figure-qa-procedure.md" || { echo "FATAL: $REF has no figure-qa-procedure.md" >&2; exit 2; }
    echo "Using procedure at: $REF"; ls "$REF"

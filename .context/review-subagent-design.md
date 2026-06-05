@@ -52,7 +52,11 @@ Pass only **framing** to the reviewer (artifact path, type/mechanism, target ven
 
 ## Rollout
 
-- Phase 1 (#62): convention + `grant-review`.
-- Phase 2 (#63): `paper-review`.
-- Phase 3 (#64): retrofit existing QA agents `figure-qa` and `grant-figure-qa` to the pattern (thin skill in front, agent demoted to a shell, engine scripts kept).
-- Phase 4 (#65): version bumps, README, cross-phase review; decide whether to extend to the non-review validators (`bids-validator`, `dependency-auditor`, `release-prep`).
+- Phase 1 (#62, done): convention + `grant-review`.
+- Phase 2 (#63, done): `paper-review`.
+- Phase 3 (#64, done): retrofit existing QA agents `figure-qa` and `grant-figure-qa` to the pattern (thin skill in front, agent demoted to a shell, engine scripts kept).
+- Phase 4 (#65): version bumps (patch: grant 0.3.5, manuscript 0.5.1, figures 0.10.2, marketplace 0.15.3), README, cross-phase review.
+
+## Scope boundary (what does NOT get this pattern)
+
+The pattern applies to **context-influenced reviews**: tasks where a fresh, unbiased look has real value because a reviewer sharing the authoring context would be biased (grant review, paper review, figure QA). It does **not** apply to **mechanical validators**, whose checks are deterministic and carry no context-bias risk: `bids-validator` (neuroinformatics), `dependency-auditor`, and `release-prep` (project) stay as plain skills. They are not retrofitted, and no follow-on epic is planned for them. The test: if running the task twice with and without knowledge of how the artifact was produced would change the verdict, it is a review (use the pattern); if not, it is a validator (leave it).
