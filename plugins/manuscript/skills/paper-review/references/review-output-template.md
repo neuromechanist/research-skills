@@ -3,6 +3,10 @@
 ## Standard Review Format
 
 ```
+[PARTIAL REVIEW -- include this line ONLY when manuscript sections are missing. Bold
+"PARTIAL REVIEW", list the missing sections, and state that the assessment is based on the
+provided material only and is not a complete peer review. Place it above the Synopsis.]
+
 ## Synopsis
 
 [1 paragraph: What the paper does, what methods it uses, what the main findings are, what the
@@ -96,3 +100,7 @@ Dear Editor,
 
 ### Citation format in reviews
 When citing literature to support a review argument, use inline format: `(Author et al. Year)` or `Author et al. Year - Journal` and include the full reference at the end of the review. This allows the authors to verify the reviewer's claims.
+
+## Worked example
+
+For a complete filled-in review demonstrating tone, depth, severity calibration, and the PARTIAL REVIEW banner, see `../examples/sample-manuscript-review.md` (a review of `../examples/sample-manuscript-excerpt.md`).

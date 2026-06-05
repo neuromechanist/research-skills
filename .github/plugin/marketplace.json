@@ -6,27 +6,27 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.15.2"
+    "version": "0.15.3"
   },
   "plugins": [
     {
       "name": "project",
       "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.3.3",
+      "version": "0.4.0",
       "source": "./plugins/project",
       "category": "development"
     },
     {
       "name": "grant",
       "description": "Grant proposal toolkit: NIH/NSF writing with mechanism-specific templates, structured review with scoring criteria, and figure quality assurance",
-      "version": "0.3.4",
+      "version": "0.3.5",
       "source": "./plugins/grant",
       "category": "research"
     },
     {
       "name": "manuscript",
       "description": "Academic manuscript toolkit: literature review, peer review, writing, journal-specific formatting for submission, and humanizer pass to remove AI-writing tells",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "source": "./plugins/manuscript",
       "category": "research"
     },
@@ -39,8 +39,8 @@
     },
     {
       "name": "figures",
-      "description": "Publication-quality figures plugin. Six skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); svg-primitives (mm-precise SVG builder in Python: auto-fit boxes, tangent-correct arrows on straight/cubic/orthogonal routes, multi-waypoint paths, brackets/annotations/groups, layered z-order); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
-      "version": "0.10.1",
+      "description": "Publication-quality figures plugin. Seven skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); svg-primitives (mm-precise SVG builder in Python: auto-fit boxes, tangent-correct arrows on straight/cubic/orthogonal routes, multi-waypoint paths, brackets/annotations/groups, layered z-order); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
+      "version": "0.10.2",
       "source": "./plugins/figures",
       "category": "research"
     },
