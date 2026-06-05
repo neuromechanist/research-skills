@@ -2,6 +2,10 @@
 
 The procedure for reviewing all figures in a grant proposal for NIH/NSF compliance, publication quality, and accessibility. This is the brain loaded by the `grant-figure-qa` skill (inline mode) and by the per-tool QA subagents.
 
+## 0. Honor the no-qa opt-out
+
+If the invocation includes `no-qa` in its prompt or args, return immediately with a one-line note that QA was skipped. Check this before locating any figures or running any tool.
+
 ## 1. Locate figures
 
 Find all figure files in the proposal directory:

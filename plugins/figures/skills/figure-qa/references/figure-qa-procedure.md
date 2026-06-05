@@ -57,6 +57,8 @@ Capture stderr alongside stdout so the error message is preserved:
 [ "$RC" -eq 2 ] && { echo "script error:"; cat /tmp/report-err.txt; }
 ```
 
+Apply this `RC=$?` check after **every** per-branch command below; the per-branch examples omit it only for brevity. Exit 2 is a script error, not "no findings."
+
 ### SVG branch
 ```bash
 uv run --with lxml --with svgelements --with svgpathtools --with shapely \
@@ -141,6 +143,12 @@ Combine programmatic findings and VLM scores into one report. Use this shape exa
   - `block`: any VLM score is 1-2, or fonts are below journal minimum (will be rejected)
 - **Highest-leverage fix:** <one concrete next step>
 ```
+
+## Examples of expected behavior
+
+- Invoked on `examples/out/figure.svg` from scientific-figure: run the SVG branch; all fonts pass; palette compliance not measured (no `--palette`); VLM scores 4-5 across the board; status `ship`.
+- Invoked on a transparent-icons output `brain.png` with `--expect-transparent`: run the raster branch; transparent corners 2/4 with the `threshold` method; note the threshold limitation and suggest `--transparency-method birefnet`; add VLM judgment of the icon itself.
+- Invoked on `plot.py` with `font.size: 7`: run the plot-script branch; report the rcParam font sizes against the journal minimum; flag `savefig_missing_bbox_inches` if applicable; surface a `library_recommendation` if the script uses matplotlib for a chart type better served by another library.
 
 ## Constraints
 

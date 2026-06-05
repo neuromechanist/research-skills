@@ -21,17 +21,18 @@ This agent is a thin shell. The no-qa opt-out, script-location logic, type detec
 
 ## Procedure
 
+0. **Honor the no-qa opt-out.** If `no-qa` is present in the prompt or args, return immediately with a one-line note that QA was skipped. Do not run the bash below or open any files.
 1. Locate the procedure brain:
    ```bash
    REF="${CLAUDE_PLUGIN_ROOT}/skills/figure-qa/references"
    if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ] || ! test -d "$REF"; then
-       matches="$(find . -type d -path '*/figure-qa/references' 2>/dev/null)"
+       matches="$(find . -type d -path '*/skills/figure-qa/references' 2>/dev/null)"
        n="$(printf '%s\n' "$matches" | grep -c .)"
        [ "$n" -eq 0 ] && { echo "FATAL: figure-qa/references not found; install the figures plugin" >&2; exit 2; }
        REF="$(printf '%s\n' "$matches" | head -1)"
        [ "$n" -gt 1 ] && echo "warning: $n candidate references dirs found; using $REF" >&2
    fi
-   test -d "$REF" || { echo "error: could not locate figure-qa/references" >&2; exit 2; }
+   test -f "$REF/figure-qa-procedure.md" || { echo "FATAL: $REF has no figure-qa-procedure.md" >&2; exit 2; }
    echo "Using procedure at: $REF"; ls "$REF"
    ```
    If this fails, STOP and report it; never fabricate measurements.

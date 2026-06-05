@@ -20,7 +20,7 @@ A compliance pass is more trustworthy from a reviewer that did not author the fi
 
 In every branch the reviewer follows `references/figure-qa-procedure.md`.
 
-- **Claude Code:** `Task(subagent_type: "grant-figure-qa", ...)` passing the proposal directory and agency (NIH/NSF).
+- **Claude Code:** `Task(subagent_type: "grant-figure-qa", ...)` passing the proposal directory and agency (NIH/NSF). Honor a `no-qa` opt-out by returning immediately.
 - **Codex CLI:** install `agents/templates/grant-figure-qa.toml` to `~/.codex/agents/` (or project `.codex/agents/`), then run the `grant-figure-qa` subagent (`/agent`).
 - **Copilot CLI:** install `agents/templates/grant-figure-qa.agent.md` to `.github/agents/` (or `~/.copilot/agents/`), then run the `grant-figure-qa` agent.
 - **Fallback** (no subagent support, or an interactive in-thread check): first locate the procedure (`$CLAUDE_PLUGIN_ROOT/skills/grant-figure-qa/references`, else `find . -type d -path '*/grant-figure-qa/references' | head -1`); if it cannot be found, stop and tell the user to install the grant plugin rather than guessing requirements. Then follow `references/figure-qa-procedure.md` directly.
