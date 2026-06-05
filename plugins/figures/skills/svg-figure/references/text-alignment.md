@@ -4,6 +4,8 @@
 
 How to place SVG `<text>` so it sits inside its container shape, with the right anchor and baseline. `figure-qa`'s SVG branch checks text-bbox-inside-shape (issue #47) with a heuristic font-size estimate, so these patterns still matter for tight fits. SVGs built with `[[svg-primitives]]` get exact text-fit validation at save time via `Canvas.save(validate=...)`.
 
+> **Unit convention:** in the mm-viewBox setup these recipes assume, a bare `font-size` is in user units (mm), like every other length. The examples below use round values (5-8) so the bbox arithmetic reads clearly, but those are 5-8 mm (about 14-23 pt). For a real publication schematic, size body labels around `font-size="2.1"` (about 6 pt) and never below `font-size="1.76"` (5 pt, the Nature minimum). See `svg-figure/SKILL.md` (Sizing) for the `N pt = N x 25.4/72 mm` conversion.
+
 ## Anchor and baseline at a glance
 
 SVG text positioning is specified by three things:

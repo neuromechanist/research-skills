@@ -89,7 +89,7 @@ def _root_unit_to_pt(root: etree._Element) -> float:
     if not width or not vb:
         return 1.0
     try:
-        vb_w = float(re.split(r"[\s,]+", vb.strip())[2])
+        vb_w = float(re.split(r"[\s,]+", vb.strip())[2])  # viewBox: min-x min-y width height
     except (IndexError, ValueError):
         return 1.0
     m = re.match(r"\s*(-?[0-9.]+)\s*([a-z%]*)\s*$", width, re.IGNORECASE)
@@ -135,7 +135,10 @@ def _font_size_pt(text_el: etree._Element) -> tuple[float, bool] | None:
         return n * 12.0, False
     if unit == "%":
         return n / 100.0 * 12.0, False
-    return n, True
+    # The regex above only captures the units handled here; reaching this point means the
+    # regex and the handler list drifted out of sync, which must be fixed loudly rather
+    # than by silently treating an absolute unit as user-relative.
+    raise AssertionError(f"unhandled font-size unit {unit!r}; add it to _UNIT_TO_PT or a branch")
 
 
 def _walk(root: etree._Element) -> Iterator[tuple[etree._Element, float, float]]:
@@ -180,6 +183,12 @@ def validate(svg_path: Path, journal: str) -> dict:
     checked = 0
     skipped = 0
     root_unit_to_pt = _root_unit_to_pt(root)
+    # When the root width carries no length unit but a viewBox is present, the scale fell
+    # back to 1.0 (bare font-sizes read as points). Flag it so a caller does not mistake the
+    # guess for the genuine pt-viewBox case (where the unit is explicit).
+    root_scale_uncertain = bool(root.get("viewBox")) and re.fullmatch(
+        r"\s*-?[0-9.]+\s*", root.get("width") or ""
+    ) is not None
     for text_el, sx, sy in _walk(root):
         parsed = _font_size_pt(text_el)
         if parsed is None:
@@ -222,6 +231,7 @@ def validate(svg_path: Path, journal: str) -> dict:
         "journal": journal,
         "minimum_pt": minimum_pt,
         "root_unit_to_pt": round(root_unit_to_pt, 4),
+        "root_scale_uncertain": root_scale_uncertain,
         "checked_count": checked,
         "skipped_count": skipped,
         "issue_count": len(issues),
@@ -253,6 +263,13 @@ def main(argv: list[str] | None = None) -> int:
     json.dump(report, sys.stdout, indent=2)
     print(file=sys.stdout)
 
+    if report.get("root_scale_uncertain"):
+        print(
+            "WARNING: the root width has no length unit (e.g. mm/pt) but a viewBox is "
+            "present; bare font-sizes are assumed to be points and physical sizes may be "
+            "wrong. Add an explicit unit to the root width.",
+            file=sys.stderr,
+        )
     if report["skipped_count"]:
         print(
             f"WARNING: {report['skipped_count']} <text> element(s) had no parseable "

@@ -86,6 +86,16 @@ CASES: list[tuple[str, str, str, int, int, int]] = [
         "nature", 1, 1, 0,
     ),
     (
+        "style= attribute with an explicit mm unit is absolute (1.5mm = 4.25pt fails)",
+        _MM + '<text x="10" y="20" style="font-size: 1.5mm">styled</text></svg>',
+        "nature", 1, 1, 0,
+    ),
+    (
+        "explicit pt inside a scaled group is scaled by the transform, not the viewBox (10pt x 0.4 = 4pt fails)",
+        _MM + '<g transform="scale(0.4)"><text x="10" y="20" font-size="10pt">abs</text></g></svg>',
+        "nature", 1, 1, 0,
+    ),
+    (
         "text with no font-size at all is counted as skipped, not silently passed",
         _MM + '<text x="10" y="20">unsized</text></svg>',
         "nature", 0, 0, 1,
