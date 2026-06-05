@@ -12,4 +12,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: astral-sh/setup-uv@v5
-    - run: uv run --with pytest pytest tests/ -q
+    - run: uv run --with pytest --with lxml --with svgelements --with svgpathtools --with shapely pytest tests/ -q

@@ -2,7 +2,7 @@
 
 > Hand-authoring recipes for SVG arrows. `[[svg-primitives]]`'s `Arrow.connect(curve='straight'|'cubic'|'orthogonal-h'|'orthogonal-v')` produces these patterns mechanically — read this document when authoring SVG by hand or when debugging arrow geometry in SVG produced by another tool.
 
-Recipes for arrows in SVG schematics that the `figure-qa` agent can validate (once the geometry section ships) and that render correctly across all common SVG renderers (Inkscape, Chrome, Firefox, Safari, librsvg, cairosvg).
+Recipes for arrows in SVG schematics that the `figure-qa` agent validates (arrow-tip-to-target distance, issue #47) and that render correctly across all common SVG renderers (Inkscape, Chrome, Firefox, Safari, librsvg, cairosvg).
 
 ## The marker definition
 
@@ -46,7 +46,7 @@ The simplest pattern — a `<line>` with the endpoint exactly on the target's ed
       stroke="#1F3A5F" stroke-width="0.8" marker-end="url(#arrow)"/>
 ```
 
-QA check the geometry section will run (when shipped): the tip of the arrow (`x2, y2`) must be within tolerance of the target shape's edge. For the source side, `marker-start="url(#arrow)"` mirrors the same logic.
+QA check the geometry section runs: the tip of the arrow (`x2, y2`) must be within tolerance of the target shape's edge. For the source side, `marker-start="url(#arrow)"` mirrors the same logic.
 
 ## Recipe 2: curved arrow (cubic Bezier)
 
@@ -112,7 +112,7 @@ Use `stroke-dasharray` on the path; the marker renders the same regardless:
 
 ## Tip-to-target tolerance for QA
 
-When the QA agent's geometry section ships, it will compute the distance from the arrow's endpoint (after the marker offset) to the nearest edge of the target shape's bounding box, then flag any arrow with distance > 1 mm. To stay within tolerance:
+The QA agent's geometry section computes the distance from the arrow's endpoint to the nearest target shape's bounding box and flags any arrow with distance > 1 mm. To stay within tolerance:
 
 - Set arrow endpoints to exactly the target's edge coordinate.
 - For rounded rectangles, use the straight-edge coordinate (not the curve). A `<rect>` with `rx="1.5"` has straight horizontal edges between `x` and `x + width` from `y + rx` to `y + height - rx`; aim the arrow at any y in that range.
