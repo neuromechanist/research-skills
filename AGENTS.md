@@ -73,6 +73,11 @@ research-skills/
 - No mocks in tests
 - No emojis in commits or code
 
+## Releases & Citation
+- The marketplace version lives in `.claude-plugin/marketplace.json` and `.github/plugin/marketplace.json` (the Codex `.agents/plugins/marketplace.json` carries no top-level version).
+- The repository is archived to Zenodo on every GitHub release, minting a versioned DOI under a stable concept DOI. When you bump the marketplace version for a release, also bump `version` (and `date-released`) in `CITATION.cff` and keep `.zenodo.json` in sync, then tag `vX.Y.Z` and create the GitHub release.
+- The concept DOI, added to `CITATION.cff` (`doi:`) and the README badge after the first Zenodo deposit, is stable across versions and does not change.
+
 ## Cross-agent compatibility
 - Keep shared project and marketplace instructions in AGENTS.md.
 - Keep CLAUDE.md as `@AGENTS.md`, followed only by Claude Code-specific additions.
