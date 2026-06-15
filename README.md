@@ -1,6 +1,6 @@
 # Research Skills
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20696516.svg)](https://doi.org/10.5281/zenodo.20696516)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20696515.svg)](https://doi.org/10.5281/zenodo.20696515)
 
 Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics.
 
