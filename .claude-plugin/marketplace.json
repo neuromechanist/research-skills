@@ -71,7 +71,7 @@
     {
       "name": "presentation",
       "description": "Presentation builder: create interactive Reveal.js presentations from JSON with Mermaid diagrams, LaTeX math, code highlighting, and animated reveals",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
