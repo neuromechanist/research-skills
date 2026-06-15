@@ -1,0 +1,25 @@
+{
+  "title": "Research Skills",
+  "description": "A cross-agent marketplace of plugins and skills for academic research and development workflows: literature search and citation management, grant writing and review, manuscript preparation, publication figures, presentations, project lifecycle management, and neuroinformatics. Targets Claude Code, Codex, and Copilot CLI from shared skill definitions.",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "BSD-3-Clause",
+  "creators": [
+    {
+      "name": "Shirazi, Seyed Yahya",
+      "orcid": "0000-0001-5557-259X",
+      "affiliation": "Swartz Center for Computational Neuroscience, University of California San Diego"
+    }
+  ],
+  "keywords": [
+    "claude-code",
+    "codex",
+    "copilot",
+    "research-workflows",
+    "literature-search",
+    "grant-writing",
+    "manuscript",
+    "scientific-figures",
+    "neuroinformatics"
+  ]
+}
