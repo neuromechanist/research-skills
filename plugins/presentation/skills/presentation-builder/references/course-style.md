@@ -1,11 +1,14 @@
 # Course "house style" reference
 
-This is the stable slide style converged on across the ten OSC Agentic Research Course decks. It
-is an opinionated layer on top of `authoring-guide.md` (which stays the generic guide). Follow it
-when a deck should match that course look; deviate deliberately, not by accident.
+This is the stable slide style converged on across the ten Open Science Collective (OSC) Agentic
+Research Course decks. It is an opinionated layer on top of `authoring-guide.md` (which stays the
+generic guide). Follow it when a deck should match that course look; deviate deliberately, not by
+accident.
 
-Every pattern below is copy-paste-ready and validates against the schema. All snippets are real
-shapes pulled from the course decks.
+The full-slide and element snippets below are copy-paste-ready and validate against the schema.
+The `metadata` and `speakerNotes` excerpts are field-shape fragments, not standalone documents:
+drop them into a deck (or slide) to validate. All snippets are real shapes pulled from the course
+decks.
 
 ## Deck defaults
 

@@ -218,7 +218,10 @@ printed URL to open a synced audience screen.
 To produce a distributable file instead of serving, use `export` (PDF default; PPTX available):
 
 ```bash
+# zero-setup:
 bunx github:neuromechanist/agentic-presentation-builder#v0.1.6 export presentation.json --format pdf
+# or from the cache clone:
+(cd "$APB_HOME" && bun run export -- "$(pwd)/presentation.json" --format pdf)
 ```
 
 ## Additional Resources
