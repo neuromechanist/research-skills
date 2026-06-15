@@ -29,5 +29,5 @@ keywords:
   - manuscript
   - scientific-figures
   - neuroinformatics
-# Concept (all-versions) DOI is added after the first Zenodo release; it always
-# resolves to the latest version.
+# Concept (all-versions) DOI; always resolves to the latest release.
+doi: "10.5281/zenodo.20696516"
