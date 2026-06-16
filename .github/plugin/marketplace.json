@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.15.7"
+    "version": "0.15.8"
   },
   "plugins": [
     {
@@ -47,7 +47,7 @@
     {
       "name": "presentation",
       "description": "Presentation builder: create interactive Reveal.js presentations from JSON",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "source": "./plugins/presentation",
       "category": "research"
     },
