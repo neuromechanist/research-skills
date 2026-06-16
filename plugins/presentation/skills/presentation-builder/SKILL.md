@@ -17,13 +17,13 @@ Create interactive Reveal.js presentations from JSON using the [Agentic Presenta
 
 ## Prerequisites: get the builder CLI
 
-The engine ships an `apb` command (subcommands `validate`, `present`, `export`). Two ways to
-run it; pick per situation. Pin the tag (`#v0.1.6`) for reproducibility.
+The engine ships an `apb` command (subcommands `validate`, `present`, `export`, `shoot`). Two ways to
+run it; pick per situation. Pin the tag (`#v0.1.8`) for reproducibility.
 
 **Zero-setup (default, no clone).** Run straight from the repo with bunx (or npx):
 
 ```bash
-bunx github:neuromechanist/agentic-presentation-builder#v0.1.6 validate deck.json --json
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 validate deck.json --json
 ```
 
 **Iterative authoring / offline (recommended when validating repeatedly).** Use a managed
@@ -33,7 +33,7 @@ once if needed, then run the `bun run` scripts from it:
 ```bash
 APB_HOME="${APB_HOME:-$HOME/.cache/agentic-presentation-builder}"
 if [ ! -d "$APB_HOME/.git" ]; then
-  git clone --branch v0.1.6 https://github.com/neuromechanist/agentic-presentation-builder.git "$APB_HOME"
+  git clone --branch v0.1.8 https://github.com/neuromechanist/agentic-presentation-builder.git "$APB_HOME"
   (cd "$APB_HOME" && bun install)
 fi
 # then, e.g.:
@@ -189,7 +189,7 @@ Run the CLI validator before serving:
 
 ```bash
 # zero-setup:
-bunx github:neuromechanist/agentic-presentation-builder#v0.1.6 validate presentation.json --json
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 validate presentation.json --json
 # or from the cache clone:
 (cd "$APB_HOME" && bun run validate -- "$(pwd)/presentation.json" --json)
 ```
@@ -205,7 +205,7 @@ there is no need to copy anything into `public/`:
 
 ```bash
 # zero-setup:
-bunx github:neuromechanist/agentic-presentation-builder#v0.1.6 present presentation.json --open
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 present presentation.json --open
 # or from the cache clone:
 (cd "$APB_HOME" && bun run present -- "$(pwd)/presentation.json" --open)
 ```
@@ -219,7 +219,7 @@ To produce a distributable file instead of serving, use `export` (PDF default; P
 
 ```bash
 # zero-setup:
-bunx github:neuromechanist/agentic-presentation-builder#v0.1.6 export presentation.json --format pdf
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 export presentation.json --format pdf
 # or from the cache clone:
 (cd "$APB_HOME" && bun run export -- "$(pwd)/presentation.json" --format pdf)
 ```
@@ -232,7 +232,7 @@ slide at full HD with `shoot` and look at each one:
 
 ```bash
 # zero-setup:
-bunx github:neuromechanist/agentic-presentation-builder#v0.1.6 shoot presentation.json --out ./qc
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 shoot presentation.json --out ./qc
 # or from the cache clone:
 (cd "$APB_HOME" && bun run shoot -- "$(pwd)/presentation.json" --out ./qc)
 ```
