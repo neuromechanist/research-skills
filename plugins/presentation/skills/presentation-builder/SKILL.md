@@ -224,6 +224,26 @@ bunx github:neuromechanist/agentic-presentation-builder#v0.1.6 export presentati
 (cd "$APB_HOME" && bun run export -- "$(pwd)/presentation.json" --format pdf)
 ```
 
+## Step 5: QC every slide (don't skip)
+
+`validate` passes decks that still render a **blank mermaid** or **clipped code** -- the validator
+cannot see rendered output. Before shipping a deck (especially a high-stakes one), screenshot every
+slide at full HD with `shoot` and look at each one:
+
+```bash
+# zero-setup:
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.6 shoot presentation.json --out ./qc
+# or from the cache clone:
+(cd "$APB_HOME" && bun run shoot -- "$(pwd)/presentation.json" --out ./qc)
+```
+
+`shoot` serves the deck, drives headless Chrome through every slide, and writes one PNG per slide to
+`--out` (default 1920x1080; `--width`/`--height` to change). It disables transitions and fragments
+during capture so an unsettled slide-transform never fakes a right-edge clip and every animated
+element shows. Common fixes the QC pass catches -- avoid `mermaid` (renders blank here; use a `table`
+or an SVG `image`), keep `code` blocks to ~6 lines (height-capped), and put punchline `callout`s in
+`area: "footer"`. See `references/course-style.md` for the full list.
+
 ## Additional Resources
 
 ### Reference files
