@@ -1,0 +1,33 @@
+cff-version: 1.3.0
+message: "If you use the Research Skills marketplace in your research, please cite it using the metadata below."
+title: Research Skills
+abstract: >-
+  Research Skills is a cross-agent marketplace of plugins and skills for academic
+  research and development workflows: literature search and citation management,
+  grant writing and review, manuscript preparation, publication figures,
+  presentations, project lifecycle management, and neuroinformatics. It targets
+  Claude Code, Codex, and Copilot CLI from shared skill definitions.
+type: software
+authors:
+  - family-names: Shirazi
+    given-names: Seyed Yahya
+    orcid: "https://orcid.org/0000-0001-5557-259X"
+    affiliation:
+      name: "Swartz Center for Computational Neuroscience"
+      ror: "https://ror.org/01bt2qm76"
+repository-code: "https://github.com/neuromechanist/research-skills"
+license: BSD-3-Clause
+version: 0.15.9
+date-released: "2026-06-19"
+keywords:
+  - claude-code
+  - codex
+  - copilot
+  - research-workflows
+  - literature-search
+  - grant-writing
+  - manuscript
+  - scientific-figures
+  - neuroinformatics
+# Concept (all-versions) DOI; always resolves to the latest release.
+doi: "10.5281/zenodo.20696515"

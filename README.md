@@ -1,5 +1,7 @@
 # Research Skills
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20696515.svg)](https://doi.org/10.5281/zenodo.20696515)
+
 Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics.
 
 ## Install
@@ -57,7 +59,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | **manuscript** | 0.5.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.2 | Literature search, citation management, PDF retrieval | `opencite` | -- |
 | **figures** | 0.10.5 | Publication-quality figures plugin (seven skills + QA agent) | `scientific-figure`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |
-| **presentation** | 0.2.2 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
+| **presentation** | 0.2.4 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
 | **neuroinformatics** | 0.2.4 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
 ## Research Plugins

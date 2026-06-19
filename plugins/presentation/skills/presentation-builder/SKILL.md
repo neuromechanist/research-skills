@@ -15,21 +15,33 @@ Create interactive Reveal.js presentations from JSON using the [Agentic Presenta
    (outline, theme)     (schema-driven)      (CLI validator)    (Vite dev server)
 ```
 
-## Prerequisites
+## Prerequisites: get the builder CLI
 
-The Agentic Presentation Builder must be available locally. Check common locations:
+The engine ships an `apb` command (subcommands `validate`, `present`, `export`, `shoot`). Two ways to
+run it; pick per situation. Pin the tag (`#v0.1.8`) for reproducibility.
+
+**Zero-setup (default, no clone).** Run straight from the repo with bunx (or npx):
 
 ```bash
-ls -d ~/Documents/git/casual-vibers/agent-presentation 2>/dev/null || \
-ls -d ./agent-presentation 2>/dev/null || \
-echo "Not found -- clone from https://github.com/neuromechanist/agentic-presentation-builder"
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 validate deck.json --json
 ```
 
-If not present:
+**Iterative authoring / offline (recommended when validating repeatedly).** Use a managed
+cache clone so each call does not re-resolve the git package. Resolve a builder home, cloning
+once if needed, then run the `bun run` scripts from it:
+
 ```bash
-git clone https://github.com/neuromechanist/agentic-presentation-builder.git
-cd agentic-presentation-builder && bun install
+APB_HOME="${APB_HOME:-$HOME/.cache/agentic-presentation-builder}"
+if [ ! -d "$APB_HOME/.git" ]; then
+  git clone --branch v0.1.8 https://github.com/neuromechanist/agentic-presentation-builder.git "$APB_HOME"
+  (cd "$APB_HOME" && bun install)
+fi
+# then, e.g.:
+(cd "$APB_HOME" && bun run validate -- "$(pwd)/deck.json" --json)
 ```
+
+In the steps below, "`apb <command>`" means either the bunx form or `bun run <command> --`
+from `$APB_HOME`. Both share one code path, so flags are identical.
 
 ## Step 1: Plan the Presentation
 
@@ -176,8 +188,10 @@ Write a `presentation.json` following the schema. See `references/schema-referen
 Run the CLI validator before serving:
 
 ```bash
-cd <builder-directory>
-bun run validate -- path/to/presentation.json --json
+# zero-setup:
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 validate presentation.json --json
+# or from the cache clone:
+(cd "$APB_HOME" && bun run validate -- "$(pwd)/presentation.json" --json)
 ```
 
 The `--json` flag returns structured output with `valid`, `summary.errorCount`, `summary.warningCount`, `errors[]`, and `warnings[]`. Each issue includes `code`, `severity`, `path`, `message`, and `suggestion`.
@@ -186,25 +200,56 @@ Fix all schema errors. Address advisory warnings to improve slide quality (see `
 
 ## Step 4: Serve and Present
 
-Copy the JSON file to the builder's `public/` directory (or reference it directly):
+Use the `present` command. It serves the JSON directly and rewrites relative asset paths, so
+there is no need to copy anything into `public/`:
 
 ```bash
-cd <builder-directory>
-cp path/to/presentation.json public/
-bun run dev
+# zero-setup:
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 present presentation.json --open
+# or from the cache clone:
+(cd "$APB_HOME" && bun run present -- "$(pwd)/presentation.json" --open)
 ```
 
-Open in browser: `http://localhost:3000/?presentation=./presentation.json`
+This prints the browser URL (and accepts `--port N`). Press `P` to toggle between authoring and
+presentation modes, `S` for speaker notes, `O` for slide overview. See `references/authoring-guide.md`
+for the full keyboard shortcuts and delivery modes. Append `&role=audience&mode=presentation` to the
+printed URL to open a synced audience screen.
 
-Press `P` to toggle between authoring and presentation modes, `S` for speaker notes, `O` for slide overview. See `references/authoring-guide.md` for the full keyboard shortcuts and delivery modes.
+To produce a distributable file instead of serving, use `export` (PDF default; PPTX available):
 
-To open a synced audience screen, use `?presentation=./presentation.json&role=audience&mode=presentation`.
+```bash
+# zero-setup:
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 export presentation.json --format pdf
+# or from the cache clone:
+(cd "$APB_HOME" && bun run export -- "$(pwd)/presentation.json" --format pdf)
+```
+
+## Step 5: QC every slide (don't skip)
+
+`validate` passes decks that still render a **blank mermaid** or **clipped code** -- the validator
+cannot see rendered output. Before shipping a deck (especially a high-stakes one), screenshot every
+slide at full HD with `shoot` and look at each one:
+
+```bash
+# zero-setup:
+bunx github:neuromechanist/agentic-presentation-builder#v0.1.8 shoot presentation.json --out ./qc
+# or from the cache clone:
+(cd "$APB_HOME" && bun run shoot -- "$(pwd)/presentation.json" --out ./qc)
+```
+
+`shoot` serves the deck, drives headless Chrome through every slide, and writes one PNG per slide to
+`--out` (default 1920x1080; `--width`/`--height` to change). It disables transitions and fragments
+during capture so an unsettled slide-transform never fakes a right-edge clip and every animated
+element shows. Common fixes the QC pass catches -- avoid `mermaid` (renders blank here; use a `table`
+or an SVG `image`), keep `code` blocks to ~6 lines (height-capped), and put punchline `callout`s in
+`area: "footer"`. See `references/course-style.md` for the full list.
 
 ## Additional Resources
 
 ### Reference files
 - **`references/schema-reference.md`** -- Complete field reference for all element types
 - **`references/authoring-guide.md`** -- Layout patterns, content density guidelines, theme selection, validation workflow
+- **`references/course-style.md`** -- Stable "house style" from the OSC Agentic Research Course decks: incremental bullet animations, code sections, two-column image layouts, callouts, and the title-slide block
 
 ### External documentation
 - [Agentic Presentation Builder repo](https://github.com/neuromechanist/agentic-presentation-builder)
