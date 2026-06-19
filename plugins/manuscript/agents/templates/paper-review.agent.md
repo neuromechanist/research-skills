@@ -6,13 +6,14 @@ description: Independent academic manuscript peer reviewer. Loads the paper-revi
 <!--
 Copilot CLI custom agent: paper-review
 
-Copilot does not auto-bundle agents from an installed plugin. To use this reviewer
-as a Copilot subagent, copy this file to one of:
+Copilot can load this agent from the installed plugin's native
+`.github/plugin/plugin.json` `agents` component. It can also be copied for
+project or user scope:
   .github/agents/paper-review.agent.md   (this repository)
   ~/.copilot/agents/paper-review.agent.md (user, all repositories)
-then invoke the paper-review agent; use /fleet for panel mode. It requires the
-manuscript plugin's paper-review skill to be installed so that its references/
-directory is on disk; this agent reads the checklists from there.
+then invoke that configured agent if your Copilot surface supports custom agents.
+It requires the manuscript plugin's paper-review skill to be installed so that
+its references/ directory is on disk; this agent reads the checklists from there.
 
 Optionally scope tool access by adding a `tools` key to the frontmatter (read,
 shell/search). Omitting it inherits the default tool set, which is fine for this

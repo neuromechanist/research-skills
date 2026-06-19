@@ -1,0 +1,4 @@
+interface:
+  display_name: "Epic Dev"
+  short_description: "Run phased epic development workflows."
+  default_prompt: "Run an epic development workflow for this project."

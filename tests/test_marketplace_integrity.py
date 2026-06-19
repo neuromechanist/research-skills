@@ -6,7 +6,7 @@ skill/agent files:
 
 - every plugin/marketplace manifest is valid JSON;
 - each plugin's version is identical everywhere it is declared (plugin.json for both
-  ecosystems plus the marketplace manifests);
+  ecosystems plus native Copilot manifests and the marketplace manifests);
 - the marketplace top-level version matches across manifests;
 - every review/QA agent shell points its ``test -f "$REF/<procedure>.md"`` guard at a
   procedure file that actually exists in the matching skill's ``references/``;
@@ -41,6 +41,7 @@ def test_all_manifests_are_valid_json():
     manifests = (
         list(PLUGINS_DIR.glob("*/.claude-plugin/plugin.json"))
         + list(PLUGINS_DIR.glob("*/.codex-plugin/plugin.json"))
+        + list(PLUGINS_DIR.glob("*/.github/plugin/plugin.json"))
         + [
             ROOT / ".claude-plugin/marketplace.json",
             ROOT / ".github/plugin/marketplace.json",
@@ -63,6 +64,12 @@ def test_plugin_version_consistent_across_manifests(plugin):
             f"{plugin}: .codex-plugin version != .claude-plugin"
         )
 
+    copilot = PLUGINS_DIR / plugin / ".github/plugin/plugin.json"
+    assert copilot.exists(), f"{plugin}: missing native Copilot manifest"
+    assert _load(copilot)["version"] == canonical, (
+        f"{plugin}: .github/plugin version != .claude-plugin"
+    )
+
     claude_mkt = _marketplace_entry(_load(ROOT / ".claude-plugin/marketplace.json"), plugin)
     assert claude_mkt is not None, f"{plugin}: absent from .claude-plugin/marketplace.json"
     assert claude_mkt["version"] == canonical, (
@@ -70,10 +77,10 @@ def test_plugin_version_consistent_across_manifests(plugin):
     )
 
     gh_mkt = _marketplace_entry(_load(ROOT / ".github/plugin/marketplace.json"), plugin)
-    if gh_mkt is not None:
-        assert gh_mkt["version"] == canonical, (
-            f"{plugin}: .github/plugin/marketplace.json {gh_mkt['version']} != plugin.json {canonical}"
-        )
+    assert gh_mkt is not None, f"{plugin}: absent from .github/plugin/marketplace.json"
+    assert gh_mkt["version"] == canonical, (
+        f"{plugin}: .github/plugin/marketplace.json {gh_mkt['version']} != plugin.json {canonical}"
+    )
 
 
 def test_marketplace_toplevel_version_matches():
@@ -83,6 +90,22 @@ def test_marketplace_toplevel_version_matches():
     assert claude_top == gh_top, (
         f"marketplace top-level version mismatch: claude {claude_top} != github {gh_top}"
     )
+
+
+@pytest.mark.parametrize("plugin", PLUGINS)
+def test_copilot_component_paths_exist(plugin):
+    manifest = _load(PLUGINS_DIR / plugin / ".github/plugin/plugin.json")
+    for key in ("commands", "skills", "agents"):
+        values = manifest.get(key, [])
+        if isinstance(values, str):
+            values = [values]
+        for value in values:
+            path = PLUGINS_DIR / plugin / value
+            assert path.exists(), f"{plugin}: Copilot {key} path does not exist: {value}"
+            if key == "agents":
+                assert list(path.glob("*.agent.md")), (
+                    f"{plugin}: Copilot agents path has no .agent.md files: {value}"
+                )
 
 
 # (plugin, agent-stem) pairs for the review/QA agents introduced by the review-subagent

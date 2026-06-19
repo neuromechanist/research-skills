@@ -29,14 +29,16 @@ The canonical Claude marketplace file remains `.claude-plugin/marketplace.json`.
 
 ## Codex
 
-Codex supports repository marketplaces at `.agents/plugins/marketplace.json` and can also read Claude-style marketplaces at `.claude-plugin/marketplace.json`. This repo includes the native `.agents/plugins/marketplace.json` so a checkout can be used directly as a Codex marketplace root:
+Codex supports repository marketplaces at `.agents/plugins/marketplace.json` and legacy-compatible marketplaces at `.claude-plugin/marketplace.json`. This repo includes the native `.agents/plugins/marketplace.json` so a checkout can be used directly as a Codex marketplace root:
 
 ```bash
 codex plugin marketplace add neuromechanist/research-skills
 codex plugin marketplace add ./path/to/research-skills
 ```
 
-Codex skills are directories containing `SKILL.md` files with `name` and `description` frontmatter. The native `.codex-plugin/plugin.json` manifests point at the existing `plugins/<name>/skills/` trees. Claude/Copilot-only commands and agents stay declared in the `.claude-plugin/plugin.json` manifests.
+Codex skills are directories containing `SKILL.md` files with `name` and `description` frontmatter. The native `.codex-plugin/plugin.json` manifests point at the existing `plugins/<name>/skills/` trees. Claude-specific commands and agents stay declared in the `.claude-plugin/plugin.json` manifests; Copilot agent templates are exposed through native `.github/plugin/plugin.json` manifests.
+
+Codex custom subagents are separate from plugin skills. Current Codex docs define custom agents as standalone TOML files under `~/.codex/agents/` for personal scope or `.codex/agents/` for project scope, with required `name`, `description`, and `developer_instructions` fields. Codex only spawns subagents when explicitly asked, and `/agent` is used in the CLI to inspect or switch active agent threads. For review/QA surfaces in this marketplace, keep `agents/templates/*.toml` as opt-in Codex custom-agent templates; installing the plugin exposes the skill, not the subagent.
 
 ## GitHub Copilot CLI
 
@@ -48,15 +50,17 @@ copilot plugin marketplace browse research-skills
 copilot plugin install project@research-skills
 ```
 
-Copilot CLI reads plugin manifests from `.plugin/plugin.json`, `plugin.json`, `.github/plugin/plugin.json`, or `.claude-plugin/plugin.json`. The existing `.claude-plugin/plugin.json` files are therefore intentionally retained and now declare their `skills`, `agents`, and `commands` component paths where applicable.
+Copilot CLI plugin manifests support component path fields including `skills`, `commands`, and `agents`; `agents` points to directories containing `.agent.md` files. Every plugin in this repo now has a native per-plugin `.github/plugin/plugin.json` manifest. Plugins with review/QA agents expose `agents/templates/` as the Copilot `agents` component path. The `agents/*.md` files remain Claude Code agent shells; `agents/templates/*.agent.md` are the Copilot custom-agent files.
 
-Note: Copilot CLI surfaces agents only from files ending in `.agent.md`. The current `agents/*.md` files are surfaced to Claude Code; Copilot CLI installs the plugins fine but will not list those agents until they are renamed to `*.agent.md`. Skills (`SKILL.md`) and commands work unchanged across both runtimes.
+Copilot custom-agent files use YAML frontmatter where `description` is required and the Markdown body defines the agent behavior. Optional frontmatter includes `name`, `tools`, `model`, `target`, `disable-model-invocation`, and `user-invocable`. Keep review/QA agent descriptions scoped to "invoked by the `<skill>` skill" so the skill remains the cross-agent trigger owner.
 
 ## Sources
 
 - OpenAI Codex AGENTS.md guide: https://developers.openai.com/codex/guides/agents-md
 - OpenAI Codex plugin build guide: https://developers.openai.com/codex/plugins/build
 - OpenAI Codex skills guide: https://developers.openai.com/codex/skills
+- OpenAI Codex subagents guide: https://developers.openai.com/codex/subagents
 - GitHub Copilot repository instructions: https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions
 - GitHub Copilot custom instructions support: https://docs.github.com/en/copilot/reference/custom-instructions-support
+- GitHub Copilot custom agents configuration: https://docs.github.com/en/copilot/reference/custom-agents-configuration
 - GitHub Copilot CLI plugin reference: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference

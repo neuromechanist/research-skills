@@ -25,7 +25,7 @@ done
 
 ### Codex
 
-Codex can use the native repo marketplace at `.agents/plugins/marketplace.json` and can also read the existing Claude-style `.claude-plugin/marketplace.json`.
+Codex can use the native repo marketplace at `.agents/plugins/marketplace.json`; the Claude-compatible `.claude-plugin/marketplace.json` remains for legacy-compatible installs.
 
 ```bash
 codex plugin marketplace add neuromechanist/research-skills
@@ -36,7 +36,7 @@ Each plugin also has a native `.codex-plugin/plugin.json` manifest. Then open `/
 
 ### GitHub Copilot CLI
 
-Copilot CLI can use the native marketplace at `.github/plugin/marketplace.json` and also looks for `.claude-plugin/marketplace.json`.
+Copilot CLI can use the native marketplace at `.github/plugin/marketplace.json`. Each plugin also has a native `.github/plugin/plugin.json` manifest.
 
 ```bash
 copilot plugin marketplace add neuromechanist/research-skills
@@ -52,13 +52,13 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.4.0 | Project lifecycle: init (with ADR scaffold and optional GitHub labels), rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
-| **grant** | 0.3.5 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
-| **manuscript** | 0.5.1 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
-| **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
-| **figures** | 0.10.4 | Publication-quality figures plugin (seven skills + QA agent) | `scientific-figure`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |
-| **presentation** | 0.2.1 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
-| **neuroinformatics** | 0.2.3 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
+| **project** | 0.4.2 | Project lifecycle: init (with ADR scaffold and optional GitHub labels), rule/config updates, epic workflow, PR review, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **grant** | 0.3.6 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
+| **manuscript** | 0.5.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
+| **opencite** | 0.3.2 | Literature search, citation management, PDF retrieval | `opencite` | -- |
+| **figures** | 0.10.5 | Publication-quality figures plugin (seven skills + QA agent) | `scientific-figure`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |
+| **presentation** | 0.2.2 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
+| **neuroinformatics** | 0.2.4 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
 
 ## Research Plugins
 
@@ -74,7 +74,7 @@ Search academic literature, explore citation graphs, download PDFs, and export B
 
 ### grant
 
-Draft and review NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, etc.). Includes a `grant-figure-qa` skill that checks figures for resolution, accessibility, and NIH/NSF compliance. As of epic #61, `grant-review` and `grant-figure-qa` run as independent fresh-context reviewers (Claude agents, with Codex/Copilot shell templates), so the critique is not biased by the drafting context. Skills for research strategy guidelines, writing style, budget justification, scoring criteria, and resubmission response.
+Draft and review NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, etc.). Includes a `grant-figure-qa` skill that checks figures for resolution, accessibility, and NIH/NSF compliance. As of epic #61, `grant-review` and `grant-figure-qa` use thin-dispatch skills with Claude-bundled fresh-context agents, Codex agent templates, and Copilot plugin-agent templates; when those agents are not configured, the skills run the same reference procedure inline. Skills for research strategy guidelines, writing style, budget justification, scoring criteria, and resubmission response.
 
 ```
 "Write the significance section for an R01 on motor cortex"
@@ -83,7 +83,7 @@ Draft and review NIH and NSF grant proposals with mechanism-specific templates (
 
 ### manuscript
 
-Academic manuscript toolkit covering the full lifecycle: literature review (both multi-phase citation-traceable corpus protocol and single-pass thematic synthesis), writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates. As of epic #61, peer review runs as an independent fresh-context subagent (`paper-review`, with Codex/Copilot shell templates) so the critique is unbiased by the drafting context.
+Academic manuscript toolkit covering the full lifecycle: literature review (both multi-phase citation-traceable corpus protocol and single-pass thematic synthesis), writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates. As of epic #61, `paper-review` is a thin-dispatch skill with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template; when those agents are not configured, the skill runs the same reference procedure inline.
 
 The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citation-traceable multi-phase workflow where every claim in a direction paper links back to a paper-card on disk, plus an express single-pass synthesis pipeline for writing an Introduction or Background section. The multi-phase workflow can delegate phase orchestration (epic issue, sub-issues, worktrees, state file) to `project:epic-dev` for git-tracked reviews.
 
@@ -96,7 +96,7 @@ The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citati
 
 ### figures
 
-Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.10.4 makes `validate_fonts.py` viewBox-aware so it reports the physical point size (a bare font-size in an mm-viewBox is mm, not pt), which lets svg-primitives output pass figure-qa's font check, and completes the svg-figure examples migration to svg-primitives (issue [#52](https://github.com/neuromechanist/research-skills/issues/52)). v0.10.3 implements the `figure-qa` SVG-branch geometry section (text-overflow, arrow-tip-to-target, sibling bbox-overlap; issue [#47](https://github.com/neuromechanist/research-skills/issues/47)). v0.10.2 makes `figure-qa` a cross-agent thin-dispatch skill over the existing QA agent (epic [#61](https://github.com/neuromechanist/research-skills/issues/61)). v0.10.1 closed epics [#31](https://github.com/neuromechanist/research-skills/issues/31) (plugin redesign) and [#48](https://github.com/neuromechanist/research-skills/issues/48) (svg-primitives): seven skills and the unified QA agent.
+Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journals). v0.10.5 adds native Copilot plugin metadata for the QA agent template. v0.10.4 makes `validate_fonts.py` viewBox-aware so it reports the physical point size (a bare font-size in an mm-viewBox is mm, not pt), which lets svg-primitives output pass figure-qa's font check, and completes the svg-figure examples migration to svg-primitives (issue [#52](https://github.com/neuromechanist/research-skills/issues/52)). v0.10.3 implements the `figure-qa` SVG-branch geometry section (text-overflow, arrow-tip-to-target, sibling bbox-overlap; issue [#47](https://github.com/neuromechanist/research-skills/issues/47)). v0.10.2 makes `figure-qa` a cross-agent thin-dispatch skill over the existing QA agent (epic [#61](https://github.com/neuromechanist/research-skills/issues/61)). v0.10.1 closed epics [#31](https://github.com/neuromechanist/research-skills/issues/31) (plugin redesign) and [#48](https://github.com/neuromechanist/research-skills/issues/48) (svg-primitives): seven skills and the unified QA agent.
 
 - `scientific-figure` skill — svgutils-based composer that places panels at exact mm coordinates and preserves text as SVG `<text>` elements so font sizes are inspectable. `validate_fonts.py` walks the transform stack and folds in the root width/viewBox scale to report the physical point size (a bare font-size in an mm-viewBox is mm, not pt; explicit units are absolute), flagging anything below the journal minimum (Nature 5 pt, Science/Cell/PNAS 6 pt). `export.py` detects Inkscape on `$PATH` and uses it when present, falling back to cairosvg. End-to-end example: `examples/two-column-figure.py`.
 - `transparent-icons` skill — flat scientific icons (brain, neuron, EEG cap, DNA, etc.) via the Codex CLI `image_gen` tool (preferred when `codex login` is configured) or the OpenAI Images API (fallback). Transparency post-process: fast Pillow threshold by default or opt-in `rembg` + BiRefNet for cleaner edges on complex foregrounds. Shares a `theme.json` schema with the `ai-full-figure` skill for cross-skill style consistency.
@@ -104,7 +104,7 @@ Publication-quality figures plugin (Nature, Science, PNAS, Cell, and other journ
 - `svg-primitives` skill — mm-precise SVG builder in Python on drawsvg + svgpathtools + fontTools. Auto-fits text boxes from measured font metrics, snaps arrow endpoints to box edges via path intersection, emits `<marker orient='auto'>` for tangent-correct arrowheads on straight/cubic/orthogonal/multi-waypoint paths, and uses named layers for deterministic paint order. In-process validation via `Canvas.save(validate='warn'|'strict'|'off')` and `Canvas.validate()` runs four checks (text-overflow, arrow-tip-distance, marker-orient, sibling-overlap). Ships `LabeledBox`, `Pill`, `Diamond`, `Arrow.connect`, `Bracket`, `Annotation`, `Group`, `Shape` Protocol, and a 68-test E2E suite asserting the invariants on rendered SVGs.
 - `ai-full-figure` skill — AI-generated pictorial substrate via Codex CLI or OpenAI Images API, plus programmatic label / arrow / scale-bar overlay producing a composable SVG. The substrate-only rule keeps the model from hallucinating labels; the overlay step places text deterministically. Hard-ceiling rules route figures that need data plots, equations, multi-arrow flows, or more than ~5 labels back to `scientific-figure` or `svg-primitives`. Theme.json bible shared with `transparent-icons`.
 - `plot-styling` skill — library decision tree across matplotlib, seaborn, plotnine, plotly, and PyVista, with SciencePlots recipes for Nature, IEEE, Science, Cell, PNAS, and APS journals. End-to-end example `sciplots_panel.py` produces a Nature 1-column panel using `science + nature + bright + no-latex` that passes the `figure-qa` plot-script and SVG branches.
-- `figure-qa` skill + agent — a thin dispatch skill (epic #61) that routes to a fresh-context Claude agent, with Codex/Copilot shell templates, so QA runs cross-agent. Type-dispatches across SVG / raster / plot-script / composed-figure inputs. Helper scripts (`check_svg.py`, `check_raster.py`, `check_plot_script.py`) handle programmatic checks (font minima, palette compliance, SVG-branch geometry [text-overflow, arrow-tip-to-target, sibling bbox-overlap], alpha-channel correctness, DPI, library recommendations) with strict separation from VLM rubric scoring (clarity, hierarchy, alignment, palette coherence, journal-fit). Programmatic checks own anything with ground truth; VLM judgment is reserved for "does this look balanced." Complementary to `svg-primitives`' in-process validators: figure-qa validates arbitrary SVGs (including hand-authored ones); svg-primitives validates SVGs it produced, before they hit disk.
+- `figure-qa` skill + agent — a thin dispatch skill (epic #61) that routes to a fresh-context Claude agent when available, with a Codex agent template, a Copilot plugin-agent template, and an inline fallback using the same reference procedure. Type-dispatches across SVG / raster / plot-script / composed-figure inputs. Helper scripts (`check_svg.py`, `check_raster.py`, `check_plot_script.py`) handle programmatic checks (font minima, palette compliance, SVG-branch geometry [text-overflow, arrow-tip-to-target, sibling bbox-overlap], alpha-channel correctness, DPI, library recommendations) with strict separation from VLM rubric scoring (clarity, hierarchy, alignment, palette coherence, journal-fit). Programmatic checks own anything with ground truth; VLM judgment is reserved for "does this look balanced." Complementary to `svg-primitives`' in-process validators: figure-qa validates arbitrary SVGs (including hand-authored ones); svg-primitives validates SVGs it produced, before they hit disk.
 
 ### presentation
 
@@ -123,7 +123,7 @@ Neuroscience data standards, experiment design, and dataset validation:
 
 - **BIDS conversion** -- convert EEG, EMG, and other modalities to Brain Imaging Data Structure (BIDS) format with proper file naming, JSON sidecars, and metadata
 - **Experiment design** -- scaffold PsychoPy experiments with stimulus presentation, LSL marker integration, and BIDS-compatible output
-- **BIDS validator agent** -- autonomously validate datasets, diagnose errors, and apply fixes
+- **BIDS validator agent** -- autonomously validate datasets, diagnose errors, and apply fixes. Claude has the bundled agent shell, Codex has an agent template, and Copilot exposes the `.agent.md` template through the native plugin manifest.
 
 ```
 "Convert ./raw-data to BIDS format, modality EEG, task rest"
@@ -139,13 +139,15 @@ Complete project lifecycle toolkit combining initialization, epic/sprint workflo
 
 - **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/`, and config files
 - **update-rules** -- non-destructive sync of AGENTS.md, the CLAUDE.md adapter, and `.rules/` against latest templates at user or project level
-- **workflow** -- multi-phase feature development with git worktrees, GitHub issues, and phased PR delivery
+- **epic-dev** -- Codex-facing entrypoint for the `/epic-dev` multi-phase feature workflow with git worktrees, GitHub issues, and phased PR delivery
+- **workflow-reference** -- branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
+- **pr-review-toolkit** -- PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification. Inspired by Anthropic's [`pr-review-toolkit`](https://github.com/anthropics/claude-code/tree/main/plugins/pr-review-toolkit) implementation; the upstream plugin README identifies it as MIT licensed. The project skill is an original cross-agent adaptation with shared rubrics in `references/`.
 - **CI scaffolding** -- generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
 - **Docker packaging** -- multi-stage Dockerfiles with uv/bun, health checks, and security hardening
 - **Security audit** -- credential scanning, dependency audit, OWASP checklist, configuration hardening
 - **Document processing** -- PDF/image OCR, text extraction, markdown conversion
 
-Includes autonomous agents: **dependency-auditor** (vulnerability scanning) and **release-prep** (pre-release validation).
+Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **release-prep** (pre-release validation), and a Claude-bundled **pr-review-toolkit** reviewer. Codex gets an opt-in TOML agent template under `plugins/project/agents/templates/`; Copilot exposes the `.agent.md` template through the native plugin manifest. The skill remains the portable fallback when a fresh-context agent is unavailable.
 
 ```
 /init-project "Python EEG analysis package"
