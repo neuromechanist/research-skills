@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.15.8",
+  "version": "0.15.9",
   "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
@@ -10,8 +10,8 @@
   "plugins": [
     {
       "name": "project",
-      "description": "Project lifecycle toolkit: initialization (with ADR scaffold and optional GitHub label set), rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.4.0",
+      "description": "Project lifecycle toolkit: initialization (with ADR scaffold and optional GitHub label set), rule/config updates, epic/sprint workflow, PR review, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
+      "version": "0.4.2",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -23,7 +23,7 @@
     {
       "name": "grant",
       "description": "Grant proposal toolkit: NIH/NSF writing with mechanism-specific templates, structured review with scoring criteria, and figure quality assurance",
-      "version": "0.3.5",
+      "version": "0.3.6",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -35,7 +35,7 @@
     {
       "name": "manuscript",
       "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, journal-specific formatting for submission, and humanizer pass to remove AI-writing tells",
-      "version": "0.5.1",
+      "version": "0.5.2",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -47,7 +47,7 @@
     {
       "name": "opencite",
       "description": "Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -59,7 +59,7 @@
     {
       "name": "figures",
       "description": "Publication-quality figures plugin. Seven skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); svg-primitives (mm-precise SVG builder in Python: auto-fit boxes, tangent-correct arrows on straight/cubic/orthogonal routes, multi-waypoint paths, brackets/annotations/groups, layered z-order); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
-      "version": "0.10.4",
+      "version": "0.10.5",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -71,7 +71,7 @@
     {
       "name": "presentation",
       "description": "Presentation builder: create interactive Reveal.js presentations from JSON with Mermaid diagrams, LaTeX math, code highlighting, and animated reveals",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
@@ -83,7 +83,7 @@
     {
       "name": "neuroinformatics",
       "description": "Neuroscience data standards and experiment design: BIDS conversion/validation, HED annotation, and PsychoPy experiment scaffolding",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"

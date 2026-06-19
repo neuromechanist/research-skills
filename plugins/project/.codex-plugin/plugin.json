@@ -1,7 +1,7 @@
 {
   "name": "project",
-  "version": "0.4.0",
-  "description": "Complete project lifecycle toolkit: initialization (with ADR scaffold and optional GitHub label set), rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
+  "version": "0.4.2",
+  "description": "Complete project lifecycle toolkit: initialization (with ADR scaffold and optional GitHub label set), rule/config updates, epic/sprint workflow, PR review, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
@@ -19,6 +19,8 @@
     "epic",
     "sprint",
     "worktree",
+    "pr-review",
+    "code-review",
     "document-processing"
   ]
 }

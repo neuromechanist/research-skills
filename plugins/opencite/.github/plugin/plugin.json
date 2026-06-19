@@ -1,0 +1,21 @@
+{
+  "name": "opencite",
+  "version": "0.3.2",
+  "description": "Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export",
+  "author": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "license": "BSD-3-Clause",
+  "skills": "./skills/",
+  "keywords": [
+    "academic",
+    "literature",
+    "citations",
+    "bibtex",
+    "pdf",
+    "pubmed",
+    "openalex",
+    "semantic-scholar"
+  ]
+}

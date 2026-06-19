@@ -1,11 +1,12 @@
 # Codex CLI subagent: grant-figure-qa
 #
-# Codex does not auto-bundle agents from an installed plugin. To use this reviewer
-# as a Codex subagent, copy this file to one of:
+# Codex does not auto-bundle agents from an installed plugin. This template is
+# opt-in: to use this reviewer as a Codex subagent, copy this file to one of:
 #   ~/.codex/agents/grant-figure-qa.toml   (personal, all projects)
 #   .codex/agents/grant-figure-qa.toml      (this project only)
-# then run it via /agent. It requires the grant plugin's grant-figure-qa skill to be
-# installed so that its references/ directory is on disk; this agent reads the
+# then invoke it with the Codex agent surface if your Codex version supports one.
+# It requires the grant plugin's grant-figure-qa skill to be installed so that its
+# references/ directory is on disk; this agent reads the
 # checklist from there.
 
 name = "grant-figure-qa"

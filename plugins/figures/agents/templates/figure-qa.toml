@@ -1,12 +1,13 @@
 # Codex CLI subagent: figure-qa
 #
-# Codex does not auto-bundle agents from an installed plugin. To use this QA reviewer
-# as a Codex subagent, copy this file to one of:
+# Codex does not auto-bundle agents from an installed plugin. This template is
+# opt-in: to use this QA reviewer as a Codex subagent, copy this file to one of:
 #   ~/.codex/agents/figure-qa.toml   (personal, all projects)
 #   .codex/agents/figure-qa.toml      (this project only)
-# then run it via /agent. It requires the figures plugin to be installed so that the
-# figure-qa skill's references/ and the agents/figure-qa-scripts/ engine are on disk;
-# this agent reads the procedure and runs the scripts from there.
+# then invoke it with the Codex agent surface if your Codex version supports one.
+# It requires the figures plugin to be installed so that the figure-qa skill's
+# references/ and the agents/figure-qa-scripts/ engine are on disk; this agent
+# reads the procedure and runs the scripts from there.
 
 name = "figure-qa"
 description = "Independent scientific-figure QA reviewer. Loads the figure-qa skill's procedure and runs the figures plugin's check scripts. Invoked by the figure-qa skill."
