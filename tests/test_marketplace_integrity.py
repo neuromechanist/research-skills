@@ -27,6 +27,8 @@ PLUGINS = sorted(
     p.name for p in PLUGINS_DIR.iterdir() if (p / ".claude-plugin" / "plugin.json").exists()
 )
 SEMVER = re.compile(r"^\d+\.\d+\.\d+$")
+FRONTMATTER = re.compile(r"\A---\n(?P<body>.*?)\n---", re.DOTALL)
+MAX_SKILL_DESCRIPTION_CHARS = 1024
 
 
 def _load(path: Path):
@@ -35,6 +37,33 @@ def _load(path: Path):
 
 def _marketplace_entry(manifest: dict, name: str):
     return next((p for p in manifest.get("plugins", []) if p.get("name") == name), None)
+
+
+def _frontmatter_lines(path: Path) -> list[str]:
+    text = path.read_text()
+    match = FRONTMATTER.match(text)
+    assert match, f"{path.relative_to(ROOT)}: missing YAML frontmatter"
+    return match.group("body").splitlines()
+
+
+def _single_line_frontmatter_value(path: Path, key: str) -> str:
+    prefix = f"{key}:"
+    for line in _frontmatter_lines(path):
+        if line.startswith(prefix):
+            return line[len(prefix) :].strip()
+    raise AssertionError(f"{path.relative_to(ROOT)}: missing {key!r} in frontmatter")
+
+
+def _decode_frontmatter_string(path: Path, key: str) -> str:
+    raw = _single_line_frontmatter_value(path, key)
+    if (raw.startswith("'") and raw.endswith("'")) or (
+        raw.startswith('"') and raw.endswith('"')
+    ):
+        return raw[1:-1]
+    assert ": " not in raw, (
+        f"{path.relative_to(ROOT)}: unquoted {key!r} contains ': ', which Codex rejects"
+    )
+    return raw
 
 
 def test_all_manifests_are_valid_json():
@@ -51,6 +80,19 @@ def test_all_manifests_are_valid_json():
     for m in manifests:
         assert m.exists(), f"missing manifest: {m.relative_to(ROOT)}"
         _load(m)  # raises JSONDecodeError on malformed JSON
+
+
+def test_skill_frontmatter_is_codex_loadable():
+    skills = sorted(PLUGINS_DIR.glob("*/skills/*/SKILL.md"))
+    assert skills, "no plugin skills found"
+
+    for skill in skills:
+        description = _decode_frontmatter_string(skill, "description")
+        assert description, f"{skill.relative_to(ROOT)}: empty description"
+        assert len(description) <= MAX_SKILL_DESCRIPTION_CHARS, (
+            f"{skill.relative_to(ROOT)}: description is {len(description)} characters; "
+            f"Codex maximum is {MAX_SKILL_DESCRIPTION_CHARS}"
+        )
 
 
 @pytest.mark.parametrize("plugin", PLUGINS)
