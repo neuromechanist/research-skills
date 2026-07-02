@@ -63,23 +63,23 @@ For NSF proposals:
 - Project Description
 - Data Management Plan
 
-**Partial submissions.** If only some sections are provided (for example, a Specific Aims page alone, or no biosketch), score what is present rather than suspending the review, but make the partial scope unmistakable: begin the output with a bold **PARTIAL REVIEW** banner, placed above the summary and scores (not buried in Additional Review Criteria), that lists the missing sections and warns that scores for criteria depending on them are based on available material only and are not predictive of a study-section outcome. For the Investigator criterion with no biosketch, score on the strength of the preliminary data alone, note the limitation, and do not invent a track record.
+**Partial submissions.** If only some sections are provided (for example, a Specific Aims page alone, or no biosketch), score what is present rather than suspending the review, but make the partial scope unmistakable: begin the output with a bold **PARTIAL REVIEW** banner, placed above the summary and scores (not buried in Additional Review Criteria), that lists the missing sections and warns that scores for criteria depending on them are based on available material only and are not predictive of a study-section outcome. For the expertise component of Factor 3 (NIH RPG) or the Investigator criterion (K/F, NSF) with no biosketch, assess only what the available material supports, note the limitation, and do not invent a track record.
 
-## 3. Score each criterion
+## 3. Score each factor (RPG) or criterion (K/F/NSF)
 
 Before scoring, consult `review-best-practices.md` for calibration and the meaning of common reviewer comments, so scores are anchored to study-section norms rather than first impressions.
 
-**NIH Scoring (1-9 scale):**
+**NIH RPG Scoring - Simplified Review Framework (three factors):**
 
-For each of the five review criteria, assign a score and provide justification. The full 1-9 score descriptors (1 = Exceptional through 9 = Poor) and scoring mechanics live in `nih-review-criteria.md`; apply them from there rather than from memory.
+For RPG mechanisms (R01, R03, R15, R21, U01, etc.), assign scores and assessments under the three factors. **Factor 1 and Factor 2 are scored 1-9; Factor 3 is assessed as appropriate/sufficient, not scored 1-9.** The full 1-9 descriptors (1 = Exceptional through 9 = Poor) and scoring mechanics live in `nih-review-criteria.md`; apply them from there rather than from memory.
 
-| Criterion | Key Questions |
-|-----------|---------------|
-| **Significance** | Is the problem important? Will the field advance? |
-| **Investigator(s)** | Is the team qualified? Sufficient preliminary data? |
-| **Innovation** | Are concepts/methods novel? Does it challenge the status quo? |
-| **Approach** | Is the design rigorous? Are methods appropriate? Feasibility? |
-| **Environment** | Does the institution support the work? |
+| Factor | Rolls in (legacy) | Scoring | Key Questions |
+|--------|-------------------|---------|---------------|
+| **Factor 1 - Importance of the Research** | Significance + Innovation | Scored 1-9 | Is the problem important? Are the concepts/methods novel enough to advance the field? |
+| **Factor 2 - Rigor and Feasibility** | Approach | Scored 1-9 | Is the design rigorous and well-reasoned? Are methods appropriate and feasible? |
+| **Factor 3 - Expertise and Resources** | Investigators + Environment | Assessed, not 1-9 | Are the team and environment appropriate/sufficient for this project? Note concerns in narrative. |
+
+For **K, F, and T mechanisms**, use the scored criteria in `nih-career-training-criteria.md` instead; those awards have their own revised frameworks and are out of scope for the three-factor RPG structure.
 
 **NSF Rating:**
 - Excellent / Very Good / Good / Fair / Poor
@@ -97,7 +97,7 @@ Synthesize across criteria. Focus on:
 Structure the output according to the appropriate agency template in `review-output-templates.md`. Both NIH and NSF templates follow this general structure:
 
 1. **Summary** - 2-3 sentence proposal overview
-2. **Criterion scores** - Individual scores (NIH 1-9) or ratings (NSF Excellent-Poor) with strengths/weaknesses for each criterion
+2. **Factor / criterion scores** - For NIH RPGs, Factor 1 and Factor 2 scored 1-9 and Factor 3 assessed as appropriate/sufficient; for K/F, the scored criteria from `nih-career-training-criteria.md`; for NSF, ratings (Excellent-Poor). Include strengths/weaknesses for each
 3. **Additional review criteria** - Non-scored items (human subjects, data management, rigor)
 4. **Layout and space utilization** (only when a PDF was provided; omit this section entirely for Markdown or LaTeX inputs) - Observations on figure sizing, whitespace usage, areas where space could be saved or better utilized, and whether the proposal makes effective use of its page limits
 5. **Actionable improvements** - Prioritized as Critical, Important, and Suggested

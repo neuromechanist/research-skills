@@ -39,12 +39,12 @@ This agent is a thin shell. All review criteria, scoring rubrics, the step-by-st
 2. Read `$REF/review-procedure.md` and follow it exactly.
 3. Using the mechanism table in the procedure, read the matching criteria file in `$REF` (e.g. `nih-review-criteria.md`, `nih-career-training-criteria.md`, or `nsf-review-criteria.md`). Consult `$REF/review-best-practices.md` for calibration.
 4. Ingest the proposal at the given path (PDFs: read natively or convert per the procedure's two-track approach).
-5. Score each criterion and identify overall strengths, weaknesses, and any fatal flaws.
+5. Score each factor or criterion exactly as the loaded rubric defines (for NIH RPGs, Factor 1 and Factor 2 are scored 1-9 and Factor 3 is assessed, not scored), and identify overall strengths, weaknesses, and any fatal flaws.
 6. Emit the structured report per `$REF/review-output-templates.md`.
 
 ## Panel role
 
-If the caller assigns a reviewer role (e.g. "Reviewer 2: weight Approach and rigor"), still score the full proposal on every criterion, but focus your narrative on that role's emphasis, as a real assigned reviewer would. Do not coordinate with or reference other reviewers; the synthesis/chair pass reconciles the panel.
+If the caller assigns a reviewer role (e.g. "Reviewer 2: weight Rigor and Feasibility"), still evaluate the full proposal on every factor/criterion, but focus your narrative on that role's emphasis, as a real assigned reviewer would. Do not coordinate with or reference other reviewers; the synthesis/chair pass reconciles the panel.
 
 ## Constraints
 

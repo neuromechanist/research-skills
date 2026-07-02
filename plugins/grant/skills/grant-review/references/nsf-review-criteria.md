@@ -102,7 +102,7 @@ The panel reaches consensus on an overall rating:
 
 ### Key Differences from NIH
 - **Narrative-based**: No numeric scores; emphasis on written justification
-- **Two criteria only**: Intellectual Merit + Broader Impacts (vs. NIH's five)
+- **Two criteria only**: Intellectual Merit + Broader Impacts (vs. NIH's three RPG factors)
 - **Program officer discretion**: PO has more latitude than at NIH
 - **Portfolio balance**: Funding decisions consider the overall portfolio
 - **No percentile system**: Rankings are relative within the panel

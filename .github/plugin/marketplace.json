@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.15.8"
+    "version": "0.15.9"
   },
   "plugins": [
     {
@@ -19,7 +19,7 @@
     {
       "name": "grant",
       "description": "Grant proposal toolkit: NIH/NSF writing with mechanism-specific templates, structured review with scoring criteria, and figure quality assurance",
-      "version": "0.3.5",
+      "version": "0.3.6",
       "source": "./plugins/grant",
       "category": "research"
     },

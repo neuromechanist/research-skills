@@ -2,6 +2,8 @@
 
 Review criteria for K-mechanism career development awards, F-mechanism fellowship awards, and T-mechanism training grants. These differ substantially from R-mechanism research grants in both criteria weighting and reviewer focus.
 
+> **Scope note.** The three-factor **Simplified Review Framework** (NOT-OD-24-010) in `nih-review-criteria.md` applies to **Research Project Grants (RPGs)** only. Fellowship (F) and career development (K) awards were revised under **separate** notices (for example, the fellowship framework in NOT-OD-24-129, effective for due dates on or after 2025-01-25) and are **not** reduced to those three factors. Continue to use the mechanism-specific scored criteria in this file for K/F/T applications; do not apply the RPG three-factor structure to them.
+
 ## Key Differences from R-Mechanism Grants
 
 - **Candidate/Applicant quality** is a primary scored criterion (not just "Investigator(s)")

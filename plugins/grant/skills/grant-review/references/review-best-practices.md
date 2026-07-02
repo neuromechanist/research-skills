@@ -33,6 +33,8 @@ Based on analysis of publicly available NIH review data and reviewer guidance:
 
 ## Common Reviewer Comments
 
+The comment groups below are organized by topic (Significance, Innovation, Approach, Investigator) for ease of lookup. Under the NIH RPG Simplified Review Framework these topics roll into factors: Significance + Innovation into **Factor 1 (Importance)**, Approach into **Factor 2 (Rigor and Feasibility)**, and Investigator (with Environment) into **Factor 3 (Expertise and Resources, assessed not scored)**. See `nih-review-criteria.md`.
+
 ### Specific Aims
 | Comment | What It Means | How to Fix |
 |---------|--------------|-----------|
@@ -109,7 +111,7 @@ Based on analysis of publicly available NIH review data and reviewer guidance:
 - [ ] Check if the proposal addresses known requirements (SABV, rigor, DMS)
 
 ### During the Review
-- [ ] Score each criterion independently (don't let one dominate prematurely)
+- [ ] Score each factor independently (don't let one dominate prematurely); assess Factor 3 (Expertise and Resources) rather than scoring it 1-9
 - [ ] Cite specific pages, figures, or sections in feedback
 - [ ] Provide at least one actionable suggestion per weakness
 - [ ] Acknowledge genuine strengths, especially in innovative proposals
@@ -126,7 +128,7 @@ Based on analysis of publicly available NIH review data and reviewer guidance:
 NIH reviewer training and NSF panel orientation both emphasize the following principles:
 
 - **Evaluate the science, not the scientist**: Focus on the proposed work, methodology, and feasibility. Do not let institutional prestige, PI demographics, or personal familiarity with the investigator influence the score.
-- **Avoid halo/horns effects**: A strong Significance section does not automatically mean the Approach is strong. Score each criterion independently based on the evidence for that criterion.
+- **Avoid halo/horns effects**: A strong Importance (Factor 1) assessment does not automatically mean Rigor and Feasibility (Factor 2) is strong. Evaluate each factor independently based on the evidence for that factor.
 - **Guard against confirmation bias**: Do not selectively seek evidence to support an initial impression. Read the entire proposal before forming a judgment.
 - **Separate novelty from quality**: An unconventional approach is not inherently better or worse than a conventional one. Evaluate whether the approach is appropriate for the question.
 - **Acknowledge uncertainty**: If expertise is insufficient to evaluate a specific method or analysis, state this limitation rather than penalizing or ignoring the section.
@@ -144,7 +146,7 @@ NIH reviewer training and NSF panel orientation both emphasize the following pri
 For reference, an NIH summary statement typically contains:
 
 1. **Resume and Summary of Discussion** - Brief narrative of the panel discussion
-2. **Critique 1 (Primary Reviewer)** - Detailed review with criterion scores
+2. **Critique 1 (Primary Reviewer)** - Detailed review with factor scores (RPG: Factor 1 and Factor 2 scored, Factor 3 assessed)
 3. **Critique 2 (Secondary Reviewer)** - Additional perspective
 4. **Critique 3 (if assigned)** - Often focused on methodology/statistics
 5. **Overall Impact Score** - From all voting members
