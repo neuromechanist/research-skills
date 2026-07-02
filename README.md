@@ -55,7 +55,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
 | **project** | 0.4.0 | Project lifecycle: init (with ADR scaffold and optional GitHub labels), rule/config updates, workflow, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
-| **grant** | 0.3.5 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
+| **grant** | 0.3.6 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
 | **manuscript** | 0.5.1 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.1 | Literature search, citation management, PDF retrieval | `opencite` | -- |
 | **figures** | 0.10.4 | Publication-quality figures plugin (seven skills + QA agent) | `scientific-figure`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |

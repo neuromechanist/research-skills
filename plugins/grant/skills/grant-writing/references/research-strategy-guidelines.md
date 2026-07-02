@@ -144,15 +144,17 @@ For each aim:
 
 ---
 
-## Review Criteria Mapping
+## Review Criteria Mapping (RPG Simplified Review Framework, NOT-OD-24-010)
 
-| Criterion | Where Addressed |
-|-----------|-----------------|
-| Significance | Significance section + throughout |
-| Investigator(s) | Biosketch + Preliminary Studies |
-| Innovation | Innovation section |
-| Approach | Approach section |
-| Environment | Facilities + Approach |
+For Research Project Grants with due dates on or after 2025-01-25, reviewers evaluate three factors. Write each section knowing which factor it feeds:
+
+| Factor (scoring) | Rolls in | Where Addressed |
+|------------------|----------|-----------------|
+| Factor 1 - Importance of the Research (scored 1-9) | Significance + Innovation | Significance section + Innovation section + throughout |
+| Factor 2 - Rigor and Feasibility (scored 1-9) | Approach | Approach section |
+| Factor 3 - Expertise and Resources (assessed, not scored) | Investigators + Environment | Biosketch + Preliminary Studies + Facilities |
+
+Fellowship (F) and career development (K) awards use their own revised frameworks, not these three factors; see the `grant-review` skill's `nih-career-training-criteria.md`.
 
 ---
 

@@ -2,7 +2,10 @@
 
 Review criteria for K-mechanism career development awards, F-mechanism fellowship awards, and T-mechanism training grants. These differ substantially from R-mechanism research grants in both criteria weighting and reviewer focus.
 
-> **Scope note.** The three-factor **Simplified Review Framework** (NOT-OD-24-010) in `nih-review-criteria.md` applies to **Research Project Grants (RPGs)** only. Fellowship (F) and career development (K) awards were revised under **separate** notices (for example, the fellowship framework in NOT-OD-24-129, effective for due dates on or after 2025-01-25) and are **not** reduced to those three factors. Continue to use the mechanism-specific scored criteria in this file for K/F/T applications; do not apply the RPG three-factor structure to them.
+> **Scope note.** The three-factor **Simplified Review Framework** (NOT-OD-24-010) in `nih-review-criteria.md` applies to **Research Project Grants (RPGs)** only; it is **not** applied to K, F, or T mechanisms. Track the mechanism-specific changes separately, all effective for due dates on or after 2025-01-25:
+> - **Fellowships (F30, F31, F32, F33, F99/K00)** were revised under **NOT-OD-24-107** into **three** new scored criteria (Candidate's Preparedness and Potential; Research Training Plan; Commitment to Candidate). The F31/F32 section below reflects these.
+> - **Institutional training grants (T-series, e.g. T32)** were revised under **NOT-OD-24-129**. The T32 section below still describes the pre-2025 structure; treat it as historical and verify current criteria against the notice and the specific NOFO.
+> - **Individual career development awards (K)** did **not** have their scored review criteria changed for 2025 (only reference-letter/application instructions were updated); the K sections below remain current.
 
 ## Key Differences from R-Mechanism Grants
 
@@ -116,42 +119,33 @@ K08 targets clinician-scientists pursuing basic/translational research; K23 targ
 
 F31 supports predoctoral (PhD) candidates; F32 supports postdoctoral researchers. Both emphasize training potential over independent research productivity.
 
-### Scored Review Criteria
+### Scored Review Criteria (revised fellowship framework, NOT-OD-24-107)
 
-#### 1. Applicant
+For due dates on or after 2025-01-25, individual fellowship applications (F30, F31, F32, F33, F99/K00) are reviewed under **three** scored criteria rather than the legacy five. The substance of the old criteria is folded in as sub-bullets under the new criterion it now informs.
+
+#### 1. Candidate's Preparedness and Potential (formerly: Applicant + Training Potential)
 - Academic record and evidence of research aptitude
 - For F31: prior research experience, coursework, and potential for a research career
 - For F32: doctoral training quality, publications, and readiness for the proposed training
 - Commitment to a biomedical, behavioral, or clinical research career
+- Demonstrated qualities (scientific understanding, creativity, perseverance) and capacity to progress to the next career stage
 - Appropriateness of the proposed training for the applicant's career stage
 
-#### 2. Sponsors, Collaborators, and Consultants
-- Sponsor's (primary mentor's) research competence and funding
-- Sponsor's track record of training predoctoral (F31) or postdoctoral (F32) researchers
-- Quality of the training plan provided by the sponsor
-- Number and qualifications of collaborators
-- Evidence of a supportive, collegial training relationship
-
-#### 3. Research Training Plan
-- Scientific merit and significance of the proposed research
-- Appropriateness of the research as a training vehicle
+#### 2. Research Training Plan (formerly: Research Training Plan + Sponsors/Environment adequacy for the plan)
+- Scientific merit, rigor, and feasibility of the proposed research as a training vehicle
+- Alignment of the plan with the candidate's developmental goals and identification of the skills to be developed
 - Clarity of the research goals and experimental approach
 - For F31: project complexity should be appropriate for a graduate student
 - For F32: project should develop skills beyond those acquired during doctoral training
-- Feasibility within the fellowship period
+- Whether the sponsor(s), environment, and institutional resources adequately support the plan (coursework, seminars, core facilities, monitoring of progress)
 
-#### 4. Training Potential
-- Quality of the proposed training in the context of the applicant's experience
-- Potential for the applicant to develop into a productive, independent researcher
-- Evidence that this specific training environment adds value beyond what is available elsewhere
-- Applicant's ability to articulate what skills the fellowship will develop
+#### 3. Commitment to Candidate (formerly: Sponsors, Collaborators, and Consultants + Institutional Commitment)
+- Strength and appropriateness of the mentoring plan for the trainee's needs
+- Sponsor's (primary mentor's) research competence, funding, and track record of training predoctoral (F31) or postdoctoral (F32) researchers
+- Qualifications and roles of co-sponsors, collaborators, and consultants
+- Whether organizational/institutional commitment sufficiently aligns with the training objectives and will enable career advancement
 
-#### 5. Institutional Environment and Commitment to Training
-- Quality and breadth of the training program
-- Availability of coursework, seminars, and professional development opportunities
-- Track record of the program in training successful researchers
-- Institutional resources (libraries, computing, core facilities)
-- Plan for monitoring and evaluating the applicant's progress
+> **Historical note.** Applications reviewed **before 2025-01-25** used five scored criteria: Applicant; Sponsors, Collaborators, and Consultants; Research Training Plan; Training Potential; Institutional Environment and Commitment to Training. That structure may still be relevant when reading an older summary statement.
 
 ### F31 Diversity Supplement Considerations
 - For F31 applications from individuals from underrepresented groups, reviewers also consider the potential to enhance diversity in the biomedical research workforce
@@ -167,7 +161,9 @@ F31 supports predoctoral (PhD) candidates; F32 supports postdoctoral researchers
 
 T32 supports predoctoral and postdoctoral research training programs at institutions. Unlike individual awards, the T32 evaluates the program, not a single trainee.
 
-### Scored Review Criteria
+> **Revised framework (NOT-OD-24-129).** Institutional training grant applications with due dates on or after 2025-01-25 use an updated review structure. The criteria below describe the **pre-2025** structure and are retained for historical context; for a current T32 review, verify the criteria against NOT-OD-24-129 and the specific NOFO before scoring.
+
+### Scored Review Criteria (pre-2025 structure; see the note above)
 
 #### 1. Training Program
 - Quality and coherence of the overall training program design
@@ -228,8 +224,10 @@ T32 supports predoctoral and postdoctoral research training programs at institut
 | Typical score drivers | Approach + Significance | Candidate + Mentor | Applicant + Sponsors | Program + Faculty + Outcomes |
 
 ## Sources
+- [NOT-OD-24-107 - Implementation of Revisions to the NIH and AHRQ Fellowship Application and Review Process](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-24-107.html) (F30/F31/F32/F33/F99-K00; due dates on or after 2025-01-25)
+- [NOT-OD-24-129 - Updates to NIH Institutional Training Grant Applications](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-24-129.html) (T-series; due dates on or after 2025-01-25)
 - [NIH K Kiosk](https://researchtraining.nih.gov/programs/career-development)
 - [NIH F Kiosk](https://researchtraining.nih.gov/programs/fellowships)
 - [NIH T Kiosk](https://researchtraining.nih.gov/programs/training-grants)
 - [CSR Review Criteria for Career Development](https://grants.nih.gov/grants/peer/guidelines_general/Review_Criteria_at_a_glance.pdf)
-- [NIH Notice of Changes to Fellowship Review Criteria](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-14-070.html)
+- [NOT-OD-14-070 - prior (pre-2025) fellowship review criteria](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-14-070.html)
