@@ -1,0 +1,4 @@
+interface:
+  display_name: "PR Review Toolkit"
+  short_description: "Review PRs with focused quality lenses."
+  default_prompt: "Review this pull request with the PR review toolkit."

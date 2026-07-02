@@ -6,13 +6,14 @@ description: Independent NIH/NSF grant proposal reviewer. Loads the grant-review
 <!--
 Copilot CLI custom agent: grant-review
 
-Copilot does not auto-bundle agents from an installed plugin. To use this reviewer
-as a Copilot subagent, copy this file to one of:
+Copilot can load this agent from the installed plugin's native
+`.github/plugin/plugin.json` `agents` component. It can also be copied for
+project or user scope:
   .github/agents/grant-review.agent.md   (this repository)
   ~/.copilot/agents/grant-review.agent.md (user, all repositories)
-then invoke the grant-review agent; use /fleet for panel mode. It requires the
-grant plugin's grant-review skill to be installed so that its references/ directory
-is on disk; this agent reads the rubric from there.
+then invoke that configured agent if your Copilot surface supports custom agents.
+It requires the grant plugin's grant-review skill to be installed so that its
+references/ directory is on disk; this agent reads the rubric from there.
 
 Optionally scope tool access by adding a `tools` key to the frontmatter (read,
 shell/search). Omitting it inherits the default tool set, which is fine for this

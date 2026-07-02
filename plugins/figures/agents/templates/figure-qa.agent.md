@@ -6,12 +6,14 @@ description: Independent scientific-figure QA reviewer. Loads the figure-qa skil
 <!--
 Copilot CLI custom agent: figure-qa
 
-Copilot does not auto-bundle agents from an installed plugin. To use this QA reviewer
-as a Copilot subagent, copy this file to one of:
+Copilot can load this agent from the installed plugin's native
+`.github/plugin/plugin.json` `agents` component. It can also be copied for
+project or user scope:
   .github/agents/figure-qa.agent.md   (this repository)
   ~/.copilot/agents/figure-qa.agent.md (user, all repositories)
-then invoke the figure-qa agent. It requires the figures plugin to be installed so the
-figure-qa skill's references/ and the agents/figure-qa-scripts/ engine are on disk.
+then invoke that configured agent if your Copilot surface supports custom agents.
+It requires the figures plugin to be installed so the figure-qa skill's
+references/ and the agents/figure-qa-scripts/ engine are on disk.
 
 Optionally scope tool access by adding a `tools` key (read, shell). Omitting it
 inherits the default tool set, which is fine for this read-only QA reviewer.

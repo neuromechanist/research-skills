@@ -1,6 +1,6 @@
 ---
 name: workflow-reference
-description: This skill should be used when executing the epic-dev workflow, creating epic branches, managing sprint phases, working with git worktrees for phased feature development, or when the user mentions "epic workflow", "sprint phases", "phased development", or "git worktree workflow".
+description: This skill should be used when executing the epic-dev workflow, creating epic branches, managing sprint phases, working with git worktrees for phased feature development, or when the user mentions "epic dev", "epic-dev", "/epic-dev", "epic workflow", "sprint phases", "phased development", or "git worktree workflow".
 version: 0.1.0
 ---
 

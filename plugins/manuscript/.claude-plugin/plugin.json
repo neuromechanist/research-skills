@@ -1,6 +1,6 @@
 {
   "name": "manuscript",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, journal-specific formatting for submission, and humanizer pass to remove AI-writing tells",
   "author": {
     "name": "Seyed Yahya Shirazi",

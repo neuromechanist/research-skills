@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.15.9"
+    "version": "0.15.11"
   },
   "plugins": [
     {
       "name": "project",
-      "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
-      "version": "0.4.0",
+      "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, PR review, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
+      "version": "0.4.2",
       "source": "./plugins/project",
       "category": "development"
     },
@@ -26,35 +26,35 @@
     {
       "name": "manuscript",
       "description": "Academic manuscript toolkit: literature review, peer review, writing, journal-specific formatting for submission, and humanizer pass to remove AI-writing tells",
-      "version": "0.5.1",
+      "version": "0.5.2",
       "source": "./plugins/manuscript",
       "category": "research"
     },
     {
       "name": "opencite",
       "description": "Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "source": "./plugins/opencite",
       "category": "research"
     },
     {
       "name": "figures",
       "description": "Publication-quality figures plugin. Seven skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); svg-primitives (mm-precise SVG builder in Python: auto-fit boxes, tangent-correct arrows on straight/cubic/orthogonal routes, multi-waypoint paths, brackets/annotations/groups, layered z-order); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
-      "version": "0.10.4",
+      "version": "0.10.6",
       "source": "./plugins/figures",
       "category": "research"
     },
     {
       "name": "presentation",
       "description": "Presentation builder: create interactive Reveal.js presentations from JSON",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "source": "./plugins/presentation",
       "category": "research"
     },
     {
       "name": "neuroinformatics",
       "description": "Neuroscience data standards and experiment design: BIDS conversion/validation, HED annotation, and PsychoPy experiment scaffolding",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "source": "./plugins/neuroinformatics",
       "category": "research"
     }

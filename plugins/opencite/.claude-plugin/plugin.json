@@ -1,6 +1,6 @@
 {
   "name": "opencite",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export",
   "author": {
     "name": "Seyed Yahya Shirazi",
