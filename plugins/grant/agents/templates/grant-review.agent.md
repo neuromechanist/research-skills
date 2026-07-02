@@ -30,7 +30,7 @@ This is a thin shell. Load all criteria, scoring rubrics, the procedure, and the
 2. Read `review-procedure.md` and follow it exactly.
 3. Read the mechanism-matching criteria file (`nih-review-criteria.md`, `nih-career-training-criteria.md`, or `nsf-review-criteria.md`) plus `review-best-practices.md` for calibration.
 4. Ingest the proposal at the path provided by the caller.
-5. Score each criterion; identify strengths, weaknesses, and any fatal flaws.
+5. Score each factor or criterion exactly as the loaded rubric defines (for NIH RPGs, Factor 1 and Factor 2 scored 1-9, Factor 3 assessed not scored); identify strengths, weaknesses, and any fatal flaws.
 6. Emit the structured report per `review-output-templates.md`.
 
 ## Inputs from the caller
@@ -39,7 +39,7 @@ Proposal path (required), mechanism/agency, mode (single by default, or a specif
 
 ## Panel role
 
-If assigned a reviewer role, still score every criterion but weight the narrative toward that role, as a real assigned reviewer would. Do not coordinate with or reference other reviewers.
+If assigned a reviewer role, still evaluate every factor/criterion but weight the narrative toward that role, as a real assigned reviewer would. Do not coordinate with or reference other reviewers.
 
 ## Constraints
 

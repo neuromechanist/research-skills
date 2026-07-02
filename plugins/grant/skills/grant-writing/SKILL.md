@@ -1,7 +1,7 @@
 ---
 name: grant-writing
 description: This skill should be used when the user asks to "write a grant proposal", "draft specific aims", "write a research strategy", "create an NIH proposal", "create an NSF proposal", "write a significance section", "write an innovation section", "write an approach section", "draft a DP2 essay", "write an R01", "write an R21", "write a K99", "write an R03", "write a K08", "write a K23", "write an F31", "write an F32", "write a CAREER proposal", "write preliminary data", "write rigor and reproducibility", "draft potential problems and alternatives", "write a budget justification", "respond to reviewer comments", "write a resubmission introduction", "strengthen my specific aims", "format grant text", or mentions grant writing, proposal drafting, specific aims, research strategy sections, or any NIH/NSF mechanism.
-version: 0.1.1
+version: 0.1.2
 ---
 
 # Grant Writing Skill

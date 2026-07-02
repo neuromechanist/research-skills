@@ -1,5 +1,13 @@
 # NIH Review Criteria - Complete Reference
 
+## Scope and Framework
+
+This reference covers **Research Project Grant (RPG)** mechanisms (R01, R03, R15, R16, R21, R33, R34, R36, U01, and similar). For due dates **on or after January 25, 2025**, NIH reviews these under the **Simplified Review Framework** (NOT-OD-24-010), which organizes the merit assessment into **three factors** rather than the legacy five scored criteria.
+
+Fellowship (F) and career development (K) awards use their **own** revised frameworks, not the three-factor RPG framework below; see `nih-career-training-criteria.md` for those mechanisms.
+
+> **Historical note.** Applications reviewed **before January 25, 2025** used five separately scored criteria (Significance, Investigator(s), Innovation, Approach, Environment), each 1-9. That structure is retained here only as the substance rolled into the three factors below, and may still be relevant when reading an older summary statement or a resubmission whose prior review predates the change.
+
 ## Study Section Process
 
 ### How NIH Review Works
@@ -7,7 +15,7 @@
 2. Each application gets 2-3 assigned reviewers
 3. Reviewers read and score independently before meeting
 4. At meeting, top ~50% are discussed; bottom ~50% are "not discussed" (triaged)
-5. Discussed applications receive criterion scores and overall impact score from all members
+5. Discussed applications receive factor scores (RPG) or criterion scores (K/F) and an overall impact score from all members
 6. Scores compiled into summary statement
 
 ### Reviewer Roles
@@ -16,109 +24,65 @@
 - **Tertiary reviewer (if assigned)**: Often provides methodological or statistical expertise
 - **Other members**: Ask questions, score based on discussion
 
-## Five Core Review Criteria
+## The Three Factors
 
-### 1. Significance
-**Key questions:**
-- Does the project address an important problem or critical barrier?
-- If aims are achieved, how will knowledge, techniques, or clinical practice improve?
-- How will successful completion change the concepts, methods, or technologies?
+Under the Simplified Review Framework, the assigned reviewers evaluate three factors. **Factor 1 and Factor 2 each receive a 1-9 factor score. Factor 3 is not scored 1-9**; instead reviewers judge whether the expertise and resources are *appropriate/sufficient* for the project and describe any concerns in narrative. All three factors, together with the Additional Review Criteria and Considerations, inform the single **Overall Impact** score (1-9).
 
-**What reviewers look for:**
-- Clear articulation of the problem and its importance
-- Connection to broader field and public health significance
-- Identification of specific gaps this project fills
-- Realistic but meaningful expected impact
-- Alignment with NIH and IC mission
+### Factor 1 - Importance of the Research (SCORED 1-9)
 
-**Common weaknesses:**
-- Problem too narrow (only relevant to one lab)
-- Problem too broad (too disconnected from specific aims)
-- Gap not convincingly established
-- Impact overstated relative to scope
+Combines the substance of the legacy **Significance** and **Innovation** criteria: how important is the problem, and how much would the proposed work move the field?
 
-### 2. Investigator(s)
-**Key questions:**
-- Are PIs and key personnel qualified by education, training, and expertise?
-- Is there evidence of productivity and the ability to lead the project?
-- Does preliminary data demonstrate feasibility?
+**Significance sub-component**
+- Key questions:
+  - Does the project address an important problem or critical barrier?
+  - If the aims are achieved, how will knowledge, techniques, or clinical practice improve?
+- Reviewers look for: clear articulation of the problem and its importance; connection to the broader field and public health; specific gaps this project fills; realistic but meaningful expected impact; alignment with the NIH/IC mission.
+- Common weaknesses: problem too narrow (only relevant to one lab) or too broad (disconnected from the aims); gap not convincingly established; impact overstated relative to scope.
 
-**What reviewers look for:**
-- Publication track record in the field
-- Prior funding history (especially for R01)
-- Preliminary data that directly supports aims
-- Appropriate team composition and complementary expertise
-- Adequate effort commitment (especially PI effort)
+**Innovation sub-component**
+- Key questions:
+  - Does the project challenge existing paradigms or develop new methodologies?
+  - Does it refine, improve, or propose a new application of existing approaches?
+- Reviewers look for: clearly stated conceptual/technical/methodological innovations; explanation of WHY each innovation matters (not just WHAT is new); appropriate positioning relative to the state of the art; innovation tied to solving the identified problem.
+- Common weaknesses: novelty not justified; innovation only incremental; existing similar work not acknowledged; innovation section reads as a literature review.
 
-**Common weaknesses:**
-- Insufficient preliminary data for R01
-- PI is junior with no track record in the proposed area
-- Key expertise missing from the team
-- Collaborators listed but no evidence of prior collaboration
+### Factor 2 - Rigor and Feasibility (SCORED 1-9)
 
-### 3. Innovation
-**Key questions:**
-- Does the project challenge existing paradigms or develop new methodologies?
-- Does it refine, improve, or propose a new application of existing approaches?
+Carries the substance of the legacy **Approach** criterion: is the science rigorous, well-reasoned, and achievable?
 
-**What reviewers look for:**
-- Clearly stated innovations (conceptual, technical, methodological)
-- Explanation of WHY each innovation matters (not just WHAT is new)
-- Appropriate positioning relative to the state of the art
-- Innovation connected to solving the identified problem
+- Key questions:
+  - Is the overall strategy well-reasoned and appropriate?
+  - Are potential problems and alternative approaches considered?
+  - Are methods described in sufficient detail, and is the timeline realistic?
+- Reviewers look for: detailed experimental design with clear rationale; a statistical analysis plan with power calculations; consideration of biological variables (sex, age); potential problems with thoughtful alternatives; independent aims (not a domino chain); realistic milestones and go/no-go criteria; rigor and reproducibility addressed.
+- Common weaknesses: methods too vague or too detailed (wrong balance); missing power analysis; no potential-problems section; overly ambitious timeline; aims too interdependent; SABV not addressed; no blinding or randomization plan; missing positive and negative controls.
 
-**Common weaknesses:**
-- Novelty not adequately justified
-- Innovation only incremental
-- Existing similar work not acknowledged
-- Innovation section reads as a literature review
+### Factor 3 - Expertise and Resources (ASSESSED, NOT SCORED 1-9)
 
-### 4. Approach
-**Key questions:**
-- Is the overall strategy well-reasoned and appropriate?
-- Are potential problems and alternative approaches considered?
-- Are methods described in sufficient detail?
-- Is the timeline realistic?
+Combines the substance of the legacy **Investigator(s)** and **Environment** criteria. Reviewers do **not** assign a 1-9 score. They judge whether the team and the environment are **appropriate/sufficient for the proposed project** (a binary-style assessment) and record any concerns in narrative. Absent concerns, the expected assessment is that expertise and resources are *appropriate*; concerns, when present, can influence the Overall Impact score.
 
-**What reviewers look for:**
-- Detailed experimental design with clear rationale
-- Statistical analysis plan with power calculations
-- Consideration of biological variables (sex, age)
-- Potential problems with thoughtful alternatives
-- Independent aims (not a domino chain)
-- Realistic milestones and go/no-go criteria
-- Rigor and reproducibility addressed
+**Expertise (Investigators) sub-component**
+- Key questions:
+  - Are the PIs and key personnel qualified by education, training, and expertise for their roles?
+  - Is the team composition, including collaborators and consultants, appropriate for the work?
+- Reviewers look for: relevant track record for each role; appropriate and complementary team composition; adequate effort commitment (especially PI effort); evidence of prior collaboration where the plan depends on it.
+- Common concerns: key expertise missing from the team; a role not matched by a qualified person; collaborators listed with no evidence of genuine involvement.
+- Note: preliminary data feasibility is now weighed primarily under **Factor 2 (Rigor and Feasibility)**; Factor 3 focuses on whether the *people and resources* fit the project, not on the strength of the pilot results themselves.
 
-**Common weaknesses:**
-- Methods too vague or too detailed (wrong balance)
-- Missing power analysis
-- No potential problems section
-- Overly ambitious timeline
-- Aims too interdependent
-- SABV not addressed
-- No blinding or randomization plan
-- Missing positive and negative controls
+**Resources (Environment) sub-component**
+- Key questions:
+  - Does the scientific environment contribute to the likelihood of success?
+  - Is there adequate institutional support, commitment, and access to required resources?
+- Reviewers look for: appropriate facilities and equipment; institutional commitment (start-up funds, protected time); a collaborative environment; access to required participant populations; unique resources (special equipment, biobanks, cohorts).
+- Common concerns: facilities inadequate for a key method; no evidence of access to the required population or resource; institutional commitment unstated.
 
-### 5. Environment
-**Key questions:**
-- Does the scientific environment contribute to success?
-- Is there institutional support and commitment?
-- Are unique features leveraged?
+## Categories of Evaluation
 
-**What reviewers look for:**
-- Appropriate facilities and equipment
-- Institutional commitment (start-up funds, protected time)
-- Collaborative environment
-- Access to required participant populations
-- Unique resources (special equipment, biobanks, cohorts)
+NIH review encompasses three distinct categories:
 
-## Three-Tier Review Structure
-
-NIH review encompasses three distinct categories of evaluation:
-
-1. **Scored Review Criteria** (the five core criteria above) - Each receives an individual 1-9 score from assigned reviewers
-2. **Additional Review Criteria** (below) - Do not receive individual scores but ARE considered in determining the Overall Impact score
-3. **Additional Review Considerations** (budget, data sharing, etc.) - Noted by reviewers but addressed administratively; do not factor into the Overall Impact score
+1. **Scored Factors** - Factor 1 and Factor 2 each receive an individual 1-9 factor score from the assigned reviewers. Factor 3 is assessed as appropriate/sufficient (with narrative concerns), not scored 1-9. All factors inform the Overall Impact score.
+2. **Additional Review Criteria** (below) - Do not receive individual scores but ARE considered in determining the Overall Impact score.
+3. **Additional Review Considerations** (budget, data sharing, etc.) - Noted by reviewers but addressed administratively; do not factor into the Overall Impact score.
 
 Understanding this distinction is important: a weakness in an Additional Review Criterion (e.g., inadequate human subjects protections) can lower the Overall Impact score, while a budget concern typically results in an administrative note rather than a score reduction.
 
@@ -164,8 +128,8 @@ These do not receive individual scores but can affect the overall impact score:
 
 ## Scoring Mechanics
 
-### Criterion Scores (1-9)
-Each reviewer scores each of the five criteria:
+### Factor Scores (1-9)
+Each assigned reviewer scores **Factor 1 (Importance)** and **Factor 2 (Rigor and Feasibility)** on the 1-9 scale below. **Factor 3 (Expertise and Resources) is not scored on this scale**; it is assessed as appropriate/sufficient with any concerns noted in narrative.
 
 | Score | Descriptor | Impact |
 |-------|-----------|--------|
@@ -183,8 +147,8 @@ Each reviewer scores each of the five criteria:
 - Scored by ALL eligible members (not just assigned reviewers)
 - Scale: 1-9 (multiplied by 10 for reporting: 10-90)
 - Reflects the overall likelihood of having a sustained, powerful impact
-- Need not be an average of criterion scores
-- A single very weak criterion can dominate the impact score
+- Need not be an average of the factor scores
+- A single very weak factor (or a serious Factor 3 concern) can dominate the impact score
 
 ### Percentile
 - Calculated within the study section
@@ -201,6 +165,7 @@ Each reviewer scores each of the five criteria:
 - Reviewers assess both the quality of the response to prior critiques and the overall scientific merit of the revised application
 
 ## Sources
+- [NOT-OD-24-010 - Updated Simplified Review Framework for NIH RPG Applications](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-24-010.html) (effective for due dates on or after 2025-01-25)
+- [CSR - Simplifying Review of Research Project Grant Applications](https://public.csr.nih.gov/ForApplicants/InitiativesAndPolicies/SimplifiedReviewFramework)
 - [NIH Peer Review Process](https://grants.nih.gov/grants/peer-review.htm)
-- [NIH Review Criteria](https://grants.nih.gov/grants/peer/guidelines_general/Review_Criteria_at_a_glance.pdf)
 - [CSR Study Section Information](https://public.csr.nih.gov/)

@@ -4,7 +4,9 @@ Structured output formats for NIH-style and NSF-style grant proposal reviews. Us
 
 ---
 
-## NIH-Style Review Template
+## NIH-Style Review Template (RPG, Simplified Review Framework)
+
+Use this three-factor layout for Research Project Grant mechanisms (R01, R03, R15, R21, U01, etc.) with due dates on or after 2025-01-25. It matches current summary statements: Factor 1 and Factor 2 are scored 1-9; Factor 3 is assessed as appropriate/sufficient, not scored.
 
 ```
 ## Summary of Proposal
@@ -15,42 +17,29 @@ Structured output formats for NIH-style and NSF-style grant proposal reviews. Us
 
 ---
 
-## Criterion Scores
+## Factor Scores
 
-### Significance: [1-9]
+### Factor 1 - Importance of the Research (Significance + Innovation): [1-9]
 **Strengths:**
 - [Bullet points]
 
 **Weaknesses:**
 - [Bullet points]
 
-### Investigator(s): [1-9]
+### Factor 2 - Rigor and Feasibility (Approach): [1-9]
 **Strengths:**
 - [Bullet points]
 
 **Weaknesses:**
 - [Bullet points]
 
-### Innovation: [1-9]
+### Factor 3 - Expertise and Resources (Investigators + Environment): [Appropriate / Concerns noted]
+[Not scored 1-9. State whether the expertise and resources are sufficient for the project; describe any concerns in narrative.]
 **Strengths:**
 - [Bullet points]
 
-**Weaknesses:**
-- [Bullet points]
-
-### Approach: [1-9]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
-
-### Environment: [1-9]
-**Strengths:**
-- [Bullet points]
-
-**Weaknesses:**
-- [Bullet points]
+**Concerns (if any):**
+- [Bullet points, or "None noted"]
 
 ---
 
@@ -86,9 +75,10 @@ Structured output formats for NIH-style and NSF-style grant proposal reviews. Us
 ```
 
 ### NIH Template Usage Notes
-- Assign criterion scores independently; do not let one criterion dominate others prematurely
-- The Overall Impact Score need not be the average of criterion scores
-- For K/F mechanisms, replace the five criteria headings with the appropriate scored criteria from `nih-career-training-criteria.md`
+- Score Factor 1 and Factor 2 independently; do not let one factor dominate the other prematurely. Do **not** assign a 1-9 score to Factor 3.
+- The Overall Impact Score need not be the average of the factor scores; a serious Factor 3 concern can still lower it.
+- This three-factor layout applies to **RPG** mechanisms. For K/F mechanisms, use the scored criteria from `nih-career-training-criteria.md` instead (those awards have their own revised frameworks, not the three-factor RPG one).
+- For applications reviewed before 2025-01-25 (or historical resubmission context), the legacy five-criterion layout (Significance, Investigator(s), Innovation, Approach, Environment, each 1-9) may still apply.
 - Cite specific pages, figures, or sections when identifying strengths and weaknesses
 - Every weakness must include a constructive suggestion for improvement
 

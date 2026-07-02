@@ -1,6 +1,6 @@
 # Sample NIH R01 Review
 
-This is a fictional example demonstrating the expected review output format, tone, scoring calibration, and strengths/weaknesses structure. The proposal, investigators, and institutions described here are entirely fictional.
+This is a fictional example demonstrating the expected review output format, tone, scoring calibration, and strengths/weaknesses structure under the NIH Simplified Review Framework for Research Project Grants (three factors; Factor 1 and Factor 2 scored 1-9, Factor 3 assessed). The proposal, investigators, and institutions described here are entirely fictional.
 
 ---
 
@@ -12,37 +12,20 @@ This is a well-conceived proposal addressing an important and timely question in
 
 ---
 
-## Criterion Scores
+## Factor Scores
 
-### Significance: 2
+### Factor 1 - Importance of the Research (Significance + Innovation): 2
 **Strengths:**
 - The glymphatic system is an area of intense interest with direct relevance to Alzheimer's disease, a leading NIH priority. The proposal clearly articulates why astrocytic calcium signaling is a critical but understudied component.
 - The connection between impaired CSF clearance and amyloid accumulation is well established (citing Iliff et al. 2012, Xie et al. 2013), and this proposal fills a specific mechanistic gap.
 - Successful completion of the aims would provide actionable targets for therapeutic development, not just descriptive data.
+- The combination of cell-type-specific optogenetic manipulation of astrocytic calcium with simultaneous glymphatic flow measurements is genuinely novel; no published study has achieved this pairing. The proposed framework for integrating cellular-scale calcium dynamics with tissue-scale fluid flow represents a conceptual advance, and the use of the Aldh1l1-CreERT2 line avoids the well-documented limitations of GFAP-based approaches.
 
 **Weaknesses:**
 - The proposal could better address how findings in young adult mice (3-4 months) will translate to the aged brain where glymphatic function is already compromised.
+- The two-photon imaging and optogenetic approaches are individually well established; the novelty lies primarily in their combination and application to this specific question, which the investigators acknowledge appropriately.
 
-### Investigator(s): 3
-**Strengths:**
-- Dr. Vasquez (PI) has published 12 papers on astrocyte physiology in the past five years, including two in high-impact journals demonstrating expertise with the two-photon calcium imaging approach proposed here.
-- Co-I Dr. Okafor brings complementary optogenetics expertise with a strong publication record.
-- The team has a documented prior collaboration (co-authored paper in 2023).
-
-**Weaknesses:**
-- The computational modeling component (Aim 3) is central to the proposal, but neither PI nor Co-I has published work involving the type of fluid dynamics modeling proposed. Consultant Dr. Liu (listed in the application) is a strong modeler but commits only 1.2 calendar months; this may be insufficient for the scope described.
-- Preliminary data for Aim 3 are limited to a single figure showing a simplified 2D model. The 3D modeling proposed in the application represents a substantial scale-up that is not well supported.
-
-### Innovation: 2
-**Strengths:**
-- The combination of cell-type-specific optogenetic manipulation of astrocytic calcium with simultaneous glymphatic flow measurements is genuinely novel; no published study has achieved this pairing.
-- The proposed computational framework for integrating cellular-scale calcium dynamics with tissue-scale fluid flow represents a conceptual advance for the field.
-- The use of a recently developed transgenic line (Aldh1l1-CreERT2) for astrocyte-specific expression avoids the well-documented limitations of GFAP-based approaches.
-
-**Weaknesses:**
-- The two-photon imaging and optogenetic approaches are individually well established. The innovation lies primarily in their combination and application to this specific question, which the investigators acknowledge appropriately.
-
-### Approach: 4
+### Factor 2 - Rigor and Feasibility (Approach): 4
 **Strengths:**
 - Aim 1 (characterize astrocytic calcium dynamics during glymphatic flow) is well designed with appropriate controls, including both awake and anesthetized conditions.
 - Power analyses are provided for all in vivo experiments with reasonable effect sizes based on the preliminary data.
@@ -51,19 +34,20 @@ This is a well-conceived proposal addressing an important and timely question in
 
 **Weaknesses:**
 - Aim 3 (computational modeling) lacks sufficient methodological detail. The transition from 2D to 3D modeling is described in one paragraph (Research Strategy, p. 9) without specifying the numerical methods, meshing approach, or validation strategy. It is unclear whether the proposed model can run on available institutional computing resources.
+- Preliminary data for Aim 3 are limited to a single figure showing a simplified 2D model; the 3D modeling proposed represents a substantial scale-up that is not yet well supported.
 - The timeline allocates only 6 months for developing and validating the 3D computational model (Year 3, months 7-12). Based on the complexity described, this appears optimistic.
 - The alternative approach for Aim 2 (if optogenetic manipulation causes phototoxicity) proposes switching to chemogenetics (DREADDs), but no preliminary data support the efficacy of DREADD-based astrocytic calcium modulation in this system. Consider citing Chai et al. 2017 or similar work to bolster this alternative.
 - The proposal does not address potential confounds from cranial window surgery on CSF flow dynamics, although recent literature (Goldey et al. 2014) suggests a recovery period of 2-3 weeks is sufficient.
 
-### Environment: 2
-**Strengths:**
-- Midwest Neuroscience Institute has a well-equipped two-photon core facility with documented instrument availability.
-- The institution has an established colony of the required transgenic mice.
-- Letters of institutional support confirm dedicated imaging time and computational cluster access.
-- The collaborative environment includes five other NIH-funded groups working on glial biology, providing a strong intellectual community.
+### Factor 3 - Expertise and Resources (Investigators + Environment): Concerns noted
+*Not scored 1-9. The team and environment are largely appropriate for the project, with one concern about modeling expertise for Aim 3.*
 
-**Weaknesses:**
-- No weaknesses noted.
+**Strengths:**
+- Dr. Vasquez (PI) has published 12 papers on astrocyte physiology in the past five years, including two demonstrating expertise with the two-photon calcium imaging approach proposed here. Co-I Dr. Okafor brings complementary optogenetics expertise, and the team has a documented prior collaboration (co-authored paper in 2023).
+- Midwest Neuroscience Institute has a well-equipped two-photon core facility with documented instrument availability, an established colony of the required transgenic mice, and letters confirming dedicated imaging time and computational cluster access. Five other NIH-funded glial biology groups provide a strong intellectual community.
+
+**Concerns:**
+- The computational modeling central to Aim 3 is not matched by demonstrated team expertise: neither PI nor Co-I has published the type of fluid dynamics modeling proposed, and consultant Dr. Liu commits only 1.2 calendar months, which may be insufficient for the scope. Increasing Dr. Liu's effort or adding a co-investigator/postdoc with fluid dynamics modeling experience would resolve this concern. (The feasibility of the modeling itself is reflected in the Factor 2 score.)
 
 ---
 

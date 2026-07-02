@@ -92,12 +92,15 @@
 6. **Facilities & Resources**
 7. **Equipment**
 
-## Review Criteria
-1. Significance
-2. Investigator(s)
-3. Innovation
-4. Approach
-5. Environment
+## Review Criteria (RPG Simplified Review Framework, NOT-OD-24-010)
+
+For Research Project Grants (R01, R03, R15, R21, U01, etc.) with due dates on or after 2025-01-25, reviewers evaluate three factors:
+
+1. **Factor 1 - Importance of the Research** (Significance + Innovation) - scored 1-9
+2. **Factor 2 - Rigor and Feasibility** (Approach) - scored 1-9
+3. **Factor 3 - Expertise and Resources** (Investigators + Environment) - assessed as appropriate/sufficient, not scored 1-9
+
+Write each Research Strategy section knowing where it lands: Significance and Innovation content feeds Factor 1, the Approach feeds Factor 2, and the team/environment/biosketch material feeds the Factor 3 assessment. Fellowship (F) and career development (K) awards use their own revised frameworks, not these three factors.
 
 ## Scoring
 
@@ -107,8 +110,8 @@
 - Discussed applications typically score 10-50
 - Fundable range varies by institute (typically 10-25)
 
-### Criterion Scores
-Each criterion scored 1-9:
+### Factor Scores
+Factor 1 and Factor 2 are each scored 1-9 (Factor 3 is assessed, not scored):
 | Score | Descriptor | Meaning |
 |-------|-----------|---------|
 | 1 | Exceptional | Essentially no weaknesses |
