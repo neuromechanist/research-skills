@@ -41,6 +41,24 @@ lenses, apply:
 - `types` when public types, schemas, models, enums, validation boundaries, or state machines changed
 - `simplify` when code works but is complex, or the user asks to refine/simplify
 
+### Panel sizing and reviewer briefing (when dispatching parallel reviewers)
+
+- Panel size tracks how settled the code is: 4-5 lenses while new types and
+  invariants are being introduced; 2-3 once the core has stabilized; exactly 1
+  integration-scoped reviewer for a final epic/trunk merge, explicitly told
+  not to re-review content already covered by per-PR panels.
+- Brief each reviewer with the specific risk class the diff introduces, not a
+  generic "review this". Name the failure mode (example: for a pure code
+  move, "handler bodies moved verbatim; pre-existing patterns are out of
+  scope; your job is the delta, places where the mechanical move could create
+  a silent failure"; for a control-flow change, name the exact new failure
+  path) and list what NOT to re-flag.
+- Swap a generic lens for a bespoke brief when the PR's content demands it
+  (a docs-and-numbers PR gets "audit every claimed number against the raw
+  results data" instead of a generic comment review).
+- Include a confidence filter in every reviewer brief: "Only report issues
+  you are confident about; skip style nits the linter already enforces."
+
 ## 4. Inspect Diffs Before Whole Files
 
 Start from changed hunks, then open surrounding code only as needed. Prefer
@@ -72,6 +90,14 @@ Report only actionable issues:
 
 Avoid low-signal nits, cosmetic preferences, and broad refactors unless they
 materially reduce risk.
+
+When synthesizing multiple reviewers' reports: merge into one prioritized
+list; every finding is either dispatched with a concrete fix or rejected with
+a one-sentence rationale in an explicit "rejected" section (no silent drops).
+When two reviewers disagree on a fact, reproduce it directly with a minimal
+check (grep, script, or source read); never average or pick by stated
+confidence. Reproduce any headline numeric claim that gates a merge before
+acting on it.
 
 ## 6. Verification
 

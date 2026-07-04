@@ -79,6 +79,14 @@ Output a structured report:
 |---------|---------|------|
 
 ### Recommendations
-1. [CRITICAL] Upgrade X to Y (fixes CVE-XXXX)
-2. [HIGH] ...
+1. [Critical] Upgrade X to Y (fixes CVE-XXXX)
+2. [High] ...
 ```
+
+Severity levels follow the security-audit skill's rubric: Critical
+(exploitable now or actively exploited; blocks release-prep), High (known
+vulnerability with a plausible attack path; fix before next release), Medium
+(vulnerability with mitigating factors, or a major-version lag on a
+security-relevant package), Low (outdated without known vulnerabilities;
+license concerns to review). Critical findings must be surfaced to any
+release-preparation workflow as blockers.

@@ -54,7 +54,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.4.2 | Project lifecycle: init (with ADR scaffold and optional GitHub labels), rule/config updates, epic workflow, PR review, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **project** | 0.5.0 | Project lifecycle: init (with ADR scaffold and optional GitHub labels), rule/config updates, epic workflow, PR review, onboarding, planning, engineering loop, debugging, agent fan-out, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `codebase-onboarding`, `implementation-planning`, `engineering-loop`, `debugging`, `agent-fanout`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
 | **grant** | 0.3.6 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
 | **manuscript** | 0.5.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.2 | Literature search, citation management, PDF retrieval | `opencite` | -- |
@@ -144,6 +144,11 @@ Complete project lifecycle toolkit combining initialization, epic/sprint workflo
 - **epic-dev** -- Codex-facing entrypoint for the `/epic-dev` multi-phase feature workflow with git worktrees, GitHub issues, and phased PR delivery
 - **workflow-reference** -- branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
 - **pr-review-toolkit** -- PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification. Inspired by Anthropic's [`pr-review-toolkit`](https://github.com/anthropics/claude-code/tree/main/plugins/pr-review-toolkit) implementation; the upstream plugin README identifies it as MIT licensed. The project skill is an original cross-agent adaptation with shared rubrics in `references/`.
+- **codebase-onboarding** -- verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence (inventory, intent docs, code, history, what actually runs, SDK probes), parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
+- **implementation-planning** -- plans a weaker model could execute: two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
+- **engineering-loop** -- the single-PR change workflow: mirror an existing pattern, pin test first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons, plus a detached background-jobs protocol for long-running work
+- **debugging** -- reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks) and a numerical-debugging reference for reference-implementation parity work
+- **agent-fanout** -- orchestrating subagents and teammates: basic spawning/messaging mechanics per tool, role taxonomy with worker-tier model routing, full-lifecycle briefing templates, supervision and synthesis protocols, and a hard cap of 40 agents per run computed before launch
 - **CI scaffolding** -- generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
 - **Docker packaging** -- multi-stage Dockerfiles with uv/bun, health checks, and security hardening
 - **Security audit** -- credential scanning, dependency audit, OWASP checklist, configuration hardening
