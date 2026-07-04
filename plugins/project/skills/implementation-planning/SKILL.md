@@ -45,7 +45,10 @@ fallback. No adoption of a non-passing candidate."]
 [Every ambiguity you resolved unilaterally, as a flagged list the reviewer
 can veto. Silence on ambiguity is a defect.]
 ## Verification
-[How each deliverable is proven: commands, thresholds, who runs them.]
+[How each deliverable is proven: commands, thresholds, who runs them. For a
+behavior-preserving refactor, the FIRST deliverable is the pin/
+characterization test captured against the original code, per the
+engineering-loop skill.]
 ```
 
 ## Lightweight register: the issue IS the plan
@@ -104,8 +107,9 @@ test of whether it is written well enough.
 
 ## Phase sizing (feeds epic-dev)
 
-One phase = one independently reviewable and testable PR: roughly one
-subsystem, one migration, or up to ~500 net lines of non-generated change.
+One phase = one independently reviewable and testable pull request (PR):
+roughly one subsystem, one migration, or up to ~500 net lines of
+non-generated change.
 If the description contains two or more such units, it is an epic (use
 epic-dev); if not, it is a single feature (engineering-loop). Name phases
 with 2-3 word kebab-case slugs: drop stopwords, keep the object noun first

@@ -60,6 +60,11 @@ Never fix by guessing, and never make a symptom disappear without knowing why.
   instrumentation bug until a targeted, isolated reproduction says otherwise.
   Do not report it as a finding, and do not let it block unrelated work while
   you wait to reproduce it.
+- **Doc-vs-code conflicts**: when documentation (or an Architecture Decision
+  Record) and code disagree, determine the actual source of truth
+  empirically (test the code), then fix whichever artifact is wrong, making
+  the fix more precise about where the invariant is enforced. Never silently
+  pick a side.
 
 ## Anti-shortcut gates (hard rules)
 

@@ -57,7 +57,8 @@ solely on the extraction.
 ```
 You are surveying [family name] for [project goal]. Today is [date]; prefer
 the latest evidence.
-YOUR FAMILY: [precise sub-scope]. Hard reading list: [IDs/DOIs/URLs].
+YOUR FAMILY: [precise sub-scope]. Hard reading list: [paper IDs, Digital
+Object Identifiers (DOIs), URLs].
 TOOLS: [search CLI and syntax]; a pre-fetched corpus is at [path]; use web
 fetch only for items not in the corpus.
 DELIVERABLES: write [research/aN-family.md] with exactly these sections:

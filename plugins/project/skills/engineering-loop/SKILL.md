@@ -42,20 +42,31 @@ verification. Lightweight counterpart to the epic-dev workflow.
    lines). No backward-compatibility shims when the user confirms zero
    consumers; remove outright and preserve the substantive invariant instead.
    For every new guard or error path, decide fail-open vs fail-closed
-   explicitly and say why in the code or PR.
+   explicitly and say why in the code or PR. If you find a genuine adjacent
+   bug outside the assigned scope: fix it only if it is small and
+   mechanistically connected to the change you are already making, and
+   disclose it under its own heading in the PR with evidence; otherwise file
+   an issue. Never fold it silently into the main diff.
 6. **Gate every commit.** Format, lint, typecheck, test; the bar is zero NEW
    diagnostics against the MEASURED baseline (measure it; do not trust a
    documented number, and note discrepancies). Python: `uv run ruff format
    && uv run ruff check --fix && uv run ty check && uv run pytest`.
    JS/TS: `bun run biome check --write && bun test` (or the project's
    configured commands). Commit atomically: subject under 50 characters, no
-   emojis, no AI attribution.
+   emojis, no AI attribution. For changes to decision logic (parsing,
+   approve/deny paths, routing, security gates), green tests alone are not
+   enough: run a repeatable scenario suite and quote the before/after scores
+   in the PR.
 7. **Long-running steps** (benchmarks, big builds, batch jobs over ~10
    minutes): detach them per `references/background-jobs.md`; never leave
    them as session-tracked shells. Commit expensive-to-reproduce results the
    moment they land, separately from code.
 8. **Push and open the PR.** Body: what changed, why (link "Closes #N"), and
    what was tested with commands and counts. No emojis, no AI attribution.
+   Verify any user-supplied factual claim (dates, numbers, attributions)
+   against available evidence before writing it into a PR, issue, or other
+   durable document; if the evidence contradicts the claim, surface the
+   discrepancy instead of transcribing it.
 9. **Review.** Run the pr-review-toolkit skill (or repo review command) on
    the PR. Address ALL findings: fix, or reject with a one-sentence reason
    posted to the PR ("false positive" / "intentionally different by design").
@@ -71,7 +82,11 @@ verification. Lightweight counterpart to the epic-dev workflow.
     a broad "proceed".
 11. **Close out.** Close the issue with a substantive comment (evidence, not
     "done"), update project state/memory files with anything reusable
-    learned, and clean up artifacts you created.
+    learned, and clean up artifacts you created. If stopping mid-stream
+    instead, write a handoff note with exactly these sections: Shipped
+    (commit/PR refs), Operational state (what is running and how to verify
+    it), Resource constraints (quotas, accounts, hardware), Immediate next
+    steps, and Fallback if the happy path fails.
 
 ## Definition of done
 
@@ -90,3 +105,7 @@ draft PR) is yours to do. Any action that changes what a live, external
 consumer receives right now (production deploy, publishing a package,
 pushing to a live endpoint) is handed to the user as an exact command, even
 when you hold the credentials.
+
+A user's stated risk tolerance or urgency for the product is not consent to
+skip a stated validation gate before deploying with real resources; if the
+two seem to conflict, ask explicitly rather than inferring permission.

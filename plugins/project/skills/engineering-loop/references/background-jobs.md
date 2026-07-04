@@ -53,6 +53,24 @@ outlive any guessed duration).
 quiet log with a live process is normal. A stale mtime with no process means
 the job died: relaunch from its resume point.
 
+## Scheduled and recurring tasks (cron-style)
+
+Write every scheduled task defensively; it will fire in a context that has
+forgotten why it was created:
+
+1. Confirm the trigger condition is actually true before acting ("confirm
+   the current time is past X; if not, stop and do nothing").
+2. Re-verify the assumed state before acting ("only proceed if the state
+   file still shows reason X; if it shows anything else, stop and report
+   instead").
+3. Use blocking-wait primitives (a watch flag, a poll loop on a condition),
+   never repeated fixed sleeps.
+4. Whitelist the allowed actions explicitly and forbid everything else
+   ("do NOT launch the batch runs; that is a separate user-confirmed step").
+5. Make the task's durability independent of the session that created it; a
+   scheduled task that dies silently with its parent session is worse than
+   no task, because you believe it is watching.
+
 ## Campaign bookkeeping
 
 - An unattended multi-stage campaign is complete when every flagged or

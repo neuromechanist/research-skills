@@ -17,7 +17,7 @@ and how to combine results.
 | Single bounded question ("where is X defined?") | No fan-out. Search directly or use one read-only explorer. |
 | Open-ended audit/review of a system with 2+ independent subsystems | One read-only explorer per subsystem, in parallel. |
 | Multiple root-caused issues, each fixable independently | One implementer per issue, each in its own git worktree. |
-| One PR ready for review | One review panel (2-5 reviewers, see Review panels below). |
+| One pull request (PR) ready for review | One review panel (2-5 reviewers, see Review panels below). |
 | Sequential work where step N needs step N-1's output | Do NOT parallelize. Run one agent at a time or do it inline. |
 | Task needs secrets, deploy rights, or user-only credentials | Do NOT delegate. Keep it in the main session (mark the task "owner: lead"). |
 
@@ -108,6 +108,11 @@ elements for every delegated prompt:
    exact contents, and the instruction to send the full report as message text
    (report files may be blocked for subagents; idle does not mean delivered).
 8. **Secrets rule**: "NEVER read or print .env or any secrets file."
+9. **No perfect agent type available?** Reuse the closest adjacent one and
+   override its default framing explicitly in the prompt: state what this
+   task is and is NOT ("this is a technical disclosure, NOT a journal
+   manuscript; do not score on journal criteria; instead assess ..."), so
+   the agent does not fall back to its default domain.
 
 ## Supervision protocol
 
@@ -130,6 +135,12 @@ elements for every delegated prompt:
   that completed. Never silently drop a failed lane and never block everything
   on it. If the dead agent left partial output on disk, brief the replacement
   with an inventory of those files; do not re-run the original prompt blind.
+- **Lead keeps its hands off the code**: once delegation is underway, direct
+  edits to project source by the lead are a smell. Prefer widening an
+  existing agent's mandate or spawning a new one; it keeps every change
+  reviewable under a scoped brief and preserves the lead's context for
+  coordination. The exception is taking over from a stalled or stopped
+  agent.
 - **Upstream changes**: after merging anything into a shared branch, message
   every in-flight worker naming exactly what changed and 1-2 acceptable
   reconciliation strategies, before they open PRs.

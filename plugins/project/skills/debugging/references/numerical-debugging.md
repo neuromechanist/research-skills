@@ -2,8 +2,8 @@
 
 For porting or matching a numerical reference implementation (Fortran/C/CUDA
 to Python, one framework to another) and for any "the numbers do not match"
-investigation. Distilled from a multi-day ICA-algorithm parity chase that
-reached machine-precision agreement.
+investigation. Distilled from a multi-day Independent Component Analysis
+(ICA) algorithm parity chase that reached machine-precision agreement.
 
 ## 1. Teacher-forced trajectory comparison (build this harness first)
 
