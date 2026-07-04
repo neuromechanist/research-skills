@@ -134,6 +134,28 @@ def test_marketplace_toplevel_version_matches():
     )
 
 
+_REFERENCE_MENTION = re.compile(r"references/([\w.-]+\.md)")
+
+
+def test_skill_name_matches_directory():
+    for skill in sorted(PLUGINS_DIR.glob("*/skills/*/SKILL.md")):
+        name = _single_line_frontmatter_value(skill, "name")
+        assert name == skill.parent.name, (
+            f"{skill.relative_to(ROOT)}: frontmatter name {name!r} != directory {skill.parent.name!r}"
+        )
+
+
+def test_skill_reference_mentions_exist():
+    for skill in sorted(PLUGINS_DIR.glob("*/skills/*/SKILL.md")):
+        text = skill.read_text()
+        for ref in sorted(set(_REFERENCE_MENTION.findall(text))):
+            path = skill.parent / "references" / ref
+            assert path.exists(), (
+                f"{skill.relative_to(ROOT)}: mentions references/{ref} but "
+                f"{path.relative_to(ROOT)} does not exist"
+            )
+
+
 @pytest.mark.parametrize("plugin", PLUGINS)
 def test_copilot_component_paths_exist(plugin):
     manifest = _load(PLUGINS_DIR / plugin / ".github/plugin/plugin.json")
