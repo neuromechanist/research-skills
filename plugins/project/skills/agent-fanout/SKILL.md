@@ -29,9 +29,13 @@ setup, supervision, and synthesis time.
 1. Before any fan-out, compute the worst case: `finders x max findings per
    finder x verifiers per finding + implementers + reviewers`. Write the number
    down in your plan.
-2. **Hard cap: 40 agents total per run.** If the math exceeds 40, cut scope:
-   fewer lenses, findings capped per agent (`maxItems`-style limits in the
-   prompt), one verification vote instead of three.
+2. **Budget: 10-20 agents per run for routine work; hard cap 40.** If the
+   math exceeds the routine budget, say so and justify it; if it exceeds 40,
+   cut scope before launching: fewer lenses, findings capped per agent
+   (`maxItems`-style limits in the prompt), one verification vote instead of
+   three. Going past 40 requires explicit user approval in the same
+   conversation. If the user's own configuration states a stricter cap, the
+   stricter number wins.
 3. Prefer waves of 10 or fewer concurrent agents. Finish and synthesize a wave
    before launching the next.
 4. Every phase plan states its own agent budget up front (for example "Sonnet

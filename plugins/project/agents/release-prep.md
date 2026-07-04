@@ -61,6 +61,11 @@ Check if CHANGELOG.md exists and has an entry for the upcoming version.
 #### License
 Check LICENSE file exists.
 
+#### Security blockers
+If a security-audit or dependency-auditor report exists for this release
+cycle, any Critical finding in it is a release blocker: list it in the
+Blockers section and report "Ready to Release: NO" until it is resolved.
+
 ### 3. Generate Report
 
 ```

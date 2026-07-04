@@ -60,10 +60,18 @@ npm audit --omit=dev
 govulncheck ./...
 ```
 
-Review results for:
-- Critical/High severity: must fix before release
-- Medium: fix within sprint
-- Low: track in backlog
+Review results against the severity rubric (shared with the
+dependency-auditor agent):
+
+- Critical: exploitable now or actively exploited (leaked live credential,
+  known-exploited CVE in a reachable path). Must fix before release; blocks
+  release-prep.
+- High: known vulnerability with a plausible attack path. Fix before the next
+  release.
+- Medium: vulnerability with mitigating factors, or a major-version lag on a
+  security-relevant package. Fix within the sprint.
+- Low: outdated without known vulnerabilities; license concerns to review.
+  Track in backlog.
 
 ### 3. Code Vulnerability Patterns
 

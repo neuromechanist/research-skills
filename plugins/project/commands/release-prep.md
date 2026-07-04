@@ -33,6 +33,10 @@ Parse `$ARGUMENTS` to determine version bump:
 !echo "=== Checking CI status ==="
 !gh run list --limit 3
 
+Before proceeding: if a security-audit or dependency-auditor report exists
+for this release cycle, any Critical finding in it is a release blocker; stop
+and report it instead of bumping the version.
+
 ### 4. Version Bump
 Update version in the appropriate config file(s). Commit the version bump.
 

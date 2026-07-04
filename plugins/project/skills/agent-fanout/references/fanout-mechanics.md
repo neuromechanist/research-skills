@@ -75,8 +75,9 @@ Plugin installs expose skills, not subagents. Two options:
    and scoped briefs. Record each role's report in a file under `.context/`
    so the next role can read it.
 
-The cap still applies: count the total role-runs before starting; stay at or
-under 40 per task.
+The budget still applies: count the total role-runs before starting; 10-20
+per task is the routine budget, 40 the hard cap (see the skill's Hard limits
+section).
 
 ## Git worktree isolation (all tools)
 
