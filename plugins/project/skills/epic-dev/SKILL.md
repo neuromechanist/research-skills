@@ -47,7 +47,7 @@ For resume modes, validate state fields before acting: `epic_issue`,
 
 ## Phase 1: Epic Setup
 
-1. Gather the epic description and phase breakdown. Suggest phases when the user has not provided them.
+1. Gather the epic description and phase breakdown. Suggest phases when the user has not provided them, using the sizing rule in `workflow-reference` (one phase = one independently reviewable and testable PR, roughly one subsystem or up to ~500 net changed lines; if two candidate phases can only be tested together, they are one phase). If the description contains only one such unit, use the single-phase shortcut.
 2. Present the plan for confirmation:
 
    ```text
@@ -101,7 +101,7 @@ For each phase, starting from the current state:
 2. Run project tests or the best available integration verification from the epic worktree.
 3. Invoke `pr-review-toolkit` on the final PR.
 4. Present the final review summary and ask for merge approval.
-5. Squash merge the final PR.
+5. Merge the final PR with a regular merge (`--merge`) to preserve per-phase history; only squash if the user explicitly asks.
 6. Close the epic issue if GitHub did not close it automatically.
 7. Remove the epic worktree.
 8. Archive or delete the local state file after confirming the workflow is complete.

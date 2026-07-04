@@ -181,7 +181,7 @@ Update state: mark phase `in_progress`.
 
 4. **Confirm**: Present review summary and ask user to approve final merge
 
-5. Squash merge: `gh pr merge --squash --delete-branch`
+5. Regular merge to preserve per-phase history: `gh pr merge --merge --delete-branch` (phase PRs are squashed into the epic branch; the epic-to-integration merge is NOT squashed unless the user explicitly asks)
 
 6. Close epic issue if not auto-closed: `gh issue close {epic_issue}`
 
@@ -211,7 +211,7 @@ Update state: mark phase `in_progress`.
 
 - **Detection script failure**: If `project-detect-repo-config` fails or returns `ERROR`, report the exact error and stop. Do not proceed with empty configuration values.
 - **Git conflicts**: Stop and present the conflict. Ask user to resolve manually, then continue.
-- **Test failures**: Present test output. Ask user whether to fix and retry or skip.
+- **Test failures**: Present test output, then fix and rerun by default (root-cause the failure; never delete or weaken the failing test to pass). Ask the user only if two fix attempts fail or the fix would expand the phase's scope.
 - **PR check failures**: Wait for CI, present results. If failing, ask user how to proceed.
 - **GitHub API failures**: If `gh issue create` or `gh pr create` fails, report the exact error, show which issues/PRs were already created, and ask the user whether to retry or abort. Never proceed with empty issue/PR numbers.
 - **Missing gh sub-issue**: Install automatically: `gh extension install agbiotech/gh-sub-issue`

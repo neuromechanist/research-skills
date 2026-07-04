@@ -8,6 +8,27 @@ version: 0.1.0
 
 Procedural reference for multi-phase feature development using git worktrees, GitHub issues with sub-issues, and phased PR delivery.
 
+## Phase Sizing and Epic-vs-Single Decision
+
+One phase = one independently reviewable and testable PR: roughly one
+subsystem, one migration, or up to ~500 net lines of non-generated change.
+
+- The description contains 2+ such units -> epic (this workflow).
+- Exactly one unit -> single-phase shortcut (below), or simply the
+  engineering-loop skill without epic machinery.
+- Unsure how to break a description into phases: each phase must have its own
+  testable Definition of Done; if two candidate phases can only be tested
+  together, they are one phase.
+
+Slug derivation for names: take the phase title, drop stopwords, keep 2-3
+words with the object noun first, kebab-case ("backend-metrics",
+"sync-engine"; never "implement-the-new-backend-metrics").
+
+Related skills: implementation-planning (writing each phase plan),
+agent-fanout (parallel implementers, one worktree each), engineering-loop
+(the inner loop within a phase), debugging (when a phase's tests fail for
+unclear reasons).
+
 ## Branch Strategy Decision Tree
 
 Determine the integration branch and branching model:
@@ -110,10 +131,17 @@ gh sub-issue add {epic_issue} --sub-issue-number $PHASE_ISSUE
 gh pr create --base {epic_branch} --title "Phase {X}: {title}" --body "Closes #{phase_issue}\n\nPart of epic #{epic_issue}"
 ```
 
-**Squash merge:**
+**Squash merge (phase PRs into the epic branch only):**
 ```bash
 gh pr merge --squash --delete-branch
 ```
+
+Merge-strategy rule: phase PRs squash-merge into the epic branch to keep it
+readable; the FINAL epic-to-integration merge uses a regular merge
+(`gh pr merge --merge`) to preserve history, unless the user directs
+otherwise. When a local convention conflicts with the user's standing merge
+preference, surface the conflict once, before the first merge runs, not
+after several.
 
 **Create final PR (epic to integration):**
 ```bash
