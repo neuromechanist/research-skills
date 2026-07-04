@@ -7,7 +7,7 @@ contract; do not remove it. Distilled from working frontier-model sessions.
 
 ```
 CONTEXT: [one-line project description]. Repo map: [packages/dirs and what
-each is]. Largest files: [file — N lines, file — N lines]. House rules are in
+each is]. Largest files: [file, N lines; file, N lines]. House rules are in
 [AGENTS.md / CLAUDE.md path] and apply strictly.
 ALREADY HANDLED (do not re-report): [list of fixed/triaged items].
 KNOWN GAPS (extend, do not rediscover): [issue refs].
@@ -109,12 +109,12 @@ below gets addressed or explicitly rejected. Fix in your worktree, re-run all
 gates (zero new diagnostics vs baseline), commit atomically, push. Do NOT
 merge.
 
-1. CRITICAL: [file:line] — [bug mechanism]. Fix: [exact fix].
+1. CRITICAL: [file:line]: [bug mechanism]. Fix: [exact fix].
 2. IMPORTANT: ...
 3. COMMENT FIX: [stale doc claim].
-4. NO ACTION (logged): [finding] — belongs to #[M]; add one sentence to the
+4. NO ACTION (logged): [finding]: belongs to #[M]; add one sentence to the
    PR body and a comment on #[M].
-EXPLICITLY REJECTED (rationale): [finding] — [one sentence why].
+EXPLICITLY REJECTED (rationale): [finding]: [one sentence why].
 
 Reply with: commit hash, test counts, and anything you disagreed with and why
 (argued disagreement is fine; "intentionally different by design" is an
