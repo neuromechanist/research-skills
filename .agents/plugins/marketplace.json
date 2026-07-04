@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "project",
-      "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, PR review, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
+      "description": "Project lifecycle toolkit: initialization, rule/config updates, epic/sprint workflow, PR review, codebase onboarding, implementation planning, debugging, engineering loop, agent fan-out, CI/CD scaffolding, Docker packaging, security auditing, and document processing",
       "source": {
         "source": "local",
         "path": "./plugins/project"
