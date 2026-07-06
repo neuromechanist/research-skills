@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 320" width="1000" height="320">
+  <text x="500" y="24" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle">Figure = 5-step managed pipeline (each step has a mechanical defence)</text>
+  <text x="500" y="42" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">Plan -- Build -- Compose -- Validate -- Export. Boomerang from Validate back to Build on font failure.</text>
+
+  <!-- Stage 1: Plan (blue) -->
+  <g>
+    <rect x="40" y="90" width="170" height="100" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.6"/>
+    <text x="125" y="115" font-family="sans-serif" font-size="13" fill="#1E40AF" font-weight="bold" text-anchor="middle">1. Plan</text>
+    <text x="125" y="138" font-family="sans-serif" font-size="10" fill="#1E40AF" text-anchor="middle">journal size</text>
+    <text x="125" y="154" font-family="sans-serif" font-size="10" fill="#1E40AF" text-anchor="middle">panel grid</text>
+    <text x="125" y="170" font-family="sans-serif" font-size="10" fill="#1E40AF" text-anchor="middle">palette + theme</text>
+  </g>
+
+  <!-- Stage 2: Build (green) -->
+  <g>
+    <rect x="232" y="90" width="170" height="100" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.6"/>
+    <text x="317" y="115" font-family="sans-serif" font-size="13" fill="#065F46" font-weight="bold" text-anchor="middle">2. Build</text>
+    <text x="317" y="138" font-family="sans-serif" font-size="10" fill="#065F46" text-anchor="middle">plot-styling</text>
+    <text x="317" y="154" font-family="sans-serif" font-size="10" fill="#065F46" text-anchor="middle">svg-figure</text>
+    <text x="317" y="170" font-family="sans-serif" font-size="10" fill="#065F46" text-anchor="middle">icons / substrate</text>
+  </g>
+
+  <!-- Stage 3: Compose (purple) -->
+  <g>
+    <rect x="424" y="90" width="170" height="100" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.6"/>
+    <text x="509" y="115" font-family="sans-serif" font-size="13" fill="#5B21B6" font-weight="bold" text-anchor="middle">3. Compose</text>
+    <text x="509" y="138" font-family="sans-serif" font-size="10" fill="#5B21B6" text-anchor="middle">svgutils</text>
+    <text x="509" y="154" font-family="sans-serif" font-size="10" fill="#5B21B6" text-anchor="middle">exact mm coords</text>
+    <text x="509" y="170" font-family="sans-serif" font-size="10" fill="#5B21B6" text-anchor="middle">text preserved</text>
+  </g>
+
+  <!-- Stage 4: Validate (amber) - the NEW defence -->
+  <g>
+    <rect x="616" y="90" width="170" height="100" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="2"/>
+    <text x="701" y="115" font-family="sans-serif" font-size="13" fill="#92400E" font-weight="bold" text-anchor="middle">4. Validate</text>
+    <text x="701" y="138" font-family="sans-serif" font-size="10" fill="#92400E" text-anchor="middle">validate_fonts.py</text>
+    <text x="701" y="154" font-family="sans-serif" font-size="10" fill="#92400E" text-anchor="middle">effective pt vs</text>
+    <text x="701" y="170" font-family="sans-serif" font-size="10" fill="#92400E" text-anchor="middle">journal minimum</text>
+    <!-- NEW badge -->
+    <rect x="744" y="76" width="42" height="16" rx="3" fill="#DC2626"/>
+    <text x="765" y="87" font-family="sans-serif" font-size="9.5" fill="#FFFFFF" font-weight="bold" text-anchor="middle">NEW</text>
+  </g>
+
+  <!-- Stage 5: Export (teal) -->
+  <g>
+    <rect x="808" y="90" width="152" height="100" rx="6" fill="#CCFBF1" stroke="#0D9488" stroke-width="1.6"/>
+    <text x="884" y="115" font-family="sans-serif" font-size="13" fill="#134E4A" font-weight="bold" text-anchor="middle">5. Export</text>
+    <text x="884" y="138" font-family="sans-serif" font-size="10" fill="#134E4A" text-anchor="middle">Inkscape</text>
+    <text x="884" y="154" font-family="sans-serif" font-size="10" fill="#134E4A" text-anchor="middle">(cairosvg</text>
+    <text x="884" y="170" font-family="sans-serif" font-size="10" fill="#134E4A" text-anchor="middle">fallback)</text>
+  </g>
+
+  <!-- Forward arrows between stages -->
+  <defs>
+    <marker id="arrowfwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+  <line x1="210" y1="140" x2="232" y2="140" stroke="#475569" stroke-width="1.6" marker-end="url(#arrowfwd)"/>
+  <line x1="402" y1="140" x2="424" y2="140" stroke="#475569" stroke-width="1.6" marker-end="url(#arrowfwd)"/>
+  <line x1="594" y1="140" x2="616" y2="140" stroke="#475569" stroke-width="1.6" marker-end="url(#arrowfwd)"/>
+  <line x1="786" y1="140" x2="808" y2="140" stroke="#475569" stroke-width="1.6" marker-end="url(#arrowfwd)"/>
+
+  <!-- Boomerang from Validate (4) back to Build (2) -->
+  <path d="M 701 190 C 701 250, 317 260, 317 190" fill="none" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#arrowback)"/>
+  <text x="509" y="252" font-family="sans-serif" font-size="11" fill="#DC2626" font-weight="bold" text-anchor="middle">boomerang on font-validator failure</text>
+  <text x="509" y="268" font-family="sans-serif" font-size="10" fill="#7F1D1D" font-style="italic" text-anchor="middle">rescale panel up, or increase source pt, or widen canvas</text>
+
+  <!-- Bottom moral strip -->
+  <rect x="40" y="288" width="920" height="22" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.8"/>
+  <text x="500" y="303" font-family="sans-serif" font-size="11" fill="#1E293B" text-anchor="middle">Same shape as Weeks 5-7 pipelines. The validator is the new mechanical defence introduced this week.</text>
+</svg>

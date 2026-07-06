@@ -1,0 +1,65 @@
+site_name: Research Skills
+site_description: Cross-agent plugin marketplace for academic research workflows and development tooling
+site_author: Seyed (Yahya) Shirazi
+site_url: https://neuromechanist.github.io/research-skills/
+repo_url: https://github.com/neuromechanist/research-skills
+repo_name: neuromechanist/research-skills
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search:
+      lang: en
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - footnotes
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Architecture: architecture.md
+  - Plugins:
+      - Project: plugins/project.md
+      - Grant: plugins/grant.md
+      - Manuscript: plugins/manuscript.md
+      - Opencite: plugins/opencite.md
+      - Figures: plugins/figures.md
+      - Presentation: plugins/presentation.md
+      - Neuroinformatics: plugins/neuroinformatics.md
+  - Cross-Agent Compatibility: cross-agent-compatibility.md
+  - Contributing: contributing.md

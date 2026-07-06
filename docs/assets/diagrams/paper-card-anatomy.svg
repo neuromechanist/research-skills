@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460">
+  <!-- Title -->
+  <text x="360" y="24" font-family="sans-serif" font-size="14" fill="#1E293B" font-weight="bold" text-anchor="middle">paper-card.md anatomy</text>
+
+  <!-- The card.md page (tall rectangle) -->
+  <rect x="80" y="46" width="280" height="396" rx="6" fill="#FFFFFF" stroke="#1E293B" stroke-width="1.6"/>
+
+  <!-- Front-matter block (top, monospace, muted gray) -->
+  <rect x="92" y="58" width="256" height="148" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.2"/>
+  <text x="100" y="74" font-family="monospace" font-size="10" fill="#64748B">---</text>
+  <text x="100" y="88" font-family="monospace" font-size="10" fill="#1E293B">slug: smith-2023-shot-erp</text>
+  <text x="100" y="102" font-family="monospace" font-size="10" fill="#1E293B">type: empirical</text>
+  <text x="100" y="116" font-family="monospace" font-size="10" fill="#1E293B">year: 2023</text>
+  <text x="100" y="130" font-family="monospace" font-size="10" fill="#1E293B">doi: 10.1038/...</text>
+  <text x="100" y="144" font-family="monospace" font-size="10" fill="#1E293B">license: cc-by</text>
+  <text x="100" y="158" font-family="monospace" font-size="10" fill="#1E293B">agi_relevance: high</text>
+  <text x="100" y="172" font-family="monospace" font-size="10" fill="#1E293B">pdf_status: open</text>
+  <text x="100" y="186" font-family="monospace" font-size="10" fill="#64748B">---</text>
+
+  <!-- 6 section rows -->
+  <rect x="92" y="216" width="256" height="32" rx="4" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.2"/>
+  <text x="102" y="237" font-family="sans-serif" font-size="11" fill="#1E40AF" font-weight="bold">## TL;DR</text>
+
+  <rect x="92" y="252" width="256" height="32" rx="4" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.2"/>
+  <text x="102" y="273" font-family="sans-serif" font-size="11" fill="#78350F" font-weight="bold">## Summary</text>
+
+  <rect x="92" y="288" width="256" height="32" rx="4" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.2"/>
+  <text x="102" y="309" font-family="sans-serif" font-size="11" fill="#5B21B6" font-weight="bold">## Relevance</text>
+
+  <rect x="92" y="324" width="256" height="32" rx="4" fill="#D1FAE5" stroke="#059669" stroke-width="1.2"/>
+  <text x="102" y="345" font-family="sans-serif" font-size="11" fill="#064E3B" font-weight="bold">## Notable details</text>
+
+  <rect x="92" y="360" width="256" height="32" rx="4" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.2"/>
+  <text x="102" y="381" font-family="sans-serif" font-size="11" fill="#7F1D1D" font-weight="bold">## Open questions</text>
+
+  <rect x="92" y="396" width="256" height="32" rx="4" fill="#E0E7FF" stroke="#4338CA" stroke-width="1.2"/>
+  <text x="102" y="417" font-family="sans-serif" font-size="11" fill="#3730A3" font-weight="bold">## Citations</text>
+
+  <!-- Callout: schema-enforced metadata -->
+  <line x1="348" y1="130" x2="440" y2="130" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="2,2"/>
+  <rect x="440" y="98" width="240" height="64" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.4"/>
+  <text x="452" y="118" font-family="sans-serif" font-size="12" fill="#1E40AF" font-weight="bold">schema-enforced metadata</text>
+  <text x="452" y="134" font-family="sans-serif" font-size="10" fill="#475569">YAML front matter validated by</text>
+  <text x="452" y="148" font-family="monospace" font-size="10" fill="#475569">opencite</text>
+  <text x="492" y="148" font-family="sans-serif" font-size="10" fill="#475569">; broken cards fail review.</text>
+
+  <!-- Callout: 6 required sections -->
+  <line x1="348" y1="320" x2="440" y2="320" stroke="#7C3AED" stroke-width="1.2" stroke-dasharray="2,2"/>
+  <rect x="440" y="288" width="240" height="64" rx="6" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.4"/>
+  <text x="452" y="308" font-family="sans-serif" font-size="12" fill="#5B21B6" font-weight="bold">6 required sections</text>
+  <text x="452" y="324" font-family="sans-serif" font-size="10" fill="#475569">Same shape across every card so</text>
+  <text x="452" y="338" font-family="sans-serif" font-size="10" fill="#475569">synthesis can scan them quickly.</text>
+
+  <!-- footer -->
+  <text x="360" y="450" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">Every claim in the literature review must point at one of these.</text>
+</svg>

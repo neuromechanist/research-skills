@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 320" width="760" height="320">
+  <!-- Title -->
+  <text x="380" y="24" font-family="sans-serif" font-size="14" fill="#1E293B" font-weight="bold" text-anchor="middle">opencite: three search strategies</text>
+
+  <!-- Central query node -->
+  <rect x="320" y="46" width="120" height="40" rx="20" fill="#1E293B" stroke="#0F172A" stroke-width="1.6"/>
+  <text x="380" y="71" font-family="monospace" font-size="13" fill="#FFFFFF" font-weight="bold" text-anchor="middle">query</text>
+
+  <!-- Path 1: canonical (down-left, blue) -->
+  <!-- Tangent at endpoint: (130-200, 170-130) = (-70, 40); arrowhead points down-left along that vector -->
+  <path d="M340 86 Q 200 130, 130 170" fill="none" stroke="#2563EB" stroke-width="2"/>
+  <polygon points="130,170 141,168 137,160" fill="#2563EB"/>
+  <rect x="50" y="180" width="160" height="48" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.6"/>
+  <!-- star icon -->
+  <polygon points="80,196 84,206 95,207 87,214 89,225 80,219 71,225 73,214 65,207 76,206" fill="#2563EB"/>
+  <text x="150" y="200" font-family="sans-serif" font-size="12" fill="#1E40AF" font-weight="bold" text-anchor="middle">canonical</text>
+  <text x="150" y="216" font-family="sans-serif" font-size="10" fill="#1E40AF" text-anchor="middle">high-citation</text>
+  <!-- paper card stack -->
+  <rect x="100" y="248" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.2"/>
+  <rect x="106" y="254" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.2"/>
+  <rect x="112" y="260" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.4"/>
+  <line x1="120" y1="272" x2="164" y2="272" stroke="#2563EB" stroke-width="1.2"/>
+  <line x1="120" y1="280" x2="160" y2="280" stroke="#2563EB" stroke-width="1.2"/>
+  <line x1="120" y1="288" x2="158" y2="288" stroke="#2563EB" stroke-width="1.2"/>
+
+  <!-- Path 2: search (straight down, amber) -->
+  <line x1="380" y1="86" x2="380" y2="170" stroke="#F59E0B" stroke-width="2"/>
+  <polygon points="380,170 376,162 384,162" fill="#F59E0B"/>
+  <rect x="300" y="180" width="160" height="48" rx="6" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.6"/>
+  <!-- magnifier icon -->
+  <circle cx="324" cy="204" r="9" fill="none" stroke="#B45309" stroke-width="2"/>
+  <line x1="331" y1="211" x2="340" y2="220" stroke="#B45309" stroke-width="2.4" stroke-linecap="round"/>
+  <text x="400" y="200" font-family="sans-serif" font-size="12" fill="#78350F" font-weight="bold" text-anchor="middle">search</text>
+  <text x="400" y="216" font-family="sans-serif" font-size="10" fill="#78350F" text-anchor="middle">recent / specific</text>
+  <rect x="350" y="248" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.2"/>
+  <rect x="356" y="254" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.2"/>
+  <rect x="362" y="260" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.4"/>
+  <line x1="370" y1="272" x2="414" y2="272" stroke="#F59E0B" stroke-width="1.2"/>
+  <line x1="370" y1="280" x2="410" y2="280" stroke="#F59E0B" stroke-width="1.2"/>
+  <line x1="370" y1="288" x2="408" y2="288" stroke="#F59E0B" stroke-width="1.2"/>
+
+  <!-- Path 3: cite (down-right, purple) -->
+  <!-- Tangent at endpoint: (630-560, 170-130) = (70, 40); arrowhead points down-right along that vector -->
+  <path d="M420 86 Q 560 130, 630 170" fill="none" stroke="#7C3AED" stroke-width="2"/>
+  <polygon points="630,170 619,168 623,160" fill="#7C3AED"/>
+  <rect x="550" y="180" width="160" height="48" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.6"/>
+  <!-- citation graph icon: linked nodes -->
+  <circle cx="572" cy="200" r="4" fill="#7C3AED"/>
+  <circle cx="586" cy="212" r="4" fill="#7C3AED"/>
+  <circle cx="572" cy="222" r="4" fill="#7C3AED"/>
+  <circle cx="600" cy="200" r="4" fill="#7C3AED"/>
+  <line x1="572" y1="200" x2="586" y2="212" stroke="#7C3AED" stroke-width="1.4"/>
+  <line x1="586" y1="212" x2="572" y2="222" stroke="#7C3AED" stroke-width="1.4"/>
+  <line x1="586" y1="212" x2="600" y2="200" stroke="#7C3AED" stroke-width="1.4"/>
+  <text x="650" y="200" font-family="sans-serif" font-size="12" fill="#5B21B6" font-weight="bold" text-anchor="middle">cite</text>
+  <text x="650" y="216" font-family="sans-serif" font-size="10" fill="#5B21B6" text-anchor="middle">graph traversal</text>
+  <rect x="600" y="248" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.2"/>
+  <rect x="606" y="254" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.2"/>
+  <rect x="612" y="260" width="60" height="50" rx="3" fill="#FFFFFF" stroke="#7C3AED" stroke-width="1.4"/>
+  <line x1="620" y1="272" x2="664" y2="272" stroke="#7C3AED" stroke-width="1.2"/>
+  <line x1="620" y1="280" x2="660" y2="280" stroke="#7C3AED" stroke-width="1.2"/>
+  <line x1="620" y1="288" x2="658" y2="288" stroke="#7C3AED" stroke-width="1.2"/>
+</svg>

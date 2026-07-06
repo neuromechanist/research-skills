@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="1000" height="360">
+  <text x="500" y="26" font-family="sans-serif" font-size="16" fill="#1E293B" font-weight="bold" text-anchor="middle">Anatomy of a skill</text>
+  <text x="500" y="46" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">one required file, three optional folders -- each loaded only when needed</text>
+
+  <!-- tree panel -->
+  <rect x="60" y="74" width="420" height="240" rx="10" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="90" y="110" font-family="monospace" font-size="14" font-weight="bold" fill="#1E293B">shot-change-erp/</text>
+
+  <text x="110" y="150" font-family="monospace" font-size="13" fill="#166534" font-weight="bold">├── SKILL.md</text>
+  <text x="300" y="150" font-family="sans-serif" font-size="9.5" fill="#94A3B8">required</text>
+  <text x="135" y="168" font-family="monospace" font-size="10" fill="#64748B">frontmatter + body</text>
+
+  <text x="110" y="200" font-family="monospace" font-size="13" fill="#1E293B">├── references/</text>
+  <text x="110" y="240" font-family="monospace" font-size="13" fill="#1E293B">├── scripts/</text>
+  <text x="110" y="280" font-family="monospace" font-size="13" fill="#1E293B">└── assets/</text>
+
+  <!-- annotation cards (right), aligned to each tree line -->
+  <!-- SKILL.md -->
+  <rect x="520" y="128" width="420" height="40" rx="6" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.8"/>
+  <text x="538" y="146" font-family="monospace" font-size="11.5" font-weight="bold" fill="#166534">SKILL.md</text>
+  <text x="640" y="146" font-family="sans-serif" font-size="11" fill="#166534">the entry point -- always read first when it triggers</text>
+  <text x="538" y="161" font-family="sans-serif" font-size="9.5" fill="#166534">name + description (the trigger) and the lean instructions</text>
+
+  <!-- references -->
+  <rect x="520" y="184" width="420" height="34" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="538" y="205" font-family="monospace" font-size="11.5" font-weight="bold" fill="#334155">references/</text>
+  <text x="645" y="205" font-family="sans-serif" font-size="10.5" fill="#475569">detailed docs, loaded only when needed</text>
+
+  <!-- scripts -->
+  <rect x="520" y="224" width="420" height="34" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="538" y="245" font-family="monospace" font-size="11.5" font-weight="bold" fill="#334155">scripts/</text>
+  <text x="645" y="245" font-family="sans-serif" font-size="10.5" fill="#475569">code, executed -- token-free, not always read</text>
+
+  <!-- assets -->
+  <rect x="520" y="264" width="420" height="34" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="538" y="285" font-family="monospace" font-size="11.5" font-weight="bold" fill="#334155">assets/</text>
+  <text x="645" y="285" font-family="sans-serif" font-size="10.5" fill="#475569">templates, icons, fonts used in your output</text>
+
+  <!-- bottom strip -->
+  <rect x="60" y="324" width="880" height="24" rx="5" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>
+  <text x="500" y="340" font-family="sans-serif" font-size="11" fill="#1E293B" text-anchor="middle" font-weight="bold">A skill is knowledge, packaged so it loads only when it is relevant.</text>
+</svg>

@@ -1,0 +1,16 @@
+[project]
+name = "research-skills"
+version = "0.1.0"
+description = "Tooling project for the research-skills marketplace docs site (not a distributed Python package)"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "pymdown-extensions>=10.10.0",
+]

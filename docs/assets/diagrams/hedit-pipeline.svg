@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="1000" height="360">
+  <defs>
+    <marker id="arrowfwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowback" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="24" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle">HEDit -- describe in English, get validated HED</text>
+  <text x="500" y="42" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">Today: natural language -&gt; validated HED (LangGraph multi-agent)</text>
+
+  <!-- Stage 1: Parser (blue) -->
+  <g>
+    <rect x="40" y="90" width="280" height="120" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.6"/>
+    <text x="180" y="116" font-family="sans-serif" font-size="13" fill="#1E40AF" font-weight="bold" text-anchor="middle">Parser</text>
+    <text x="180" y="140" font-family="sans-serif" font-size="10" fill="#1E40AF" text-anchor="middle">natural language -&gt; structured facts:</text>
+    <text x="180" y="158" font-family="sans-serif" font-size="10" fill="#1E40AF" text-anchor="middle">action, body-part, direction,</text>
+    <text x="180" y="176" font-family="sans-serif" font-size="10" fill="#1E40AF" text-anchor="middle">magnitude, unit</text>
+  </g>
+
+  <!-- Stage 2: Tagger (green) -->
+  <g>
+    <rect x="360" y="90" width="280" height="120" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.6"/>
+    <text x="500" y="116" font-family="sans-serif" font-size="13" fill="#065F46" font-weight="bold" text-anchor="middle">Tagger</text>
+    <text x="500" y="140" font-family="sans-serif" font-size="10" fill="#065F46" text-anchor="middle">retrieve HED nodes</text>
+    <text x="500" y="158" font-family="sans-serif" font-size="10" fill="#065F46" text-anchor="middle">(RAG over schema),</text>
+    <text x="500" y="176" font-family="sans-serif" font-size="10" fill="#065F46" text-anchor="middle">compose the tag string</text>
+  </g>
+
+  <!-- Stage 3: Validator (amber) -->
+  <g>
+    <rect x="680" y="90" width="280" height="120" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.8"/>
+    <text x="820" y="116" font-family="sans-serif" font-size="13" fill="#92400E" font-weight="bold" text-anchor="middle">Validator</text>
+    <text x="820" y="140" font-family="sans-serif" font-size="10" fill="#92400E" text-anchor="middle">official HED validator:</text>
+    <text x="820" y="158" font-family="sans-serif" font-size="10" fill="#92400E" text-anchor="middle">tag exists? units valid?</text>
+    <text x="820" y="176" font-family="sans-serif" font-size="10" fill="#92400E" text-anchor="middle">value slot well-formed?</text>
+  </g>
+
+  <!-- Forward arrows -->
+  <line x1="320" y1="150" x2="358" y2="150" stroke="#475569" stroke-width="1.6" marker-end="url(#arrowfwd)"/>
+  <line x1="640" y1="150" x2="678" y2="150" stroke="#475569" stroke-width="1.6" marker-end="url(#arrowfwd)"/>
+
+  <!-- Red dashed feedback loop: Validator back to Tagger -->
+  <path d="M 820 210 C 820 270, 500 280, 500 212" fill="none" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="6,3" marker-end="url(#arrowback)"/>
+  <text x="660" y="272" font-family="sans-serif" font-size="11" fill="#DC2626" font-weight="bold" text-anchor="middle">re-tag with validator feedback</text>
+
+  <!-- Bottom moral strip -->
+  <rect x="40" y="328" width="920" height="22" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.8"/>
+  <text x="500" y="343" font-family="sans-serif" font-size="11" fill="#1E293B" text-anchor="middle">The HED schema is the contract -- no agent invents vocabulary.</text>
+</svg>

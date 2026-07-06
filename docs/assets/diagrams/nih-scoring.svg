@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" width="960" height="360">
+  <text x="480" y="26" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle">NIH study section: 5 criteria, 1-9 scoring, integrated impact score</text>
+
+  <!-- Five criteria icons across the top -->
+  <g>
+    <!-- Significance -->
+    <rect x="40" y="60" width="170" height="92" rx="8" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.6"/>
+    <circle cx="78" cy="106" r="20" fill="#2563EB"/>
+    <text x="78" y="111" font-family="sans-serif" font-size="18" fill="#FFFFFF" font-weight="bold" text-anchor="middle">S</text>
+    <text x="125" y="92" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold">Significance</text>
+    <text x="125" y="111" font-family="sans-serif" font-size="11" fill="#475569">Why does</text>
+    <text x="125" y="126" font-family="sans-serif" font-size="11" fill="#475569">the field need</text>
+    <text x="125" y="141" font-family="sans-serif" font-size="11" fill="#475569">this answered?</text>
+  </g>
+  <g>
+    <rect x="225" y="60" width="170" height="92" rx="8" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.6"/>
+    <circle cx="263" cy="106" r="20" fill="#7C3AED"/>
+    <text x="263" y="111" font-family="sans-serif" font-size="18" fill="#FFFFFF" font-weight="bold" text-anchor="middle">In</text>
+    <text x="310" y="92" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold">Investigator</text>
+    <text x="310" y="111" font-family="sans-serif" font-size="11" fill="#475569">Right team</text>
+    <text x="310" y="126" font-family="sans-serif" font-size="11" fill="#475569">at the right</text>
+    <text x="310" y="141" font-family="sans-serif" font-size="11" fill="#475569">career stage?</text>
+  </g>
+  <g>
+    <rect x="410" y="60" width="170" height="92" rx="8" fill="#FEF3C7" stroke="#B45309" stroke-width="1.6"/>
+    <circle cx="448" cy="106" r="20" fill="#B45309"/>
+    <text x="448" y="111" font-family="sans-serif" font-size="18" fill="#FFFFFF" font-weight="bold" text-anchor="middle">I</text>
+    <text x="495" y="92" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold">Innovation</text>
+    <text x="495" y="111" font-family="sans-serif" font-size="11" fill="#475569">What is new</text>
+    <text x="495" y="126" font-family="sans-serif" font-size="11" fill="#475569">vs the field</text>
+    <text x="495" y="141" font-family="sans-serif" font-size="11" fill="#475569">today?</text>
+  </g>
+  <g>
+    <rect x="595" y="60" width="170" height="92" rx="8" fill="#D1FAE5" stroke="#059669" stroke-width="1.6"/>
+    <circle cx="633" cy="106" r="20" fill="#059669"/>
+    <text x="633" y="111" font-family="sans-serif" font-size="18" fill="#FFFFFF" font-weight="bold" text-anchor="middle">A</text>
+    <text x="680" y="92" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold">Approach</text>
+    <text x="680" y="111" font-family="sans-serif" font-size="11" fill="#475569">Rigorous,</text>
+    <text x="680" y="126" font-family="sans-serif" font-size="11" fill="#475569">feasible,</text>
+    <text x="680" y="141" font-family="sans-serif" font-size="11" fill="#475569">de-risked?</text>
+  </g>
+  <g>
+    <rect x="780" y="60" width="140" height="92" rx="8" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.6"/>
+    <circle cx="815" cy="106" r="20" fill="#DC2626"/>
+    <text x="815" y="111" font-family="sans-serif" font-size="18" fill="#FFFFFF" font-weight="bold" text-anchor="middle">E</text>
+    <text x="855" y="92" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold">Environment</text>
+    <text x="855" y="111" font-family="sans-serif" font-size="11" fill="#475569">Institution</text>
+    <text x="855" y="126" font-family="sans-serif" font-size="11" fill="#475569">enables the</text>
+    <text x="855" y="141" font-family="sans-serif" font-size="11" fill="#475569">work?</text>
+  </g>
+
+  <!-- Scoring ladder -->
+  <text x="40" y="190" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold">Scoring (per criterion + integrated impact)</text>
+
+  <!-- Gradient bar -->
+  <defs>
+    <linearGradient id="scoreGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="22%" stop-color="#10B981"/>
+      <stop offset="44%" stop-color="#FACC15"/>
+      <stop offset="66%" stop-color="#F59E0B"/>
+      <stop offset="88%" stop-color="#DC2626"/>
+    </linearGradient>
+  </defs>
+  <rect x="40" y="208" width="880" height="38" rx="6" fill="url(#scoreGradient)" stroke="#1E293B" stroke-width="0.8"/>
+
+  <!-- Score ticks 1-9 -->
+  <g font-family="sans-serif" font-size="12" fill="#FFFFFF" font-weight="bold" text-anchor="middle">
+    <text x="89" y="233">1</text>
+    <text x="187" y="233">2</text>
+    <text x="285" y="233">3</text>
+    <text x="383" y="233">4</text>
+    <text x="481" y="233">5</text>
+    <text x="579" y="233">6</text>
+    <text x="677" y="233">7</text>
+    <text x="775" y="233">8</text>
+    <text x="873" y="233">9</text>
+  </g>
+
+  <!-- Score-band labels -->
+  <g font-family="sans-serif" font-size="11" fill="#1E293B">
+    <text x="138" y="270" text-anchor="middle">Exceptional</text>
+    <text x="138" y="284" text-anchor="middle" fill="#475569" font-style="italic">no weaknesses</text>
+
+    <text x="334" y="270" text-anchor="middle">Excellent</text>
+    <text x="334" y="284" text-anchor="middle" fill="#475569" font-style="italic">minor weaknesses</text>
+
+    <text x="530" y="270" text-anchor="middle">Good</text>
+    <text x="530" y="284" text-anchor="middle" fill="#475569" font-style="italic">moderate weaknesses</text>
+
+    <text x="726" y="270" text-anchor="middle">Fair</text>
+    <text x="726" y="284" text-anchor="middle" fill="#475569" font-style="italic">major weaknesses</text>
+
+    <text x="873" y="270" text-anchor="middle">Poor</text>
+    <text x="873" y="284" text-anchor="middle" fill="#475569" font-style="italic">flawed</text>
+  </g>
+
+  <!-- Funding line callout -->
+  <g>
+    <line x1="40" y1="312" x2="280" y2="312" stroke="#059669" stroke-width="2.4"/>
+    <circle cx="280" cy="312" r="5" fill="#059669"/>
+    <text x="290" y="316" font-family="sans-serif" font-size="12" fill="#065F46" font-weight="bold">Fundable band</text>
+    <text x="395" y="316" font-family="sans-serif" font-size="11" fill="#475569" font-style="italic">~impact score &lt;= 30 (varies by institute, cycle)</text>
+  </g>
+
+  <text x="480" y="346" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">A 1 in any single criterion does not save a 5 in Approach; reviewers tie everything back to the impact score.</text>
+</svg>
