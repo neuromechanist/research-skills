@@ -4,6 +4,9 @@
 
 Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics.
 
+> [!TIP]
+> This marketplace is taught week-by-week in the free [Agentic Research Course](https://courses.osc.earth/agentic-research/) from the Open Science Collective.
+
 ## Install
 
 ### Claude Code
