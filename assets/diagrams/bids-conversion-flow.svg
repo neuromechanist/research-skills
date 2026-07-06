@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 320" width="1000" height="320">
+  <defs>
+    <marker id="arrowfwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <text x="500" y="24" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle"><tspan font-family="monospace">/neuroinformatics:bids-conversion</tspan> -- a guided 6-step workflow</text>
+  <text x="500" y="42" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">Brain Imaging Data Structure (BIDS): one command walks raw recordings into a validated, shareable layout.</text>
+
+  <!-- Step 1: Inventory (blue) -->
+  <g>
+    <rect x="40" y="90" width="140" height="120" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.4"/>
+    <text x="110" y="114" font-family="sans-serif" font-size="12" fill="#1E40AF" font-weight="bold" text-anchor="middle">1. Inventory</text>
+    <text x="110" y="132" font-family="sans-serif" font-size="9.5" fill="#1E40AF" text-anchor="middle">source data</text>
+    <text x="110" y="172" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">formats,</text>
+    <text x="110" y="187" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">subjects,</text>
+    <text x="110" y="202" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">channels</text>
+  </g>
+
+  <!-- Step 2: Scaffold (blue) -->
+  <g>
+    <rect x="198" y="90" width="140" height="120" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.4"/>
+    <text x="268" y="114" font-family="sans-serif" font-size="12" fill="#1E40AF" font-weight="bold" text-anchor="middle">2. Scaffold</text>
+    <text x="268" y="160" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">dataset_</text>
+    <text x="268" y="174" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">description.json</text>
+    <text x="268" y="194" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">participants.tsv</text>
+  </g>
+
+  <!-- Step 3: Convert files (green) -->
+  <g>
+    <rect x="356" y="90" width="140" height="120" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.4"/>
+    <text x="426" y="114" font-family="sans-serif" font-size="12" fill="#065F46" font-weight="bold" text-anchor="middle">3. Convert</text>
+    <text x="426" y="130" font-family="sans-serif" font-size="12" fill="#065F46" font-weight="bold" text-anchor="middle">files</text>
+    <text x="426" y="160" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">BrainVision,</text>
+    <text x="426" y="175" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">EEGLAB .set,</text>
+    <text x="426" y="190" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">EDF, BDF</text>
+  </g>
+
+  <!-- Step 4: JSON sidecars (green) -->
+  <g>
+    <rect x="514" y="90" width="140" height="120" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.4"/>
+    <text x="584" y="114" font-family="sans-serif" font-size="12" fill="#065F46" font-weight="bold" text-anchor="middle">4. JSON</text>
+    <text x="584" y="130" font-family="sans-serif" font-size="12" fill="#065F46" font-weight="bold" text-anchor="middle">sidecars</text>
+    <text x="584" y="162" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">Sampling-</text>
+    <text x="584" y="176" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">Frequency,</text>
+    <text x="584" y="190" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">EEGReference...</text>
+  </g>
+
+  <!-- Step 5: TSV tables (green) -->
+  <g>
+    <rect x="672" y="90" width="140" height="120" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.4"/>
+    <text x="742" y="114" font-family="sans-serif" font-size="12" fill="#065F46" font-weight="bold" text-anchor="middle">5. TSV</text>
+    <text x="742" y="130" font-family="sans-serif" font-size="12" fill="#065F46" font-weight="bold" text-anchor="middle">tables</text>
+    <text x="742" y="162" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">channels,</text>
+    <text x="742" y="177" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">events,</text>
+    <text x="742" y="192" font-family="sans-serif" font-size="9.5" fill="#475569" text-anchor="middle">electrodes</text>
+  </g>
+
+  <!-- Step 6: Validate (blue) -->
+  <g>
+    <rect x="830" y="90" width="140" height="120" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.8"/>
+    <text x="900" y="114" font-family="sans-serif" font-size="12" fill="#1E40AF" font-weight="bold" text-anchor="middle">6. Validate</text>
+    <text x="900" y="170" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">bids-</text>
+    <text x="900" y="184" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">validator</text>
+  </g>
+
+  <!-- Forward arrows -->
+  <line x1="180" y1="150" x2="196" y2="150" stroke="#475569" stroke-width="1.4" marker-end="url(#arrowfwd)"/>
+  <line x1="338" y1="150" x2="354" y2="150" stroke="#475569" stroke-width="1.4" marker-end="url(#arrowfwd)"/>
+  <line x1="496" y1="150" x2="512" y2="150" stroke="#475569" stroke-width="1.4" marker-end="url(#arrowfwd)"/>
+  <line x1="654" y1="150" x2="670" y2="150" stroke="#475569" stroke-width="1.4" marker-end="url(#arrowfwd)"/>
+  <line x1="812" y1="150" x2="828" y2="150" stroke="#475569" stroke-width="1.4" marker-end="url(#arrowfwd)"/>
+
+  <!-- Bottom moral strip -->
+  <rect x="40" y="288" width="920" height="22" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.8"/>
+  <text x="500" y="303" font-family="sans-serif" font-size="11" fill="#1E293B" text-anchor="middle">Modalities: EEG, EMG, MEG, fMRI, behavioral.</text>
+</svg>

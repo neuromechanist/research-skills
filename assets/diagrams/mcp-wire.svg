@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="1000" height="360">
+  <text x="500" y="26" font-family="sans-serif" font-size="16" fill="#1E293B" font-weight="bold" text-anchor="middle">Skill vs MCP -- knowledge vs a wire</text>
+  <text x="500" y="46" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">a skill teaches Claude with tools it has; an MCP server gives it new tools by wiring to the outside</text>
+
+  <defs>
+    <marker id="arrow-red-mcp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#DC2626"/>
+    </marker>
+  </defs>
+
+  <!-- Claude -->
+  <rect x="60" y="150" width="150" height="70" rx="8" fill="#1E293B"/>
+  <text x="135" y="182" font-family="sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">Claude</text>
+  <text x="135" y="201" font-family="sans-serif" font-size="9.5" fill="#CBD5E1" text-anchor="middle">the agent</text>
+
+  <!-- wire to MCP -->
+  <line x1="210" y1="185" x2="358" y2="185" stroke="#94A3B8" stroke-width="2"/>
+
+  <!-- MCP server -->
+  <rect x="360" y="143" width="180" height="84" rx="8" fill="#FEE2E2" stroke="#DC2626" stroke-width="2"/>
+  <text x="450" y="172" font-family="sans-serif" font-size="14" font-weight="bold" fill="#991B1B" text-anchor="middle">MCP server</text>
+  <text x="450" y="190" font-family="sans-serif" font-size="9.5" fill="#991B1B" text-anchor="middle">Model Context Protocol</text>
+  <text x="450" y="210" font-family="sans-serif" font-size="9.5" fill="#991B1B" text-anchor="middle">a socket to external systems</text>
+
+  <!-- wires from MCP to systems -->
+  <line x1="540" y1="185" x2="648" y2="95"  stroke="#DC2626" stroke-width="1.8" marker-end="url(#arrow-red-mcp)"/>
+  <line x1="540" y1="185" x2="648" y2="150" stroke="#DC2626" stroke-width="1.8" marker-end="url(#arrow-red-mcp)"/>
+  <line x1="540" y1="185" x2="648" y2="205" stroke="#DC2626" stroke-width="1.8" marker-end="url(#arrow-red-mcp)"/>
+  <line x1="540" y1="185" x2="648" y2="260" stroke="#DC2626" stroke-width="1.8" marker-end="url(#arrow-red-mcp)"/>
+
+  <!-- external systems -->
+  <rect x="652" y="72" width="288" height="46" rx="6" fill="#FEF9C3" stroke="#DC2626" stroke-width="2"/>
+  <text x="796" y="91" font-family="sans-serif" font-size="12.5" font-weight="bold" fill="#1E293B" text-anchor="middle">MATLAB + EEGLAB</text>
+  <text x="796" y="108" font-family="monospace" font-size="9.5" fill="#991B1B" text-anchor="middle">matlab-mcp -- you drove this all course</text>
+
+  <rect x="652" y="128" width="288" height="42" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="796" y="154" font-family="sans-serif" font-size="12" fill="#475569" text-anchor="middle">A database</text>
+
+  <rect x="652" y="184" width="288" height="42" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="796" y="210" font-family="sans-serif" font-size="12" fill="#475569" text-anchor="middle">A web API</text>
+
+  <rect x="652" y="240" width="288" height="42" rx="6" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="796" y="266" font-family="sans-serif" font-size="12" fill="#475569" text-anchor="middle">A browser</text>
+
+  <!-- bottom strip -->
+  <rect x="60" y="320" width="880" height="24" rx="5" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>
+  <text x="500" y="336" font-family="sans-serif" font-size="11" fill="#1E293B" text-anchor="middle" font-weight="bold">If the job needs the outside world, it is an MCP server, not a skill.</text>
+</svg>

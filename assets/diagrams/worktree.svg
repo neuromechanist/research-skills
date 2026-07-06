@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Parent folder: main -->
+  <path d="M70 25 L94 25 L100 33 L130 33 L130 62 L70 62 Z"
+        fill="#FEF3C7" stroke="#92400E" stroke-width="1.8"/>
+  <text x="100" y="51" font-family="monospace" font-size="10" fill="#92400E" font-weight="bold" text-anchor="middle">main</text>
+
+  <!-- Connector lines from main to each child -->
+  <path d="M100 62 L100 88 L42 88 L42 108" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+  <path d="M100 62 L100 108" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+  <path d="M100 62 L100 88 L158 88 L158 108" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- Child folder: epic-hbn -->
+  <path d="M12 108 L30 108 L34 114 L72 114 L72 148 L12 148 Z"
+        fill="#FEF3C7" stroke="#92400E" stroke-width="1.8"/>
+  <text x="42" y="133" font-family="monospace" font-size="8" fill="#92400E" font-weight="bold" text-anchor="middle">epic-hbn</text>
+  <!-- Branch tag -->
+  <circle cx="66" cy="155" r="4" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5"/>
+  <text x="42" y="166" font-family="monospace" font-size="6" fill="#2563EB" text-anchor="middle">feature/epic</text>
+  <line x1="50" y1="155" x2="62" y2="155" stroke="#2563EB" stroke-width="1.5"/>
+
+  <!-- Child folder: hbn-phase1 -->
+  <path d="M70 108 L88 108 L92 114 L130 114 L130 148 L70 148 Z"
+        fill="#FEF3C7" stroke="#92400E" stroke-width="1.8"/>
+  <text x="100" y="133" font-family="monospace" font-size="8" fill="#92400E" font-weight="bold" text-anchor="middle">hbn-phase1</text>
+  <circle cx="124" cy="155" r="4" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5"/>
+  <text x="100" y="166" font-family="monospace" font-size="6" fill="#2563EB" text-anchor="middle">feature/phase1</text>
+  <line x1="108" y1="155" x2="120" y2="155" stroke="#2563EB" stroke-width="1.5"/>
+
+  <!-- Child folder: hbn-phase2 -->
+  <path d="M128 108 L146 108 L150 114 L188 114 L188 148 L128 148 Z"
+        fill="#FEF3C7" stroke="#92400E" stroke-width="1.8"/>
+  <text x="158" y="133" font-family="monospace" font-size="8" fill="#92400E" font-weight="bold" text-anchor="middle">hbn-phase2</text>
+  <circle cx="182" cy="155" r="4" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.5"/>
+  <text x="158" y="166" font-family="monospace" font-size="6" fill="#2563EB" text-anchor="middle">feature/phase2</text>
+  <line x1="166" y1="155" x2="178" y2="155" stroke="#2563EB" stroke-width="1.5"/>
+</svg>
