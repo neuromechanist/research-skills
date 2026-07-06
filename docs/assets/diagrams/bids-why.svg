@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="1000" height="360">
+  <text x="500" y="24" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle">Why BIDS -- one layout, every tool</text>
+  <text x="500" y="42" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">A standard structure means analysis tools, validators, and archives all read your data unchanged</text>
+
+  <defs>
+    <marker id="arrow-hub" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <!-- Spokes drawn first so satellites sit on top. Hub center ~ (500,196). -->
+  <!-- Top-left: EEGLAB @ (230,108) -->
+  <line x1="335" y1="150" x2="408" y2="184" stroke="#475569" stroke-width="1.3" marker-end="url(#arrow-hub)"/>
+  <!-- Top-center: MNE-Python @ (500,92) -->
+  <line x1="500" y1="124" x2="500" y2="156" stroke="#475569" stroke-width="1.3" marker-end="url(#arrow-hub)"/>
+  <!-- Top-right: BIDS validator @ (770,108) -->
+  <line x1="665" y1="150" x2="592" y2="184" stroke="#475569" stroke-width="1.3" marker-end="url(#arrow-hub)"/>
+  <!-- Mid-left: BIDS Apps @ (150,196) -->
+  <line x1="250" y1="196" x2="406" y2="196" stroke="#475569" stroke-width="1.3" marker-end="url(#arrow-hub)"/>
+  <!-- Mid-right: OpenNeuro @ (850,196) -->
+  <line x1="750" y1="196" x2="594" y2="196" stroke="#475569" stroke-width="1.3" marker-end="url(#arrow-hub)"/>
+  <!-- Bottom-left: NEMAR @ (230,284) -->
+  <line x1="335" y1="242" x2="408" y2="208" stroke="#475569" stroke-width="1.3" marker-end="url(#arrow-hub)"/>
+  <!-- Bottom-right: mega-analysis @ (770,284) -->
+  <line x1="665" y1="242" x2="592" y2="208" stroke="#475569" stroke-width="1.3" marker-end="url(#arrow-hub)"/>
+
+  <!-- Central hub node (blue, emphasized) -->
+  <rect x="410" y="160" width="180" height="72" rx="8" fill="#DBEAFE" stroke="#2563EB" stroke-width="2.4"/>
+  <text x="500" y="190" font-family="sans-serif" font-size="14" fill="#1E40AF" font-weight="bold" text-anchor="middle">BIDS dataset</text>
+  <text x="500" y="210" font-family="sans-serif" font-size="9.5" fill="#1E40AF" text-anchor="middle">one predictable layout</text>
+  <text x="500" y="223" font-family="sans-serif" font-size="9.5" fill="#1E40AF" text-anchor="middle">+ machine-readable sidecars</text>
+
+  <!-- Satellite chips. width 144, height 36, centered on noted points. -->
+  <!-- EEGLAB (green) -->
+  <rect x="158" y="90" width="144" height="36" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.4"/>
+  <text x="230" y="106" font-family="sans-serif" font-size="11" fill="#065F46" font-weight="bold" text-anchor="middle">EEGLAB</text>
+  <text x="230" y="119" font-family="sans-serif" font-size="9" fill="#065F46" text-anchor="middle">MATLAB analysis</text>
+
+  <!-- MNE-Python (green) -->
+  <rect x="428" y="72" width="144" height="36" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.4"/>
+  <text x="500" y="88" font-family="sans-serif" font-size="11" fill="#065F46" font-weight="bold" text-anchor="middle">MNE-Python</text>
+  <text x="500" y="101" font-family="sans-serif" font-size="9" fill="#065F46" text-anchor="middle">Python analysis</text>
+
+  <!-- BIDS validator (amber) -->
+  <rect x="698" y="90" width="144" height="36" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+  <text x="770" y="106" font-family="sans-serif" font-size="11" fill="#92400E" font-weight="bold" text-anchor="middle">BIDS validator</text>
+  <text x="770" y="119" font-family="sans-serif" font-size="9" fill="#92400E" text-anchor="middle">checks compliance</text>
+
+  <!-- BIDS Apps (purple) -->
+  <rect x="78" y="178" width="144" height="36" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.4"/>
+  <text x="150" y="194" font-family="sans-serif" font-size="11" fill="#5B21B6" font-weight="bold" text-anchor="middle">BIDS Apps</text>
+  <text x="150" y="207" font-family="sans-serif" font-size="9" fill="#5B21B6" text-anchor="middle">containerized pipelines</text>
+
+  <!-- OpenNeuro (teal) -->
+  <rect x="778" y="178" width="144" height="36" rx="6" fill="#CCFBF1" stroke="#0D9488" stroke-width="1.4"/>
+  <text x="850" y="194" font-family="sans-serif" font-size="11" fill="#134E4A" font-weight="bold" text-anchor="middle">OpenNeuro</text>
+  <text x="850" y="207" font-family="sans-serif" font-size="9" fill="#134E4A" text-anchor="middle">public archive</text>
+
+  <!-- NEMAR (teal) -->
+  <rect x="158" y="266" width="144" height="36" rx="6" fill="#CCFBF1" stroke="#0D9488" stroke-width="1.4"/>
+  <text x="230" y="282" font-family="sans-serif" font-size="11" fill="#134E4A" font-weight="bold" text-anchor="middle">NEMAR</text>
+  <text x="230" y="295" font-family="sans-serif" font-size="9" fill="#134E4A" text-anchor="middle">EEG compute gateway</text>
+
+  <!-- mega-analysis (pink) -->
+  <rect x="698" y="266" width="144" height="36" rx="6" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.4"/>
+  <text x="770" y="282" font-family="sans-serif" font-size="11" fill="#831843" font-weight="bold" text-anchor="middle">mega-analysis</text>
+  <text x="770" y="295" font-family="sans-serif" font-size="9" fill="#831843" text-anchor="middle">pool many datasets</text>
+
+  <!-- Bottom moral strip -->
+  <rect x="60" y="334" width="880" height="20" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>
+  <text x="500" y="348" font-family="sans-serif" font-size="10" fill="#1E293B" text-anchor="middle">Standard structure turns 'my data' into 'reusable data'.</text>
+</svg>

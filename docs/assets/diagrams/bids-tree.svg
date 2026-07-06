@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="1000" height="360">
+  <text x="500" y="24" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle">BIDS -- one layout, every dataset</text>
+  <text x="500" y="42" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">Brain Imaging Data Structure: predictable folders and filenames for one HBN-EEG subject</text>
+
+  <defs>
+    <marker id="arrow-bt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+    </marker>
+  </defs>
+
+  <!-- LEFT: directory tree card -->
+  <rect x="40" y="58" width="560" height="266" rx="6" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.4"/>
+
+  <!-- Tree lines: fixed left x=58, line height 16, start y=80 -->
+  <!-- Folders in blue-dark bold, files in slate, sidecars/.json muted -->
+  <text x="58" y="80"  font-family="monospace" font-size="11.5" fill="#1E40AF" font-weight="bold">ds00XXXX/</text>
+  <text x="58" y="96"  font-family="monospace" font-size="11" fill="#475569">&#9500;&#9472; dataset_description.json</text>
+  <text x="58" y="112" font-family="monospace" font-size="11" fill="#475569">&#9500;&#9472; participants.tsv</text>
+  <text x="58" y="128" font-family="monospace" font-size="11" fill="#475569">&#9500;&#9472; README</text>
+  <text x="58" y="144" font-family="monospace" font-size="11.5" fill="#1E40AF" font-weight="bold">&#9492;&#9472; sub-NDARAB1234/</text>
+  <text x="58" y="160" font-family="monospace" font-size="11.5" fill="#1E40AF" font-weight="bold">&#160;&#160;&#160;&#9492;&#9472; eeg/</text>
+  <text x="58" y="176" font-family="monospace" font-size="11" fill="#1E293B">&#160;&#160;&#160;&#160;&#160;&#160;&#9500;&#9472; sub-..._task-surroundSupp_eeg.set</text>
+  <text x="58" y="192" font-family="monospace" font-size="11" fill="#1E293B">&#160;&#160;&#160;&#160;&#160;&#160;&#9500;&#9472; sub-..._task-surroundSupp_eeg.json</text>
+  <text x="58" y="208" font-family="monospace" font-size="11" fill="#1E293B">&#160;&#160;&#160;&#160;&#160;&#160;&#9500;&#9472; sub-..._task-surroundSupp_channels.tsv</text>
+  <text x="58" y="224" font-family="monospace" font-size="11" fill="#1E293B">&#160;&#160;&#160;&#160;&#160;&#160;&#9500;&#9472; sub-..._task-surroundSupp_events.tsv</text>
+  <text x="58" y="240" font-family="monospace" font-size="11" fill="#1E293B">&#160;&#160;&#160;&#160;&#160;&#160;&#9492;&#9472; sub-..._task-surroundSupp_events.json</text>
+
+  <!-- inline file-meaning hints, muted, right of card edge area but inside card -->
+  <text x="58" y="266" font-family="monospace" font-size="9.5" fill="#94A3B8">.set = signals  &#183;  .tsv = tables  &#183;  .json = sidecar metadata</text>
+  <text x="58" y="284" font-family="monospace" font-size="9.5" fill="#94A3B8">sub- = subject GUID  &#183;  task- = task label  &#183;  one entity per key</text>
+  <text x="58" y="306" font-family="sans-serif" font-size="10.5" fill="#1E40AF" font-weight="bold">Same folders + names in every BIDS dataset, anywhere.</text>
+
+  <!-- RIGHT: annotation chips pointing back at specific tree lines -->
+  <!-- dataset_description.json @ y96 -->
+  <rect x="700" y="84" width="252" height="30" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.2"/>
+  <text x="710" y="98"  font-family="sans-serif" font-size="10" fill="#1E40AF" font-weight="bold">dataset_description.json</text>
+  <text x="710" y="110" font-family="sans-serif" font-size="9.5" fill="#1E40AF">name, BIDSVersion, authors, license</text>
+  <line x1="320" y1="93" x2="698" y2="99" stroke="#2563EB" stroke-width="1.1" marker-end="url(#arrow-bt)"/>
+
+  <!-- eeg.json sidecar @ y192 -->
+  <rect x="700" y="128" width="252" height="30" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.2"/>
+  <text x="710" y="142" font-family="sans-serif" font-size="10" fill="#1E40AF" font-weight="bold">_eeg.json (sidecar)</text>
+  <text x="710" y="154" font-family="sans-serif" font-size="9.5" fill="#1E40AF">sampling rate, reference, channel count</text>
+  <line x1="430" y1="189" x2="698" y2="143" stroke="#2563EB" stroke-width="1.1" marker-end="url(#arrow-bt)"/>
+
+  <!-- channels.tsv @ y208 -->
+  <rect x="700" y="172" width="252" height="30" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.2"/>
+  <text x="710" y="186" font-family="sans-serif" font-size="10" fill="#1E40AF" font-weight="bold">_channels.tsv</text>
+  <text x="710" y="198" font-family="sans-serif" font-size="9.5" fill="#1E40AF">name, type, units per electrode</text>
+  <line x1="446" y1="205" x2="698" y2="187" stroke="#2563EB" stroke-width="1.1" marker-end="url(#arrow-bt)"/>
+
+  <!-- events.json @ y240 -->
+  <rect x="700" y="216" width="252" height="30" rx="5" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.2"/>
+  <text x="710" y="230" font-family="sans-serif" font-size="10" fill="#1E40AF" font-weight="bold">_events.json</text>
+  <text x="710" y="242" font-family="sans-serif" font-size="9.5" fill="#1E40AF">HED annotations -- the WHAT of events</text>
+  <line x1="450" y1="237" x2="698" y2="231" stroke="#2563EB" stroke-width="1.1" marker-end="url(#arrow-bt)"/>
+
+  <!-- Bottom moral strip -->
+  <rect x="60" y="334" width="880" height="20" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>
+  <text x="500" y="348" font-family="sans-serif" font-size="10" fill="#1E293B" text-anchor="middle">Predictable names + sidecars = tools find everything without asking you.</text>
+</svg>

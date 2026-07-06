@@ -1,0 +1,29 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    paths: ['docs/**', 'mkdocs.yml', 'pyproject.toml', '.github/workflows/docs.yml']
+  pull_request:
+    paths: ['docs/**', 'mkdocs.yml', 'pyproject.toml', '.github/workflows/docs.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --group docs
+      - run: uv run mkdocs build --strict
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: site
+          branch: gh-pages

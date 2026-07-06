@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="1000" height="360">
+  <text x="500" y="24" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle">/figures:figure-qa -- dispatch by input type, then deterministic + VLM</text>
+  <text x="500" y="42" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">Agent detects input type, runs the right check script, adds a VLM aesthetic pass on top.</text>
+
+  <!-- LEFT: four input types -->
+  <g>
+    <text x="140" y="76" font-family="sans-serif" font-size="11" fill="#1E293B" font-weight="bold" text-anchor="middle">Input types</text>
+
+    <rect x="50" y="92" width="180" height="48" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.4"/>
+    <text x="140" y="113" font-family="sans-serif" font-size="11" fill="#1E40AF" font-weight="bold" text-anchor="middle">SVG</text>
+    <text x="140" y="130" font-family="monospace" font-size="9.5" fill="#1E40AF" text-anchor="middle">figure.svg</text>
+
+    <rect x="50" y="148" width="180" height="48" rx="6" fill="#FEF3C7" stroke="#D97706" stroke-width="1.4"/>
+    <text x="140" y="169" font-family="sans-serif" font-size="11" fill="#92400E" font-weight="bold" text-anchor="middle">Raster image</text>
+    <text x="140" y="186" font-family="monospace" font-size="9.5" fill="#92400E" text-anchor="middle">PNG / JPG / TIFF</text>
+
+    <rect x="50" y="204" width="180" height="48" rx="6" fill="#D1FAE5" stroke="#059669" stroke-width="1.4"/>
+    <text x="140" y="225" font-family="sans-serif" font-size="11" fill="#065F46" font-weight="bold" text-anchor="middle">Plot script</text>
+    <text x="140" y="242" font-family="monospace" font-size="9.5" fill="#065F46" text-anchor="middle">panel_a.py</text>
+
+    <rect x="50" y="260" width="180" height="48" rx="6" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.4"/>
+    <text x="140" y="281" font-family="sans-serif" font-size="11" fill="#5B21B6" font-weight="bold" text-anchor="middle">Composed figure dir</text>
+    <text x="140" y="298" font-family="monospace" font-size="9.5" fill="#5B21B6" text-anchor="middle">figures/panel-a/</text>
+  </g>
+
+  <!-- CENTER: agent diamond -->
+  <defs>
+    <marker id="arrow-dispatch" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#BE185D"/>
+    </marker>
+  </defs>
+  <line x1="232" y1="116" x2="380" y2="170" stroke="#BE185D" stroke-width="1.4" stroke-dasharray="3,2" marker-end="url(#arrow-dispatch)"/>
+  <line x1="232" y1="172" x2="380" y2="184" stroke="#BE185D" stroke-width="1.4" stroke-dasharray="3,2" marker-end="url(#arrow-dispatch)"/>
+  <line x1="232" y1="228" x2="380" y2="198" stroke="#BE185D" stroke-width="1.4" stroke-dasharray="3,2" marker-end="url(#arrow-dispatch)"/>
+  <line x1="232" y1="284" x2="380" y2="212" stroke="#BE185D" stroke-width="1.4" stroke-dasharray="3,2" marker-end="url(#arrow-dispatch)"/>
+
+  <g>
+    <polygon points="500,140 580,190 500,240 420,190" fill="#FCE7F3" stroke="#BE185D" stroke-width="2"/>
+    <text x="500" y="186" font-family="sans-serif" font-size="11" fill="#831843" font-weight="bold" text-anchor="middle">figure-qa</text>
+    <text x="500" y="202" font-family="sans-serif" font-size="11" fill="#831843" font-weight="bold" text-anchor="middle">agent</text>
+    <text x="500" y="220" font-family="sans-serif" font-size="9.5" fill="#9D174D" font-style="italic" text-anchor="middle">dispatch</text>
+
+    <!-- no-qa opt-out badge -->
+    <rect x="442" y="252" width="116" height="22" rx="3" fill="#FFFFFF" stroke="#BE185D" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <text x="500" y="267" font-family="monospace" font-size="10" fill="#831843" text-anchor="middle">no-qa opt-out</text>
+  </g>
+
+  <line x1="580" y1="180" x2="730" y2="120" stroke="#BE185D" stroke-width="1.4" marker-end="url(#arrow-dispatch)"/>
+  <line x1="580" y1="190" x2="730" y2="178" stroke="#BE185D" stroke-width="1.4" marker-end="url(#arrow-dispatch)"/>
+  <line x1="580" y1="200" x2="730" y2="236" stroke="#BE185D" stroke-width="1.4" marker-end="url(#arrow-dispatch)"/>
+  <line x1="580" y1="220" x2="730" y2="294" stroke="#BE185D" stroke-width="1.4" marker-end="url(#arrow-dispatch)"/>
+
+  <!-- RIGHT: check scripts + VLM -->
+  <g>
+    <text x="860" y="76" font-family="sans-serif" font-size="11" fill="#1E293B" font-weight="bold" text-anchor="middle">Check scripts + VLM judge</text>
+
+    <rect x="770" y="92" width="180" height="48" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.4"/>
+    <text x="860" y="111" font-family="monospace" font-size="10.5" fill="#1E40AF" font-weight="bold" text-anchor="middle">check_svg.py</text>
+    <text x="860" y="128" font-family="sans-serif" font-size="9" fill="#475569" text-anchor="middle">bbox / arrow tip / pt / palette</text>
+
+    <rect x="770" y="148" width="180" height="48" rx="6" fill="#FFFFFF" stroke="#D97706" stroke-width="1.4"/>
+    <text x="860" y="167" font-family="monospace" font-size="10.5" fill="#92400E" font-weight="bold" text-anchor="middle">check_raster.py</text>
+    <text x="860" y="184" font-family="sans-serif" font-size="9" fill="#475569" text-anchor="middle">DPI / fonts embedded / alpha</text>
+
+    <rect x="770" y="204" width="180" height="48" rx="6" fill="#FFFFFF" stroke="#059669" stroke-width="1.4"/>
+    <text x="860" y="223" font-family="monospace" font-size="10.5" fill="#065F46" font-weight="bold" text-anchor="middle">check_plot_script.py</text>
+    <text x="860" y="240" font-family="sans-serif" font-size="9" fill="#475569" text-anchor="middle">savefig kwargs / rcparams</text>
+
+    <rect x="770" y="260" width="180" height="60" rx="6" fill="#FBCFE8" stroke="#BE185D" stroke-width="1.6"/>
+    <text x="860" y="280" font-family="sans-serif" font-size="11" fill="#831843" font-weight="bold" text-anchor="middle">VLM judgment pass</text>
+    <text x="860" y="296" font-family="sans-serif" font-size="9" fill="#9D174D" text-anchor="middle">hierarchy + layering</text>
+    <text x="860" y="310" font-family="sans-serif" font-size="9" fill="#9D174D" font-style="italic" text-anchor="middle">runs for every input type</text>
+  </g>
+
+  <!-- Bottom strip -->
+  <rect x="50" y="334" width="900" height="22" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>
+  <text x="500" y="349" font-family="sans-serif" font-size="10.5" fill="#1E293B" text-anchor="middle">Helper scripts at figures/agents/figure-qa-scripts/. The agent locates them via $CLAUDE_PLUGIN_ROOT or a project-scoped find fallback.</text>
+</svg>

@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" width="960" height="340">
+  <text x="480" y="26" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle">/manuscript:paper-review and the boomerang</text>
+  <text x="480" y="44" font-family="sans-serif" font-size="11.5" fill="#64748B" font-style="italic" text-anchor="middle">Severity-tagged findings cycle back into the right earlier stage</text>
+
+  <!-- Stages along the bottom (mini hero) -->
+  <g>
+    <circle cx="120" cy="220" r="36" fill="#FEF3C7" stroke="#B45309" stroke-width="1.6"/>
+    <text x="120" y="226" font-family="sans-serif" font-size="11" fill="#1E293B" font-weight="bold" text-anchor="middle">1. Lit</text>
+    <text x="120" y="266" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">corpus gap</text>
+  </g>
+  <path d="M156 220 L204 220" fill="none" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="204,220 196,216 196,224" fill="#475569"/>
+  <g>
+    <circle cx="240" cy="220" r="36" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.6"/>
+    <text x="240" y="226" font-family="sans-serif" font-size="11" fill="#1E293B" font-weight="bold" text-anchor="middle">2. Draft</text>
+    <text x="240" y="266" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">unsupported claim</text>
+  </g>
+  <path d="M276 220 L324 220" fill="none" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="324,220 316,216 316,224" fill="#475569"/>
+  <g>
+    <circle cx="360" cy="220" r="36" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.6"/>
+    <text x="360" y="226" font-family="sans-serif" font-size="11" fill="#1E293B" font-weight="bold" text-anchor="middle">3. Figures</text>
+    <text x="360" y="266" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">mismatch</text>
+  </g>
+  <path d="M396 220 L444 220" fill="none" stroke="#475569" stroke-width="1.6"/>
+  <polygon points="444,220 436,216 436,224" fill="#475569"/>
+  <g>
+    <circle cx="480" cy="220" r="36" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.8"/>
+    <text x="480" y="220" font-family="sans-serif" font-size="11" fill="#1E293B" font-weight="bold" text-anchor="middle">4. Self-</text>
+    <text x="480" y="234" font-family="sans-serif" font-size="11" fill="#1E293B" font-weight="bold" text-anchor="middle">review</text>
+    <text x="480" y="266" font-family="monospace" font-size="9.5" fill="#475569" text-anchor="middle">paper-review</text>
+  </g>
+
+  <!-- Boomerang curves from stage 4 back to stages 1, 2, 3.
+       Endpoint tangent (last control 230,110 to endpoint 120,184) is (-110, 74),
+       so the arrowhead base sits to the upper-right of the apex along that tangent. -->
+  <path d="M460 184 C 360 110, 230 110, 120 184" fill="none" stroke="#DC2626" stroke-width="2.4" stroke-dasharray="6,5" stroke-linecap="round"/>
+  <polygon points="120,184 132.8,181.5 127.2,173.2" fill="#DC2626"/>
+
+  <!-- RIGHT: findings table -->
+  <g>
+    <rect x="540" y="64" width="380" height="244" rx="6" fill="#FFFFFF" stroke="#DC2626" stroke-width="1.4"/>
+    <rect x="540" y="64" width="380" height="26" rx="6" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.4"/>
+    <text x="730" y="82" font-family="sans-serif" font-size="11.5" fill="#991B1B" font-weight="bold" text-anchor="middle">/manuscript:paper-review  --  findings</text>
+
+    <!-- Critical -->
+    <rect x="556" y="104" width="68" height="20" rx="3" fill="#DC2626"/>
+    <text x="590" y="118" font-family="sans-serif" font-size="10" fill="#FFFFFF" font-weight="bold" text-anchor="middle">CRITICAL</text>
+    <text x="636" y="118" font-family="sans-serif" font-size="10" fill="#1E293B">"Action" claim has no card support.</text>
+    <text x="636" y="132" font-family="monospace" font-size="9.5" fill="#B45309">-&gt; Stage 1 (collect)  or  Stage 2 (drop the claim)</text>
+
+    <!-- Major -->
+    <rect x="556" y="148" width="68" height="20" rx="3" fill="#F97316"/>
+    <text x="590" y="162" font-family="sans-serif" font-size="10" fill="#FFFFFF" font-weight="bold" text-anchor="middle">MAJOR</text>
+    <text x="636" y="162" font-family="sans-serif" font-size="10" fill="#1E293B">Fig 2 does not show the asserted</text>
+    <text x="636" y="174" font-family="sans-serif" font-size="10" fill="#1E293B">timescale separation in Results.</text>
+    <text x="636" y="188" font-family="monospace" font-size="9.5" fill="#7C3AED">-&gt; Stage 3 (figure source)</text>
+
+    <!-- Major 2 -->
+    <rect x="556" y="200" width="68" height="20" rx="3" fill="#F97316"/>
+    <text x="590" y="214" font-family="sans-serif" font-size="10" fill="#FFFFFF" font-weight="bold" text-anchor="middle">MAJOR</text>
+    <text x="636" y="214" font-family="sans-serif" font-size="10" fill="#1E293B">Results re-state without bounding;</text>
+    <text x="636" y="226" font-family="sans-serif" font-size="10" fill="#1E293B">no limitations paragraph.</text>
+    <text x="636" y="240" font-family="monospace" font-size="9.5" fill="#2563EB">-&gt; Stage 2 (Discussion)</text>
+
+    <!-- Minor -->
+    <rect x="556" y="252" width="68" height="20" rx="3" fill="#94A3B8"/>
+    <text x="590" y="266" font-family="sans-serif" font-size="10" fill="#FFFFFF" font-weight="bold" text-anchor="middle">MINOR</text>
+    <text x="636" y="266" font-family="sans-serif" font-size="10" fill="#1E293B">Three em-dashes survived the humanizer.</text>
+    <text x="636" y="280" font-family="monospace" font-size="9.5" fill="#64748B">-&gt; in place (prose edit)</text>
+
+    <text x="730" y="298" font-family="sans-serif" font-size="9.5" fill="#475569" font-style="italic" text-anchor="middle">Convergence in one shot is a red flag.</text>
+  </g>
+
+  <!-- caption -->
+  <text x="280" y="326" font-family="sans-serif" font-size="10.5" fill="#64748B" font-style="italic" text-anchor="middle">Critical -&gt; cycle. Major -&gt; revise. Minor -&gt; in place.</text>
+</svg>

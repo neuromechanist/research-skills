@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 390" width="1000" height="390">
+  <text x="500" y="26" font-family="sans-serif" font-size="16" fill="#1E293B" font-weight="bold" text-anchor="middle">Skill vs Agent -- the confusion worth clearing</text>
+  <text x="500" y="46" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">both are triggered by Claude; the difference is where the work happens</text>
+
+  <defs>
+    <marker id="arrow-delegate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7C3AED"/>
+    </marker>
+    <marker id="arrow-result" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#16A34A"/>
+    </marker>
+  </defs>
+
+  <!-- LEFT: skill in the main conversation -->
+  <rect x="55" y="74" width="400" height="206" rx="10" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="75" y="98" font-family="sans-serif" font-size="11" font-weight="bold" fill="#64748B">MAIN CONVERSATION</text>
+  <!-- a chat bubble holding the skill -->
+  <rect x="95" y="120" width="320" height="120" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
+  <rect x="120" y="150" width="270" height="62" rx="8" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.8"/>
+  <rect x="120" y="150" width="270" height="22" rx="8" fill="#BBF7D0" stroke="#16A34A" stroke-width="1.8"/>
+  <text x="255" y="166" font-family="monospace" font-size="11" font-weight="bold" fill="#166534" text-anchor="middle">scientific-figure  (Week 8)</text>
+  <text x="255" y="192" font-family="sans-serif" font-size="11.5" font-weight="bold" fill="#166534" text-anchor="middle">Skill = knowledge</text>
+  <text x="255" y="206" font-family="sans-serif" font-size="9.5" fill="#166534" text-anchor="middle">loaded into the room you are already in</text>
+  <text x="255" y="262" font-family="sans-serif" font-size="11" fill="#475569" text-anchor="middle">Claude keeps working, with the procedure in hand.</text>
+
+  <!-- RIGHT: agent in its own context -->
+  <rect x="545" y="74" width="400" height="206" rx="10" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.4"/>
+  <text x="565" y="98" font-family="sans-serif" font-size="11" font-weight="bold" fill="#64748B">ITS OWN CONTEXT WINDOW</text>
+  <rect x="600" y="120" width="290" height="120" rx="10" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.8"/>
+  <rect x="600" y="120" width="290" height="24" rx="10" fill="#DDD6FE" stroke="#7C3AED" stroke-width="1.8"/>
+  <text x="745" y="137" font-family="monospace" font-size="11" font-weight="bold" fill="#5B21B6" text-anchor="middle">figure-qa  (Week 8)</text>
+  <text x="745" y="164" font-family="sans-serif" font-size="11.5" font-weight="bold" fill="#5B21B6" text-anchor="middle">Agent = a worker</text>
+  <!-- its own tools -->
+  <rect x="620" y="178" width="64" height="20" rx="4" fill="#FFFFFF" stroke="#A78BFA" stroke-width="1"/>
+  <text x="652" y="192" font-family="monospace" font-size="9" fill="#5B21B6" text-anchor="middle">Bash</text>
+  <rect x="694" y="178" width="64" height="20" rx="4" fill="#FFFFFF" stroke="#A78BFA" stroke-width="1"/>
+  <text x="726" y="192" font-family="monospace" font-size="9" fill="#5B21B6" text-anchor="middle">Read</text>
+  <rect x="768" y="178" width="100" height="20" rx="4" fill="#FFFFFF" stroke="#A78BFA" stroke-width="1"/>
+  <text x="818" y="192" font-family="monospace" font-size="9" fill="#5B21B6" text-anchor="middle">own model</text>
+  <text x="745" y="222" font-family="sans-serif" font-size="9.5" fill="#5B21B6" text-anchor="middle">its own context, its own tools, returns a result</text>
+  <text x="745" y="262" font-family="sans-serif" font-size="11" fill="#475569" text-anchor="middle">You delegate a scoped job; it reports back.</text>
+
+  <!-- delegate / result arrows between panels -->
+  <line x1="458" y1="150" x2="542" y2="150" stroke="#7C3AED" stroke-width="2" marker-end="url(#arrow-delegate)"/>
+  <text x="500" y="142" font-family="sans-serif" font-size="9.5" fill="#7C3AED" text-anchor="middle">delegate</text>
+  <line x1="542" y1="205" x2="458" y2="205" stroke="#16A34A" stroke-width="2" marker-end="url(#arrow-result)"/>
+  <text x="500" y="223" font-family="sans-serif" font-size="9.5" fill="#16A34A" text-anchor="middle">result</text>
+
+  <!-- bottom strip -->
+  <rect x="55" y="298" width="890" height="56" rx="6" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>
+  <text x="500" y="319" font-family="sans-serif" font-size="11.5" fill="#1E293B" text-anchor="middle" font-weight="bold">Skill = knowledge you keep.   Agent = a job you delegate.</text>
+  <text x="500" y="341" font-family="sans-serif" font-size="10" fill="#64748B" text-anchor="middle">Reach for an agent when the work is isolated, repeatable, or runs in parallel; a skill keeps the procedure with you.</text>
+</svg>

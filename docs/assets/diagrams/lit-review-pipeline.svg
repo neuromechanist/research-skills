@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 320" width="960" height="320">
+  <!-- Title -->
+  <text x="480" y="22" font-family="sans-serif" font-size="14" fill="#1E293B" font-weight="bold" text-anchor="middle">Literature review = 5-stage managed pipeline</text>
+
+  <!-- Boomerang arc from Stage 5 looping back over the top and landing on the Direction box -->
+  <!-- Endpoint tangent is straight down so the arrowhead clearly points into the Direction circle -->
+  <path d="M820 140 C 820 30, 100 30, 100 134" fill="none" stroke="#B45309" stroke-width="2.4" stroke-dasharray="6,5" stroke-linecap="round"/>
+  <polygon points="100,134 95,124 105,124" fill="#B45309"/>
+  <rect x="430" y="38" width="170" height="20" rx="5" fill="#FEF3C7" stroke="#B45309" stroke-width="1.2"/>
+  <text x="515" y="52" font-family="sans-serif" font-size="11" fill="#78350F" font-style="italic" text-anchor="middle">boomerang on gaps</text>
+
+  <!-- Stage 1: Direction -->
+  <g>
+    <circle cx="100" cy="180" r="46" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.8"/>
+    <!-- epic-tree icon: root + branches -->
+    <circle cx="100" cy="160" r="6" fill="#2563EB"/>
+    <line x1="100" y1="166" x2="84" y2="186" stroke="#2563EB" stroke-width="1.6"/>
+    <line x1="100" y1="166" x2="100" y2="190" stroke="#2563EB" stroke-width="1.6"/>
+    <line x1="100" y1="166" x2="116" y2="186" stroke="#2563EB" stroke-width="1.6"/>
+    <circle cx="84" cy="190" r="4" fill="#2563EB"/>
+    <circle cx="100" cy="194" r="4" fill="#2563EB"/>
+    <circle cx="116" cy="190" r="4" fill="#2563EB"/>
+    <text x="100" y="252" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold" text-anchor="middle">1. Direction</text>
+    <text x="100" y="270" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">epic + strands</text>
+  </g>
+
+  <!-- arrow 1->2 -->
+  <path d="M150 180 L210 180" fill="none" stroke="#475569" stroke-width="2"/>
+  <polygon points="210,180 202,176 202,184" fill="#475569"/>
+
+  <!-- Stage 2: Collect -->
+  <g>
+    <circle cx="270" cy="180" r="46" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.8"/>
+    <!-- search funnel icon -->
+    <circle cx="262" cy="170" r="9" fill="none" stroke="#B45309" stroke-width="2"/>
+    <line x1="269" y1="177" x2="278" y2="186" stroke="#B45309" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M254 196 L286 196 L278 206 L262 206 Z" fill="none" stroke="#B45309" stroke-width="1.6"/>
+    <text x="270" y="252" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold" text-anchor="middle">2. Collect</text>
+    <text x="270" y="270" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">opencite + cards</text>
+  </g>
+
+  <!-- arrow 2->3 -->
+  <path d="M320 180 L380 180" fill="none" stroke="#475569" stroke-width="2"/>
+  <polygon points="380,180 372,176 372,184" fill="#475569"/>
+
+  <!-- Stage 3: Synthesize -->
+  <g>
+    <circle cx="440" cy="180" r="46" fill="#EDE9FE" stroke="#7C3AED" stroke-width="1.8"/>
+    <!-- taxonomy tree icon -->
+    <rect x="432" y="156" width="16" height="10" rx="2" fill="none" stroke="#7C3AED" stroke-width="1.6"/>
+    <line x1="440" y1="166" x2="440" y2="176" stroke="#7C3AED" stroke-width="1.6"/>
+    <line x1="422" y1="176" x2="458" y2="176" stroke="#7C3AED" stroke-width="1.6"/>
+    <line x1="422" y1="176" x2="422" y2="184" stroke="#7C3AED" stroke-width="1.6"/>
+    <line x1="440" y1="176" x2="440" y2="184" stroke="#7C3AED" stroke-width="1.6"/>
+    <line x1="458" y1="176" x2="458" y2="184" stroke="#7C3AED" stroke-width="1.6"/>
+    <rect x="416" y="184" width="12" height="8" rx="2" fill="none" stroke="#7C3AED" stroke-width="1.6"/>
+    <rect x="434" y="184" width="12" height="8" rx="2" fill="none" stroke="#7C3AED" stroke-width="1.6"/>
+    <rect x="452" y="184" width="12" height="8" rx="2" fill="none" stroke="#7C3AED" stroke-width="1.6"/>
+    <text x="440" y="252" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold" text-anchor="middle">3. Synthesize</text>
+    <text x="440" y="270" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">structure first</text>
+  </g>
+
+  <!-- arrow 3->4 -->
+  <path d="M490 180 L550 180" fill="none" stroke="#475569" stroke-width="2"/>
+  <polygon points="550,180 542,176 542,184" fill="#475569"/>
+
+  <!-- Stage 4: Draft -->
+  <g>
+    <circle cx="610" cy="180" r="46" fill="#D1FAE5" stroke="#059669" stroke-width="1.8"/>
+    <!-- document with quill -->
+    <rect x="596" y="156" width="22" height="28" rx="2" fill="#FFFFFF" stroke="#059669" stroke-width="1.6"/>
+    <line x1="600" y1="164" x2="614" y2="164" stroke="#059669" stroke-width="1.2"/>
+    <line x1="600" y1="170" x2="614" y2="170" stroke="#059669" stroke-width="1.2"/>
+    <line x1="600" y1="176" x2="610" y2="176" stroke="#059669" stroke-width="1.2"/>
+    <path d="M620 158 L632 174 L626 178 Z" fill="#059669"/>
+    <line x1="619" y1="176" x2="624" y2="180" stroke="#059669" stroke-width="1.6"/>
+    <text x="610" y="252" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold" text-anchor="middle">4. Draft</text>
+    <text x="610" y="270" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">cite-the-card</text>
+  </g>
+
+  <!-- arrow 4->5 -->
+  <path d="M660 180 L720 180" fill="none" stroke="#475569" stroke-width="2"/>
+  <polygon points="720,180 712,176 712,184" fill="#475569"/>
+
+  <!-- Stage 5: Review -->
+  <g>
+    <circle cx="780" cy="180" r="46" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.8"/>
+    <!-- magnifier icon -->
+    <circle cx="774" cy="174" r="11" fill="none" stroke="#DC2626" stroke-width="2.2"/>
+    <line x1="782" y1="182" x2="794" y2="194" stroke="#DC2626" stroke-width="2.6" stroke-linecap="round"/>
+    <text x="780" y="252" font-family="sans-serif" font-size="13" fill="#1E293B" font-weight="bold" text-anchor="middle">5. Review</text>
+    <text x="780" y="270" font-family="monospace" font-size="10" fill="#475569" text-anchor="middle">findings cycle</text>
+  </g>
+
+  <!-- Caption -->
+  <text x="480" y="306" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">Each stage is a check; the boomerang sends gaps back to collection, not just to the prose.</text>
+</svg>

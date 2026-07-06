@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 360" width="1000" height="360">
+  <text x="500" y="24" font-family="sans-serif" font-size="15" fill="#1E293B" font-weight="bold" text-anchor="middle">The neuroinformatics plugin -- 2 skills + 1 agent</text>
+  <text x="500" y="42" font-family="sans-serif" font-size="11" fill="#64748B" font-style="italic" text-anchor="middle">Conversion skill at the centre; the validator agent defends it; experiment-design waits in the wings</text>
+
+  <defs>
+    <marker id="arrow-agent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#BE185D"/>
+    </marker>
+  </defs>
+
+  <!-- Agent card (top) -->
+  <g>
+    <rect x="370" y="64" width="260" height="78" rx="6" fill="#FCE7F3" stroke="#BE185D" stroke-width="1.8"/>
+    <rect x="370" y="64" width="260" height="24" rx="6" fill="#FBCFE8" stroke="#BE185D" stroke-width="1.8"/>
+    <text x="500" y="81" font-family="monospace" font-size="11.5" fill="#831843" font-weight="bold" text-anchor="middle">bids-validator</text>
+    <text x="500" y="106" font-family="sans-serif" font-size="10.5" fill="#9D174D" font-weight="bold" text-anchor="middle">agent -- autonomous validate + fix</text>
+    <text x="500" y="123" font-family="sans-serif" font-size="10" fill="#9D174D" text-anchor="middle">this week's mechanical defence</text>
+  </g>
+
+  <!-- Arrow from agent down to center card -->
+  <line x1="500" y1="142" x2="500" y2="186" stroke="#BE185D" stroke-width="1.6" marker-end="url(#arrow-agent)"/>
+
+  <!-- Center card (blue, emphasized) -->
+  <g>
+    <rect x="350" y="188" width="300" height="96" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="2"/>
+    <rect x="350" y="188" width="300" height="26" rx="6" fill="#BFDBFE" stroke="#2563EB" stroke-width="2"/>
+    <text x="500" y="206" font-family="monospace" font-size="11.5" fill="#1E40AF" font-weight="bold" text-anchor="middle">/neuroinformatics:bids-conversion</text>
+    <text x="500" y="234" font-family="sans-serif" font-size="12.5" fill="#1E40AF" font-weight="bold" text-anchor="middle">Guided BIDS conversion</text>
+    <text x="500" y="253" font-family="sans-serif" font-size="10.5" fill="#1E40AF" text-anchor="middle">EEG, EMG, MEG, fMRI</text>
+    <text x="500" y="271" font-family="sans-serif" font-size="10" fill="#1E40AF" text-anchor="middle">today's focus</text>
+  </g>
+
+  <!-- Dimmed/secondary card (experiment-design) -->
+  <g opacity="0.55">
+    <rect x="700" y="200" width="248" height="84" rx="6" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.4"/>
+    <text x="824" y="220" font-family="monospace" font-size="10" fill="#475569" font-weight="bold" text-anchor="middle">/neuroinformatics:experiment-design</text>
+    <text x="824" y="240" font-family="sans-serif" font-size="10.5" fill="#475569" font-weight="bold" text-anchor="middle">PsychoPy + Lab Streaming Layer</text>
+    <text x="824" y="256" font-family="sans-serif" font-size="9.5" fill="#64748B" text-anchor="middle">data collection</text>
+    <text x="824" y="273" font-family="sans-serif" font-size="9.5" fill="#64748B" font-style="italic" text-anchor="middle">(in the plugin; not today's focus)</text>
+  </g>
+
+  <!-- Bottom moral strip -->
+  <rect x="60" y="318" width="880" height="22" rx="4" fill="#F1F5F9" stroke="#94A3B8" stroke-width="0.6"/>
+  <text x="500" y="333" font-family="sans-serif" font-size="10.5" fill="#1E293B" text-anchor="middle">HED annotation lives inside the skills; today's focus is conversion + validation.</text>
+</svg>
