@@ -46,7 +46,7 @@ See [Cross-Agent Compatibility](cross-agent-compatibility.md) for the researched
 
 ## Skills vs. commands
 
-This marketplace follows a skills-first surface: skills auto-trigger from natural-language intent, described by matching the task you describe against each skill's frontmatter. There is no explicit invocation step for most work. Commands exist only where a workflow needs an explicit `/command args` entry point — project init, epic/sprint management, and version bumps.
+This marketplace follows a skills-first surface: skills auto-trigger from natural-language intent, described by matching the task you describe against each skill's frontmatter. There is no explicit invocation step for most work. Commands exist only where a workflow needs an explicit `/command args` entry point: project init, epic/sprint management, and version bumps.
 
 For example, once the `manuscript` plugin is installed, saying "review this manuscript at paper.pdf as a peer reviewer" triggers the `paper-review` skill directly. There is no `/review-paper` command to remember or look up.
 

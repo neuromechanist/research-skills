@@ -6,7 +6,7 @@ The skill teaches the agent the JSON schema and authoring workflow; the builder 
 
 ## Skills
 
-- **presentation-builder** — JSON-schema authoring for Reveal.js decks: slide structure, element types, themes, progressive reveals, speaker notes, and math
+- **presentation-builder**: JSON-schema authoring for Reveal.js decks: slide structure, element types, themes, progressive reveals, speaker notes, and math
 
 ## Try it
 
@@ -17,4 +17,4 @@ The skill teaches the agent the JSON schema and authoring workflow; the builder 
 
 ## Learn more
 
-There's no dedicated course week for `presentation-builder` — instead, the [Agentic Research Course](https://courses.osc.earth/agentic-research/) itself is built with it. Every slide deck across all ten weeks of the course is a `presentation-builder` JSON spec rendered through the same engine this plugin ships, so the course site is itself a working example of the plugin end to end.
+There's no dedicated course week for `presentation-builder`; instead, the [Agentic Research Course](https://courses.osc.earth/agentic-research/) itself is built with it. Every slide deck across all ten weeks of the course is a `presentation-builder` JSON spec rendered through the same engine this plugin ships, so the course site is itself a working example of the plugin end to end.

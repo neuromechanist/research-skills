@@ -8,24 +8,18 @@ A conversion skill sits at the center; a validator agent defends its output; exp
 
 ![Neuroinformatics plugin map: bids-conversion at the center, defended by the bids-validator agent, with experiment-design covering data collection](../assets/diagrams/neuro-plugin-map.svg)
 
-## Skills
-
-- **bids-conversion** — guided conversion to BIDS for EEG, EMG, MEG, fMRI, and other modalities
-- **experiment-design** — PsychoPy + LSL experiment scaffolding, feeding BIDS-compatible output back into conversion
-- **bids-validator agent** — autonomous validate-and-fix: runs `bids-validator`, diagnoses errors, and applies corrections
-
 ## One command, six steps, to a validated dataset
 
 Converting raw recordings into a shareable BIDS dataset is a fixed sequence:
 
 ![BIDS conversion flow: Inventory, Scaffold, Convert files, JSON sidecars, TSV tables, Validate](../assets/diagrams/bids-conversion-flow.svg)
 
-1. **Inventory** — source data formats, subjects, channels
-2. **Scaffold** — `dataset_description.json`, `participants.tsv`
-3. **Convert files** — BrainVision, EEGLAB `.set`, EDF, BDF, and others
-4. **JSON sidecars** — `SamplingFrequency`, `EEGReference`, and other required metadata
-5. **TSV tables** — channels, events, electrodes
-6. **Validate** — `bids-validator`
+1. **Inventory**: source data formats, subjects, channels
+2. **Scaffold**: `dataset_description.json`, `participants.tsv`
+3. **Convert files**: BrainVision, EEGLAB `.set`, EDF, BDF, and others
+4. **JSON sidecars**: `SamplingFrequency`, `EEGReference`, and other required metadata
+5. **TSV tables**: channels, events, electrodes
+6. **Validate**: `bids-validator`
 
 ## Why the layout is fixed
 
@@ -35,15 +29,21 @@ BIDS's predictable folders and filenames are what let EEGLAB, MNE-Python, `bids-
 
 ![Why BIDS: one predictable layout with machine-readable sidecars lets EEGLAB, MNE-Python, bids-validator, BIDS Apps, OpenNeuro, and NEMAR all read the same data unchanged](../assets/diagrams/bids-why.svg)
 
-A standard structure turns "my data" into "reusable data" — the same folder and filename conventions apply to every BIDS dataset, anywhere, which is what makes cross-dataset tools and mega-analysis pooling possible in the first place.
+A standard structure turns "my data" into "reusable data": the same folder and filename conventions apply to every BIDS dataset, anywhere, which is what makes cross-dataset tools and mega-analysis pooling possible in the first place.
 
 ## HED annotation
 
-HED annotation — tagging events with a standardized, machine-readable vocabulary for the *what* of an event, not just its timing — lives inside the `bids-conversion` and `experiment-design` skills' reference material rather than as a separate skill. Conceptually, going from a plain-English event description to a schema-valid HED tag string is a parse → tag → validate pipeline:
+HED annotation, tagging events with a standardized, machine-readable vocabulary for the *what* of an event, not just its timing, lives inside the `bids-conversion` and `experiment-design` skills' reference material rather than as a separate skill. Conceptually, going from a plain-English event description to a schema-valid HED tag string is a parse → tag → validate pipeline:
 
 ![HEDit pipeline: parse natural language into structured facts, tag by retrieving HED schema nodes, then validate against the official HED validator with feedback looped back into re-tagging](../assets/diagrams/hedit-pipeline.svg)
 
-The HED schema is the contract — nothing in that pipeline invents vocabulary outside it.
+The HED schema is the contract; nothing in that pipeline invents vocabulary outside it.
+
+## Skills
+
+- **bids-conversion**: guided conversion to BIDS for EEG, EMG, MEG, fMRI, and other modalities
+- **experiment-design**: PsychoPy + LSL experiment scaffolding, feeding BIDS-compatible output back into conversion
+- **bids-validator agent**: autonomous validate-and-fix: runs `bids-validator`, diagnoses errors, and applies corrections
 
 ## Try it
 

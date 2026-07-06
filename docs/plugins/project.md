@@ -12,7 +12,7 @@ Each phase gets its own worktree, checked out from the epic branch, so you can h
 
 ![Worktree layout: main, epic-hbn, and per-phase feature worktrees (feature/epic-hbn-phase1, feature/epic-hbn-phase2) checked out side by side](../assets/diagrams/worktree.svg)
 
-The same epic → sub-issue → worktree shape generalizes beyond code changes. `epic-dev` is the entry point other skills delegate to when they need git-tracked, parallelizable phase decomposition — for example, `manuscript:lit-review`'s multi-phase mode delegates strand orchestration (one strand per literature-review theme, each with its own sub-issue, worktree, and collection folder) to `project:epic-dev`:
+The same epic → sub-issue → worktree shape generalizes beyond code changes. `epic-dev` is the entry point other skills delegate to when they need git-tracked, parallelizable phase decomposition. For example, `manuscript:lit-review`'s multi-phase mode delegates strand orchestration (one strand per literature-review theme, each with its own sub-issue, worktree, and collection folder) to `project:epic-dev`:
 
 ![Strand fan-out: one epic issue decomposed into four strand sub-issues, each with its own collection folder and acceptance criteria](../assets/diagrams/strand-fanout.svg)
 
@@ -20,20 +20,20 @@ The same epic → sub-issue → worktree shape generalizes beyond code changes. 
 
 ## Skills
 
-- **init-project** — scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, and config files
-- **update-rules** — non-destructive sync of `AGENTS.md`, the `CLAUDE.md` adapter, and `.rules/` against the latest templates at user or project level
-- **epic-dev** — the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery
-- **workflow-reference** — branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
-- **pr-review-toolkit** — PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification
-- **codebase-onboarding** — verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
-- **implementation-planning** — plans a weaker model could execute: two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
-- **engineering-loop** — the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons
-- **debugging** — reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)
-- **agent-fanout** — orchestrating subagents and teammates within a session: spawning/messaging mechanics, a role taxonomy with worker-tier model routing, full-lifecycle briefing templates, and a hard cap of 40 agents per run computed before launch. This is a different pattern from the epic/worktree fan-out above — it's in-session delegation, not a git-tracked multi-phase workflow.
-- **ci-scaffolding** — generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
-- **docker-packaging** — multi-stage Dockerfiles with uv/bun, health checks, and security hardening
-- **security-audit** — credential scanning, dependency audit, OWASP checklist, configuration hardening
-- **document-processing** — PDF/image OCR, text extraction, markdown conversion
+- **init-project**: scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, and config files
+- **update-rules**: non-destructive sync of `AGENTS.md`, the `CLAUDE.md` adapter, and `.rules/` against the latest templates at user or project level
+- **epic-dev**: the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery
+- **workflow-reference**: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
+- **pr-review-toolkit**: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification
+- **codebase-onboarding**: verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
+- **implementation-planning**: plans a weaker model could execute: two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
+- **engineering-loop**: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons
+- **debugging**: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)
+- **agent-fanout**: orchestrating subagents and teammates within a session: spawning/messaging mechanics, a role taxonomy with worker-tier model routing, full-lifecycle briefing templates, and a hard cap of 40 agents per run computed before launch. This is a different pattern from the epic/worktree fan-out above; it's in-session delegation, not a git-tracked multi-phase workflow.
+- **ci-scaffolding**: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
+- **docker-packaging**: multi-stage Dockerfiles with uv/bun, health checks, and security hardening
+- **security-audit**: credential scanning, dependency audit, OWASP checklist, configuration hardening
+- **document-processing**: PDF/image OCR, text extraction, markdown conversion
 
 Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **release-prep** (pre-release validation), and a Claude-bundled **pr-review-toolkit** reviewer.
 
