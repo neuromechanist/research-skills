@@ -2,15 +2,17 @@
 
 The `neuroinformatics` plugin covers neuroscience data standards (Brain Imaging Data Structure (BIDS), Hierarchical Event Descriptors (HED)), experiment design (PsychoPy, Lab Streaming Layer (LSL)), and dataset validation.
 
-## Two skills, one defending agent
+## The plugin map
 
 A conversion skill sits at the center; a validator agent defends its output; experiment design covers the data-collection side that happens before conversion:
 
 ![Neuroinformatics plugin map: bids-conversion at the center, defended by the bids-validator agent, with experiment-design covering data collection](../assets/diagrams/neuro-plugin-map.svg)
 
+## Skills
+
 - **bids-conversion** — guided conversion to BIDS for EEG, EMG, MEG, fMRI, and other modalities
-- **bids-validator agent** — autonomous validate-and-fix: runs `bids-validator`, diagnoses errors, and applies corrections
 - **experiment-design** — PsychoPy + LSL experiment scaffolding, feeding BIDS-compatible output back into conversion
+- **bids-validator agent** — autonomous validate-and-fix: runs `bids-validator`, diagnoses errors, and applies corrections
 
 ## One command, six steps, to a validated dataset
 

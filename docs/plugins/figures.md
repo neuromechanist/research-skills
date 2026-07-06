@@ -16,17 +16,20 @@ A figure moves through five steps, each with its own mechanical defense against 
 
 When the validator fails, the fix is mechanical: rescale the panel up, increase the source point size, or widen the canvas — not a redesign.
 
-## Five skills, one QA agent
+## The plugin map
 
 The plugin is a composer at the center, four element-builder skills that feed it, and a QA agent that runs on every figure regardless of how it was built:
 
 ![Figures plugin map: scientific-figure composer at the center, fed by plot-styling, svg-figure, transparent-icons, and ai-full-figure, with figure-qa running on every output](../assets/diagrams/figures-plugin-map.svg)
+
+## Skills
 
 - **scientific-figure** — the composer (the sink): `svgutils`-based, exact mm coordinates, `validate_fonts.py` before export, Inkscape/cairosvg backend
 - **plot-styling** — data plots via matplotlib, seaborn, plotnine, plotly, or PyVista, with SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS
 - **svg-figure** / **svg-primitives** — hand-authored or programmatic schematics: boxes, arrows, and labels in SVG, with `svg-primitives` preferred for new work (mm-precise, auto-fit text, tangent-correct arrows, in-process validation)
 - **transparent-icons** — flat scientific icons via the Codex CLI `image_gen` tool or the OpenAI Images API, with Pillow-threshold or opt-in `rembg`+BiRefNet transparency
 - **ai-full-figure** — an AI-generated pictorial substrate plus programmatic label/arrow/scale-bar overlay, so the model never hallucinates the labels themselves
+- **figure-qa** — the QA agent described below, run against every figure regardless of how it was built
 
 ## How figure-qa decides what to check
 
