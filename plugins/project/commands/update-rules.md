@@ -1,7 +1,7 @@
 ---
 description: Update AGENTS.md/CLAUDE.md and .rules/ from latest templates
 argument-hint: <user|project>
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Skill
 ---
 
 # Update Rules and Configuration
@@ -13,13 +13,18 @@ Update existing AGENTS.md/CLAUDE.md and .rules/ files from the latest plugin tem
 ### 1. Parse Arguments
 
 Determine the level from `$ARGUMENTS`:
-- `user` -> update `~/.claude/CLAUDE.md`
+- `user` -> load `project:install-user-instructions`, ask which supported
+  systems to configure, and follow that skill instead of this command
 - `project` -> update `./AGENTS.md` + Claude adapter `./CLAUDE.md` + `.rules/`
 
 If `$ARGUMENTS` is empty or not one of `user`/`project`, ask the user which level to update.
 
 ### 2. Run Comparison
 !project-diff-rules $ARGUMENTS
+
+Run this comparison only for `project`. For `user`, do not run the legacy
+Claude-only comparison script; transfer control to
+`project:install-user-instructions`.
 
 If the above command failed or the output does not contain `STATUS=complete` as the final line, the script terminated prematurely. Report the error to the user and stop. Do not proceed with remaining steps.
 
@@ -53,17 +58,9 @@ If the above command failed or the output does not contain `STATUS=complete` as 
 
 #### For USER level:
 
-**Section comparison:**
-- Read `~/.claude/CLAUDE.md` in full
-- Read template AGENTS.md for best-practice content
-- Use `references/section-mapping.md` to map template sections to user sections
-- Read relevant template rules (testing.md, git.md) for universally applicable best practices
-
-**Item-by-item checks:**
-- Compare `[NEVER DO THIS]` lists item-by-item; suggest missing entries
-- Check tool recommendations match (UV, Bun, ruff, ty, biome)
-- Check workflow steps for new best practices
-- Identify template sections with no equivalent in user config
+The `install-user-instructions` skill owns detection, system selection,
+preview, confirmation, application, verification, and downstream-duplication
+audit. Do not duplicate that workflow here.
 
 ### 4. Present Update Plan
 

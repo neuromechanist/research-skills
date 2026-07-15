@@ -8,6 +8,17 @@ description: "Use this skill when the user asks to \"plan this feature\", \"writ
 Plans that a different (or weaker) model could execute without re-deriving
 your reasoning, with success criteria fixed before any result is seen.
 
+## Model handoff
+
+Use the strongest available model for problem framing, macro architecture,
+irreversible decisions, and plan approval. In Codex this is Sol; in Claude it
+is Fable when available, otherwise Opus. After the architecture is approved, a
+bounded phase planner may expand it on the intermediate tier (Codex Terra;
+Claude Sonnet when no design choice remains). Write the resulting brief so a
+clear-task worker (Codex Luna or Claude Sonnet) can implement it without
+reconstructing design intent. See `agent-fanout` for the full routing and
+escalation policy.
+
 ## Pick the register (by stakes, not size)
 
 | Situation | Register |
@@ -66,6 +77,11 @@ Refs: #A, #B.
 An implementer (human or agent) executes from the issue alone; that is the
 test of whether it is written well enough.
 
+For GitHub issue bodies, keep each paragraph on one source line and separate
+paragraphs with blank lines. Do not apply sentence- or clause-level semantic
+line breaks inside a GitHub paragraph. Semantic line breaks remain the default
+for other prose source.
+
 ## Non-negotiable planning rules
 
 1. **Verify load-bearing claims.** Before presenting any plan, list the 3-5
@@ -97,9 +113,10 @@ test of whether it is written well enough.
    decision first, state why the order flipped, then resume.
 8. **Plans from subagents get verified, not trusted.** A planning agent must
    be read-only, cite file:line for its claims, and end with its own open
-   judgment calls; you then re-verify its load-bearing claims (rule 1)
-   before adopting the plan. Planning agents run on the session's own model,
-   not the cheap worker tier.
+   judgment calls; you then re-verify its load-bearing claims (rule 1) before
+   adopting the plan. Macro architecture uses the lead tier. A bounded phase
+   elaborator may use the intermediate tier only after architecture approval;
+   unresolved judgment returns to the lead.
 9. **Kill cleanly.** When a gate fails, execute the named fallback: revert
    prototype code (with authorization), record the dead end (what was tried,
    what it cost, why it failed) in the tracker and scratch notes, and mark

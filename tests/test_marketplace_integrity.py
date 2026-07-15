@@ -17,6 +17,10 @@ Run: ``uv run --with pytest pytest tests/ -q``
 
 import json
 import re
+import shutil
+import stat
+import subprocess
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -131,6 +135,139 @@ def test_marketplace_toplevel_version_matches():
     assert SEMVER.match(claude_top), f"marketplace version not semver: {claude_top!r}"
     assert claude_top == gh_top, (
         f"marketplace top-level version mismatch: claude {claude_top} != github {gh_top}"
+    )
+
+
+def test_project_model_routing_contract_is_cross_agent():
+    fanout = (PLUGINS_DIR / "project" / "skills" / "agent-fanout" / "SKILL.md").read_text()
+    for model in ("Fable", "Opus", "Sonnet", "Sol", "Terra", "Luna"):
+        assert model in fanout, f"agent-fanout routing is missing {model}"
+
+    consumers = [
+        PLUGINS_DIR / "project" / "skills" / "implementation-planning" / "SKILL.md",
+        PLUGINS_DIR / "project" / "skills" / "epic-dev" / "SKILL.md",
+        PLUGINS_DIR / "project" / "skills" / "workflow-reference" / "SKILL.md",
+    ]
+    for path in consumers:
+        assert "agent-fanout" in path.read_text(), (
+            f"{path.relative_to(ROOT)} does not reference central routing policy"
+        )
+
+
+def test_github_body_writers_state_semantic_break_exception():
+    writers = [
+        PLUGINS_DIR / "project" / "commands" / "epic-dev.md",
+        PLUGINS_DIR / "project" / "skills" / "engineering-loop" / "SKILL.md",
+        PLUGINS_DIR / "project" / "skills" / "epic-dev" / "SKILL.md",
+        PLUGINS_DIR / "project" / "skills" / "implementation-planning" / "SKILL.md",
+        PLUGINS_DIR
+        / "project"
+        / "skills"
+        / "agent-fanout"
+        / "references"
+        / "fanout-prompts.md",
+        PLUGINS_DIR / "project" / "skills" / "workflow-reference" / "SKILL.md",
+    ]
+    for path in writers:
+        text = path.read_text()
+        assert re.search(r"semantic\s+line\s+break", text, re.IGNORECASE), (
+            f"{path.relative_to(ROOT)} is missing semantic-line-break guidance"
+        )
+        assert re.search(r"one\s+source\s+line", text), (
+            f"{path.relative_to(ROOT)} is missing GitHub paragraph formatting"
+        )
+
+
+def test_github_validation_uses_contributor_entrypoint():
+    script = ROOT / "scripts" / "validate"
+    workflow = ROOT / ".github" / "workflows" / "tests.yml"
+
+    assert script.exists(), "missing contributor validation script"
+    assert script.stat().st_mode & stat.S_IXUSR, "scripts/validate is not executable"
+    assert "./scripts/validate" in workflow.read_text()
+
+
+def test_codex_agent_templates_are_valid_and_pin_worker_tiers():
+    templates = PLUGINS_DIR / "project" / "agents" / "templates"
+    parsed = {}
+    for path in sorted(templates.glob("*.toml")):
+        data = tomllib.loads(path.read_text())
+        for key in ("name", "description", "developer_instructions"):
+            assert data.get(key), f"{path.relative_to(ROOT)}: missing {key}"
+        parsed[data["name"]] = data
+
+    assert parsed["phase-planner"]["model"] == "gpt-5.6-terra"
+    assert parsed["phase-planner"]["sandbox_mode"] == "read-only"
+    assert parsed["implementation-worker"]["model"] == "gpt-5.6-luna"
+    assert parsed["implementation-worker"]["sandbox_mode"] == "workspace-write"
+
+
+def test_copilot_agent_templates_have_descriptions():
+    templates = PLUGINS_DIR / "project" / "agents" / "templates"
+    agents = sorted(templates.glob("*.agent.md"))
+    assert agents, "project plugin has no Copilot agent templates"
+    for path in agents:
+        assert _decode_frontmatter_string(path, "description")
+
+
+def test_copilot_worker_templates_use_cli_tool_names():
+    templates = PLUGINS_DIR / "project" / "agents" / "templates"
+    planner = (templates / "phase-planner.agent.md").read_text()
+    worker = (templates / "implementation-worker.agent.md").read_text()
+
+    for tool in ("view", "glob", "rg"):
+        assert f"  - {tool}\n" in planner
+    for tool in ("view", "edit", "apply_patch", "bash", "glob", "rg"):
+        assert f"  - {tool}\n" in worker
+    assert "  - terminal\n" not in worker
+
+
+def test_version_bump_aborts_before_writing_when_plugin_manifests_drift(tmp_path: Path):
+    script = tmp_path / "plugins" / "project" / "bin" / "project-bump-version"
+    script.parent.mkdir(parents=True)
+    shutil.copy2(PLUGINS_DIR / "project" / "bin" / "project-bump-version", script)
+
+    manifests = {
+        "plugins/project/.claude-plugin/plugin.json": {
+            "name": "project",
+            "version": "1.0.0",
+        },
+        "plugins/project/.codex-plugin/plugin.json": {
+            "name": "project",
+            "version": "1.0.1",
+        },
+        "plugins/project/.github/plugin/plugin.json": {
+            "name": "project",
+            "version": "1.0.0",
+        },
+        ".claude-plugin/marketplace.json": {
+            "version": "2.0.0",
+            "plugins": [{"name": "project", "version": "1.0.0"}],
+        },
+        ".github/plugin/marketplace.json": {
+            "metadata": {"version": "2.0.0"},
+            "plugins": [{"name": "project", "version": "1.0.0"}],
+        },
+    }
+    for relative, content in manifests.items():
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(content))
+    before = {relative: (tmp_path / relative).read_bytes() for relative in manifests}
+
+    result = subprocess.run(
+        ["bash", str(script), "project", "patch"],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1
+    assert "version drift" in result.stderr
+    assert all(
+        (tmp_path / relative).read_bytes() == content
+        for relative, content in before.items()
     )
 
 

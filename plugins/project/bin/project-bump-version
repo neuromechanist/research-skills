@@ -4,15 +4,17 @@
 # Files touched by a plugin bump:
 #   plugins/<plugin>/.claude-plugin/plugin.json         (the plugin's version)
 #   plugins/<plugin>/.codex-plugin/plugin.json          (if present)
+#   plugins/<plugin>/.github/plugin/plugin.json         (the plugin's version)
 #   .claude-plugin/marketplace.json                     (root version + plugin entry)
 #   .github/plugin/marketplace.json                     (metadata.version + plugin entry)
 #
-# Skill bumps additionally update:
+# Existing-skill bumps additionally update:
 #   plugins/<plugin>/skills/<skill>/SKILL.md            (YAML frontmatter version)
 #
-# Per the marketplace convention: a skill bump cascades to a plugin patch bump,
-# which cascades to a marketplace patch bump. Plugin bumps cascade to a marketplace
-# patch bump. Marketplace bumps stand alone.
+# Per the marketplace convention: updating an existing skill cascades to a plugin
+# patch bump, which cascades to a marketplace patch bump. Adding a new skill is a
+# plugin minor bump. Plugin bumps cascade to a marketplace patch bump. Marketplace
+# bumps stand alone.
 #
 # Usage:
 #   project-bump-version <plugin> <patch|minor|major>
@@ -58,6 +60,53 @@ bump_semver() {
 # read_json <file> <jq_filter>
 read_json() {
     jq -r "$2" "$1"
+}
+
+assert_equal_version() {
+    local expected="$1" actual="$2" label="$3"
+    [ "$actual" = "$expected" ] || \
+        die "version drift: $label is $actual; expected $expected"
+}
+
+assert_plugin_versions_sync() {
+    local plugin="$1"
+    local manifest="plugins/$plugin/.claude-plugin/plugin.json"
+    [ -f "$manifest" ] || die "plugin manifest not found: $manifest"
+    local canonical
+    canonical="$(read_json "$manifest" '.version')"
+
+    local codex="plugins/$plugin/.codex-plugin/plugin.json"
+    if [ -f "$codex" ]; then
+        assert_equal_version "$canonical" "$(read_json "$codex" '.version')" "$codex"
+    fi
+
+    local copilot="plugins/$plugin/.github/plugin/plugin.json"
+    if [ -f "$copilot" ]; then
+        assert_equal_version "$canonical" "$(read_json "$copilot" '.version')" "$copilot"
+    fi
+
+    local cc_entry
+    cc_entry="$(read_json .claude-plugin/marketplace.json ".plugins[] | select(.name==\"$plugin\") | .version")"
+    [ -n "$cc_entry" ] || die "plugin missing from .claude-plugin/marketplace.json: $plugin"
+    assert_equal_version "$canonical" "$cc_entry" ".claude-plugin/marketplace.json[$plugin]"
+
+    if [ -f .github/plugin/marketplace.json ]; then
+        local gh_entry
+        gh_entry="$(read_json .github/plugin/marketplace.json ".plugins[] | select(.name==\"$plugin\") | .version")"
+        [ -n "$gh_entry" ] || die "plugin missing from .github/plugin/marketplace.json: $plugin"
+        assert_equal_version "$canonical" "$gh_entry" ".github/plugin/marketplace.json[$plugin]"
+    fi
+}
+
+assert_marketplace_versions_sync() {
+    local canonical
+    canonical="$(read_json .claude-plugin/marketplace.json '.version')"
+    if [ -f .github/plugin/marketplace.json ]; then
+        assert_equal_version \
+            "$canonical" \
+            "$(read_json .github/plugin/marketplace.json '.metadata.version')" \
+            ".github/plugin/marketplace.json metadata"
+    fi
 }
 
 # write_json <file> <jq_filter>  (in-place via tmp)
@@ -123,27 +172,32 @@ bump_plugin_manifest() {
 
     local codex="plugins/$plugin/.codex-plugin/plugin.json"
     if [ -f "$codex" ]; then
-        local codex_current codex_new
+        local codex_current
         codex_current="$(read_json "$codex" '.version')"
-        codex_new="$(bump_semver "$codex_current" "$level")"
-        printf '  %-50s %s -> %s\n' "$codex" "$codex_current" "$codex_new"
-        write_json "$codex" ".version = \"$codex_new\""
+        printf '  %-50s %s -> %s\n' "$codex" "$codex_current" "$new"
+        write_json "$codex" ".version = \"$new\""
+    fi
+
+    local copilot="plugins/$plugin/.github/plugin/plugin.json"
+    if [ -f "$copilot" ]; then
+        local copilot_current
+        copilot_current="$(read_json "$copilot" '.version')"
+        printf '  %-50s %s -> %s\n' "$copilot" "$copilot_current" "$new"
+        write_json "$copilot" ".version = \"$new\""
     fi
 
     local cc_market=".claude-plugin/marketplace.json"
-    local entry_current entry_new
+    local entry_current
     entry_current="$(read_json "$cc_market" ".plugins[] | select(.name==\"$plugin\") | .version")"
-    entry_new="$(bump_semver "$entry_current" "$level")"
-    printf '  %-50s %s -> %s\n' "$cc_market[$plugin]" "$entry_current" "$entry_new"
-    write_json "$cc_market" "(.plugins[] | select(.name==\"$plugin\") | .version) = \"$entry_new\""
+    printf '  %-50s %s -> %s\n' "$cc_market[$plugin]" "$entry_current" "$new"
+    write_json "$cc_market" "(.plugins[] | select(.name==\"$plugin\") | .version) = \"$new\""
 
     local gh_market=".github/plugin/marketplace.json"
     if [ -f "$gh_market" ] && jq -e ".plugins[] | select(.name==\"$plugin\")" "$gh_market" >/dev/null; then
-        local gh_current gh_new
+        local gh_current
         gh_current="$(read_json "$gh_market" ".plugins[] | select(.name==\"$plugin\") | .version")"
-        gh_new="$(bump_semver "$gh_current" "$level")"
-        printf '  %-50s %s -> %s\n' "$gh_market[$plugin]" "$gh_current" "$gh_new"
-        write_json "$gh_market" "(.plugins[] | select(.name==\"$plugin\") | .version) = \"$gh_new\""
+        printf '  %-50s %s -> %s\n' "$gh_market[$plugin]" "$gh_current" "$new"
+        write_json "$gh_market" "(.plugins[] | select(.name==\"$plugin\") | .version) = \"$new\""
     fi
 }
 
@@ -158,11 +212,10 @@ bump_marketplace_root() {
 
     local gh_market=".github/plugin/marketplace.json"
     if [ -f "$gh_market" ]; then
-        local gh_current gh_new
+        local gh_current
         gh_current="$(read_json "$gh_market" '.metadata.version')"
-        gh_new="$(bump_semver "$gh_current" "$level")"
-        printf '  %-50s %s -> %s\n' "$gh_market(metadata)" "$gh_current" "$gh_new"
-        write_json "$gh_market" ".metadata.version = \"$gh_new\""
+        printf '  %-50s %s -> %s\n' "$gh_market(metadata)" "$gh_current" "$new"
+        write_json "$gh_market" ".metadata.version = \"$new\""
     fi
 }
 
@@ -191,7 +244,7 @@ cmd_check() {
 
     printf '\n== plugins ==\n'
     for f in plugins/*/.claude-plugin/plugin.json; do
-        local name version codex_v cc_v gh_v
+        local name version codex_v copilot_v cc_v gh_v
         name="$(read_json "$f" '.name')"
         version="$(read_json "$f" '.version')"
         cc_v="$(read_json .claude-plugin/marketplace.json ".plugins[] | select(.name==\"$name\") | .version")"
@@ -201,17 +254,23 @@ cmd_check() {
         else
             codex_v="-"
         fi
+        local copilot="plugins/$name/.github/plugin/plugin.json"
+        if [ -f "$copilot" ]; then
+            copilot_v="$(read_json "$copilot" '.version')"
+        else
+            copilot_v="-"
+        fi
         if [ -f .github/plugin/marketplace.json ]; then
             gh_v="$(read_json .github/plugin/marketplace.json ".plugins[] | select(.name==\"$name\") | .version" 2>/dev/null || echo '-')"
         else
             gh_v="-"
         fi
         local mark=' '
-        if [ "$version" != "$cc_v" ] || { [ "$codex_v" != "-" ] && [ "$codex_v" != "$version" ]; } || { [ "$gh_v" != "-" ] && [ "$gh_v" != "$version" ]; }; then
+        if [ "$version" != "$cc_v" ] || { [ "$codex_v" != "-" ] && [ "$codex_v" != "$version" ]; } || { [ "$copilot_v" != "-" ] && [ "$copilot_v" != "$version" ]; } || { [ "$gh_v" != "-" ] && [ "$gh_v" != "$version" ]; }; then
             mark='!'
         fi
-        printf '  %s %-20s claude=%-7s codex=%-7s cc-market=%-7s gh-market=%-7s\n' \
-            "$mark" "$name" "$version" "$codex_v" "$cc_v" "$gh_v"
+        printf '  %s %-20s claude=%-7s codex=%-7s copilot=%-7s cc-market=%-7s gh-market=%-7s\n' \
+            "$mark" "$name" "$version" "$codex_v" "$copilot_v" "$cc_v" "$gh_v"
     done
     printf '\n(! = drift between manifests)\n'
 }
@@ -236,6 +295,7 @@ case "${ARGS[0]}" in
     --marketplace)
         require_jq
         [ "${#ARGS[@]}" -eq 2 ] || usage
+        assert_marketplace_versions_sync
         printf 'bumping marketplace (%s)\n' "${ARGS[1]}"
         bump_marketplace_root "${ARGS[1]}"
         ;;
@@ -248,6 +308,8 @@ case "${ARGS[0]}" in
             *) die "expected <plugin>/<skill>, got: $local_path" ;;
         esac
         level="${ARGS[2]}"
+        assert_plugin_versions_sync "$plugin"
+        assert_marketplace_versions_sync
         printf 'bumping skill %s/%s (%s) + plugin patch + marketplace patch\n' "$plugin" "$skill" "$level"
         bump_skill "$plugin" "$skill" "$level"
         bump_plugin_manifest "$plugin" patch
@@ -261,6 +323,8 @@ case "${ARGS[0]}" in
         [ "${#ARGS[@]}" -eq 2 ] || usage
         plugin="${ARGS[0]}"
         level="${ARGS[1]}"
+        assert_plugin_versions_sync "$plugin"
+        assert_marketplace_versions_sync
         printf 'bumping plugin %s (%s) + marketplace patch\n' "$plugin" "$level"
         bump_plugin_manifest "$plugin" "$level"
         bump_marketplace_root patch

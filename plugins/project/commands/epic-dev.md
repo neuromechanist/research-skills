@@ -15,6 +15,16 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 - **Use absolute paths**: Bash calls do not persist `cd`; always use full worktree paths
 - **Track progress**: Use TodoWrite to track all phases and steps
 - **No emojis**: Never use emojis in commits, PRs, or issues
+- **Model routing**: Keep epic design, observation, approvals, and synthesis on
+  Fable when available, otherwise Opus. Delegate approved-plan implementation,
+  focused review, and validation to named Sonnet agents. Escalate unresolved
+  architecture and high-risk invariants back to the lead model.
+- **GitHub prose**: Semantic line breaks remain the prose-source default, but
+  GitHub issue and PR bodies are the exception. Keep each paragraph on one
+  source line, separate paragraphs with blank lines, and do not insert
+  sentence- or clause-level newlines within a paragraph.
+- **Agent cleanup**: After incorporating a final report, close/remove the
+  one-off agent unless a concrete follow-up task is already assigned.
 
 ---
 
@@ -106,14 +116,18 @@ git worktree add "$PARENT/{phase-slug}" -b feature/issue-{N}-phase{X}-{slug} {EP
 Update state: mark phase `in_progress`.
 
 ### Step 2.2: Implementation planning
-- Enter plan mode using `EnterPlanMode` tool
-- The plan should focus on this specific phase's scope
+- Enter plan mode on Fable/Opus using `EnterPlanMode`
+- The lead fixes architecture and open judgment calls. A Sonnet planner may
+  elaborate an approved architecture into exact files, tests, and gates.
+- The plan should focus on this specific phase's scope and be executable by a
+  Sonnet implementer without re-deriving design intent.
 - Wait for user to approve the plan (this is handled by ExitPlanMode)
 - After plan approval, proceed to implementation
 
 ### Step 2.3: Implementation
-- Work in the phase worktree using absolute paths: `$PARENT/{phase-slug}/`
-- Follow the approved plan
+- Delegate the approved plan to a named Sonnet implementer working only in the
+  phase worktree at `$PARENT/{phase-slug}/`
+- Follow the approved plan; unresolved design returns to the Fable/Opus lead
 - Write tests (unit + integration)
 - Run tests and verify they pass
 - Make atomic commits with concise messages
@@ -143,6 +157,7 @@ Update state: mark phase `in_progress`.
 - Update state: mark phase `complete`, record PR number
 - Remove worktree: `git worktree remove "$PARENT/{phase-slug}"`
 - Delete local branch if still present
+- Close/remove completed one-off agents after their reports are incorporated
 
 ### Step 2.6: Next phase
 - Increment `current_phase` in state

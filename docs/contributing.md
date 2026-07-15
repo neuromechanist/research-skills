@@ -3,14 +3,19 @@
 ## Versioning
 
 - Each plugin has independent versioning in its own `plugin.json`.
-- Adding a new plugin or skill is a marketplace minor bump (`0.x.0`).
-- A version bump within an existing plugin is a marketplace patch bump (`0.x.y`).
-- Bumps don't propagate upward by default: a skill patch doesn't automatically bump its plugin, and a plugin bump doesn't automatically bump the marketplace, beyond the rule above.
+- Adding a skill to an existing plugin is a plugin minor bump; compatible
+  updates to existing capabilities are plugin patch bumps.
+- Adding a new plugin is a marketplace minor bump (`0.x.0`).
+- Adding or updating a skill within an existing plugin is a marketplace patch bump (`0.x.y`).
+- `plugins/project/bin/project-bump-version` keeps Claude, Codex, Copilot, and
+  marketplace declarations synchronized for ordinary version bumps. A skill
+  added within an existing plugin uses the helper's cascading marketplace
+  patch bump.
 
 ## Releases and citation
 
 - The marketplace version lives in `.claude-plugin/marketplace.json` and `.github/plugin/marketplace.json` (the Codex `.agents/plugins/marketplace.json` carries no top-level version).
-- GitHub release tags mirror the marketplace top-level version: marketplace `0.15.12` gets tag `v0.15.12`, not a separately incrementing release sequence.
+- GitHub release tags mirror the marketplace top-level version: marketplace `0.15.13` gets tag `v0.15.13`, not a separately incrementing release sequence.
 - The repository is archived to Zenodo on every GitHub release, minting a versioned DOI under a stable concept DOI. When the marketplace version bumps for a release, `CITATION.cff`'s `version` and `date-released` fields get bumped alongside it, and `.zenodo.json` stays in sync.
 - The concept DOI (in `CITATION.cff`'s `doi:` field and the README badge) is stable across versions and does not change.
 
@@ -21,6 +26,19 @@
 - Use [UV](https://docs.astral.sh/uv/) for Python work (this docs site included); see `.rules/python.md`.
 - No mocks in tests; see `.rules/testing.md`.
 - No emojis in commits or code; see `.rules/git.md`.
+
+## Run the contributor validation gate
+
+Run the same deterministic gate used by pull-request CI before opening a PR:
+
+```bash
+./scripts/validate
+```
+
+It checks plugin shell-script syntax, runs the full filesystem-backed test
+suite (including manifest, skill, installer, and figure checks), and builds the
+documentation with strict link validation. The separate CI typo job still uses
+`typos`; install and run it locally when changing substantial prose.
 
 ## Cross-agent compatibility
 

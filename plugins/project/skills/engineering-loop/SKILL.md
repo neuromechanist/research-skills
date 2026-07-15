@@ -63,6 +63,10 @@ verification. Lightweight counterpart to the epic-dev workflow.
    moment they land, separately from code.
 8. **Push and open the PR.** Body: what changed, why (link "Closes #N"), and
    what was tested with commands and counts. No emojis, no AI attribution.
+   Semantic line breaks remain the default for prose source, but GitHub issue
+   and PR bodies are the exception: keep each paragraph on one source line and
+   separate paragraphs with blank lines; do not insert sentence- or
+   clause-level newlines inside a paragraph.
    Verify any user-supplied factual claim (dates, numbers, attributions)
    against available evidence before writing it into a PR, issue, or other
    durable document; if the evidence contradicts the claim, surface the
@@ -82,7 +86,9 @@ verification. Lightweight counterpart to the epic-dev workflow.
     a broad "proceed".
 11. **Close out.** Close the issue with a substantive comment (evidence, not
     "done"), update project state/memory files with anything reusable
-    learned, and clean up artifacts you created. If stopping mid-stream
+    learned, close/remove completed one-off agent threads, and clean up
+    artifacts you created. Retain an agent only for a named recurring role
+    with a concrete next task. If stopping mid-stream
     instead, write a handoff note with exactly these sections: Shipped
     (commit/PR refs), Operational state (what is running and how to verify
     it), Resource constraints (quotas, accounts, hardware), Immediate next

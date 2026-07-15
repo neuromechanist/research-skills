@@ -46,6 +46,11 @@ Split "where is X" (mechanical mapping, delegate it) from "what does X
 actually say" (judgment docs such as ADRs and strategy docs; read those
 yourself). When the area is larger than one context can hold:
 
+Use the worker/intermediate tier for bounded scouts (Codex Luna/Terra or
+Claude Sonnet), but keep diagnosis, keystone verification, and synthesis on
+the lead tier (Codex Sol or Claude Fable/Opus). Close/remove each one-off scout
+after its report is incorporated. See `agent-fanout` for escalation rules.
+
 - Partition by architectural domain (backend / CLI / web / data / infra) with
   disjoint file ownership, one read-only explorer per domain, all spawned in
   parallel. Agent count = number of genuinely independent domains, within the

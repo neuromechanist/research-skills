@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Run the deterministic repository checks used by pull-request CI.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$REPO_ROOT"
+
+while IFS= read -r script; do
+    bash -n "$script"
+done < <(find plugins -path '*/bin/*' -type f | sort)
+
+uv run --with pytest --with lxml --with svgelements --with shapely \
+    pytest tests/ -q
+
+uv sync --group docs
+uv run mkdocs build --strict
+
+printf 'Validation complete: shell syntax, tests, manifests, skills, and docs passed.\n'

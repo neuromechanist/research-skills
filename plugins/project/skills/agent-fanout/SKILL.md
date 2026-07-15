@@ -38,8 +38,9 @@ setup, supervision, and synthesis time.
    stricter number wins.
 3. Prefer waves of 10 or fewer concurrent agents. Finish and synthesize a wave
    before launching the next.
-4. Every phase plan states its own agent budget up front (for example "Sonnet
-   implementer + Sonnet reviewer, ~3 agents total").
+4. Every phase plan states its own agent budget and routing up front (for
+   example "Sol lead + Terra phase planner + Luna implementer/reviewer,
+   ~4 agents total").
 5. If you hit a rate limit: stop spawning, schedule one backoff wait, resume
    staggered. Narrate as a status update, not a question.
 
@@ -49,25 +50,48 @@ under review. Compute the count first.
 
 ## Roles and model routing
 
-The economics of fan-out: every ecosystem has a cheaper, fast worker tier
-below its frontier model (Sonnet below Opus/Fable for Claude; the equivalent
-smaller tier for GPT or Gemini). Worker-tier agents perform at near-lead
-quality when, and only when, three compensating controls are present: a
-detailed brief (the full lifecycle contract below, with exact values and
-named tests), mechanical gates they must pass (lint, typecheck, tests, zero
-new diagnostics), and lead verification of the result (review panel plus the
-lead spot-checking headline claims). Route work to the worker tier by
-default and spend the strong model where judgment concentrates: planning,
-architecture, and synthesis. This saves both time and cost.
+Keep the lead/orchestrator on the strongest available reasoning tier. The lead
+owns requirements, architecture, irreversible decisions, supervision,
+load-bearing verification, and final synthesis. Delegate bounded plan
+elaboration to the intermediate tier only after the architecture is fixed.
+Delegate implementation to the worker tier only after the brief names exact
+files, decisions, tests, and gates.
 
-| Role | Agent type | Model | Notes |
+Worker agents perform near lead quality only when three controls are present:
+a full lifecycle brief with exact values and named tests, mechanical gates
+(lint, typecheck, tests, and zero new diagnostics), and lead verification of
+the result. If any control is missing, keep the work on the lead or
+intermediate tier.
+
+### Ecosystem routing
+
+Use an exact alias only when the current runtime exposes it. Otherwise apply
+the capability class in the final column.
+
+| Ecosystem | Lead / architect / observer / synthesizer | Phase-plan elaborator | Implementer / focused reviewer / validator | Capability fallback |
+| --- | --- | --- | --- | --- |
+| Claude Code | Fable when available, otherwise Opus or `best` | Opus for unresolved design; Sonnet after architecture approval | Sonnet | strongest / balanced / worker |
+| OpenAI Codex | Sol (`gpt-5.6-sol`) | Terra (`gpt-5.6-terra`) | Luna (`gpt-5.6-luna`) | strongest / intermediate / clear-repeatable worker |
+| GitHub Copilot CLI | strongest available model | balanced reasoning model | cost-efficient coding model | strongest / intermediate / worker |
+| Other systems | strongest available model | intermediate model | fastest model that passes the gates | strongest / intermediate / worker |
+
+Codex Luna is appropriate only for clear, repeatable implementation from a
+detailed plan. Escalate a worker to Terra or Sol when the task exposes an
+unresolved architecture choice, repeatedly fails a gate for a non-mechanical
+reason, or touches data integrity, encryption, concurrency, authorization, or
+another high-risk invariant. On Claude, use the same escalation rule from
+Sonnet to Opus/Fable.
+
+| Role | Agent type | Default tier | Notes |
 | --- | --- | --- | --- |
-| Explorer/scout | read-only explorer | small/fast (e.g. Sonnet) | One-shot for bounded questions; named and reusable for recurring investigations. |
-| Planner/architect | plan agent | inherit session model (do NOT downgrade) | The one role where the strongest available model matters most. |
-| Implementer | general-purpose | small/fast by default; strongest model when the change touches data integrity, encryption, or concurrency | One per issue, one per worktree, named. |
-| Reviewer | review agent | small/fast | One panel per PR; fresh agents each PR (never reuse reviewers across PRs). |
-| Validator | general-purpose | small/fast | Live/end-to-end checks; classify first what needs human hardware. |
-| Integration reviewer | review agent | small/fast | One, at the end; told explicitly to skip re-reviewing what per-PR panels covered. |
+| Lead/orchestrator | main session | strongest | Preserve requirements, approve architecture, supervise, verify, and synthesize. |
+| Explorer/scout | read-only explorer | intermediate or worker | One-shot for bounded facts; the lead re-verifies the keystone fact. |
+| Architect | plan agent | strongest | Owns macro design and open judgment calls. |
+| Phase planner | plan agent | intermediate | Expands an approved architecture into worker-executable actions; escalates unresolved design. |
+| Implementer | general-purpose | worker | One per issue and worktree, named; receives the full lifecycle contract. |
+| Reviewer | review agent | worker | One fresh panel per PR; use intermediate/strongest for high-risk invariants. |
+| Validator | general-purpose | worker | Runs named checks; classify first what needs human hardware. |
+| Integration reviewer | review agent | worker | Reviews only cross-phase integration at the end. |
 
 Review panels shrink as the code stabilizes: 4-5 lenses while new types and
 invariants are being invented, 2-3 once they settle, 1 integration-scoped
@@ -113,6 +137,10 @@ elements for every delegated prompt:
    task is and is NOT ("this is a technical disclosure, NOT a journal
    manuscript; do not score on journal criteria; instead assess ..."), so
    the agent does not fall back to its default domain.
+10. **GitHub body formatting**: semantic line breaks remain the default for
+    prose source, except in GitHub issue and pull-request bodies. Keep each
+    GitHub paragraph on one source line, separate paragraphs with blank lines,
+    and do not insert sentence- or clause-level newlines inside a paragraph.
 
 ## Supervision protocol
 
@@ -148,6 +176,10 @@ elements for every delegated prompt:
   reached in-flight agents, send each one a named correction quoting the wrong
   claim, the disproving evidence, and their specific rework. Leave a marker in
   project docs where the wrong path was taken.
+- **Remove finished agents**: after harvesting an agent's final report and
+  confirming no follow-up is needed, close/remove its thread. Keep an agent
+  available only when it has a named recurring role and a concrete next task;
+  "might reuse later" is not sufficient.
 
 ## Synthesis rules (after a wave returns)
 
@@ -170,7 +202,8 @@ elements for every delegated prompt:
 ## Done
 
 The fan-out is complete when: every spawned agent is completed, stood down, or
-stopped with its output accounted for; every finding is dispatched or rejected
-with a reason; every claimed result you relied on has been independently
-spot-checked; worktrees and other artifacts created for the wave are cleaned
-up; and the state file / task board reflects final status.
+stopped with its output accounted for; every non-reusable agent thread is
+closed/removed; every finding is dispatched or rejected with a reason; every
+claimed result you relied on has been independently spot-checked; worktrees and
+other artifacts created for the wave are cleaned up; and the state file / task
+board reflects final status.

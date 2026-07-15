@@ -57,7 +57,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.5.0 | Project lifecycle: init (with ADR scaffold and optional GitHub labels), rule/config updates, epic workflow, PR review, onboarding, planning, engineering loop, debugging, agent fan-out, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `codebase-onboarding`, `implementation-planning`, `engineering-loop`, `debugging`, `agent-fanout`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **project** | 0.6.0 | Project lifecycle: init, cross-agent user instructions, tiered model routing, epic workflow, PR review, onboarding, planning, engineering loop, debugging, agent fan-out, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `install-user-instructions`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `codebase-onboarding`, `implementation-planning`, `engineering-loop`, `debugging`, `agent-fanout`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
 | **grant** | 0.3.6 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
 | **manuscript** | 0.5.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.2 | Literature search, citation management, PDF retrieval | `opencite` | -- |
@@ -143,25 +143,27 @@ Neuroscience data standards, experiment design, and dataset validation:
 Complete project lifecycle toolkit combining initialization, epic/sprint workflow, and CI/CD management:
 
 - **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/`, and config files
-- **update-rules** -- non-destructive sync of AGENTS.md, the CLAUDE.md adapter, and `.rules/` against latest templates at user or project level
+- **update-rules** -- non-destructive project sync of AGENTS.md, the CLAUDE.md adapter, and `.rules/` against latest templates; user-level setup delegates to `install-user-instructions`
+- **install-user-instructions** -- ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure; preview and install a managed global-default block at each supported user surface without duplicating it in repositories
 - **epic-dev** -- Codex-facing entrypoint for the `/epic-dev` multi-phase feature workflow with git worktrees, GitHub issues, and phased PR delivery
 - **workflow-reference** -- branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
 - **pr-review-toolkit** -- PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification. Inspired by Anthropic's [`pr-review-toolkit`](https://github.com/anthropics/claude-code/tree/main/plugins/pr-review-toolkit) implementation; the upstream plugin README identifies it as MIT licensed. The project skill is an original cross-agent adaptation with shared rubrics in `references/`.
 - **codebase-onboarding** -- verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence (inventory, intent docs, code, history, what actually runs, SDK probes), parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
-- **implementation-planning** -- plans a weaker model could execute: two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
+- **implementation-planning** -- strongest-tier macro design followed by worker-executable phase plans: two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
 - **engineering-loop** -- the single-PR change workflow: mirror an existing pattern, pin test first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons, plus a detached background-jobs protocol for long-running work
 - **debugging** -- reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks) and a numerical-debugging reference for reference-implementation parity work
-- **agent-fanout** -- orchestrating subagents and teammates: basic spawning/messaging mechanics per tool, role taxonomy with worker-tier model routing, full-lifecycle briefing templates, supervision and synthesis protocols, and a hard cap of 40 agents per run computed before launch
+- **agent-fanout** -- orchestrating subagents and teammates with explicit cross-agent tiers: Claude Fable/Opus lead and Sonnet workers; Codex Sol lead, Terra phase planner, and Luna workers; full-lifecycle briefs, mechanical gates, lead verification, completed-agent cleanup, and a hard cap of 40 agents per run
 - **CI scaffolding** -- generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
 - **Docker packaging** -- multi-stage Dockerfiles with uv/bun, health checks, and security hardening
 - **Security audit** -- credential scanning, dependency audit, OWASP checklist, configuration hardening
 - **Document processing** -- PDF/image OCR, text extraction, markdown conversion
 
-Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **release-prep** (pre-release validation), and a Claude-bundled **pr-review-toolkit** reviewer. Codex gets an opt-in TOML agent template under `plugins/project/agents/templates/`; Copilot exposes the `.agent.md` template through the native plugin manifest. The skill remains the portable fallback when a fresh-context agent is unavailable.
+Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **release-prep** (pre-release validation), and a Claude-bundled **pr-review-toolkit** reviewer. Codex gets opt-in TOML templates for PR review, Terra phase planning, and Luna implementation under `plugins/project/agents/templates/`; Copilot exposes matching `.agent.md` profiles through the native plugin manifest. Skills remain the portable fallback when a fresh-context agent is unavailable.
 
 ```
 /init-project "Python EEG analysis package"
 /update-rules project
+"Install my user-level instructions for Claude Code, Codex, Copilot, and Cursor"
 /epic-dev "build a community dashboard"
 /release-prep --minor
 "Set up CI for this Python project with ruff and pytest"
@@ -204,13 +206,14 @@ Skills are the preferred surface for agent-callable capabilities and auto-trigge
 
 ## Cross-agent instructions
 
-Use `AGENTS.md` as the shared instruction file. `CLAUDE.md` imports it with `@AGENTS.md`, then leaves room for Claude Code-only plugin, skill, command, or MCP notes. The project plugin's `init-project` workflow now generates that layout for new projects.
+Use `AGENTS.md` as the shared project instruction file. `CLAUDE.md` imports it with `@AGENTS.md`, then leaves room for Claude Code-only plugin, skill, command, or MCP notes. Use `install-user-instructions` for personal defaults across Claude Code, Codex, Copilot CLI, and Cursor; keep repository files limited to project facts and tool-specific deltas so global rules are not repeated downstream.
 
 ## Versioning
 
 - Each plugin has independent versioning in its `plugin.json`
-- Adding a new plugin/skill = marketplace minor bump (0.x.0)
-- Version bump within an existing plugin = marketplace patch bump (0.x.y)
+- Adding a skill to an existing plugin = plugin minor bump
+- Adding a new plugin = marketplace minor bump (0.x.0)
+- Adding or updating a skill within an existing plugin = marketplace patch bump (0.x.y)
 
 ## Notes
 

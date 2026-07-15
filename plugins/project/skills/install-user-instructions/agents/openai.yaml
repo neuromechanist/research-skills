@@ -1,0 +1,4 @@
+interface:
+  display_name: "Install User Instructions"
+  short_description: "Install global instructions across agent tools."
+  default_prompt: "Use $install-user-instructions to install my global agent instructions."

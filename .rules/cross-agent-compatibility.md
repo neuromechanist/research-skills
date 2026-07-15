@@ -14,8 +14,10 @@ apply.
 - Keep per-plugin manifests in sync where they exist:
   `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, and
   `.github/plugin/plugin.json`.
-- When a plugin is touched for a release-visible change, bump that plugin's
-  patch version across all per-plugin manifests and marketplace entries.
+- Adding a skill or another backward-compatible capability to an existing
+  plugin requires a plugin minor bump across every per-plugin manifest and
+  marketplace entry. Compatible fixes and updates to existing capabilities use
+  a plugin patch bump. Breaking plugin changes use a major bump.
 - When any marketplace entry changes, bump the top-level marketplace patch
   version in both Claude and Copilot marketplace metadata.
 
@@ -34,6 +36,21 @@ apply.
   `agents` component path. Copilot custom-agent files are `.agent.md`; for this
   repo, use `agents/templates/` as the plugin `agents` path when a plugin ships
   Copilot agent templates.
+
+## User-Level Instructions
+
+- Ask which systems the user wants configured; detection is not permission to
+  write every supported target.
+- Claude Code: `${CLAUDE_CONFIG_DIR:-~/.claude}/CLAUDE.md`.
+- Codex: `${CODEX_HOME:-~/.codex}/AGENTS.md`; detect a global
+  `AGENTS.override.md` because it takes precedence.
+- Copilot CLI: `${COPILOT_HOME:-~/.copilot}/copilot-instructions.md`.
+- Cursor: User Rules in **Cursor Settings > Rules**. Do not invent an
+  undocumented user-level file path.
+- Preview every change and preserve unowned content. Keep general personal
+  defaults at user scope, shared repository rules in `AGENTS.md`, and
+  tool-specific project files limited to deltas so instructions are not
+  repeated downstream.
 
 ## Review And QA Surfaces
 
