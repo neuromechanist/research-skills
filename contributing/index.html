@@ -741,6 +741,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#run-the-contributor-validation-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the contributor validation gate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cross-agent-compatibility" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -841,6 +852,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#run-the-contributor-validation-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run the contributor validation gate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cross-agent-compatibility" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -897,14 +919,19 @@
 <h2 id="versioning">Versioning<a class="headerlink" href="#versioning" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Each plugin has independent versioning in its own <code>plugin.json</code>.</li>
-<li>Adding a new plugin or skill is a marketplace minor bump (<code>0.x.0</code>).</li>
-<li>A version bump within an existing plugin is a marketplace patch bump (<code>0.x.y</code>).</li>
-<li>Bumps don't propagate upward by default: a skill patch doesn't automatically bump its plugin, and a plugin bump doesn't automatically bump the marketplace, beyond the rule above.</li>
+<li>Adding a skill to an existing plugin is a plugin minor bump; compatible
+  updates to existing capabilities are plugin patch bumps.</li>
+<li>Adding a new plugin is a marketplace minor bump (<code>0.x.0</code>).</li>
+<li>Adding or updating a skill within an existing plugin is a marketplace patch bump (<code>0.x.y</code>).</li>
+<li><code>plugins/project/bin/project-bump-version</code> keeps Claude, Codex, Copilot, and
+  marketplace declarations synchronized for ordinary version bumps. A skill
+  added within an existing plugin uses the helper's cascading marketplace
+  patch bump.</li>
 </ul>
 <h2 id="releases-and-citation">Releases and citation<a class="headerlink" href="#releases-and-citation" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The marketplace version lives in <code>.claude-plugin/marketplace.json</code> and <code>.github/plugin/marketplace.json</code> (the Codex <code>.agents/plugins/marketplace.json</code> carries no top-level version).</li>
-<li>GitHub release tags mirror the marketplace top-level version: marketplace <code>0.15.12</code> gets tag <code>v0.15.12</code>, not a separately incrementing release sequence.</li>
+<li>GitHub release tags mirror the marketplace top-level version: marketplace <code>0.15.13</code> gets tag <code>v0.15.13</code>, not a separately incrementing release sequence.</li>
 <li>The repository is archived to Zenodo on every GitHub release, minting a versioned DOI under a stable concept DOI. When the marketplace version bumps for a release, <code>CITATION.cff</code>'s <code>version</code> and <code>date-released</code> fields get bumped alongside it, and <code>.zenodo.json</code> stays in sync.</li>
 <li>The concept DOI (in <code>CITATION.cff</code>'s <code>doi:</code> field and the README badge) is stable across versions and does not change.</li>
 </ul>
@@ -916,12 +943,20 @@
 <li>No mocks in tests; see <code>.rules/testing.md</code>.</li>
 <li>No emojis in commits or code; see <code>.rules/git.md</code>.</li>
 </ul>
+<h2 id="run-the-contributor-validation-gate">Run the contributor validation gate<a class="headerlink" href="#run-the-contributor-validation-gate" title="Permanent link">&para;</a></h2>
+<p>Run the same deterministic gate used by pull-request CI before opening a PR:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./scripts/validate
+</code></pre></div>
+<p>It checks plugin shell-script syntax, runs the full filesystem-backed test
+suite (including manifest, skill, installer, and figure checks), and builds the
+documentation with strict link validation. The separate CI typo job still uses
+<code>typos</code>; install and run it locally when changing substantial prose.</p>
 <h2 id="cross-agent-compatibility">Cross-agent compatibility<a class="headerlink" href="#cross-agent-compatibility" title="Permanent link">&para;</a></h2>
 <p>Any plugin update must check Claude Code, Codex, and GitHub Copilot CLI manifests and install paths together; see <a href="../cross-agent-compatibility/">Cross-Agent Compatibility</a> for the researched registration paths, and <code>.rules/cross-agent-compatibility.md</code> for the update policy itself.</p>
 <h2 id="building-these-docs-locally">Building these docs locally<a class="headerlink" href="#building-these-docs-locally" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>serve<span class="w">   </span><span class="c1"># http://127.0.0.1:8000/</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--group<span class="w"> </span>docs
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>serve<span class="w">   </span><span class="c1"># http://127.0.0.1:8000/</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
 </code></pre></div>
 <p>CI builds and deploys this site to the <code>gh-pages</code> branch on every push to <code>main</code> that touches <code>docs/**</code>, <code>mkdocs.yml</code>, or <code>pyproject.toml</code>. Run <code>mkdocs build --strict</code> locally before pushing; it fails on any broken nav entry or image link, which is the easiest way to catch a typo'd path.</p>
 <h2 id="adding-to-these-docs">Adding to these docs<a class="headerlink" href="#adding-to-these-docs" title="Permanent link">&para;</a></h2>

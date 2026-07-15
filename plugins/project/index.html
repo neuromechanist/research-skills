@@ -852,7 +852,7 @@
 
 
 <h1 id="project">Project<a class="headerlink" href="#project" title="Permanent link">&para;</a></h1>
-<p>The <code>project</code> plugin is the marketplace's development-lifecycle toolkit: initialization, epic/sprint workflow, PR review, CI/CD scaffolding, and a set of core engineering-workflow skills (onboarding, planning, the day-to-day change loop, debugging, and multi-agent orchestration).</p>
+<p>The <code>project</code> plugin is the marketplace's development-lifecycle toolkit: initialization, cross-agent user instructions, tiered model routing, epic/sprint workflow, PR review, CI/CD scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, and multi-agent orchestration.</p>
 <h2 id="epics-phases-and-worktrees">Epics, phases, and worktrees<a class="headerlink" href="#epics-phases-and-worktrees" title="Permanent link">&para;</a></h2>
 <p>Complex, multi-phase features are epics: one epic issue, broken into phase sub-issues, each developed in its own git worktree so phases can run in parallel without stepping on each other's working tree.</p>
 <p><img alt="Epic branching: main branches to an epic branch, which branches into phases P1 through P6, which integrate back into the epic branch before merging to main" src="../../assets/diagrams/epic-branching.svg" /></p>
@@ -864,28 +864,30 @@
 <h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>init-project</strong>: scaffold new projects with <code>AGENTS.md</code>, a Claude Code <code>CLAUDE.md</code> import wrapper, <code>.rules/</code>, <code>.context/</code>, and config files</li>
-<li><strong>update-rules</strong>: non-destructive sync of <code>AGENTS.md</code>, the <code>CLAUDE.md</code> adapter, and <code>.rules/</code> against the latest templates at user or project level</li>
+<li><strong>update-rules</strong>: non-destructive project sync of <code>AGENTS.md</code>, the <code>CLAUDE.md</code> adapter, and <code>.rules/</code>; user-level setup delegates to <code>install-user-instructions</code></li>
+<li><strong>install-user-instructions</strong>: ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure, then preview and install shared personal defaults at each documented user surface without copying them into downstream repositories</li>
 <li><strong>epic-dev</strong>: the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery</li>
 <li><strong>workflow-reference</strong>: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows</li>
 <li><strong>pr-review-toolkit</strong>: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification</li>
 <li><strong>codebase-onboarding</strong>: verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions</li>
-<li><strong>implementation-planning</strong>: plans a weaker model could execute: two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list</li>
+<li><strong>implementation-planning</strong>: strongest-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list</li>
 <li><strong>engineering-loop</strong>: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons</li>
 <li><strong>debugging</strong>: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)</li>
-<li><strong>agent-fanout</strong>: orchestrating subagents and teammates within a session: spawning/messaging mechanics, a role taxonomy with worker-tier model routing, full-lifecycle briefing templates, and a hard cap of 40 agents per run computed before launch. This is a different pattern from the epic/worktree fan-out above; it's in-session delegation, not a git-tracked multi-phase workflow.</li>
+<li><strong>agent-fanout</strong>: orchestrating subagents and teammates within a session with explicit model tiers: Claude Fable/Opus lead and Sonnet workers; Codex Sol lead, Terra approved-plan elaboration, and Luna workers. It adds full-lifecycle briefs, mechanical gates, lead verification, mandatory cleanup of completed one-off agents, and a hard cap of 40 agents per run. This is in-session delegation, distinct from the git-tracked epic/worktree workflow above.</li>
 <li><strong>ci-scaffolding</strong>: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)</li>
 <li><strong>docker-packaging</strong>: multi-stage Dockerfiles with uv/bun, health checks, and security hardening</li>
 <li><strong>security-audit</strong>: credential scanning, dependency audit, OWASP checklist, configuration hardening</li>
 <li><strong>document-processing</strong>: PDF/image OCR, text extraction, markdown conversion</li>
 </ul>
-<p>Includes autonomous agents: <strong>dependency-auditor</strong> (vulnerability scanning), <strong>release-prep</strong> (pre-release validation), and a Claude-bundled <strong>pr-review-toolkit</strong> reviewer.</p>
+<p>Includes autonomous agents: <strong>dependency-auditor</strong> (vulnerability scanning), <strong>release-prep</strong> (pre-release validation), and a Claude-bundled <strong>pr-review-toolkit</strong> reviewer. Codex receives opt-in Terra phase-planner and Luna implementation-worker TOML templates; Copilot exposes matching agent profiles through its native plugin manifest.</p>
 <h2 id="try-it">Try it<a class="headerlink" href="#try-it" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>/init-project &quot;Python EEG analysis package&quot;
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>/update-rules project
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>/epic-dev &quot;build a community dashboard&quot;
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>/release-prep --minor
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>&quot;Set up CI for this Python project with ruff and pytest&quot;
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>&quot;Process scanned-document.pdf and convert to markdown&quot;
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>&quot;Install user instructions for Claude Code, Codex, Copilot, and Cursor&quot;
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>/epic-dev &quot;build a community dashboard&quot;
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>/release-prep --minor
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>&quot;Set up CI for this Python project with ruff and pytest&quot;
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>&quot;Process scanned-document.pdf and convert to markdown&quot;
 </code></pre></div>
 <h2 id="learn-more">Learn more<a class="headerlink" href="#learn-more" title="Permanent link">&para;</a></h2>
 <p>The <a href="https://courses.osc.earth/agentic-research/">Agentic Research Course</a> week 3, "Project Management with AI," covers epics, sprints, and worktrees hands-on.</p>

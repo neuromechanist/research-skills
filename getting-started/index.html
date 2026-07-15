@@ -405,6 +405,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#optional-personal-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional personal defaults
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -860,6 +871,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#optional-personal-defaults" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional personal defaults
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -932,6 +954,14 @@
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>copilot<span class="w"> </span>plugin<span class="w"> </span>marketplace<span class="w"> </span>browse<span class="w"> </span>research-skills
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>copilot<span class="w"> </span>plugin<span class="w"> </span>install<span class="w"> </span>project@research-skills
 </code></pre></div>
+<h3 id="optional-personal-defaults">Optional personal defaults<a class="headerlink" href="#optional-personal-defaults" title="Permanent link">&para;</a></h3>
+<p>After installing the project plugin, ask it to install user-level instructions:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Install my user instructions for Claude Code, Codex, Copilot CLI, and Cursor.
+</code></pre></div>
+<p>The <code>install-user-instructions</code> skill asks which systems you actually want,
+previews each change, and uses the documented user surface for each tool.
+General personal defaults stay at user scope; repository <code>AGENTS.md</code> and
+tool-specific adapters keep only project facts and deltas.</p>
 <p>See <a href="../cross-agent-compatibility/">Cross-Agent Compatibility</a> for the researched registration paths and source links behind each of these install commands.</p>
 <h2 id="skills-vs-commands">Skills vs. commands<a class="headerlink" href="#skills-vs-commands" title="Permanent link">&para;</a></h2>
 <p>This marketplace follows a skills-first surface: skills auto-trigger from natural-language intent, described by matching the task you describe against each skill's frontmatter. There is no explicit invocation step for most work. Commands exist only where a workflow needs an explicit <code>/command args</code> entry point: project init, epic/sprint management, and version bumps.</p>

@@ -727,6 +727,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#claude-code-model-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude Code model routing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-markdown-bodies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Markdown bodies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sources" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -843,6 +876,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#claude-code-model-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Claude Code model routing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-markdown-bodies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Markdown bodies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sources" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -884,6 +950,45 @@
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>Append Claude-only plugin, skill, command, or MCP guidance here.
 </code></pre></div>
+<p>General personal defaults belong at user scope, not copied into every
+repository. The project plugin's <code>install-user-instructions</code> skill asks which
+systems to configure, previews each destination, and manages only a marked
+block while preserving surrounding content.</p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Supported user instruction surface</th>
+<th>Verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude Code</td>
+<td><code>${CLAUDE_CONFIG_DIR:-~/.claude}/CLAUDE.md</code></td>
+<td><code>/memory</code></td>
+</tr>
+<tr>
+<td>OpenAI Codex</td>
+<td><code>${CODEX_HOME:-~/.codex}/AGENTS.md</code></td>
+<td>Start a fresh Codex run and ask it to summarize current instructions</td>
+</tr>
+<tr>
+<td>GitHub Copilot CLI</td>
+<td><code>${COPILOT_HOME:-~/.copilot}/copilot-instructions.md</code></td>
+<td><code>/instructions</code></td>
+</tr>
+<tr>
+<td>Cursor</td>
+<td><strong>Cursor Settings &gt; Rules</strong> (User Rules)</td>
+<td>Inspect User Rules, then start a fresh Agent chat</td>
+</tr>
+</tbody>
+</table>
+<p>Cursor does not document a stable editable file path for UI User Rules, so the
+installer provides a copy/paste block instead of fabricating a home-directory
+file. Repository <code>.cursor/rules</code> remains project-scoped, while <code>.cursorrules</code>
+is legacy.</p>
 <h2 id="claude-code">Claude Code<a class="headerlink" href="#claude-code" title="Permanent link">&para;</a></h2>
 <p>Claude Code uses the existing marketplace manifest:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>claude<span class="w"> </span>plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>neuromechanist/research-skills
@@ -896,7 +1001,14 @@
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>codex<span class="w"> </span>plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>./path/to/research-skills
 </code></pre></div>
 <p>Codex skills are directories containing <code>SKILL.md</code> files with <code>name</code> and <code>description</code> frontmatter. The native <code>.codex-plugin/plugin.json</code> manifests point at the existing <code>plugins/&lt;name&gt;/skills/</code> trees. Claude-specific commands and agents stay declared in the <code>.claude-plugin/plugin.json</code> manifests; Copilot agent templates are exposed through native <code>.github/plugin/plugin.json</code> manifests.</p>
-<p>Codex custom subagents are separate from plugin skills. Current Codex docs define custom agents as standalone TOML files under <code>~/.codex/agents/</code> for personal scope or <code>.codex/agents/</code> for project scope, with required <code>name</code>, <code>description</code>, and <code>developer_instructions</code> fields. Codex only spawns subagents when explicitly asked, and <code>/agent</code> is used in the CLI to inspect or switch active agent threads. For review/QA surfaces in this marketplace, keep <code>agents/templates/*.toml</code> as opt-in Codex custom-agent templates; installing the plugin exposes the skill, not the subagent.</p>
+<p>Codex custom subagents are separate from plugin skills. Current Codex docs define custom agents as standalone TOML files under <code>~/.codex/agents/</code> for personal scope or <code>.codex/agents/</code> for project scope, with required <code>name</code>, <code>description</code>, and <code>developer_instructions</code> fields. Optional fields include <code>model</code>, <code>model_reasoning_effort</code>, sandbox settings, MCP servers, and skills. <code>/agent</code> inspects and switches active threads. For review/QA surfaces in this marketplace, keep <code>agents/templates/*.toml</code> as opt-in Codex custom-agent templates.</p>
+<p>The project workflow routes Codex roles by capability: Sol for architecture,
+observation, supervision, and synthesis; Terra for bounded phase-plan
+elaboration after architecture approval; and Luna for clear, repeatable
+implementation, focused tests, routine review, and validation. Exact aliases
+are used only when the current account exposes them. The project plugin ships
+opt-in <code>phase-planner.toml</code> and <code>implementation-worker.toml</code> templates that pin
+Terra and Luna for local Codex custom agents.</p>
 <h2 id="github-copilot-cli">GitHub Copilot CLI<a class="headerlink" href="#github-copilot-cli" title="Permanent link">&para;</a></h2>
 <p>Copilot CLI supports marketplaces through <code>.github/plugin/marketplace.json</code> and also looks for <code>.claude-plugin/marketplace.json</code>. This repo includes <code>.github/plugin/marketplace.json</code> for the native Copilot path:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>copilot<span class="w"> </span>plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>neuromechanist/research-skills
@@ -905,16 +1017,41 @@
 </code></pre></div>
 <p>Copilot CLI plugin manifests support component path fields including <code>skills</code>, <code>commands</code>, and <code>agents</code>; <code>agents</code> points to directories containing <code>.agent.md</code> files. Every plugin in this repo now has a native per-plugin <code>.github/plugin/plugin.json</code> manifest. Plugins with review/QA agents expose <code>agents/templates/</code> as the Copilot <code>agents</code> component path. The <code>agents/*.md</code> files remain Claude Code agent shells; <code>agents/templates/*.agent.md</code> are the Copilot custom-agent files.</p>
 <p>Copilot custom-agent files use YAML frontmatter where <code>description</code> is required and the Markdown body defines the agent behavior. Optional frontmatter includes <code>name</code>, <code>tools</code>, <code>model</code>, <code>target</code>, <code>disable-model-invocation</code>, and <code>user-invocable</code>. Keep review/QA agent descriptions scoped to "invoked by the <code>&lt;skill&gt;</code> skill" so the skill remains the cross-agent trigger owner.</p>
+<p>The native project plugin also exposes phase-planner and
+implementation-worker Copilot profiles. They use capability-class language
+instead of hard-coded model names because available Copilot model identifiers
+vary by environment.</p>
+<h2 id="claude-code-model-routing">Claude Code model routing<a class="headerlink" href="#claude-code-model-routing" title="Permanent link">&para;</a></h2>
+<p>Claude Code uses Fable when available, otherwise Opus or <code>best</code>, for macro
+design, observation, supervision, and synthesis. Sonnet implements approved,
+detailed plans and performs routine focused review. Any unresolved architecture
+or high-risk invariant escalates back to the lead model.</p>
+<h2 id="agent-lifecycle">Agent lifecycle<a class="headerlink" href="#agent-lifecycle" title="Permanent link">&para;</a></h2>
+<p>All supported systems should close/remove completed one-off agents after their
+reports are incorporated. Retain an agent only for a named recurring role with
+a concrete next task. This avoids stale agent fleets and makes the active
+workflow observable.</p>
+<h2 id="github-markdown-bodies">GitHub Markdown bodies<a class="headerlink" href="#github-markdown-bodies" title="Permanent link">&para;</a></h2>
+<p>Semantic line breaks remain the default for prose source. GitHub issue and
+pull-request bodies are the exception because physical newlines can affect
+rendering: keep each paragraph on one source line, separate paragraphs with
+blank lines, and do not insert sentence- or clause-level newlines inside a
+paragraph.</p>
 <h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
 <ul>
 <li>OpenAI Codex AGENTS.md guide: https://developers.openai.com/codex/guides/agents-md</li>
 <li>OpenAI Codex plugin build guide: https://developers.openai.com/codex/plugins/build</li>
 <li>OpenAI Codex skills guide: https://developers.openai.com/codex/skills</li>
 <li>OpenAI Codex subagents guide: https://developers.openai.com/codex/subagents</li>
+<li>Anthropic Claude Code memory guide: https://code.claude.com/docs/en/memory</li>
+<li>Anthropic Claude Code subagents guide: https://code.claude.com/docs/en/sub-agents</li>
 <li>GitHub Copilot repository instructions: https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions</li>
+<li>GitHub Copilot CLI user instructions: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions</li>
+<li>GitHub Copilot CLI config directory: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference</li>
 <li>GitHub Copilot custom instructions support: https://docs.github.com/en/copilot/reference/custom-instructions-support</li>
 <li>GitHub Copilot custom agents configuration: https://docs.github.com/en/copilot/reference/custom-agents-configuration</li>
 <li>GitHub Copilot CLI plugin reference: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference</li>
+<li>Cursor rules: https://docs.cursor.com/context/rules</li>
 </ul>
 
 
