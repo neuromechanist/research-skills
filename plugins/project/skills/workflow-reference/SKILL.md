@@ -29,6 +29,17 @@ agent-fanout (parallel implementers, one worktree each), engineering-loop
 (the inner loop within a phase), debugging (when a phase's tests fail for
 unclear reasons).
 
+## Model handoff by phase
+
+The lead model owns epic decomposition, architecture, observation,
+approval-gate decisions, verification, and synthesis. In Codex use Sol; in
+Claude use Fable when available, otherwise Opus. Once architecture is approved,
+an intermediate planner may produce the detailed phase brief (Codex Terra;
+Claude Sonnet only when no design judgment remains). A named worker implements
+that brief in the isolated worktree (Codex Luna or Claude Sonnet). Fresh worker
+reviewers validate each phase, while high-risk or architectural findings return
+to the lead. Close/remove one-off agents after their reports are incorporated.
+
 ## Branch Strategy Decision Tree
 
 Determine the integration branch and branching model:
@@ -114,6 +125,11 @@ git worktree list | grep -q "{branch-name}" && echo "EXISTS" || echo "NEW"
 ```
 
 ## GitHub Operations
+
+Semantic line breaks remain the default for prose source. GitHub issue and
+pull-request bodies are the exception: keep each paragraph on one source line,
+separate paragraphs with blank lines, and do not insert sentence- or
+clause-level newlines inside a paragraph.
 
 **Create epic issue:**
 ```bash

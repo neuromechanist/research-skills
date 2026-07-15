@@ -13,7 +13,9 @@ Update existing AGENTS.md/CLAUDE.md and .rules/ files from the latest plugin tem
 - After plugin templates have been updated with new rules or improvements
 - When adding a rule file introduced after initial project setup
 - When checking if project rules are current with latest best practices
-- When updating global (`~/.claude/CLAUDE.md`) development instructions
+- When checking existing project rules against newer templates. For installing
+  or updating user-level instructions across Claude, Codex, Copilot, or Cursor,
+  use `install-user-instructions` instead.
 - When a user wants to know what changed in the templates since they last synced
 
 ## Two Operating Levels
@@ -37,20 +39,11 @@ Update the current project's configuration:
 
 ### User Level (`/update-rules user`)
 
-Update global development instructions:
-
-1. **Section analysis** -- Extract sections from `~/.claude/CLAUDE.md` and compare against template best practices and core principles.
-
-2. **Best practice suggestions:**
-   - New tool recommendations from templates
-   - New `[NEVER DO THIS]` entries (compare item-by-item)
-   - Updated workflow steps
-   - Sections in templates with no equivalent in user config
-
-3. **What gets compared:**
-   - User file sections vs template AGENTS.md sections
-   - Template rules that have universal applicability (testing.md, git.md)
-   - Use `references/section-mapping.md` for cross-referencing sections
+Delegate to `install-user-instructions`. That skill detects and asks which of
+Claude Code, Codex, GitHub Copilot CLI, and Cursor the user wants to configure,
+previews non-destructive managed-block changes, and prevents general defaults
+from being copied into downstream projects. Do not silently interpret `user`
+as Claude-only.
 
 ## Comparison Workflow
 
@@ -66,10 +59,9 @@ For project level:
 - Read CLAUDE.md to verify it imports AGENTS.md with `@AGENTS.md` and contains only Claude-specific additions
 - Run `diff --unified "$(project-templates-path)/claude/rules/<file>" ".rules/<file>"` for each changed rule
 
-For user level:
-- Read `~/.claude/CLAUDE.md` in full
-- Read template AGENTS.md and relevant rule files for best-practice content
-- Use `references/section-mapping.md` to map template sections to user sections
+For user level, stop this comparison workflow and use
+`install-user-instructions`. Read only the selected systems' targets and
+platform reference after the user chooses them.
 
 ### Step 3: Present Update Plan
 
@@ -109,4 +101,6 @@ For AGENTS.md: sections that still contain `{{PLACEHOLDERS}}` were never customi
 
 ### Reference Files
 
-- **`references/section-mapping.md`** -- Maps template AGENTS.md sections to user CLAUDE.md sections for intelligent cross-level comparison
+- **`references/section-mapping.md`** -- Legacy Claude user-file mapping kept
+  for older installations. New cross-agent user setup belongs to
+  `install-user-instructions`.

@@ -29,8 +29,10 @@ tool's section; the concepts transfer.
 - `subagent_type`: `Explore` for read-only search, `Plan` for architecture
   plans, `general-purpose` for implementation, or a plugin agent such as
   `project:pr-review-toolkit` for reviews.
-- `model`: set `sonnet` for explorers, implementers, reviewers, validators.
-  OMIT it for Plan agents so they inherit the session model.
+- `model`: use Fable/Opus (or inherit a strongest-tier session) for macro
+  architecture, Sonnet for approved-plan implementation and routine review.
+  A phase-plan elaborator may use Sonnet only when every architecture decision
+  is already fixed; otherwise it inherits the lead model.
 - `name`: set a role-descriptive name (`engine-scout`, `fix-661`,
   `phase2-reviewer`) whenever you may need to follow up. A transcript that
   reads "engine-scout reported X" stays legible.
@@ -60,14 +62,55 @@ idle/completion notifications happen; verify against what you already
 received and acknowledge duplicates explicitly ("confirmed duplicate, nothing
 further needed") rather than redoing work.
 
-## Codex CLI and other tools without native subagents
+After harvesting a final report, stop/remove the agent unless it has a named
+recurring role and a concrete next task. Do not retain completed agents merely
+because they might be useful later.
 
-Plugin installs expose skills, not subagents. Two options:
+## OpenAI Codex
 
-1. **Configured agents**: copy the plugin's `agents/templates/*.toml` (Codex)
-   or `agents/templates/*.agent.md` (Copilot) into `.codex/agents/` /
-   `.github/agents/` and invoke them where the surface supports it.
-2. **Sequential fresh contexts (always works)**: run each role's prompt from
+Current Codex clients support native subagents and personal or project custom
+agents. Put standalone TOML agent files under `~/.codex/agents/` (personal) or
+`.codex/agents/` (project). Each file requires `name`, `description`, and
+`developer_instructions`; it may also set `model`, `model_reasoning_effort`,
+`sandbox_mode`, MCP servers, and skills.
+
+Route roles explicitly when the current account exposes the aliases:
+
+- lead/architect/observer/synthesizer: `gpt-5.6-sol`;
+- bounded phase-plan elaborator: `gpt-5.6-terra`;
+- detailed implementation, focused tests, routine review, validation:
+  `gpt-5.6-luna`.
+
+Use the built-in `explorer` for bounded read-heavy mapping and `worker` for
+execution when custom role files are unnecessary. Use `/agent` in the CLI, or
+the corresponding agent controls in the app/IDE, to inspect, steer, stop, and
+close threads. After collecting a report, close the thread unless the plan
+names an immediate follow-up.
+
+If the spawn surface does not expose a per-call model choice, select a custom
+agent whose TOML pins the intended model. If the exact alias is unavailable,
+preserve the role class: strongest lead, intermediate elaborator, clear-task
+worker. This plugin ships opt-in `phase-planner.toml` (Terra) and
+`implementation-worker.toml` (Luna) under `agents/templates/`; copy them to the
+Codex user or project agent directory before use.
+
+## GitHub Copilot CLI
+
+Copilot personal agents live under `~/.copilot/agents/`; project agents live
+under `.github/agents/`. Set the optional `model` frontmatter field only when
+the selected Copilot environment exposes a stable model identifier. Otherwise
+use the strongest/balanced/worker capability classes from the main skill. Use
+`/agent` to inspect and switch agents, and remove completed one-off agents when
+their reports are incorporated. The plugin exposes matching `phase-planner`
+and `implementation-worker` agent profiles through its native Copilot manifest.
+
+## Tools without native subagents
+
+Two options:
+
+1. **Configured agents**: copy or adapt the plugin's agent templates into the
+   current tool's user or project agent directory.
+2. **Sequential fresh contexts**: run each role's prompt from
    `fanout-prompts.md` as its own fresh session or context, in dependency
    order: explorers first, then planner, then implementers (one per worktree,
    still isolated via git worktrees), then reviewers. You lose wall-clock

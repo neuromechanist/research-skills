@@ -68,7 +68,9 @@ Tests: [named cases to add]. Gates: [format cmd], [lint cmd], [typecheck cmd]
 
 Commits: atomic, subject under 50 chars, no emojis, no AI attribution.
 Push, open a PR against [base] with `gh pr create` ("Closes #N", what/why/how
-tested). Do NOT merge.
+tested). GitHub-body exception: keep each paragraph on one source line with
+blank lines between paragraphs; do not apply sentence/clause semantic line
+breaks inside a paragraph. Do NOT merge.
 
 Report: PR URL, what you implemented, exact test commands and counts, and any
 deviations from this brief with reasons. Send as final message text.
@@ -113,7 +115,8 @@ merge.
 2. IMPORTANT: ...
 3. COMMENT FIX: [stale doc claim].
 4. NO ACTION (logged): [finding]: belongs to #[M]; add one sentence to the
-   PR body and a comment on #[M].
+   PR body and a comment on #[M]. Keep every GitHub paragraph on one source
+   line; use blank lines only between paragraphs.
 EXPLICITLY REJECTED (rationale): [finding]: [one sentence why].
 
 Reply with: commit hash, test counts, and anything you disagreed with and why

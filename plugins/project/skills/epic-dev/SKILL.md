@@ -17,6 +17,15 @@ variation details, then follow this procedure as the execution contract.
 - Track progress with the active planning tool when available.
 - Do not use `codex/` branch prefixes. Prefer `feature/issue-{N}-...`, `patch/...`, or `chore/...` per project rules.
 - Do not use emojis in issues, PRs, commits, or generated state.
+- Keep the lead on Sol (or the strongest available model) for epic design,
+  observation, approvals, supervision, load-bearing verification, and final
+  synthesis. Use Terra only to elaborate an approved phase architecture, and
+  Luna for detailed implementation, focused review, and validation. Escalate
+  unresolved design or high-risk invariants per `agent-fanout`.
+- Semantic line breaks remain the default for prose source, except GitHub issue
+  and pull-request bodies. In GitHub bodies, keep each paragraph on one source
+  line, separate paragraphs with blank lines, and do not insert sentence- or
+  clause-level newlines inside a paragraph.
 
 ## Phase 0: Repository Detection
 
@@ -80,8 +89,12 @@ For each phase, starting from the current state:
 
 1. Create or reuse the phase worktree from the epic branch.
 2. Mark the phase `in_progress`.
-3. Build an implementation plan scoped only to this phase and ask for approval.
-4. Implement in the phase worktree using absolute paths.
+3. Have the lead define the phase architecture and open judgment calls. After
+   approval, a Terra phase planner may expand it into exact files, decisions,
+   tests, and gates. Ask for approval of the worker-executable plan.
+4. Delegate implementation in the isolated phase worktree to a named Luna
+   worker using the full lifecycle brief from `agent-fanout`. The lead does not
+   hand over unresolved design choices.
 5. Add focused tests for changed behavior and run the relevant verification.
 6. Commit atomic changes with concise messages.
 7. Push and create a PR targeting the epic branch:
@@ -91,9 +104,13 @@ For each phase, starting from the current state:
    gh pr create --base {epic_branch} --title "Phase {X}: {title}" --body "{body}"
    ```
 
-8. Invoke `pr-review-toolkit` for the phase PR. Fix critical issues before merging unless the user explicitly chooses otherwise.
+8. Invoke `pr-review-toolkit` with a fresh Luna reviewer for the phase PR. Use
+   Terra or Sol for security, concurrency, authorization, data-integrity, or
+   unresolved architectural findings. The lead verifies the headline finding
+   before dispatching a fix.
 9. Squash merge the phase PR only after checks and critical review issues are resolved.
-10. Update state, remove the phase worktree, and continue to the next phase.
+10. Update state, remove the phase worktree, close/remove completed one-off
+    agent threads, and continue to the next phase.
 
 ## Phase 3: Epic Finalization
 
@@ -104,7 +121,8 @@ For each phase, starting from the current state:
 5. Merge the final PR with a regular merge (`--merge`) to preserve per-phase history; only squash if the user explicitly asks.
 6. Close the epic issue if GitHub did not close it automatically.
 7. Remove the epic worktree.
-8. Archive or delete the local state file after confirming the workflow is complete.
+8. Close/remove completed one-off agent threads, then archive or delete the
+   local state file after confirming the workflow is complete.
 
 ## Error Handling
 

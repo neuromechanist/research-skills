@@ -42,6 +42,19 @@ copilot plugin marketplace browse research-skills
 copilot plugin install project@research-skills
 ```
 
+### Optional personal defaults
+
+After installing the project plugin, ask it to install user-level instructions:
+
+```text
+Install my user instructions for Claude Code, Codex, Copilot CLI, and Cursor.
+```
+
+The `install-user-instructions` skill asks which systems you actually want,
+previews each change, and uses the documented user surface for each tool.
+General personal defaults stay at user scope; repository `AGENTS.md` and
+tool-specific adapters keep only project facts and deltas.
+
 See [Cross-Agent Compatibility](cross-agent-compatibility.md) for the researched registration paths and source links behind each of these install commands.
 
 ## Skills vs. commands

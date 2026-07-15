@@ -16,6 +16,23 @@ Use `AGENTS.md` as the shared source of truth for repository instructions. Codex
 Append Claude-only plugin, skill, command, or MCP guidance here.
 ```
 
+General personal defaults belong at user scope, not copied into every
+repository. The project plugin's `install-user-instructions` skill asks which
+systems to configure, previews each destination, and manages only a marked
+block while preserving surrounding content.
+
+| System | Supported user instruction surface | Verification |
+| --- | --- | --- |
+| Claude Code | `${CLAUDE_CONFIG_DIR:-~/.claude}/CLAUDE.md` | `/memory` |
+| OpenAI Codex | `${CODEX_HOME:-~/.codex}/AGENTS.md` | Start a fresh Codex run and ask it to summarize current instructions |
+| GitHub Copilot CLI | `${COPILOT_HOME:-~/.copilot}/copilot-instructions.md` | `/instructions` |
+| Cursor | **Cursor Settings > Rules** (User Rules) | Inspect User Rules, then start a fresh Agent chat |
+
+Cursor does not document a stable editable file path for UI User Rules, so the
+installer provides a copy/paste block instead of fabricating a home-directory
+file. Repository `.cursor/rules` remains project-scoped, while `.cursorrules`
+is legacy.
+
 ## Claude Code
 
 Claude Code uses the existing marketplace manifest:
@@ -38,7 +55,15 @@ codex plugin marketplace add ./path/to/research-skills
 
 Codex skills are directories containing `SKILL.md` files with `name` and `description` frontmatter. The native `.codex-plugin/plugin.json` manifests point at the existing `plugins/<name>/skills/` trees. Claude-specific commands and agents stay declared in the `.claude-plugin/plugin.json` manifests; Copilot agent templates are exposed through native `.github/plugin/plugin.json` manifests.
 
-Codex custom subagents are separate from plugin skills. Current Codex docs define custom agents as standalone TOML files under `~/.codex/agents/` for personal scope or `.codex/agents/` for project scope, with required `name`, `description`, and `developer_instructions` fields. Codex only spawns subagents when explicitly asked, and `/agent` is used in the CLI to inspect or switch active agent threads. For review/QA surfaces in this marketplace, keep `agents/templates/*.toml` as opt-in Codex custom-agent templates; installing the plugin exposes the skill, not the subagent.
+Codex custom subagents are separate from plugin skills. Current Codex docs define custom agents as standalone TOML files under `~/.codex/agents/` for personal scope or `.codex/agents/` for project scope, with required `name`, `description`, and `developer_instructions` fields. Optional fields include `model`, `model_reasoning_effort`, sandbox settings, MCP servers, and skills. `/agent` inspects and switches active threads. For review/QA surfaces in this marketplace, keep `agents/templates/*.toml` as opt-in Codex custom-agent templates.
+
+The project workflow routes Codex roles by capability: Sol for architecture,
+observation, supervision, and synthesis; Terra for bounded phase-plan
+elaboration after architecture approval; and Luna for clear, repeatable
+implementation, focused tests, routine review, and validation. Exact aliases
+are used only when the current account exposes them. The project plugin ships
+opt-in `phase-planner.toml` and `implementation-worker.toml` templates that pin
+Terra and Luna for local Codex custom agents.
 
 ## GitHub Copilot CLI
 
@@ -54,13 +79,45 @@ Copilot CLI plugin manifests support component path fields including `skills`, `
 
 Copilot custom-agent files use YAML frontmatter where `description` is required and the Markdown body defines the agent behavior. Optional frontmatter includes `name`, `tools`, `model`, `target`, `disable-model-invocation`, and `user-invocable`. Keep review/QA agent descriptions scoped to "invoked by the `<skill>` skill" so the skill remains the cross-agent trigger owner.
 
+The native project plugin also exposes phase-planner and
+implementation-worker Copilot profiles. They use capability-class language
+instead of hard-coded model names because available Copilot model identifiers
+vary by environment.
+
+## Claude Code model routing
+
+Claude Code uses Fable when available, otherwise Opus or `best`, for macro
+design, observation, supervision, and synthesis. Sonnet implements approved,
+detailed plans and performs routine focused review. Any unresolved architecture
+or high-risk invariant escalates back to the lead model.
+
+## Agent lifecycle
+
+All supported systems should close/remove completed one-off agents after their
+reports are incorporated. Retain an agent only for a named recurring role with
+a concrete next task. This avoids stale agent fleets and makes the active
+workflow observable.
+
+## GitHub Markdown bodies
+
+Semantic line breaks remain the default for prose source. GitHub issue and
+pull-request bodies are the exception because physical newlines can affect
+rendering: keep each paragraph on one source line, separate paragraphs with
+blank lines, and do not insert sentence- or clause-level newlines inside a
+paragraph.
+
 ## Sources
 
 - OpenAI Codex AGENTS.md guide: https://developers.openai.com/codex/guides/agents-md
 - OpenAI Codex plugin build guide: https://developers.openai.com/codex/plugins/build
 - OpenAI Codex skills guide: https://developers.openai.com/codex/skills
 - OpenAI Codex subagents guide: https://developers.openai.com/codex/subagents
+- Anthropic Claude Code memory guide: https://code.claude.com/docs/en/memory
+- Anthropic Claude Code subagents guide: https://code.claude.com/docs/en/sub-agents
 - GitHub Copilot repository instructions: https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions
+- GitHub Copilot CLI user instructions: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions
+- GitHub Copilot CLI config directory: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference
 - GitHub Copilot custom instructions support: https://docs.github.com/en/copilot/reference/custom-instructions-support
 - GitHub Copilot custom agents configuration: https://docs.github.com/en/copilot/reference/custom-agents-configuration
 - GitHub Copilot CLI plugin reference: https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-plugin-reference
+- Cursor rules: https://docs.cursor.com/context/rules
