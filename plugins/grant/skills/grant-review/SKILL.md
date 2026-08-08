@@ -1,7 +1,7 @@
 ---
 name: grant-review
-description: This skill should be used when the user asks to "review a grant", "review my proposal", "score this grant", "evaluate my specific aims", "critique my research strategy", "review as an NIH reviewer", "review as an NSF panelist", "give me reviewer feedback", "check my grant proposal", "review my R01", "review my K99", "evaluate my CAREER proposal", "run a mock study section", "review my resubmission", "review this PDF", "check my proposal PDF", "analyze my grant layout", or mentions grant review, proposal critique, NIH scoring, NSF panel review, study section feedback, or proposal PDF review.
-version: 0.1.3
+description: This skill should be used when the user asks to "review a grant", "review my proposal", "score this grant", "evaluate my specific aims", "critique my research strategy", "review as an NIH reviewer", "review as an NSF panelist", "give me reviewer feedback", "check my grant proposal", "review my R01", "review my K99", "review my SBIR", "review my STTR", "review my Phase I application", "review my Phase II application", "review my commercialization plan", "evaluate my CAREER proposal", "run a mock study section", "review my resubmission", "review this PDF", "check my proposal PDF", "analyze my grant layout", or mentions grant review, proposal critique, NIH scoring, NSF panel review, small business grant review, study section feedback, or proposal PDF review.
+version: 0.2.0
 ---
 
 # Grant Proposal Review
@@ -34,6 +34,7 @@ Pick the branch for the current tool. In every branch the reviewer follows `refe
 
 - `references/review-procedure.md` -- step-by-step procedure: mechanism ID, ingest, score, synthesize, output.
 - `references/nih-review-criteria.md`, `references/nih-career-training-criteria.md`, `references/nsf-review-criteria.md` -- criteria and scoring.
+- `references/sbir-sttr-review-criteria.md` -- SBIR/STTR (R41, R42, R43, R44) criteria. These are **not** reviewed under the RPG Simplified Review Framework; they keep the five classic scored criteria plus commercial-potential questions, Commercialization Plan assessment, Phase I milestones, Phase I progress, and Fast-Track acceptability.
 - `references/review-best-practices.md` -- calibration and common reviewer comments.
 - `references/review-output-templates.md` -- NIH and NSF output format.
 - `examples/sample-nih-r01-review.md` -- worked review; `examples/sample-r01-aims.md` -- sample proposal input for testing.
