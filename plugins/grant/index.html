@@ -530,6 +530,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#small-business-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Small business applications
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#skills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -821,6 +832,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#small-business-applications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Small business applications
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#skills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -874,7 +896,7 @@
 
 
 <h1 id="grant">Grant<a class="headerlink" href="#grant" title="Permanent link">&para;</a></h1>
-<p>The <code>grant</code> plugin drafts and reviews NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, and more), plus a figure-QA skill scoped to grant-specific compliance checks.</p>
+<p>The <code>grant</code> plugin drafts and reviews NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, SBIR/STTR, and more), plus a figure-QA skill scoped to grant-specific compliance checks.</p>
 <h2 id="the-proposal-pipeline">The proposal pipeline<a class="headerlink" href="#the-proposal-pipeline" title="Permanent link">&para;</a></h2>
 <p>Writing a proposal is a five-stage managed pipeline, with review findings boomeranging back to an earlier stage rather than being patched in place:</p>
 <p><img alt="Grant pipeline: NOFO, Aims, Strategy, Self-review, Figure QA, with a boomerang from review findings back to an earlier stage" src="../../assets/diagrams/grant-pipeline.svg" /></p>
@@ -896,16 +918,26 @@
 <h2 id="how-nih-scores-a-proposal">How NIH scores a proposal<a class="headerlink" href="#how-nih-scores-a-proposal" title="Permanent link">&para;</a></h2>
 <p><code>grant-review</code>'s NIH rubric mirrors how an actual study section scores a proposal: five criteria, each 1-9, rolled into one integrated impact score.</p>
 <p><img alt="NIH study section scoring: Significance, Investigator, Innovation, Approach, Environment, each scored 1 (exceptional) to 9 (poor), rolled into an integrated impact score" src="../../assets/diagrams/nih-scoring.svg" /></p>
-<p>A 1 in any single criterion does not save a 5 in Approach; reviewers tie everything back to the integrated impact score, not the best individual criterion. (As of the 2025 Simplified Review Framework, RPG mechanisms score three factors, Importance, Rigor &amp; Feasibility, and Expertise &amp; Resources, rather than the five shown here; F fellowships and T training grants follow their own separately revised frameworks. See the <code>grant-review</code> skill for the current mechanism-specific rubric.)</p>
+<p>A 1 in any single criterion does not save a 5 in Approach; reviewers tie everything back to the integrated impact score, not the best individual criterion. (As of the 2025 Simplified Review Framework, RPG mechanisms score three factors, Importance, Rigor &amp; Feasibility, and Expertise &amp; Resources, rather than the five shown here; F fellowships and T training grants follow their own separately revised frameworks. SBIR/STTR mechanisms are outside that framework and keep the five scored criteria shown here, with commercial-potential questions inside each. See the <code>grant-review</code> skill for the current mechanism-specific rubric.)</p>
+<h2 id="small-business-applications">Small business applications<a class="headerlink" href="#small-business-applications" title="Permanent link">&para;</a></h2>
+<p>SBIR and STTR applications are a different genre from a research grant, and the plugin treats them as one.</p>
+<ul>
+<li><strong>Milestones, not hypotheses</strong>: <code>examples/sbir-specific-aims-template.md</code> closes each aim with a quantitative acceptance threshold and a go/no-go condition, and contrasts itself line by line against the hypothesis-driven template.</li>
+<li><strong>The 12-page Commercialization Plan</strong>: required for Phase II, Direct to Phase II, Phase IIB, and Fast-Track, forbidden in a standalone Phase I, and scored. <code>references/commercialization-plan-guide.md</code> walks its six prescribed sections.</li>
+<li><strong>Small business review criteria</strong>: commercial potential is scored inside all five criteria, and additional criteria cover Phase I milestones, Phase I progress, and Fast-Track acceptability.</li>
+<li><strong>Funded samples</strong>: <code>references/niaid-sample-applications.md</code> indexes the NIAID sample applications and summary statements with what to study in each, and <code>scripts/fetch-niaid-samples.sh</code> downloads them on demand. The samples are copyrighted and licensed for nonprofit educational use, so they are referenced rather than redistributed.</li>
+</ul>
 <h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>grant-writing</strong>: research strategy guidelines, writing style, budget justification, and resubmission response, with mechanism-specific templates</li>
+<li><strong>grant-writing</strong>: research strategy guidelines, writing style, budget justification, and resubmission response, with mechanism-specific templates, including a milestone-driven aims template and Commercialization Plan guide for small business applications</li>
 <li><strong>grant-review</strong>: the NIH/NSF study-section simulation described above; a thin-dispatch skill with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template; when no agent is configured, the skill runs the same reference procedure inline</li>
 <li><strong>grant-figure-qa</strong>: checks figures for resolution, accessibility, and NIH/NSF compliance, following the same dispatch pattern as <code>grant-review</code></li>
 </ul>
 <h2 id="try-it">Try it<a class="headerlink" href="#try-it" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>&quot;Write the significance section for an R01 on motor cortex&quot;
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>&quot;Review my R21 proposal at proposal.pdf as an NIH study section&quot;
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>&quot;Draft milestone-driven specific aims for an SBIR Phase I&quot;
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>&quot;Write the commercialization plan for my Phase II application&quot;
 </code></pre></div>
 <h2 id="learn-more">Learn more<a class="headerlink" href="#learn-more" title="Permanent link">&para;</a></h2>
 <p>The <a href="https://courses.osc.earth/agentic-research/">Agentic Research Course</a> week 6, "Grant Proposal Writing," walks through NIH/NSF proposals hands-on.</p>
