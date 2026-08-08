@@ -21,6 +21,7 @@ Based on analysis of publicly available NIH review data and reviewer guidance:
 - **K08/K23**: Career development plan is paramount. The research plan should serve as a training vehicle. Evaluate whether the candidate genuinely needs additional mentored experience versus being ready for an R01.
 - **F31/F32**: Training-focused evaluation. Assess the quality of the mentoring plan, the sponsor's track record of training successful researchers, and the training potential of both the applicant and the proposed research. Research plan complexity should match the trainee's career stage.
 - **CAREER (NSF)**: Research-education integration is critical, not an add-on. Evaluate whether the educational plan is original and whether integration is genuinely bidirectional.
+- **SBIR/STTR (R41, R42, R43, R44)**: Score commercial potential alongside the science, in every phase. Do not penalize a Phase I for missing preliminary data; do penalize it for missing measurable milestones. Judge a Phase II on Phase I progress as well as the new plan, and a Fast-Track on whether the transition between phases is governed by numbers. See `sbir-sttr-review-criteria.md`.
 
 ### Resubmission Handling
 - NIH allows one amended application (A1); there is no A2 resubmission

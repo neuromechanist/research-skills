@@ -6,6 +6,8 @@ This reference covers **Research Project Grant (RPG)** mechanisms (R01, R03, R15
 
 Fellowship (F) and career development (K) awards use their **own** revised frameworks, not the three-factor RPG framework below; see `nih-career-training-criteria.md` for those mechanisms.
 
+**Not for small business either.** R41, R42, R43, and R44 are absent from the activity codes NOT-OD-24-010 covers, so Small Business Innovation Research (SBIR) and Small Business Technology Transfer (STTR) applications keep the five separately scored criteria. Do not apply the three factors below to them; see `sbir-sttr-review-criteria.md`.
+
 > **Historical note.** Applications reviewed **before January 25, 2025** used five separately scored criteria (Significance, Investigator(s), Innovation, Approach, Environment), each 1-9. That structure is retained here only as the substance rolled into the three factors below, and may still be relevant when reading an older summary statement or a resubmission whose prior review predates the change.
 
 ## Study Section Process

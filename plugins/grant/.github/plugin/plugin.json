@@ -1,7 +1,7 @@
 {
   "name": "grant",
-  "version": "0.3.6",
-  "description": "Complete grant proposal toolkit: NIH/NSF proposal writing, structured review with scoring criteria, and figure quality assurance",
+  "version": "0.4.0",
+  "description": "Complete grant proposal toolkit: NIH/NSF and SBIR/STTR proposal writing, structured review with scoring criteria, and figure quality assurance",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
@@ -18,6 +18,10 @@
     "writing",
     "specific-aims",
     "research-strategy",
-    "scoring"
+    "scoring",
+    "sbir",
+    "sttr",
+    "small-business",
+    "commercialization"
   ]
 }

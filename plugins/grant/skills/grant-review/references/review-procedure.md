@@ -6,13 +6,16 @@ The step-by-step procedure for reviewing a grant proposal in the style of an NIH
 
 Determine whether the proposal is NIH or NSF, and which mechanism (R01, R21, DP2, CAREER, etc.). This determines the review criteria, scoring system, and expectations.
 
-When the mechanism is not specified in the proposal or by the user, infer from document structure: presence of Specific Aims indicates NIH; a Project Summary with separate Intellectual Merit and Broader Impacts sections indicates NSF. If the mechanism remains ambiguous, ask the user before proceeding.
+When the mechanism is not specified in the proposal or by the user, infer from document structure: presence of Specific Aims indicates NIH; a Project Summary with separate Intellectual Merit and Broader Impacts sections indicates NSF. A Commercialization Plan, an SBIR/STTR Information Form, milestone sentences on the aims page, or a small business named as the applicant organization indicates SBIR/STTR. If the mechanism remains ambiguous, ask the user before proceeding.
+
+For SBIR/STTR, also establish the **application type** (Phase I, Phase II, Direct to Phase II, Phase IIB, or Fast-Track), because the additional review criteria depend on it.
 
 Select the appropriate criteria reference (all in this `references/` directory):
 
 | Mechanism | Criteria Reference |
 |-----------|-------------------|
 | R01, R21, R03, R15, DP2 | `nih-review-criteria.md` |
+| R41, R42, R43, R44 (SBIR/STTR) | `sbir-sttr-review-criteria.md` |
 | K99/R00, K08, K23 | `nih-career-training-criteria.md` |
 | F31, F32 | `nih-career-training-criteria.md` |
 | T32 | `nih-career-training-criteria.md` |
@@ -81,6 +84,8 @@ For RPG mechanisms (R01, R03, R15, R21, U01, etc.), assign scores and assessment
 
 For **K, F, and T mechanisms**, use the scored criteria in `nih-career-training-criteria.md` instead; those awards have their own revised frameworks and are out of scope for the three-factor RPG structure.
 
+For **SBIR/STTR (R41, R42, R43, R44)**, use `sbir-sttr-review-criteria.md`. These mechanisms are not covered by the Simplified Review Framework: score the five classic criteria (Significance, Investigator(s), Innovation, Approach, Environment) 1-9 each, then add the applicable additional criteria (Commercialization Plan, Phase I milestones, Phase I progress, Fast-Track acceptability, administrative attachments).
+
 **NSF Rating:**
 - Excellent / Very Good / Good / Fair / Poor
 - Evaluate Intellectual Merit and Broader Impacts separately
@@ -97,7 +102,7 @@ Synthesize across criteria. Focus on:
 Structure the output according to the appropriate agency template in `review-output-templates.md`. Both NIH and NSF templates follow this general structure:
 
 1. **Summary** - 2-3 sentence proposal overview
-2. **Factor / criterion scores** - For NIH RPGs, Factor 1 and Factor 2 scored 1-9 and Factor 3 assessed as appropriate/sufficient; for K/F, the scored criteria from `nih-career-training-criteria.md`; for NSF, ratings (Excellent-Poor). Include strengths/weaknesses for each
+2. **Factor / criterion scores** - For NIH RPGs, Factor 1 and Factor 2 scored 1-9 and Factor 3 assessed as appropriate/sufficient; for K/F, the scored criteria from `nih-career-training-criteria.md`; for small business (R41/R42/R43/R44), the five scored criteria plus the additional criteria from `sbir-sttr-review-criteria.md`; for NSF, ratings (Excellent-Poor). Include strengths/weaknesses for each
 3. **Additional review criteria** - Non-scored items (human subjects, data management, rigor)
 4. **Layout and space utilization** (only when a PDF was provided; omit this section entirely for Markdown or LaTeX inputs) - Observations on figure sizing, whitespace usage, areas where space could be saved or better utilized, and whether the proposal makes effective use of its page limits
 5. **Actionable improvements** - Prioritized as Critical, Important, and Suggested
@@ -127,6 +132,7 @@ When the proposal text triggers reviewer comments about "writing quality", "lack
 
 - `nih-review-criteria.md` - Complete NIH review criteria, scoring rubric, and study section process
 - `nih-career-training-criteria.md` - Review criteria for K, F, and T32 mechanisms
+- `sbir-sttr-review-criteria.md` - Review criteria for SBIR/STTR (R41, R42, R43, R44), with recurring criticism patterns from funded small-business summary statements
 - `nsf-review-criteria.md` - Complete NSF review criteria and panel process
 - `review-best-practices.md` - Best practices, common reviewer comments, and calibration guidance
 - `review-output-templates.md` - NIH and NSF review output format templates

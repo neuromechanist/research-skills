@@ -72,6 +72,25 @@
 - **Key Sections:** Same as K08, with emphasis on patient-oriented research training
 - **Distinction from K08:** K23 focuses on patient-oriented research; K08 is broader (basic, translational, or clinical)
 
+### R43 / R41 (SBIR / STTR Phase I)
+- **For:** United States small business concerns. R43 is SBIR; R41 is STTR, which additionally requires a partnership with a non-profit research institution
+- **Duration:** 6 months to 2 years (statutory guideline; the NOFO states the default)
+- **Page Limits:** Specific Aims (1 page), Research Strategy (6 pages). A Commercialization Plan is **not allowed**
+- **Budget:** Statutory guideline, adjusted periodically; Institutes may set their own limits and NIH holds waivers for approved topics
+- **Preliminary Data:** Not required
+- **Focus:** Feasibility, technical merit, and commercial potential
+- **Key:** Aims are milestone-driven, not hypothesis-driven. Commercial potential and business capability are scored even though no Commercialization Plan is submitted
+- See `references/sbir-sttr-requirements.md` and `examples/sbir-specific-aims-template.md`
+
+### R44 / R42 (SBIR / STTR Phase II, Fast-Track, Direct to Phase II)
+- **For:** Continuation of Phase I work, or Direct to Phase II where feasibility is already established without a prior SBIR/STTR Phase I award for that project
+- **Duration:** 1 to 3 years (statutory guideline; the NOFO states the default)
+- **Page Limits:** Specific Aims (1 page), Research Strategy (12 pages), Commercialization Plan (12 pages, **required**)
+- **Budget:** Statutory guideline, adjusted periodically; per-Institute ceilings and waivers apply
+- **Preliminary Data:** Phase I results are central; a Fast-Track's Phase I portion is expected to include preliminary data
+- **Key:** Reviewed on Phase I progress as well as the new plan. Fast-Track acceptability is assessed separately and can fail on business readiness alone
+- See `sbir-sttr-requirements.md` and `commercialization-plan-guide.md`
+
 ### R24 (Resource-Related Research)
 - **Duration:** Up to 5 years
 - **Page Limits:** Specific Aims (1 page), Research Strategy (12 pages)
@@ -93,6 +112,8 @@
 7. **Equipment**
 
 ## Review Criteria (RPG Simplified Review Framework, NOT-OD-24-010)
+
+> **Not for small business.** R41, R42, R43, and R44 are absent from the activity codes NOT-OD-24-010 covers. Small-business applications are still scored on the five classic criteria plus small-business-specific questions; see `sbir-sttr-requirements.md` and the `grant-review` skill's `references/sbir-sttr-review-criteria.md`.
 
 For Research Project Grants (R01, R03, R15, R21, U01, etc.) with due dates on or after 2025-01-25, reviewers evaluate three factors:
 

@@ -1,7 +1,7 @@
 ---
 name: grant-writing
-description: This skill should be used when the user asks to "write a grant proposal", "draft specific aims", "write a research strategy", "create an NIH proposal", "create an NSF proposal", "write a significance section", "write an innovation section", "write an approach section", "draft a DP2 essay", "write an R01", "write an R21", "write a K99", "write an R03", "write a K08", "write a K23", "write an F31", "write an F32", "write a CAREER proposal", "write preliminary data", "write rigor and reproducibility", "draft potential problems and alternatives", "write a budget justification", "respond to reviewer comments", "write a resubmission introduction", "strengthen my specific aims", "format grant text", or mentions grant writing, proposal drafting, specific aims, research strategy sections, or any NIH/NSF mechanism.
-version: 0.1.2
+description: This skill should be used when the user asks to "write a grant proposal", "draft specific aims", "write a research strategy", "create an NIH proposal", "create an NSF proposal", "write a significance section", "write an innovation section", "write an approach section", "draft a DP2 essay", "write an R01", "write an R21", "write a K99", "write an R03", "write a K08", "write a K23", "write an F31", "write an F32", "write a CAREER proposal", "write an SBIR", "write an STTR", "write an R43, R44, R41, or R42", "write a Phase I or Phase II application", "write a Fast-Track application", "write a commercialization plan", "write SBIR milestones", "write preliminary data", "write rigor and reproducibility", "draft potential problems and alternatives", "write a budget justification", "respond to reviewer comments", "write a resubmission introduction", "strengthen my specific aims", or mentions grant writing, proposal drafting, specific aims, research strategy, small business grants, or any NIH/NSF mechanism.
+version: 0.2.0
 ---
 
 # Grant Writing Skill
@@ -20,6 +20,8 @@ Provides procedural knowledge for drafting NIH and NSF grant proposals with mech
 | NIH | K08/K23 | 1p aims + 12p strategy + candidate section + career goals + mentoring plan |
 | NIH | F31/F32 | 1p aims + 6p strategy + applicant background + sponsor info + training plan |
 | NIH | R24 | 1p aims + 12p strategy (resource-focused) |
+| NIH | R43/R41 (SBIR/STTR Phase I) | 1p milestone-driven aims + 6p strategy; no Commercialization Plan allowed |
+| NIH | R44/R42 (SBIR/STTR Phase II, Fast-Track, Direct to Phase II) | 1p milestone-driven aims + 12p strategy + 12p Commercialization Plan |
 | NSF | Standard | 1p summary + 15p project description |
 | NSF | CAREER | Integrates research + education (see `references/career-award-guide.md`) |
 
@@ -70,6 +72,10 @@ Before drafting, allocate pages across sections. Staying within limits while giv
 - Sponsor and institutional environment: mentor qualifications, training plan, resources
 
 ### Step 2: Draft the Specific Aims page (NIH) or Project Summary (NSF)
+
+**Branch first: is this a small-business application?**
+
+If the mechanism is SBIR or STTR (R41, R42, R43, R44), stop and use `examples/sbir-specific-aims-template.md` instead of the hypothesis-driven template below. Small-business aims are milestone-driven: each aim carries a month window and closes with a quantitative acceptance threshold, with go/no-go conditions where one aim gates the next. Using the hypothesis-driven structure on a small-business application loses points on Approach. See `references/sbir-sttr-requirements.md`.
 
 **NIH Specific Aims (1 page, <650 words):**
 
@@ -212,6 +218,18 @@ Before submitting, verify every item:
 - Research plan follows standard structure but is evaluated in the context of career development
 - See `references/nih-requirements.md` for details
 
+### SBIR/STTR (R41, R42, R43, R44)
+- Milestone-driven aims, not hypotheses: use `examples/sbir-specific-aims-template.md`
+- Reviewed on the five classic criteria (Significance, Investigator(s), Innovation, Approach, Environment), **not** the RPG Simplified Review Framework
+- Commercial potential is scored inside those criteria, in every phase, including Phase I
+- Write for a panel where only some reviewers know the field; all of them score
+- Restate every result that matters inside the Research Strategy; referenced manuscripts and preprints score nothing
+- Phase II, Direct to Phase II, Phase IIB, Fast-Track, and the Commercialization Readiness Pilot require a 12-page Commercialization Plan; a standalone Phase I cannot include one
+- Collect letters of interest from potential customers early, not only from academic collaborators
+- Phase I runs up to 2 years, so a 24 to 30 month scope is often Phase I plus Phase II rather than a Direct to Phase II
+- A Phase I may state an intent to join I-Corps at NIH for customer discovery, which strengthens a later Commercialization Plan
+- See `references/sbir-sttr-requirements.md`, `references/commercialization-plan-guide.md`, and `references/niaid-sample-applications.md`
+
 ### Resubmissions
 - Address reviewer concerns point-by-point in an Introduction (1 page)
 - Bold changes or mark with change bars
@@ -255,11 +273,19 @@ For detailed guidance, consult:
 - **`references/budget-justification-guide.md`** - Budget categories, modular vs detailed, common pitfalls
 - **`references/career-award-guide.md`** - NSF CAREER award requirements and integration guidance
 - **`references/resubmission-guide.md`** - Resubmission strategy, Introduction page format, change marking
+- **`references/sbir-sttr-requirements.md`** - SBIR/STTR program structure, budgets, phase choice, Fast-Track, eligibility, and how small-business review differs
+- **`references/commercialization-plan-guide.md`** - The 12-page Commercialization Plan, section by section, with the criticisms weak plans draw
+- **`references/niaid-sample-applications.md`** - Curated index of the NIAID funded sample applications and summary statements, with what to study in each
 
 ### Example Templates
 
-- **`examples/specific-aims-template.md`** - Annotated specific aims page with placeholders
+- **`examples/specific-aims-template.md`** - Annotated specific aims page with placeholders (hypothesis-driven; **not** for SBIR/STTR)
+- **`examples/sbir-specific-aims-template.md`** - Milestone-driven specific aims for SBIR/STTR, with a contrast table against the generic template
 - **`examples/budget-justification-template.md`** - Modular and detailed budget formats
+
+### Scripts
+
+- **`scripts/fetch-niaid-samples.sh`** - Downloads the NIAID small-business sample applications and summary statements, optionally converting them to markdown. The samples are copyrighted and licensed for nonprofit educational use only, so they are fetched on demand rather than bundled. Manifest: `scripts/niaid-samples.txt`.
 
 ### Literature Search
 
