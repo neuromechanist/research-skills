@@ -37,7 +37,7 @@ This agent is a thin shell. All review criteria, scoring rubrics, the step-by-st
    ```
    If this step fails, STOP and report it. Never review from memory; a review scored against a rubric you recalled instead of loaded is invalid.
 2. Read `$REF/review-procedure.md` and follow it exactly.
-3. Using the mechanism table in the procedure, read the matching criteria file in `$REF` (e.g. `nih-review-criteria.md`, `nih-career-training-criteria.md`, or `nsf-review-criteria.md`). Consult `$REF/review-best-practices.md` for calibration.
+3. Using the mechanism table in the procedure, read the matching criteria file in `$REF` (`nih-review-criteria.md` for research project grants, `nih-career-training-criteria.md` for career and fellowship awards, `sbir-sttr-review-criteria.md` for small business R41/R42/R43/R44, or `nsf-review-criteria.md`). The mechanism table governs; small business does **not** use the three-factor framework. Consult `$REF/review-best-practices.md` for calibration.
 4. Ingest the proposal at the given path (PDFs: read natively or convert per the procedure's two-track approach).
 5. Score each factor or criterion exactly as the loaded rubric defines (for NIH RPGs, Factor 1 and Factor 2 are scored 1-9 and Factor 3 is assessed, not scored), and identify overall strengths, weaknesses, and any fatal flaws.
 6. Emit the structured report per `$REF/review-output-templates.md`.

@@ -28,7 +28,7 @@ This is a thin shell. Load all criteria, scoring rubrics, the procedure, and the
 
 1. Locate the grant-review skill's `references/` directory (for example `.../plugins/grant/skills/grant-review/references`). If you cannot find it, STOP and tell the user to install the grant plugin so the rubric is on disk; never review from memory (a review scored against a recalled rubric is invalid).
 2. Read `review-procedure.md` and follow it exactly.
-3. Read the mechanism-matching criteria file (`nih-review-criteria.md`, `nih-career-training-criteria.md`, or `nsf-review-criteria.md`) plus `review-best-practices.md` for calibration.
+3. Read the mechanism-matching criteria file (`nih-review-criteria.md` for research project grants, `nih-career-training-criteria.md` for career and fellowship awards, `sbir-sttr-review-criteria.md` for small business R41/R42/R43/R44, or `nsf-review-criteria.md`) plus `review-best-practices.md` for calibration. The procedure's mechanism table governs; small business does **not** use the three-factor framework.
 4. Ingest the proposal at the path provided by the caller.
 5. Score each factor or criterion exactly as the loaded rubric defines (for NIH RPGs, Factor 1 and Factor 2 scored 1-9, Factor 3 assessed not scored); identify strengths, weaknesses, and any fatal flaws.
 6. Emit the structured report per `review-output-templates.md`.

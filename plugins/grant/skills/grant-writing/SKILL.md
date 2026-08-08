@@ -224,7 +224,7 @@ Before submitting, verify every item:
 - Commercial potential is scored inside those criteria, in every phase, including Phase I
 - Write for a panel where only some reviewers know the field; all of them score
 - Restate every result that matters inside the Research Strategy; referenced manuscripts and preprints score nothing
-- Phase II, Direct to Phase II, Phase IIB, and Fast-Track require a 12-page Commercialization Plan; a standalone Phase I cannot include one
+- Phase II, Direct to Phase II, Phase IIB, Fast-Track, and the Commercialization Readiness Pilot require a 12-page Commercialization Plan; a standalone Phase I cannot include one
 - Collect letters of interest from potential customers early, not only from academic collaborators
 - Phase I runs up to 2 years, so a 24 to 30 month scope is often Phase I plus Phase II rather than a Direct to Phase II
 - A Phase I may state an intent to join I-Corps at NIH for customer discovery, which strengthens a later Commercialization Plan

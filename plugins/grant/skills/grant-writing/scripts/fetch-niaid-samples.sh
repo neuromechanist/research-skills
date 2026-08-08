@@ -43,7 +43,17 @@ LIST_ONLY=0
 FILTERS=()
 
 usage() {
-    sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    sed -n '2,28p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+}
+
+# niaid.nih.gov redirects a missing or renamed file to a "page not found" node
+# that answers HTTP 200 with an HTML body, so curl -f cannot see the failure and
+# writes the error page to the .pdf path. Every download is therefore checked
+# for the PDF magic bytes, and so is every cached file, since an error page
+# saved by an earlier run would otherwise be trusted forever.
+is_pdf() {
+    [[ -s "$1" ]] || return 1
+    [[ "$(head -c 5 "$1" 2>/dev/null)" == "%PDF-" ]]
 }
 
 while [[ $# -gt 0 ]]; do
@@ -93,7 +103,9 @@ matches_filter() {
 
 if [[ $LIST_ONLY -eq 1 ]]; then
     printf '%-45s %s\n' "LABEL" "URL"
-    while IFS='|' read -r label filename; do
+    # `|| [[ -n "$label" ]]` keeps the last entry when the manifest has no
+    # trailing newline; a bare `read` would drop it silently.
+    while IFS='|' read -r label filename || [[ -n "$label" ]]; do
         [[ -z "${label// }" || "$label" == \#* ]] && continue
         matches_filter "$label" || continue
         printf '%-45s %s/%s\n' "$label" "$BASE_URL" "$filename"
@@ -113,14 +125,15 @@ downloaded=0
 converted=0
 failed=0
 
-while IFS='|' read -r label filename; do
+while IFS='|' read -r label filename || [[ -n "$label" ]]; do
     [[ -z "${label// }" || "$label" == \#* ]] && continue
     matches_filter "$label" || continue
 
     pdf="$OUT_DIR/pdf/${label}.pdf"
-    if [[ -s "$pdf" ]]; then
+    if is_pdf "$pdf"; then
         echo "have  ${label}.pdf"
     else
+        [[ -e "$pdf" ]] && echo "  discarding ${label}.pdf, not a PDF" >&2 && rm -f "$pdf"
         echo "fetch ${label}.pdf"
         if curl -fsSL \
             --retry 3 --retry-delay 2 --connect-timeout 20 \
@@ -128,7 +141,15 @@ while IFS='|' read -r label filename; do
             -H "Referer: ${INDEX_URL}" \
             -o "$pdf" \
             "${BASE_URL}/${filename}"; then
-            downloaded=$((downloaded + 1))
+            if is_pdf "$pdf"; then
+                downloaded=$((downloaded + 1))
+            else
+                echo "  not a PDF, the server returned an error page: ${BASE_URL}/${filename}" >&2
+                echo "  the file may have been renamed or withdrawn; check ${INDEX_URL}" >&2
+                rm -f "$pdf"
+                failed=$((failed + 1))
+                continue
+            fi
         else
             echo "  failed: ${BASE_URL}/${filename}" >&2
             rm -f "$pdf"
@@ -162,3 +183,7 @@ echo "downloaded ${downloaded} PDF(s), converted ${converted} file(s), ${failed}
 echo "These files are copyrighted by the awardees; nonprofit educational use only,"
 echo "unchanged, crediting the principal investigators, awardee organizations, and NIH NIAID."
 echo "Do not commit them to a public repository."
+
+# Exit non-zero when anything failed, so a caller or CI notices rather than
+# reading the summary line as success.
+[[ $failed -eq 0 ]]

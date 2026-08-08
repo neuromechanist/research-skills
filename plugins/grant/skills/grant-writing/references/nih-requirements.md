@@ -80,9 +80,9 @@
 - **Preliminary Data:** Not required
 - **Focus:** Feasibility, technical merit, and commercial potential
 - **Key:** Aims are milestone-driven, not hypothesis-driven. Commercial potential and business capability are scored even though no Commercialization Plan is submitted
-- See `sbir-sttr-requirements.md` and `../examples/sbir-specific-aims-template.md`
+- See `references/sbir-sttr-requirements.md` and `examples/sbir-specific-aims-template.md`
 
-### R44 / R42 (SBIR / STTR Phase II, Fast-Track, Direct to Phase II, Phase IIB)
+### R44 / R42 (SBIR / STTR Phase II, Fast-Track, Direct to Phase II)
 - **For:** Continuation of Phase I work, or Direct to Phase II where feasibility is already established without a prior SBIR/STTR Phase I award for that project
 - **Duration:** 1 to 3 years (statutory guideline; the NOFO states the default)
 - **Page Limits:** Specific Aims (1 page), Research Strategy (12 pages), Commercialization Plan (12 pages, **required**)

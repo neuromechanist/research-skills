@@ -102,7 +102,7 @@ Synthesize across criteria. Focus on:
 Structure the output according to the appropriate agency template in `review-output-templates.md`. Both NIH and NSF templates follow this general structure:
 
 1. **Summary** - 2-3 sentence proposal overview
-2. **Factor / criterion scores** - For NIH RPGs, Factor 1 and Factor 2 scored 1-9 and Factor 3 assessed as appropriate/sufficient; for K/F, the scored criteria from `nih-career-training-criteria.md`; for NSF, ratings (Excellent-Poor). Include strengths/weaknesses for each
+2. **Factor / criterion scores** - For NIH RPGs, Factor 1 and Factor 2 scored 1-9 and Factor 3 assessed as appropriate/sufficient; for K/F, the scored criteria from `nih-career-training-criteria.md`; for small business (R41/R42/R43/R44), the five scored criteria plus the additional criteria from `sbir-sttr-review-criteria.md`; for NSF, ratings (Excellent-Poor). Include strengths/weaknesses for each
 3. **Additional review criteria** - Non-scored items (human subjects, data management, rigor)
 4. **Layout and space utilization** (only when a PDF was provided; omit this section entirely for Markdown or LaTeX inputs) - Observations on figure sizing, whitespace usage, areas where space could be saved or better utilized, and whether the proposal makes effective use of its page limits
 5. **Actionable improvements** - Prioritized as Critical, Important, and Suggested

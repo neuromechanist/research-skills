@@ -1,6 +1,6 @@
 # The SBIR/STTR Commercialization Plan
 
-A business plan, submitted inside a grant application, and scored.
+A business plan, submitted inside a Small Business Innovation Research (SBIR) or Small Business Technology Transfer (STTR) application, and scored.
 
 **Maximum 12 pages** (verified against the NIH Table of Page Limits on 2026-08-07; confirm against the live table and your Notice of Funding Opportunity, or NOFO, before filing).
 **Required for** Phase II, Direct to Phase II, Phase IIB, Phase I/Phase II Fast-Track, and Commercialization Readiness Pilot applications.

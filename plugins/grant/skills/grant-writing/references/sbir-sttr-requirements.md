@@ -80,8 +80,8 @@ Funds always go to the small business in both programs.
 | Phase II | R44 (SBIR), R42 (STTR) | Continue research and development begun in Phase I, against Phase I milestones already met |
 | Fast-Track | R44 / R42 | Phase I and Phase II submitted and reviewed together; requires a fully developed Phase II plan at submission |
 | Direct to Phase II | R44 / R42 | Feasibility already demonstrated **without a prior Phase I SBIR or STTR award for that project** |
-| Phase IIB Strategic Breakthrough | R44 / R42 | Projects needing time and effort beyond a standard two-year Phase II; offered by some Institutes and Centers only |
-| Commercialization Readiness Pilot (CRP) | | Late-stage development support for existing Phase II and Phase IIB awardees |
+| Phase IIB Strategic Breakthrough | R44 only | Projects needing time and effort beyond a standard two-year Phase II; offered by some Institutes and Centers only. **Filed as R44 even when the predicating Phase II was an STTR award**; PA-27-101 instructs applicants to check SBIR regardless, and there is no R42 Phase IIB parent |
+| Commercialization Readiness Pilot (CRP) | SB1 | Late-stage development support for existing Phase II and Phase IIB awardees; requires its own Commercialization Plan |
 
 ### Budgets and timelines
 
@@ -115,7 +115,7 @@ Verify them at the source every cycle.
 
 ## The Commercialization Plan
 
-**Maximum 12 pages. Required for Fast-Track, Phase II, Phase IIB, and Direct to Phase II.**
+**Maximum 12 pages. Required for Fast-Track, Phase II, Direct to Phase II, Phase IIB, and the Commercialization Readiness Pilot (CRP, activity code SB1).**
 It is not required for, and cannot be submitted with, a standalone Phase I.
 
 This is a business plan, and it is scored.

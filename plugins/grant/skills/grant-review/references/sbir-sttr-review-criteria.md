@@ -27,7 +27,7 @@ Standard question: does the project address an important problem or critical bar
 
 Small-business additions:
 
-- Phase I: does the project have commercial potential to lead to a marketable product, process, or service?
+- Phase I: does the project have commercial potential to lead to a marketable product or service?
 - Phase II, Direct to Phase II, and Fast-Track: does the Commercialization Plan demonstrate a high probability of commercialization?
 - Is the unmet need described from the customer's position, with the current alternative named and its cost stated?
 
@@ -59,7 +59,7 @@ Small-business additions:
 - Is the advantage over incumbent products specific and technical, rather than a claim of general superiority?
 
 Note that a reviewer can find the underlying idea unoriginal and still score Innovation well if the specific implementation is new, and the reverse.
-In the sample set, reviewers separated "blocking this interaction is not novel" from "making peptides that do it this way is novel" and scored the latter.
+In the sample set, reviewers separated the target from the means: blocking a given interaction was judged unoriginal, while the specific method proposed for blocking it was judged novel, and the score followed the method.
 
 ### 4. Approach
 

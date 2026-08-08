@@ -1,6 +1,7 @@
 # NIAID Sample Applications
 
 NIAID publishes funded applications and their summary statements, contributed by the awardees.
+The small-business set below covers Small Business Innovation Research (SBIR) and Small Business Technology Transfer (STTR) awards.
 For small-business writing they are the single best study material available,
 because the summary statements record what a small-business study section actually praised and criticized.
 
