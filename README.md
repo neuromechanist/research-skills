@@ -58,7 +58,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
 | **project** | 0.6.0 | Project lifecycle: init, cross-agent user instructions, tiered model routing, epic workflow, PR review, onboarding, planning, engineering loop, debugging, agent fan-out, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `install-user-instructions`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `codebase-onboarding`, `implementation-planning`, `engineering-loop`, `debugging`, `agent-fanout`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
-| **grant** | 0.3.6 | NIH/NSF grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
+| **grant** | 0.4.0 | NIH/NSF and SBIR/STTR grant proposal writing, review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
 | **manuscript** | 0.5.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.2 | Literature search, citation management, PDF retrieval | `opencite` | -- |
 | **figures** | 0.10.6 | Publication-quality figures plugin (seven skills + QA agent) | `scientific-figure`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |
@@ -79,11 +79,12 @@ Search academic literature, explore citation graphs, download PDFs, and export B
 
 ### grant
 
-Draft and review NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, etc.). Includes a `grant-figure-qa` skill that checks figures for resolution, accessibility, and NIH/NSF compliance. As of epic #61, `grant-review` and `grant-figure-qa` use thin-dispatch skills with Claude-bundled fresh-context agents, Codex agent templates, and Copilot plugin-agent templates; when those agents are not configured, the skills run the same reference procedure inline. Skills for research strategy guidelines, writing style, budget justification, scoring criteria, and resubmission response.
+Draft and review NIH and NSF grant proposals with mechanism-specific templates (R01, R21, K99, CAREER, SBIR/STTR, etc.). Small-business support covers milestone-driven aims, the 12-page Commercialization Plan, small-business review criteria, and a curated index of funded NIAID sample applications. Includes a `grant-figure-qa` skill that checks figures for resolution, accessibility, and NIH/NSF compliance. As of epic #61, `grant-review` and `grant-figure-qa` use thin-dispatch skills with Claude-bundled fresh-context agents, Codex agent templates, and Copilot plugin-agent templates; when those agents are not configured, the skills run the same reference procedure inline. Skills for research strategy guidelines, writing style, budget justification, scoring criteria, and resubmission response.
 
 ```
 "Write the significance section for an R01 on motor cortex"
 "Review my R21 proposal at proposal.pdf as an NIH study section"
+"Draft milestone-driven specific aims for an SBIR Phase I"
 ```
 
 ### manuscript

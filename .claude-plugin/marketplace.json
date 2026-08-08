@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.15.13",
+  "version": "0.15.14",
   "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
@@ -22,8 +22,8 @@
     },
     {
       "name": "grant",
-      "description": "Grant proposal toolkit: NIH/NSF writing with mechanism-specific templates, structured review with scoring criteria, and figure quality assurance",
-      "version": "0.3.6",
+      "description": "Grant proposal toolkit: NIH/NSF and SBIR/STTR writing with mechanism-specific templates, structured review with scoring criteria, and figure quality assurance",
+      "version": "0.4.0",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
