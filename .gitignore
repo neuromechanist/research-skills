@@ -26,6 +26,10 @@ Thumbs.db
 output/
 site/
 
+# Copyrighted NIAID sample applications fetched by
+# plugins/grant/skills/grant-writing/scripts/fetch-niaid-samples.sh
+niaid-samples/
+
 # Serena
 .serena/
 .claude/*.local.md
