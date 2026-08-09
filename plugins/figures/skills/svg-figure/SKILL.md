@@ -1,7 +1,7 @@
 ---
 name: svg-figure
 description: This skill should be used when the user asks to "create an SVG figure", "make a schematic", "draw a diagram", "create a schematic diagram", "draw a flowchart", "draw a process flow", "draw a workflow", "draw a workflow diagram", "make an SVG schematic", "create a process diagram", "create a pipeline diagram", "create a block diagram", "draw a system diagram", "system architecture diagram", or wants a hand-authored or programmatic SVG with shapes, arrows, and labels that the figure-qa agent can verify. **For new Python-driven figures, route to `[[svg-primitives]]` instead** — this skill is the conventions and hand-authoring reference. Outputs are SVG files that can be loaded as panel sources by the scientific-figure composer.
-version: 0.2.1
+version: 0.2.2
 ---
 
 # SVG Figure
@@ -157,6 +157,21 @@ The SVG branch checks font sizes, palette compliance (with near-gray exemption f
 
 For SVGs built with `[[svg-primitives]]`, validation also runs in-process during `Canvas.save(validate='warn'|'strict'|'off')` — that catches the same invariants (and more) before the file is even written. The two validators are complementary: `figure-qa` works on any SVG; `svg-primitives` validation works on SVGs it produced.
 
+## Handoff to Illustrator or Affinity Designer
+
+When a collaborator will edit the figure in Adobe Illustrator or Affinity Designer,
+the SVG is the editable master and any PDF is a derived print artifact;
+converted PDFs always open as fragmented point text.
+Author for the editors' import quirks:
+top-level `<g id="...">` per region (arrives as a named group; nothing in SVG maps to an Illustrator layer),
+one `<text>` per line with `text-anchor="start"` and a computed left edge (Illustrator ignores `text-anchor` on import),
+a single concrete `font-family` plus numeric `font-weight` (no stacks, no `@font-face`),
+sub-figures inlined as `<g transform>` (never nested `<svg>` or SVG data-URI `<image>`),
+and arrowheads baked as filled paths (never `<marker>`, which has a known Illustrator bug).
+See `references/editor-handoff.md` for the full checklist,
+the per-editor behavior table, print-PDF derivation recipes
+(Inkscape text-to-path, Ghostscript `-dNoOutputFonts`), and sources.
+
 ## Additional resources
 
 - `examples/schematic_from_primitives.py` — programmatic example using svg-primitives (recommended starting point).
@@ -164,3 +179,4 @@ For SVGs built with `[[svg-primitives]]`, validation also runs in-process during
 - `references/svg-guidelines.md` — element consistency rules and palette recommendations.
 - `references/arrow-patterns.md` — straight, curved, and segmented arrow recipes; svgpathtools-compatible geometry the QA agent recognizes.
 - `references/text-alignment.md` — text bbox arithmetic, baseline behavior, and common failure modes (overflow, descender drop, anchor inversion).
+- `references/editor-handoff.md` — authoring rules for editable handoff to Illustrator / Affinity Designer, per-editor SVG import behavior, and print-PDF derivation (outlined text, font embedding, PDF layers).
