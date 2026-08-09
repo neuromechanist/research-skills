@@ -1,7 +1,7 @@
 ---
 name: svg-figure
-description: This skill should be used when the user asks to "create an SVG figure", "make a schematic", "draw a diagram", "create a schematic diagram", "draw a flowchart", "draw a process flow", "draw a workflow", "draw a workflow diagram", "make an SVG schematic", "create a process diagram", "create a pipeline diagram", "create a block diagram", "draw a system diagram", "system architecture diagram", or wants a hand-authored or programmatic SVG with shapes, arrows, and labels that the figure-qa agent can verify. **For new Python-driven figures, route to `[[svg-primitives]]` instead** — this skill is the conventions and hand-authoring reference. Outputs are SVG files that can be loaded as panel sources by the scientific-figure composer.
-version: 0.2.2
+description: This skill should be used when the user asks to "create an SVG figure", "make a schematic", "draw a diagram", "create a schematic diagram", "draw a flowchart", "draw a process flow", "draw a workflow", "draw a workflow diagram", "make an SVG schematic", "create a process diagram", "create a pipeline diagram", "create a block diagram", "draw a system diagram", "system architecture diagram", "make this SVG editable in Illustrator", "prepare an SVG for Affinity Designer", "editor handoff", "Illustrator-friendly SVG", "hand off a figure to a designer", or wants a hand-authored or programmatic SVG with shapes, arrows, and labels that the figure-qa agent can verify. **For new Python-driven figures, route to `[[svg-primitives]]` instead** — this skill is the conventions and hand-authoring reference. Outputs are SVG files that can be loaded as panel sources by the scientific-figure composer; `scripts/editor_prep.py` rewrites any finished SVG into the editor-safe dialect for Illustrator/Affinity handoff.
+version: 0.3.0
 ---
 
 # SVG Figure
@@ -172,6 +172,36 @@ See `references/editor-handoff.md` for the full checklist,
 the per-editor behavior table, print-PDF derivation recipes
 (Inkscape text-to-path, Ghostscript `-dNoOutputFonts`), and sources.
 
+### The editor-prep pass
+
+Most of the rules above are free at authoring time and should simply be the default
+(groups, single font family, origin-0 viewBox, no data URIs, no nested `<svg>`).
+Two constructs are deliberate exceptions kept in the design master
+because QA validation depends on them:
+`<marker orient="auto">` arrowheads (tangent-correct on curves, verified by `[[figure-qa]]` and `[[svg-primitives]]` validation)
+and `text-anchor="middle|end"` (the alignment source of truth).
+Resolve those in a separate, mechanical pass when producing the handoff copy:
+
+```bash
+uv run --with lxml --with svgpathtools --with fonttools \
+    python scripts/editor_prep.py figure.svg          # -> figure-editable.svg
+# --check: report violations without writing (exit 1 if any)
+# --font "Lato=/path/to/Lato.ttf": font file for text-width measurement
+# --in-place / -o out.svg: output control
+```
+
+The pass bakes markers into rotated geometry at the path endpoint,
+resolves middle/end anchors to a measured left edge,
+flattens nested `<svg>` viewports into transformed groups,
+inlines SVG data-URI images as vector groups with namespaced ids,
+duplicates `href` to `xlink:href` on raster images,
+reduces font stacks to their first family, strips `px` from font sizes,
+and warns on constructs it cannot fix
+(`<style>` blocks, `dominant-baseline`, filters, `foreignObject`, `textPath`).
+It is idempotent and works on any SVG, not only ones produced by these skills,
+so legacy figures get the same treatment as new ones.
+The design master stays QA-verifiable; the `-editable.svg` copy is what goes to the designer.
+
 ## Additional resources
 
 - `examples/schematic_from_primitives.py` — programmatic example using svg-primitives (recommended starting point).
@@ -180,3 +210,4 @@ the per-editor behavior table, print-PDF derivation recipes
 - `references/arrow-patterns.md` — straight, curved, and segmented arrow recipes; svgpathtools-compatible geometry the QA agent recognizes.
 - `references/text-alignment.md` — text bbox arithmetic, baseline behavior, and common failure modes (overflow, descender drop, anchor inversion).
 - `references/editor-handoff.md` — authoring rules for editable handoff to Illustrator / Affinity Designer, per-editor SVG import behavior, and print-PDF derivation (outlined text, font embedding, PDF layers).
+- `scripts/editor_prep.py` — mechanical handoff pass: bakes markers, resolves text anchors, flattens nested viewports, inlines SVG data URIs, normalizes fonts. Idempotent; works on any SVG.

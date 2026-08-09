@@ -57,6 +57,22 @@ Confirmed; see sources.
 | Plain 2-stop gradients, simple clip paths | Survive (clip paths add wrapper groups) | Reported working |
 | SVG filters (`<filter>`) | Only Illustrator's own 18-effect subset; arbitrary chains unreliable | Assume dropped |
 
+## The mechanical prep pass
+
+`scripts/editor_prep.py` (in this skill) applies every fixable rule below
+to an already-generated SVG and reports what it could not fix:
+
+```bash
+uv run --with lxml --with svgpathtools --with fonttools \
+    python scripts/editor_prep.py figure.svg    # -> figure-editable.svg
+```
+
+Use it as the handoff step for new figures
+(the design master keeps QA-verifiable markers and anchors)
+and as a converter for legacy or foreign SVGs
+(matplotlib exports, Inkscape saves, hand-authored files).
+`--check` mode reports violations without writing, for CI.
+
 ## Authoring checklist for the generator
 
 Structure:

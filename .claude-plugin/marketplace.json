@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.15.15",
+  "version": "0.15.16",
   "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics",
   "owner": {
     "name": "Seyed Yahya Shirazi",
@@ -58,8 +58,8 @@
     },
     {
       "name": "figures",
-      "description": "Publication-quality figures plugin. Seven skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines); svg-primitives (mm-precise SVG builder in Python: auto-fit boxes, tangent-correct arrows on straight/cubic/orthogonal routes, multi-waypoint paths, brackets/annotations/groups, layered z-order); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
-      "version": "0.10.7",
+      "description": "Publication-quality figures plugin. Seven skills + one QA agent: scientific-figure (svgutils composer with font validation; Inkscape/cairosvg export); transparent-icons (flat scientific icons via Codex CLI or OpenAI Images API); svg-figure (schematic authoring with consistency guidelines plus an editor-handoff reference and editor_prep.py pass for Illustrator/Affinity-editable masters); svg-primitives (mm-precise SVG builder in Python: auto-fit boxes, tangent-correct arrows on straight/cubic/orthogonal routes, multi-waypoint paths, brackets/annotations/groups, layered z-order); ai-full-figure (AI substrate + programmatic label/arrow/scale-bar overlay); plot-styling (library decision tree + SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS); figure-qa agent (type-dispatching QA across SVG/raster/plot-script with strict programmatic-vs-VLM separation).",
+      "version": "0.11.0",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
