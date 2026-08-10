@@ -1,7 +1,7 @@
 ---
 name: svg-primitives
 description: 'Use when the user asks to build a programmatic SVG schematic in Python: flowcharts, boxes and arrows, auto-fit SVG text, mm-precise diagrams, edge-snapped arrows, tangent-correct curve arrowheads, orthogonal or Manhattan routing, deterministic z-order layers, labeled groups, bracket groupings, leader-line annotations, or strict Canvas.save validation for text overflow. Use figure-qa instead for after-the-fact validation of arbitrary hand-authored or exported SVGs. Built on drawsvg, svgpathtools, and fontTools; output SVGs can be composed by scientific-figure.'
-version: 0.3.0
+version: 0.3.1
 ---
 
 # SVG Primitives
@@ -212,6 +212,22 @@ uv run --with lxml --with svgelements --with svgpathtools --with shapely \
 ```
 
 The geometry section (bbox-overlap, arrow-tip-to-target, text-overflow) landed via issue #47; the primitive-layer tests in this skill cover the same invariants for SVGs built from `svg_primitives`.
+
+## Handoff to Illustrator or Affinity Designer
+
+Canvas output is already close to the editor-safe dialect
+(named `<g id="layer-...">` groups, origin-0 mm viewBox, single positioning, no data URIs).
+Two constructs are intentionally kept editor-unfriendly in the master
+because validation depends on them:
+`<marker orient="auto">` arrowheads
+and middle-anchored labels
+(`LabeledBox`/`Pill`/`Diamond`/`Bracket` always center;
+`Annotation` defaults to middle but is configurable).
+When a figure goes to a human editor,
+derive the handoff copy with the editor-prep pass
+in the `[[svg-figure]]` skill's `scripts/editor_prep.py`,
+which bakes markers into rotated geometry and resolves anchors to measured left edges.
+The editor-handoff reference in `[[svg-figure]]` explains why.
 
 ## Additional resources
 
