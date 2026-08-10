@@ -161,7 +161,9 @@ For SVGs built with `[[svg-primitives]]`, validation also runs in-process during
 
 When a collaborator will edit the figure in Adobe Illustrator or Affinity Designer,
 the SVG is the editable master and any PDF is a derived print artifact;
-converted PDFs always open as fragmented point text.
+converted PDFs open as fragmented text runs
+(Illustrator leaves them as per-run point text;
+Affinity reconstructs frames heuristically, shifting layout).
 Author for the editors' import quirks:
 top-level `<g id="...">` per region (arrives as a named group; nothing in SVG maps to an Illustrator layer),
 one `<text>` per line with `text-anchor="start"` and a computed left edge (Illustrator ignores `text-anchor` on import),
@@ -190,14 +192,20 @@ uv run --with lxml --with svgpathtools --with fonttools \
 # --in-place / -o out.svg: output control
 ```
 
-The pass bakes markers into rotated geometry at the path endpoint,
+The pass bakes `marker-end` arrowheads into rotated geometry at the path endpoint
+(honoring the marker's viewBox scaling, refX/refY, orient, and markerUnits),
 resolves middle/end anchors to a measured left edge,
-flattens nested `<svg>` viewports into transformed groups,
+flattens nested `<svg>` viewports into transformed groups
+(full preserveAspectRatio support),
 inlines SVG data-URI images as vector groups with namespaced ids,
-duplicates `href` to `xlink:href` on raster images,
-reduces font stacks to their first family, strips `px` from font sizes,
+duplicates `href` to `xlink:href` on any `<image>` that lacks it,
+reduces font stacks to their first family,
+converts `px` font sizes to user units
+(the ratio is derived from the root width/viewBox, so mm documents convert correctly),
 and warns on constructs it cannot fix
-(`<style>` blocks, `dominant-baseline`, filters, `foreignObject`, `textPath`).
+(`<style>` blocks, `@font-face`, `dominant-baseline`, filters,
+`foreignObject`, `textPath`, the `font` shorthand,
+and `marker-start`/`marker-mid`).
 It is idempotent and works on any SVG, not only ones produced by these skills,
 so legacy figures get the same treatment as new ones.
 The design master stays QA-verifiable; the `-editable.svg` copy is what goes to the designer.

@@ -1,7 +1,7 @@
 {
   "name": "figures",
   "version": "0.11.0",
-  "description": "Publication-quality figures plugin. Seven skills + one QA agent. scientific-figure: svgutils composer with font validation and export; transparent-icons: flat scientific icons; svg-figure: schematic authoring; svg-primitives: mm-precise SVG builder; ai-full-figure: AI substrate plus programmatic overlay; plot-styling: publication plot recipes; figure-qa: type-dispatching QA across SVG, raster, plot-script, and composed-figure inputs.",
+  "description": "Publication-quality figures plugin. Seven skills + one QA agent. scientific-figure: svgutils composer with font validation and export; transparent-icons: flat scientific icons; svg-figure: schematic authoring plus Illustrator/Affinity editor handoff; svg-primitives: mm-precise SVG builder; ai-full-figure: AI substrate plus programmatic overlay; plot-styling: publication plot recipes; figure-qa: type-dispatching QA across SVG, raster, plot-script, and composed-figure inputs.",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"

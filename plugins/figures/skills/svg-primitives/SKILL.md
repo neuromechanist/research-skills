@@ -219,10 +219,13 @@ Canvas output is already close to the editor-safe dialect
 (named `<g id="layer-...">` groups, origin-0 mm viewBox, single positioning, no data URIs).
 Two constructs are intentionally kept editor-unfriendly in the master
 because validation depends on them:
-`<marker orient="auto">` arrowheads and centered `text-anchor` labels.
+`<marker orient="auto">` arrowheads
+and middle-anchored labels
+(`LabeledBox`/`Pill`/`Diamond`/`Bracket` always center;
+`Annotation` defaults to middle but is configurable).
 When a figure goes to a human editor,
-derive the handoff copy with the `[[svg-figure]]` editor-prep pass
-(`svg-figure/scripts/editor_prep.py`),
+derive the handoff copy with the editor-prep pass
+in the `[[svg-figure]]` skill's `scripts/editor_prep.py`,
 which bakes markers into rotated geometry and resolves anchors to measured left edges.
 The editor-handoff reference in `[[svg-figure]]` explains why.
 

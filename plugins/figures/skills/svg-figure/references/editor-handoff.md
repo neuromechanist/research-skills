@@ -59,8 +59,13 @@ Confirmed; see sources.
 
 ## The mechanical prep pass
 
-`scripts/editor_prep.py` (in this skill) applies every fixable rule below
-to an already-generated SVG and reports what it could not fix:
+`scripts/editor_prep.py` (in this skill) applies the mechanically fixable
+subset of the rules below to an already-generated SVG
+(marker baking, anchor resolution, nested-viewport flattening,
+data-URI inlining, image hrefs, font stacks and px sizes)
+and warns about what it cannot fix.
+The structural rules stay authoring-time responsibilities:
+section groups, one text element per line, computed baselines.
 
 ```bash
 uv run --with lxml --with svgpathtools --with fonttools \
