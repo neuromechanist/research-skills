@@ -34,3 +34,4 @@ niaid-samples/
 .serena/
 .claude/*.local.md
 .claude/
+.coverage
