@@ -162,13 +162,13 @@ def _ident(el) -> str:
 # --- length / unit parsing ----------------------------------------------------
 
 def _strip_unit(value):
-    """Parse a unitless-or-px length. None when absent OR unparseable."""
+    """Parse a unitless-or-px length. None when absent OR unparsable."""
     m = re.match(rf"^({_num})\s*(px)?$", (value or "").strip())
     return float(m.group(1)) if m else None
 
 
 def _length_attr(el, attr, report: Report, default=0.0):
-    """Attribute as a float. Absent -> default; unparseable -> None + warn
+    """Attribute as a float. Absent -> default; unparsable -> None + warn
     (percentages and non-px units cannot be resolved without layout)."""
     raw = el.get(attr)
     if raw is None:
@@ -185,7 +185,7 @@ def _unit_scale(root) -> float:
 
     A document with width="100mm" viewBox="0 0 100 100" has 1 user unit
     = 1 mm, so 1 px = 25.4/96 mm = 0.2646 user units. Unitless or px
-    root widths give 1.0, as does anything unparseable.
+    root widths give 1.0, as does anything unparsable.
     """
     m = re.match(rf"^({_num})\s*([a-z]*)$", (root.get("width") or "").strip())
     vb = _parse_viewbox(root.get("viewBox"))
@@ -371,7 +371,7 @@ def _marker_numbers(marker, el, report: Report):
         v = default if raw is None else _strip_unit(raw)
         if v is None:
             report.warn(f"marker {_ident(marker)} left in place: "
-                        f"unparseable {name}={raw!r}")
+                        f"unparsable {name}={raw!r}")
             return None
         values[name] = v
     stroke_scale = 1.0
@@ -380,7 +380,7 @@ def _marker_numbers(marker, el, report: Report):
         stroke_scale = 1.0 if sw_raw is None else _strip_unit(sw_raw)
         if stroke_scale is None:
             report.warn(f"marker on {_ident(el)} left in place: "
-                        f"unparseable stroke-width={sw_raw!r}")
+                        f"unparsable stroke-width={sw_raw!r}")
             return None
     mvb = _parse_viewbox(marker.get("viewBox"))
     if mvb:
@@ -428,7 +428,7 @@ def bake_markers(root, report: Report) -> None:
             angle = _strip_unit(orient)
             if angle is None:
                 report.warn(f"marker {_ident(marker)} left in place: "
-                            f"unparseable orient={orient!r}")
+                            f"unparsable orient={orient!r}")
                 report.markers_skipped += 1
                 continue
         nums = _marker_numbers(marker, el, report)
@@ -500,7 +500,7 @@ def resolve_text_anchors(root, measurer: FontMeasurer, report: Report,
         size = _parse_size(size_raw, uupx)
         if size is None:
             report.warn(f"text anchor on {_ident(el)} left in place: "
-                        f"unparseable font-size {size_raw!r}")
+                        f"unparsable font-size {size_raw!r}")
             report.anchors_skipped += 1
             continue
         weight = (_get_prop(el, "font-weight") or "normal").strip()
