@@ -61,5 +61,6 @@ nav:
       - Figures: plugins/figures.md
       - Presentation: plugins/presentation.md
       - Neuroinformatics: plugins/neuroinformatics.md
+      - ML Training: plugins/ml-training.md
   - Cross-Agent Compatibility: cross-agent-compatibility.md
   - Contributing: contributing.md

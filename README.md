@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20696515.svg)](https://doi.org/10.5281/zenodo.20696515)
 
-Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics.
+Cross-agent marketplace for academic research workflows and development tooling. Install individual plugins for literature search, grant proposals, manuscript preparation, figures, presentations, project lifecycle management, neuroinformatics, and cloud GPU provisioning for model training.
 
 > [!TIP]
 > This marketplace is taught week-by-week in the free [Agentic Research Course](https://courses.osc.earth/agentic-research/) from the Open Science Collective.
@@ -23,7 +23,7 @@ Install all plugins via CLI:
 
 ```bash
 claude plugin marketplace add neuromechanist/research-skills
-for p in project grant manuscript opencite figures presentation neuroinformatics; do
+for p in project grant manuscript opencite figures presentation neuroinformatics ml-training; do
   claude plugin install "$p@research-skills"
 done
 ```
@@ -64,6 +64,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 | **figures** | 0.10.6 | Publication-quality figures plugin (seven skills + QA agent) | `scientific-figure`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |
 | **presentation** | 0.2.4 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
 | **neuroinformatics** | 0.2.4 | BIDS conversion/validation, HED annotation, PsychoPy experiment design | `bids-conversion`, `experiment-design` | -- |
+| **ml-training** | 0.1.0 | Cloud GPU provisioning: prebaked images, pod lifecycle scripts, GPU selection, cost control | `runpod` | -- |
 
 ## Research Plugins
 
@@ -137,7 +138,7 @@ Neuroscience data standards, experiment design, and dataset validation:
 "Design a visual oddball ERP paradigm with 2 conditions"
 ```
 
-## Development Plugin
+## Development Plugins
 
 ### project
 
@@ -171,6 +172,22 @@ Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **r
 "Process scanned-document.pdf and convert to markdown"
 ```
 
+### ml-training
+
+Machine-learning work that has to leave the local machine: renting cloud GPUs for training, distillation, benchmark grids, and short-lived serving. The `runpod` skill captures a measured fast-provisioning workflow whose premise is that a pod should be ready in seconds, not minutes.
+
+- **Prebaked images** -- every install, download, and compile happens once in a container image built locally, so the pod only pulls the image, starts `sshd`, and runs the job. Measured 2026-08-12 on RunPod secure cloud: 16 s boot-to-verified on a warm host, 64 s on a cold host (1.9 GB pull), against 8-10 min for pod-side installs. Weights are pulled on the pod, not uploaded: 17 GB from HuggingFace in 34.8 s (about 490 MB/s) with `hf_transfer`.
+- **GPU selection** -- GraphQL stock queries (availability is per GPU type *and* count), a pricing ladder that is not monotonic in VRAM (2x A100-SXM at $3.18/hr and 160 GB undercut 1x H100 at $3.29/hr and 80 GB), and a scale ladder that climbs from a single card to a multi-node cluster one rung at a time.
+- **Lifecycle templates** -- parameterized `Dockerfile`, `start.sh`, `pod-up.sh`, `pod-run.sh`, and `pod-down.sh` with stage markers, detached `tmux` runs, and results copied back before termination.
+- **Pitfall catalog** -- every entry hit on a real billed pod: glibc mismatches between base image and prebuilt binaries, `ssh` sessions not inheriting Docker `ENV`, REST-created pods getting no injected `ssh` key, `rsync` failing `chown` inside the container, a host pool with a container-start bug, and a fire-and-forget launch that billed 17 idle minutes.
+
+```
+"Spin up a RunPod pod with 2 GPUs and run this benchmark grid on it"
+"My pod spends 10 minutes installing before every run, fix that"
+"Which GPU should I rent for a 30B model, 2x A100 or 1x H100?"
+"Fetch the results and terminate the pod"
+```
+
 ## Structure
 
 ```
@@ -185,7 +202,8 @@ research-skills/
 │   ├── opencite/                  # Literature search and citation management
 │   ├── figures/                   # Publication-quality figures + QA
 │   ├── presentation/             # Interactive Reveal.js slide decks
-│   └── neuroinformatics/          # BIDS, HED, experiment design
+│   ├── neuroinformatics/          # BIDS, HED, experiment design
+│   └── ml-training/               # Cloud GPU provisioning (RunPod), prebaked images
 ```
 
 ## Requirements
@@ -199,6 +217,7 @@ research-skills/
 - For PDF conversion: poppler (`brew install poppler` on macOS)
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
+- For cloud GPU pods: Docker with `buildx` and a container registry login, a RunPod API key, and a dedicated `ssh` key pair whose public half is passed to each pod
 - For OCR: Mistral API key (optional, tesseract as offline fallback)
 
 ## Skills vs commands

@@ -1,6 +1,6 @@
 # Research Skills
 
-Research Skills is a cross-agent plugin marketplace for academic research and development workflows. It ships **skills**, agent-callable capabilities that auto-trigger from natural-language intent, covering the parts of a research group's work that AI coding agents are good at automating: literature search, grant writing, manuscript preparation, publication figures, presentations, project lifecycle management, and neuroinformatics data standards.
+Research Skills is a cross-agent plugin marketplace for academic research and development workflows. It ships **skills**, agent-callable capabilities that auto-trigger from natural-language intent, covering the parts of a research group's work that AI coding agents are good at automating: literature search, grant writing, manuscript preparation, publication figures, presentations, project lifecycle management, neuroinformatics data standards, and cloud GPU provisioning for model training.
 
 It targets three agent runtimes from one shared set of skill definitions: [Claude Code](https://claude.com/claude-code), [OpenAI Codex](https://developers.openai.com/codex), and [GitHub Copilot CLI](https://docs.github.com/en/copilot).
 
@@ -18,5 +18,6 @@ It targets three agent runtimes from one shared set of skill definitions: [Claud
 | [Figures](plugins/figures.md) | Publication-quality figure composition and QA |
 | [Presentation](plugins/presentation.md) | Interactive Reveal.js slide decks |
 | [Neuroinformatics](plugins/neuroinformatics.md) | BIDS conversion, HED annotation, experiment design |
+| [ML Training](plugins/ml-training.md) | Cloud GPU provisioning, prebaked images, cost control |
 
 Start with [Getting Started](getting-started.md) to install a plugin, or [Architecture](architecture.md) to see how skills, commands, agents, and MCP servers fit together.
