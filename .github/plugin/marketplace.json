@@ -5,8 +5,8 @@
     "email": "shirazi@ieee.org"
   },
   "metadata": {
-    "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, and neuroinformatics",
-    "version": "0.15.16"
+    "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, neuroinformatics, and cloud GPU provisioning for model training",
+    "version": "0.16.0"
   },
   "plugins": [
     {
@@ -57,6 +57,13 @@
       "version": "0.2.4",
       "source": "./plugins/neuroinformatics",
       "category": "research"
+    },
+    {
+      "name": "ml-training",
+      "description": "Machine-learning training and benchmarking on rented cloud GPUs: prebaked RunPod images that boot in seconds instead of minutes, pod lifecycle scripts, GPU selection and pricing ladders, and the provisioning pitfall catalog",
+      "version": "0.1.0",
+      "source": "./plugins/ml-training",
+      "category": "development"
     }
   ]
 }
