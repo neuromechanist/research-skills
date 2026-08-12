@@ -40,7 +40,7 @@ while [ $# -gt 0 ]; do
 done
 
 say() { echo "=== $(date -u +%FT%TZ) $*"; }
-api() { curl -sf -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' "$@"; }
+api() { curl -sSf -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' "$@"; }
 ssh_pod() { ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 -p "$PORT" "root@$IP" "$@"; }
 
 T0=$(date +%s)
@@ -65,31 +65,44 @@ PY
 # which is per (gpu type, gpu count): query GraphQL stock and pick another.
 POD=$(api -X POST "$API/pods" -d "$PAYLOAD") \
     || { echo "!!! STAGE FAILED: create (check GraphQL stock for ${GPUS}x ${GPU_TYPE})"; exit 1; }
-POD_ID=$(echo "$POD" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+POD_ID=$(echo "$POD" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])') \
+    || { echo "!!! STAGE FAILED: create response had no id field:" >&2; echo "$POD" >&2; exit 1; }
 echo "$POD_ID" > "$(dirname "$0")/.last-pod-id"
 say "pod id: $POD_ID"
 
 say "STAGE: wait RUNNING"
 STATUS=""
 for _ in $(seq 1 120); do
-    STATUS=$(api "$API/pods/$POD_ID" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("desiredStatus","?"))')
+    # Guard the poll: one transient API failure must cost one retry, not the
+    # whole loop (a bare assignment failing under set -e aborts the script).
+    if ! STATUS=$(api "$API/pods/$POD_ID" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("desiredStatus","?"))' 2>/dev/null); then
+        sleep 5; continue
+    fi
     [ "$STATUS" = "RUNNING" ] && break
     sleep 5
 done
-[ "$STATUS" = "RUNNING" ] || { echo "!!! STAGE FAILED: not RUNNING after 10m"; exit 1; }
+[ "$STATUS" = "RUNNING" ] || { echo "!!! STAGE FAILED: not RUNNING after 10m (last status: ${STATUS:-none})"; exit 1; }
 T_RUN=$(date +%s); say "RUNNING after $((T_RUN - T0))s"
 
 say "STAGE: wait ssh (public ip + mapped port)"
+# Probe stderr goes to a log, not /dev/null: when the final check fails, the
+# real ssh error (permission denied vs refused vs timeout) is the diagnosis.
+PROBE_LOG="$(dirname "$0")/.ssh-probe.log"
+: > "$PROBE_LOG"
 IP=""; PORT=""
 for _ in $(seq 1 120); do
     read -r IP PORT <<<"$(api "$API/pods/$POD_ID" | python3 -c '
 import json, sys
 p = json.load(sys.stdin)
 print(p.get("publicIp") or "", (p.get("portMappings") or {}).get("22", ""))')"
-    [ -n "$IP" ] && [ -n "$PORT" ] && ssh_pod true 2>/dev/null && break
+    [ -n "$IP" ] && [ -n "$PORT" ] && ssh_pod true 2>>"$PROBE_LOG" && break
     sleep 5
 done
-ssh_pod true 2>/dev/null || { echo "!!! STAGE FAILED: ssh not reachable (is PUBLIC_KEY set in the create call?)"; exit 1; }
+ssh_pod true 2>>"$PROBE_LOG" || {
+    echo "!!! STAGE FAILED: ssh not reachable (is PUBLIC_KEY set in the create call?)"
+    echo "    last probe errors:"; tail -3 "$PROBE_LOG"
+    exit 1
+}
 T_SSH=$(date +%s); say "ssh ready after $((T_SSH - T0))s (root@$IP -p $PORT)"
 
 # Verify over ssh, not over docker run: sshd login shells do not inherit the

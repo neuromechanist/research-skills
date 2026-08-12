@@ -91,7 +91,6 @@
     },
     {
       "name": "ml-training",
-      "description": "Machine-learning training and benchmarking on rented cloud GPUs: prebaked RunPod images that boot in seconds instead of minutes, pod lifecycle scripts, GPU selection and pricing ladders, and the provisioning pitfall catalog",
       "source": {
         "source": "local",
         "path": "./plugins/ml-training"
