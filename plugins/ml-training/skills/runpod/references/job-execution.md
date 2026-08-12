@@ -68,6 +68,28 @@ leaves evidence: `ssh ... >>"logs/$HOST.log" 2>&1`.
 Scaling this to more than one pod adds its own failure modes (stdin-eating `ssh` in loops,
 shell word-splitting, partial stock). See [fanout.md](fanout.md).
 
+## Extending a live time cap
+
+`timeout` cannot have its deadline changed after start, but a running job can outlive its cap
+without a restart when the estimate turns out short. Three steps, in order:
+
+1. **SIGKILL the `timeout` process itself.** SIGKILL cannot be forwarded to the child, so the job
+   survives and is reparented to init. Mind the match: the tmux server and pane shell carry the
+   launch string on their own command lines, so `pgrep -f 'timeou[t] <secs>'` can return all
+   three. Killing them all also kills the `tee` that holds the job's output pipe, which sets up
+   step 3.
+2. **Re-arm the cap before anything else.** The cap is the cost discipline; removing it without a
+   replacement trades a clipped run for an unbounded one.
+   `tmux new-session -d -s watchdog 'sleep <secs>; pkill -9 -f <job-patter[n]>'`.
+3. **Re-attach a reader if `tee` died.** A pipe with no readers returns EPIPE on the next write,
+   which kills a Python job at its next print. Linux can heal it: opening the writer's fd through
+   `/proc` attaches a fresh reader to the same pipe object.
+   `tmux new-session -d -s logger 'cat /proc/<job-pid>/fd/1 >> run.log'`. Then verify end to end
+   by writing a probe line into `/proc/<job-pid>/fd/1` and reading it back from the log.
+
+The exit marker dies with the pane shell, so completion detection for that pod must switch to
+"job process gone, results present".
+
 ## Poll status
 
 ```bash
