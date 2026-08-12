@@ -80,6 +80,28 @@ than they add capability.
 Single-host multi-GPU (rung 2) is provisioned with `gpuCount: N` in the same pod create call
 that a single-GPU pod uses. There is no separate cluster concept until rung 4.
 
+### If rung 4 is genuinely required
+
+A cluster is justified only when one of two things is true even after rung 1: a single training
+step's state (weights, optimizer, gradients, activations) exceeds the largest single host on offer
+(8 GPUs on one machine, so around 640 GB with 8x80 GB cards), or the deadline demands data-parallel
+throughput beyond one host. Neither "the grid is large" nor "it would finish sooner" qualifies;
+those are fan-out shapes.
+
+When it is justified, the discipline changes:
+
+- **Provision it as an instant cluster, not as hand-wired independent pods.** Independent pods
+  share no interconnect fabric, and collective operations over pod-to-pod networking are not a
+  workable substitute for the cluster product's high-bandwidth links and static host file.
+- **Prove the fabric before the job.** Run an NCCL all-reduce benchmark across all nodes first. A
+  cluster that creates cleanly but fails collectives bills every node while it is diagnosed.
+- **Checkpoint and resume are mandatory, not optional.** Failure probability scales with node
+  count times duration, and a run that cannot resume restarts the whole spend.
+- **Rehearse at the smallest shape.** Debugging bills all N nodes at once, so bring the full
+  launch up end to end on the smallest cluster (two nodes, a small model) and scale only after a
+  clean run. The prebake rule tightens accordingly: every per-node setup minute is now paid N
+  times concurrently.
+
 ## Sizing the rest of the pod
 
 - `containerDiskInGb`: two copies of the model, plus caches, logs, and outputs. Peak usage runs

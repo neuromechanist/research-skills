@@ -91,6 +91,23 @@ Three properties matter here:
 - **Per-pod logs, and never `2>/dev/null`.** Suppressing stderr on an orchestration path deletes
   the only evidence of what actually failed.
 
+## Relaunches must be idempotent
+
+A retry loop that can fire twice must be safe to fire twice. Begin every launch attempt by killing
+the previous session and any orphaned worker process, using the character-class dodge so the kill
+cannot match its own command line ([pitfalls.md](pitfalls.md) #17):
+
+```bash
+ssh -n -p "$PORT" "$HOST" \
+    "tmux kill-session -t job 2>/dev/null; pkill -9 -f 'serve[r]' 2>/dev/null; true"
+```
+
+Skipping this stacks a second server onto the same GPU after a half-failed attempt: the port or
+the memory is already taken, and the new run fails for a reason that did not exist a minute
+earlier. The orphan also poisons verification. A worker left over from a failed wave holds the GPU
+at high utilization, so "GPU engaged" reads as proof the *new* launch worked when nothing is
+running. That is why the verify step requires the log to advance, not just the GPU to be busy.
+
 ## Generate command chains in Python, not in the shell
 
 Build the per-pod command chain with a real programming language and pass it as a single quoted
@@ -103,6 +120,42 @@ chain = "; ".join(
     f"uv run python -m <module> --task {t} --out results/{t}.jsonl" for t in tasks
 )
 ```
+
+## Monitor the fleet from one detached loop
+
+Run one detached monitor on the local machine that polls every pod on a fixed interval (about ten
+minutes) and prints only signal lines per pod: a count of progress signatures, any error
+signatures, and the exit marker.
+
+```bash
+ssh -n -p "$PORT" "$HOST" \
+    "grep -cE 'acc=' run.log; grep -E 'Traceback|JOB EXIT' run.log | tail -3; exit 0"
+```
+
+Two rules keep a monitor honest:
+
+- **End remote content pipelines with `; exit 0`.** `grep` exits 1 on zero matches, `ssh` forwards
+  the remote exit code, and a monitor that treats nonzero as "unreachable" reports a healthy pod
+  that simply has no results yet as down ([pitfalls.md](pitfalls.md) #19). An unreachable verdict
+  must be earned by a failed dedicated probe (`ssh -n ... true`), never inferred from a content
+  pipeline.
+- **Force unbuffered output on everything the monitor reads.** Python block-buffers stdout when it
+  is piped, so a healthy run under `tmux ... | tee` can show an empty log for minutes
+  ([pitfalls.md](pitfalls.md) #18). `PYTHONUNBUFFERED=1` on every remote run.
+
+### Calibrate an ETA from measured throughput, not from silence
+
+Know the job's result granularity before trusting the absence of results. If a progress line only
+prints when a whole cell completes, the first half hour of a healthy run is indistinguishable from
+a stalled one by result count alone. Pull a finer signal from the worker's own log in the first
+minutes (a serving log's tokens-per-second, a step counter) and turn it into arithmetic: seconds
+per sample from prefill and decode rates, minutes per cell from the sample count.
+
+From the grid this document came from: prefill at about 1,350 tok/s on an A40 put an 8K-token
+sample near 12 s including decode, a 30-sample cell near 6 minutes, and a 32K cell near half an
+hour. With that math in hand, "zero cells complete after 20 minutes" was on schedule rather than a
+stall, and the fleet's health check became "log advancing at the predicted rate" instead of "any
+results yet?".
 
 ## Startup anatomy, and how to shrink it
 

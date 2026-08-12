@@ -299,3 +299,46 @@ And keep stderr: this one hid behind a `2>/dev/null` on the launch `ssh` for hal
 suppress stderr on an orchestration path; capture per-pod logs instead.
 
 **Cost when hit:** about 30 minutes of misdiagnosis plus repeated relaunch waves.
+
+## Monitoring
+
+Monitoring failures cost little in GPU-minutes and a lot in judgment: each of these made a healthy
+fleet look broken, and the natural response to "broken" is an unnecessary, billed intervention.
+
+### 18. Python buffers stdout when piped, so healthy logs look dead
+
+**Symptom:** the GPU shows high utilization, the process is alive, and the log has been empty or
+frozen for minutes. Everything that reads the log (status checks, monitors, ETA math) concludes
+the job is stuck.
+
+**Cause:** Python block-buffers stdout when it is not attached to a tty. Under `tmux ... | tee`,
+`nohup`, or any pipe, output sits in a kilobytes-sized buffer until it flushes, which on a
+slow-printing workload can be minutes per line.
+
+**Fix:** `PYTHONUNBUFFERED=1` (or `python -u`) on every remote run, unconditionally. It belongs in
+the launch template, not in the debugging session:
+
+```bash
+tmux new-session -d -s job "PYTHONUNBUFFERED=1 $JOB_CMD 2>&1 | tee run.log; echo === JOB EXIT \$? ==="
+```
+
+### 19. A zero-match `grep` convinces the monitor a pod is down
+
+**Symptom:** the monitor prints `POD UNREACHABLE` for a pod that a manual `ssh` reaches instantly.
+The pod is healthy and midway through its first work item.
+
+**Cause:** `grep` exits 1 when it matches nothing, `ssh` forwards the remote command's exit code,
+and the monitor conflates "the pipeline exited nonzero" with "the connection failed". Before the
+first progress line exists, every healthy pod matches zero times, so the freshest fleet looks the
+most broken.
+
+**Fix:** two separate channels. Content pipelines end with `; exit 0` because their exit code is
+not the signal; unreachable verdicts come only from a dedicated probe whose exit code is:
+
+```bash
+ssh -n -p "$PORT" "$HOST" "grep -cE 'acc=' run.log; exit 0"    # content; exit code meaningless
+ssh -n -p "$PORT" "$HOST" true || echo "UNREACHABLE $HOST"     # connectivity; exit code is the signal
+```
+
+**Cost when hit:** nothing billed, which is exactly the danger: the false verdict invites a
+relaunch wave against a fleet that was never broken.

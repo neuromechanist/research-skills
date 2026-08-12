@@ -137,9 +137,13 @@ An evaluation grid or batch sweep is embarrassingly parallel: **N** independent 
 burn the same total GPU-hours as one pod and finish in **1/N** of the wall-clock time. Reach for a
 fleet of independent pods, **not** a multi-node instant cluster: clusters are distributed-*training*
 infrastructure (collective communication, interconnect, launcher config) and the wrong shape for
-independent cells.
+independent cells. For the rare run that genuinely needs a cluster, the scale ladder in
+[references/gpu-selection.md](references/gpu-selection.md) ends with the rung-4 pre-flight
+checklist: provision it as an instant cluster rather than hand-wired pods, prove the fabric with
+an NCCL all-reduce before the real job, make checkpoint-resume mandatory, and rehearse the full
+launch at the smallest shape because debugging bills every node at once.
 
-Six rules carry most of the value; the full method is in [references/fanout.md](references/fanout.md).
+Eight rules carry most of the value; the full method is in [references/fanout.md](references/fanout.md).
 
 1. **Slice by estimated duration, not item count.** A long-context bin can run 10x a short one, so
    equal item counts leave most of the fleet idle. Chain several short runs onto one pod
@@ -158,6 +162,15 @@ Six rules carry most of the value; the full method is in [references/fanout.md](
    runs, while the rest of the fleet boots and bills doing nothing.
 6. **Build command chains in Python, not in the shell.** zsh does not word-split unquoted variables
    the way bash does, so a chain assembled from a variable can collapse into one malformed command.
+7. **Make relaunches idempotent.** A retry loop that can fire twice must be safe to fire twice:
+   kill the previous session and any orphaned worker first (with the character-class dodge, so the
+   kill cannot match its own command line). An orphaned worker also holds the GPU busy, turning
+   "GPU engaged" into a false launch-verification signal.
+8. **Monitor from one detached loop, and calibrate an ETA from measured throughput.** End remote
+   content pipelines with `; exit 0` (a zero-match `grep` otherwise reads as an unreachable pod),
+   force `PYTHONUNBUFFERED=1` so logs advance in real time, and convert an early tokens-per-second
+   reading into per-cell ETA so silence can be told apart from a stall. Declare a pod unreachable
+   only when a dedicated probe fails.
 
 Per-pod startup runs about **4 min** when the image is only partially prebaked (dependency sync,
 model pull, evaluation-dataset pulls, server load) and drops to about **90 s** once the datasets
@@ -195,6 +208,8 @@ Each of these was hit for real. The full catalog, with symptoms and fixes, is
 | Fleet launcher reports 1/N launched, rest idle | `ssh` consumed the loop's stdin | `ssh -n` in every loop |
 | Every pod fails instantly with the same argparse error | zsh did not word-split the command chain | Generate chains in Python, or run orchestration under `bash` |
 | Launch `ssh` exits 255 with no output, probe works | `pkill -f` matched and killed its own session | Character-class dodge (`pkill -f 'serve[r]'`) or `pkill -x`, and stop discarding stderr |
+| Log empty or frozen while the GPU is busy | Python block-buffers stdout when piped | `PYTHONUNBUFFERED=1` on every remote run |
+| Monitor calls a healthy pod unreachable | Zero-match `grep` exit code forwarded by `ssh` | `; exit 0` on content pipelines; a dedicated probe decides reachability |
 
 ## Cost discipline
 
@@ -208,6 +223,6 @@ Each of these was hit for real. The full catalog, with symptoms and fixes, is
 ## Additional Resources
 
 - Reference: [references/pitfalls.md](references/pitfalls.md) - the full provisioning pitfall catalog with symptoms, causes, fixes, and what each one cost
-- Reference: [references/gpu-selection.md](references/gpu-selection.md) - stock queries, the pricing ladder, VRAM per dollar, and the single-card to multi-node scale ladder
+- Reference: [references/gpu-selection.md](references/gpu-selection.md) - stock queries, the pricing ladder, VRAM per dollar, the single-card to multi-node scale ladder, and the cluster pre-flight checklist
 - Reference: [references/job-execution.md](references/job-execution.md) - detached `tmux` runs, marker discipline, result retrieval, and cost accounting
-- Reference: [references/fanout.md](references/fanout.md) - fanning a grid across a fleet: duration-based slicing, partial-stock queueing, verify-one-then-replicate, retry-with-backoff launchers, and startup anatomy
+- Reference: [references/fanout.md](references/fanout.md) - fanning a grid across a fleet: duration-based slicing, partial-stock queueing, verify-one-then-replicate, retry-with-backoff launchers, idempotent relaunches, fleet monitoring with ETA calibration, and startup anatomy
