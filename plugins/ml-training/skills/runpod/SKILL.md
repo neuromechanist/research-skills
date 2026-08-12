@@ -143,7 +143,7 @@ checklist: provision it as an instant cluster rather than hand-wired pods, prove
 an NCCL all-reduce before the real job, make checkpoint-resume mandatory, and rehearse the full
 launch at the smallest shape because debugging bills every node at once.
 
-Eight rules carry most of the value; the full method is in [references/fanout.md](references/fanout.md).
+Nine rules carry most of the value; the full method is in [references/fanout.md](references/fanout.md).
 
 1. **Slice by estimated duration, not item count.** A long-context bin can run 10x a short one, so
    equal item counts leave most of the fleet idle. Chain several short runs onto one pod
@@ -171,6 +171,10 @@ Eight rules carry most of the value; the full method is in [references/fanout.md
    force `PYTHONUNBUFFERED=1` so logs advance in real time, and convert an early tokens-per-second
    reading into per-cell ETA so silence can be told apart from a stall. Declare a pod unreachable
    only when a dedicated probe fails.
+9. **Reap on completion.** A finished pod bills until something terminates it, and a monitor that
+   only reports does not stop the meter. Run a local reaper loop: probe, detect chain-process-gone,
+   fetch results and log, verify locally, and only then delete the pod. Never terminate on a
+   failed fetch or an unreachable probe.
 
 Per-pod startup runs about **4 min** when the image is only partially prebaked (dependency sync,
 model pull, evaluation-dataset pulls, server load) and drops to about **90 s** once the datasets
@@ -217,7 +221,9 @@ Each of these was hit for real. The full catalog, with symptoms and fixes, is
   that the run is done.
 - Give the workload itself a budget or time cap flag as the hard stop, so an overrun ends the
   work rather than the billing.
-- `pod-down.sh` runs immediately after `fetch`, in the same breath.
+- `pod-down.sh` runs immediately after `fetch`, in the same breath; for a fleet, a local reaper
+  loop makes that automatic (fetch, verify, then delete on chain completion), capping the idle
+  tail of every finished pod at the loop's poll interval.
 - Record the spend where the work is tracked, with GPU type, count, hourly rate, and wall time.
 
 ## Additional Resources

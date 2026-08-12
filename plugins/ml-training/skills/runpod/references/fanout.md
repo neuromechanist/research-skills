@@ -157,6 +157,34 @@ hour. With that math in hand, "zero cells complete after 20 minutes" was on sche
 stall, and the fleet's health check became "log advancing at the predicted rate" instead of "any
 results yet?".
 
+## Reap on completion: fetch, verify, terminate, automatically
+
+A finished pod bills at the full hourly rate until something terminates it, and a monitor that
+only *reports* progress does not stop the meter. Completion must trigger an action, not an
+observation. The first pod of a real grid sat idle for 15 minutes because a human had to notice
+the finished chain; a reaper loop caps that tail at its poll interval.
+
+Run one detached local loop over the fleet that, per cycle:
+
+1. **Probes reachability first.** An unreachable pod is never terminated; transient network reads
+   as "finished" otherwise.
+2. **Detects completion as chain-process-gone**, not as a log marker:
+   `pgrep -cf '<job-patter[n]>' == 0`. The chain shell's own command line contains the job
+   pattern, so the count stays nonzero in the gap between chained invocations, and this
+   detection also survives the exit marker being lost (a killed pane shell takes the marker's
+   `echo` with it).
+3. **Fetches results and the log, then verifies.** `scp` the per-slice results and the run log to
+   the local machine and check them there.
+4. **Terminates only after a verified fetch.** If the fetch fails while the pod still holds slice
+   files, leave the pod running and alert; a dropped `scp` must never race the delete. If the pod
+   holds no results at all (a crash before output), fetch the log as evidence and terminate
+   anyway.
+
+Ordering is the whole design: probe, detect, fetch, verify, and only then delete. The tempting
+alternative, pod-side self-termination after the job's last command, is worse on both axes that
+matter: it needs the account API key on rented hardware, and it puts the delete before any
+off-pod copy of the results has been verified.
+
 ## Startup anatomy, and how to shrink it
 
 Per-pod startup, measured on a partially prebaked image, runs about **4 minutes** across four
