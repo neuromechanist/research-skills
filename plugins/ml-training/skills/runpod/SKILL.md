@@ -1,6 +1,6 @@
 ---
 name: runpod
-description: "This skill should be used when the user says \"spin up a RunPod pod\", \"rent a GPU\", \"run this on a cloud GPU\", \"RunPod\", \"prebake a GPU image\", \"my pod takes 10 minutes to install\", \"boot-to-ready\", \"which GPU should I rent\", \"2x A100 or 1x H100\", \"is Modal cheaper\", \"multi-GPU pod\", \"pod ssh permission denied\", \"GLIBC not found on my pod\", \"terminate the pod\", \"how much did that pod cost\", or wants to provision, script, debug, or cost-control ephemeral cloud GPU pods for training, benchmarking, or serving."
+description: "This skill should be used when the user says \"spin up a RunPod pod\", \"rent a GPU\", \"run this on a cloud GPU\", \"RunPod\", \"prebake a GPU image\", \"my pod takes 10 minutes to install\", \"boot-to-ready\", \"which GPU should I rent\", \"2x A100 or 1x H100\", \"is Modal cheaper\", \"multi-GPU pod\", \"fan out this grid across pods\", \"run the benchmark in parallel\", \"pod fleet\", \"only one pod launched\", \"pod ssh permission denied\", \"ssh exit 255\", \"GLIBC not found on my pod\", \"terminate the pod\", \"how much did that pod cost\", or wants to provision, script, fan out, debug, or cost-control ephemeral cloud GPU pods for training, benchmarking, or serving."
 version: 0.1.0
 ---
 
@@ -118,6 +118,10 @@ Two non-obvious flags carry real scar tissue: `rsync` into a container fails `ch
 an explicit `STAGE` / `READY` / `FAILED` marker and verify it. A launch that silently no-opped on a
 renamed path once burned 17 idle billed minutes.
 
+Never suppress stderr on an orchestration path. A `2>/dev/null` on a launch `ssh` hid a
+self-killing `pkill` for half an hour, disguised as network flakiness (pitfall 17). Capture
+per-pod logs instead.
+
 ### Step 5: Fetch results, then terminate immediately
 
 Copy results **back to the local machine** with `scp` or `rsync`. Do not stage them through a
@@ -126,6 +130,39 @@ model hub; free-plan private storage caps have failed uploads mid-chain. Then
 
 Terminating is part of finishing the job, not a separate cleanup task. Full detached-run,
 marker, and cost protocol: [references/job-execution.md](references/job-execution.md).
+
+## Fanning out and scaling
+
+An evaluation grid or batch sweep is embarrassingly parallel: **N** independent single-GPU pods
+burn the same total GPU-hours as one pod and finish in **1/N** of the wall-clock time. Reach for a
+fleet of independent pods, **not** a multi-node instant cluster: clusters are distributed-*training*
+infrastructure (collective communication, interconnect, launcher config) and the wrong shape for
+independent cells.
+
+Six rules carry most of the value; the full method is in [references/fanout.md](references/fanout.md).
+
+1. **Slice by estimated duration, not item count.** A long-context bin can run 10x a short one, so
+   equal item counts leave most of the fleet idle. Chain several short runs onto one pod
+   (`cmd1; cmd2; cmd3` inside one `tmux` session) and write one results file per slice, merged
+   locally after fetch.
+2. **Provision what stock allows, then queue.** Availability is per (GPU type, GPU count), so
+   create pods until stock runs out and round-robin the unplaced slices onto the pods that did
+   provision, rebalanced by duration. Do not stall a grid waiting for the last pod.
+3. **Verify one pod end to end before replicating.** Session live, log line count advancing between
+   two samples, GPU utilization engaged. Only then copy the launch to the rest of the fleet; an
+   unverified launch multiplies one mistake by the size of the fleet.
+4. **Launchers are detached retry-with-backoff loops with a verification connection after every
+   attempt.** A transient network window can fail every pod in one wave and look exactly like a
+   systematic bug.
+5. **`ssh -n` in every loop.** Without it `ssh` eats the loop's stdin and only the first iteration
+   runs, while the rest of the fleet boots and bills doing nothing.
+6. **Build command chains in Python, not in the shell.** zsh does not word-split unquoted variables
+   the way bash does, so a chain assembled from a variable can collapse into one malformed command.
+
+Per-pod startup runs about **4 min** when the image is only partially prebaked (dependency sync,
+model pull, evaluation-dataset pulls, server load) and drops to about **90 s** once the datasets
+and **all** dependency groups are baked in. That difference is paid once at build time and saved N
+times across the fleet.
 
 ## Templates
 
@@ -155,6 +192,9 @@ Each of these was hit for real. The full catalog, with symptoms and fixes, is
 | Container never starts, device errors in the log | Host pool with a container-start bug | Pin `allowedCudaVersions` away from it and build on a matching base |
 | `There are no instances currently available` | Availability is per (type, count) | Query GraphQL stock, then pick another type or count |
 | Disk full mid-run | A second framework install, or one model copy of headroom | One environment only; size disk for 2x model plus caches |
+| Fleet launcher reports 1/N launched, rest idle | `ssh` consumed the loop's stdin | `ssh -n` in every loop |
+| Every pod fails instantly with the same argparse error | zsh did not word-split the command chain | Generate chains in Python, or run orchestration under `bash` |
+| Launch `ssh` exits 255 with no output, probe works | `pkill -f` matched and killed its own session | Character-class dodge (`pkill -f 'serve[r]'`) or `pkill -x`, and stop discarding stderr |
 
 ## Cost discipline
 
@@ -170,3 +210,4 @@ Each of these was hit for real. The full catalog, with symptoms and fixes, is
 - Reference: [references/pitfalls.md](references/pitfalls.md) - the full provisioning pitfall catalog with symptoms, causes, fixes, and what each one cost
 - Reference: [references/gpu-selection.md](references/gpu-selection.md) - stock queries, the pricing ladder, VRAM per dollar, and the single-card to multi-node scale ladder
 - Reference: [references/job-execution.md](references/job-execution.md) - detached `tmux` runs, marker discipline, result retrieval, and cost accounting
+- Reference: [references/fanout.md](references/fanout.md) - fanning a grid across a fleet: duration-based slicing, partial-stock queueing, verify-one-then-replicate, retry-with-backoff launchers, and startup anatomy

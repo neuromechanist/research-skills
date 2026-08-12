@@ -55,9 +55,14 @@ Two conclusions worth internalizing:
 
 ## The scale ladder for training a large model
 
-When a training or distillation run does not fit one card, climb this ladder one rung at a time
-and stop at the first rung that works. Every rung above the first adds engineering surface, and
-the higher rungs add more of it than they add capability.
+This ladder is for **one run that does not fit one card**. If the work is instead many independent
+cells (an evaluation grid, a benchmark sweep, a batch of jobs), do not climb it at all: fan the
+cells out across independent single-GPU pods, which costs the same GPU-hours at 1/N the
+wall-clock. See [fanout.md](fanout.md).
+
+For a single run that does not fit, climb one rung at a time and stop at the first rung that
+works. Every rung above the first adds engineering surface, and the higher rungs add more of it
+than they add capability.
 
 1. **Shrink the problem so one card is enough.** Precompute teacher or reference logits to disk
    ahead of time, then train against the cached tensors. An 80 GB card carries the run with no
@@ -67,9 +72,10 @@ the higher rungs add more of it than they add capability.
    framework.
 3. **One bigger card.** An H200 at 141 GB buys zero plumbing at a higher hourly rate. When
    engineering time is the scarce resource, this is often cheaper than rung 2.
-4. **Multi-node instant cluster.** Last resort. It adds collective-communication setup, launcher
-   configuration, and a whole class of failure modes that do not exist below this line. Only
-   climb here when a single host provably cannot hold the run.
+4. **Multi-node instant cluster.** Last resort, and only for genuinely distributed training. It
+   adds collective-communication setup, launcher configuration, and a whole class of failure modes
+   that do not exist below this line. Independent cells never belong here; a cluster is the wrong
+   instrument for embarrassingly parallel work no matter how large the grid.
 
 Single-host multi-GPU (rung 2) is provisioned with `gpuCount: N` in the same pod create call
 that a single-GPU pod uses. There is no separate cluster concept until rung 4.

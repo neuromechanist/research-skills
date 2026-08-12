@@ -60,6 +60,14 @@ or verify the file exists at the expected path after every copy.
 The rule: every stage echoes a timestamped `STAGE` / `READY` / `FAILED` marker, and the calling
 script verifies the marker before proceeding. A missing marker is a hard failure, never a warning.
 
+**Never suppress stderr on an orchestration path.** A `2>/dev/null` on a launch `ssh` hid a
+self-killing `pkill -f` for half an hour, where it read as network flakiness
+([pitfalls.md](pitfalls.md) #17). Redirect stderr into a per-pod log instead, so every failed step
+leaves evidence: `ssh ... >>"logs/$HOST.log" 2>&1`.
+
+Scaling this to more than one pod adds its own failure modes (stdin-eating `ssh` in loops,
+shell word-splitting, partial stock). See [fanout.md](fanout.md).
+
 ## Poll status
 
 ```bash

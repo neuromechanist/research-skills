@@ -189,7 +189,9 @@ basename, so a renamed file arrives under its old name and the next step misses 
 
 **Fix:** echo explicit `STAGE`, `READY`, and `FAILED` markers with timestamps, and verify the
 marker before moving on. Confirm the process exists (`tmux has-session`), confirm the log has
-grown, and treat a missing marker as a hard failure.
+grown, and treat a missing marker as a hard failure. Never suppress stderr on an orchestration
+path: `2>/dev/null` on a launch `ssh` hid pitfall 17 for half an hour. Capture per-pod logs
+instead.
 
 ```bash
 tmux has-session -t "$SESSION" && echo "=== LAUNCHED ok" || { echo "!!! LAUNCH FAILED"; exit 1; }
@@ -223,3 +225,77 @@ or file count locally, and only then terminate.
 **Fix:** make `fetch` and `pod-down.sh` one motion. Give the workload its own budget or time cap
 flag as the hard stop, so an overrunning job stops itself. Record the spend, with GPU type,
 count, hourly rate, and wall time, wherever the work is tracked.
+
+## Fleet orchestration
+
+These three only appear once more than one pod is in play, and all three look like something else
+when they hit. See [fanout.md](fanout.md) for the surrounding fan-out method.
+
+### 15. `ssh` inside a `while read` loop eats the loop's stdin
+
+**Symptom:** a fleet launcher reports `1/N launched`. The other N-1 pods are up, idle, and
+billing. The loop looks correct on inspection, and running its body by hand works every time.
+
+**Cause:** `ssh` reads stdin by default. Inside a `while read ... done < list.txt` loop, the first
+`ssh` consumes the **rest of the loop's input**, so the loop body executes exactly once and the
+loop then exits normally, with no error anywhere.
+
+**Fix:** `ssh -n` in every loop, without exception. `-n` redirects stdin from `/dev/null` and costs
+nothing when it is not needed.
+
+```bash
+while read -r host port; do
+    ssh -n -p "$port" "$host" "$CMD"   # -n: do not touch the loop's stdin
+done < fleet.txt
+```
+
+The same applies to any stdin-reading command in a loop body. Note that a deliberate heredoc
+(`ssh host 'bash -s' <<'EOF'`) is the opposite case: it *needs* stdin, so keep it out of loops that
+read from stdin, or feed the loop from a file descriptor other than 0.
+
+**Cost when hit:** 3 pods idle for about 8 minutes.
+
+### 16. zsh does not word-split unquoted variables
+
+**Symptom:** every pod in the fleet fails instantly with an argparse error, all with the same
+malformed argument such as `--tasks a b c` where three separate invocations were intended.
+
+**Cause:** shells disagree about unquoted variable expansion. bash splits on `IFS`; zsh does not.
+A command chain built in an interactive zsh with `for F in $FILTERS` iterates **once**, with the
+whole string as a single word, collapsing an intended chain of commands into one malformed
+command. The orchestration script is usually written and tested in bash, then pasted into an
+interactive zsh session, which is where the behavior changes.
+
+**Fix:** never rely on shell word-splitting in orchestration. Generate command chains in Python
+(or another real language) and pass each as a single quoted argument; or run orchestration under
+`bash` explicitly rather than in whatever interactive shell happens to be open.
+
+```python
+chain = "; ".join(f"uv run python -m <module> --task {t} --out results/{t}.jsonl" for t in tasks)
+```
+
+**Cost when hit:** a full relaunch wave, plus the pods' idle time while the error is diagnosed.
+
+### 17. `pkill -f <name>` matches, and kills, its own `ssh` session
+
+**Symptom:** the launch `ssh` exits 255 with **zero output**, every time, while a plain probe
+connection to the same pod succeeds every time. It looks exactly like network flakiness, and
+retrying produces the identical result.
+
+**Cause:** `pkill -f` matches against **full command lines**, and the remote command line executed
+by `ssh` contains the pattern as a literal. The remote shell therefore matches its own pattern and
+kills itself mid-command, so the connection dies before any output is flushed.
+
+**Fix:** make the pattern unable to match its own literal, with the character-class dodge, or match
+an exact process name instead:
+
+```bash
+# 'serve[r]' matches the process "server" but never its own literal on the command line
+ssh -n -p "$PORT" "$HOST" "pkill -f 'serve[r]' || true"
+ssh -n -p "$PORT" "$HOST" "pkill -x exact-process-name || true"
+```
+
+And keep stderr: this one hid behind a `2>/dev/null` on the launch `ssh` for half an hour. Never
+suppress stderr on an orchestration path; capture per-pod logs instead.
+
+**Cost when hit:** about 30 minutes of misdiagnosis plus repeated relaunch waves.

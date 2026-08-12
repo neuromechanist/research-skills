@@ -21,13 +21,15 @@ Most evaluation work is bound by aggregate VRAM rather than tensor throughput, a
 
 Availability is per (GPU type, GPU count), so a type with 1x stock may have no 2x capacity at all; the skill queries GraphQL for stock before planning a run around a card, because the REST API exposes no equivalent path.
 
+Shape matters as much as size. An evaluation grid is embarrassingly parallel, so N independent single-GPU pods burn the same GPU-hours as one pod and finish in 1/N of the wall-clock time; a multi-node instant cluster is distributed-training infrastructure and the wrong instrument for independent cells. The fan-out reference covers slicing by estimated duration rather than item count (a long-context bin can run 10x a short one), queueing leftover slices onto whichever pods stock allowed, verifying one pod end to end before replicating the launch, and shrinking the roughly 4-minute per-pod startup to about 90 seconds by baking the evaluation datasets and every dependency group into the image.
+
 ## Never hit the same pitfall twice
 
-The skill ships a pitfall catalog where every entry was hit on a real, billed pod: a base image whose glibc did not match the prebuilt binaries copied into it, `ssh` sessions that do not inherit Docker `ENV`, REST-created pods that get no injected `ssh` key, `rsync` failing `chown` inside a container and killing a `set -e` launch script, a host pool with a fleet-wide container-start bug, and a fire-and-forget launch that silently no-opped and billed 17 idle minutes. Each entry pairs the symptom with the fix, and the templates have the fixes already applied.
+The skill ships a pitfall catalog where every entry was hit on a real, billed pod: a base image whose glibc did not match the prebuilt binaries copied into it, `ssh` sessions that do not inherit Docker `ENV`, REST-created pods that get no injected `ssh` key, `rsync` failing `chown` inside a container and killing a `set -e` launch script, a host pool with a fleet-wide container-start bug, and a fire-and-forget launch that silently no-opped and billed 17 idle minutes. Fleet work adds three more, each of which impersonates a different bug: `ssh` inside a loop eats the loop's stdin so only the first pod launches while the rest boot and bill, zsh does not word-split an unquoted variable the way bash does so a generated command chain collapses into one malformed command, and `pkill -f` matches full command lines including the `ssh` session running it, killing that session mid-command and reading as network flakiness. Each entry pairs the symptom with the fix, and the templates have the fixes already applied.
 
 ## Skills
 
-- **runpod**: fast, cost-controlled cloud GPU provisioning: prebaked images that boot in seconds, pod lifecycle scripts (`pod-up`, `pod-run`, `pod-down`), GPU selection and pricing ladders, detached job execution with marker checks, and the full provisioning pitfall catalog
+- **runpod**: fast, cost-controlled cloud GPU provisioning: prebaked images that boot in seconds, pod lifecycle scripts (`pod-up`, `pod-run`, `pod-down`), GPU selection and pricing ladders, detached job execution with marker checks, fanning a grid out across a fleet of independent pods, and the full provisioning pitfall catalog
 
 ## Try it
 
@@ -35,6 +37,7 @@ The skill ships a pitfall catalog where every entry was hit on a real, billed po
 "Spin up a RunPod pod with 2 GPUs and run this benchmark grid on it"
 "My pod spends 10 minutes installing before every run, fix that"
 "Which GPU should I rent for a 30B model, 2x A100 or 1x H100?"
+"Fan this benchmark grid out across 6 pods and merge the results"
 "The pod boots but ssh says permission denied"
 "Fetch the results and terminate the pod"
 ```
