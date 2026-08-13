@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "research-skills",
-  "version": "0.15.16",
-  "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, figures, presentations, project lifecycle management, and neuroinformatics",
+  "version": "0.16.0",
+  "description": "Claude Code plugins for academic research and development: literature search, grant writing and review, manuscript preparation, figures, presentations, project lifecycle management, neuroinformatics, and cloud GPU provisioning for model training",
   "owner": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
@@ -90,6 +90,18 @@
       },
       "source": "./plugins/neuroinformatics",
       "category": "research",
+      "homepage": "https://github.com/neuromechanist/research-skills"
+    },
+    {
+      "name": "ml-training",
+      "description": "Machine-learning training and benchmarking on rented cloud GPUs: prebaked RunPod images that boot in seconds instead of minutes, pod lifecycle scripts, GPU selection and pricing ladders, and the provisioning pitfall catalog",
+      "version": "0.1.0",
+      "author": {
+        "name": "Seyed Yahya Shirazi",
+        "email": "shirazi@ieee.org"
+      },
+      "source": "./plugins/ml-training",
+      "category": "development",
       "homepage": "https://github.com/neuromechanist/research-skills"
     }
   ]

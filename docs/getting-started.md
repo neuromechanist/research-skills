@@ -16,7 +16,7 @@ Install all plugins via CLI:
 
 ```bash
 claude plugin marketplace add neuromechanist/research-skills
-for p in project grant manuscript opencite figures presentation neuroinformatics; do
+for p in project grant manuscript opencite figures presentation neuroinformatics ml-training; do
   claude plugin install "$p@research-skills"
 done
 ```

@@ -1,0 +1,24 @@
+{
+  "name": "ml-training",
+  "version": "0.1.0",
+  "description": "Machine-learning training and benchmarking on rented cloud GPUs: prebaked RunPod images that boot in seconds instead of minutes, pod lifecycle scripts, GPU selection and pricing ladders, and the provisioning pitfall catalog",
+  "author": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "license": "BSD-3-Clause",
+  "skills": "./skills/",
+  "keywords": [
+    "runpod",
+    "gpu",
+    "cloud-gpu",
+    "cuda",
+    "docker",
+    "provisioning",
+    "training",
+    "benchmarking",
+    "inference",
+    "cost-control",
+    "ssh"
+  ]
+}
