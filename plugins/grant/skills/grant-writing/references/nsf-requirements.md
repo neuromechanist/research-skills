@@ -59,9 +59,29 @@ Panelists write narrative reviews; no numeric scores. Final funding decisions co
 - Portfolio balance and strategic priorities
 
 ## Formatting Requirements
-- Fonts: Arial/Helvetica 10pt+, Times New Roman 11pt+, Palatino 10pt+
-- Margins: 1 inch minimum all sides
-- Single-spaced
+Verified against PAPPG (NSF 24-1) Ch. II.C, 2026-08-29; the same list is what
+Research.gov's automated document checks enforce.
+- Fonts, exact permitted list: Arial (NOT Arial Narrow), Courier New, or
+  Palatino Linotype at 10 pt or larger; Times New Roman at 11 pt or larger;
+  Computer Modern family at 11 pt or larger. Smaller than 10 pt is allowed only
+  in formulas, figures, tables, captions, and Symbol-font special characters.
+  Headers/headings must also use a permitted font, in black.
+- Margins: at least 1 inch in ALL directions; nothing in the margins. This is
+  NOT the NIH 0.5-inch convention; reusing NIH LaTeX preambles for NSF is a
+  recurring mistake.
+- Line spacing: no more than 6 lines of text per vertical inch (10 pt on 12 pt
+  leading is exactly at the cap).
+- Paper: US letter; single-column strongly encouraged.
+- These rules apply to EVERY uploaded section, including supplementary
+  documents and letters.
+- Project Summary: if uploaded as a PDF (permitted only when special characters
+  are needed), the three headings `Overview`, `Intellectual Merit`, and
+  `Broader Impacts` must EACH sit alone on their own line with nothing else on
+  that line, or Research.gov rejects the upload.
+- LaTeX: `examples/nsfproposal.cls` in this skill encodes all of the above
+  (1-inch margins, helvet/Arial, 10pt or 11pt options, no page numbers).
+  Beware fixed-size `\includegraphics` figures wider than the 6.5-inch text
+  width; scale with `width=\textwidth`.
 
 ## 2024 Updates
 - Synergistic Activities now separate document (1 page)
