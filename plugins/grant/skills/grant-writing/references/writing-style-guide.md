@@ -7,6 +7,18 @@
 3. **Strategic bolding** - Bold key statements reviewers should remember; not liberal use
 4. **No em-dashes (PI style preference)** - Use commas, semicolons, or parentheses instead. This is a PI stylistic convention, not a universal grant writing standard.
 5. **Define abbreviations on first use** - Full term before acronym, once per document
+6. **Clear sentences above all** - A knowledgeable reader must follow every sentence on the first read. If a sentence runs 2-3 typeset lines, break it: one idea per sentence.
+
+## Clear Sentences (the most common revision)
+
+The most frequent defect in drafts is the long chained sentence. Fix these patterns on every pass:
+
+- **Break 2-3 line sentences.** Chained independent clauses ("..., and ..., and ..., so ...") become separate sentences. Enumerations of parallel items may keep their "and"s; chained *claims* may not.
+- **Name the referent.** Replace "it/its/this/that" whenever the referent is not the immediately preceding noun; repeat the noun ("LSL", "the platform", "secureLSL") rather than making the reader track a pronoun across clauses.
+- **No sentence-initial And/But/Nor** and no rhetorical inversions ("Nor is this...", "a platform that cannot X cannot Y"). State the literal claim plainly.
+- **Introduce before use.** Any name, group, or term a panelist outside the subfield would not know gets a plain-words identifier on first mention ("the Morningside Group, an international body of neuroscientists and ethicists").
+- **Never concede unprompted.** Delete self-undermining framings ("we make no claim about...", "we cannot know..."); state the positive claim the evidence supports.
+- **Cite named standards and datasets** on first mention (e.g., Brain Imaging Data Structure (BIDS) needs its citation, not just its definition).
 
 ## Style Elements
 

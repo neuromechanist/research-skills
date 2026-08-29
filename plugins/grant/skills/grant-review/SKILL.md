@@ -20,6 +20,7 @@ Review validity depends on independence: a reviewer that shares the conversation
 
 - **Single (default):** one independent reviewer applies the full procedure end to end.
 - **Panel (opt-in):** spawn N independent reviewers in parallel, then a synthesis pass. Trigger on "mock study section", "panel review", or an explicit request for multiple reviewers. NIH: 3 reviewers; NSF: 2-3 panelists. Each reviewer scores independently from `references/`; a final chair pass reconciles them into one output. Surface genuine disagreement rather than blindly averaging scores.
+- **Readability (run BEFORE the panel):** one fresh-context reviewer restricted to clarity, no merit scoring. Merit reviewers do not line-edit: a panel can run clean while the first page still contains prose the PI cannot follow on first read. Hunt specifically for: sentences spanning 2-3 typeset lines (break them; one idea per sentence), and-chained run-on clauses, pronoun chains ("it/its/this" with distant or ambiguous referents), sentence-initial And/But/Nor and other rhetorical inversions, terms or names used before being introduced to a panelist outside the PI's subfield, abbreviations used before definition, and claims that concede ground needlessly ("we make no claim..."). Report line-anchored findings with length-neutral rewrites; the document is usually at its page limit.
 
 ## Dispatch
 
