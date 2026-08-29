@@ -1,8 +1,7 @@
 % nsfproposal.cls — LaTeX class for NSF proposal documents
 %
-% Encodes the PAPPG format requirements (verified against NSF 24-1 Ch. II.C,
-% https://www.nsf.gov/policies/pappg/24-1/ch-2-proposal-preparation, 2026-08-29;
-% identical rules quoted back by UCSD research administration):
+% Encodes the PAPPG format requirements (NSF 24-1 Ch. II.C,
+% https://www.nsf.gov/policies/pappg/24-1/ch-2-proposal-preparation):
 %   - Margins: at least 1 inch in ALL directions; nothing in the margins.
 %     Applies to every uploaded section, including supplementary documents.
 %   - Fonts: Arial (NOT Arial Narrow), Courier New, or Palatino Linotype at
