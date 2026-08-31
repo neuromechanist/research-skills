@@ -47,7 +47,7 @@ Text placement follows a ladder: the model renders panel letters, titles, and sh
 - **scientific-figure**: the composer (the sink): `svgutils`-based, exact mm coordinates, `validate_fonts.py` before export, Inkscape/cairosvg backend
 - **plot-styling**: data plots via matplotlib, seaborn, plotnine, plotly, or PyVista, with SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS
 - **svg-figure** / **svg-primitives**: hand-authored or programmatic schematics: boxes, arrows, and labels in SVG, with `svg-primitives` preferred for new work (mm-precise, auto-fit text, tangent-correct arrows, in-process validation)
-- **transparent-icons**: flat scientific icons through the shared Codex or API backend, keeping the model's native alpha
+- **transparent-icons**: flat scientific icons through the shared Codex or API backend, or explicit Atlas Cloud, keeping the model's native alpha
 - **ai-full-figure**: single panels or whole multi-panel figures rendered by gpt-image-2 (Codex CLI, default `gpt-5.6-luna` at max effort) with verbatim text, panels generated in parallel with reference-image consistency and composed at journal width, plus the SVG overlay for dense labels
 - **figure-qa**: the QA agent described above, run against every figure regardless of how it was built
 

@@ -1,6 +1,6 @@
 ---
 name: transparent-icons
-description: Use this skill when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", "generate an icon set", "batch icons", or wants flat scientific icons (brain, neuron, DNA, EEG cap, microscope) with transparent backgrounds in a journal style. Generates PNG icons with gpt-image-2 through the Codex CLI (or the OpenAI Images API), keeps the model's native alpha, and reads palette and model settings from the project theme made by figures:figure-bible.
+description: Use this skill when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", "generate an icon set", "batch icons", or wants flat scientific icons (brain, neuron, DNA, EEG cap, microscope) with transparent backgrounds in a journal style. Generates PNG icons with gpt-image-2 through the Codex CLI (or the OpenAI Images API), or Atlas Cloud with explicit opt-in, keeps the model's native alpha, and reads palette and model settings from the project theme made by figures:figure-bible.
 version: 0.2.0
 ---
 
@@ -17,6 +17,7 @@ Generation goes through the shared backend in `plugins/figures/lib/image_backend
 1. **Codex CLI `image_gen`** (default when `codex` is logged in). No API key needed.
    The model and effort come from the theme's `model_preferences` (default `gpt-5.6-luna` at `xhigh`), which lands good icons at the cheapest tier in one to two minutes each.
 2. **OpenAI Images API** (`--backend api`) with `OPENAI_API_KEY`.
+3. **Atlas Cloud** (`--backend atlas`) with `ATLASCLOUD_API_KEY`. This is explicit-only; it never changes the Codex-first auto route. The default model is `black-forest-labs/flux-schnell`, and the asynchronous result is polled with a bounded timeout.
 
 The backend preflights Codex with a 10 second timeout and explains the fix when the binary hangs (approve it once from Terminal.app, or copy `codex` and `codex-code-mode-host` to a folder you own, `xattr -c` both, and set `CODEX_BIN`).
 `--backend fake` renders placeholder icons for tests.
@@ -53,8 +54,16 @@ uv run --with pillow python scripts/generate_icon.py "a flat icon of a {item}" \
 ```
 
 Other flags: `--colors "teal,coral"` overrides the theme palette for one run; `--size 1024` (square);
-`--backend auto|codex|api|fake`; `--codex-bin`; `--timeout`; `--verbose`; `--print-prompt`.
+`--backend auto|codex|api|fake|atlas`; `--atlas-model`; `--codex-bin`; `--timeout`; `--verbose`; `--print-prompt`.
 A log is written next to each output as `<out>.codex.log`.
+
+Atlas example (explicit opt-in):
+
+```bash
+ATLASCLOUD_API_KEY=... uv run --with pillow python scripts/generate_icon.py \
+    --template neuron --backend atlas --atlas-model black-forest-labs/flux-schnell \
+    -o icons/neuron.png
+```
 
 ## Theme bible
 
