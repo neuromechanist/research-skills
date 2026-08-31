@@ -1,7 +1,7 @@
 ---
 name: transparent-icons
-description: This skill should be used when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", "generate an icon set", "batch icons", "icon batch", "batch generate icons", or wants flat scientific icons (brain, neuron, DNA, EEG cap, etc.) in the Nature/Science journal style with transparent backgrounds. Generates PNG icons via the Codex CLI image_gen tool (preferred) or the OpenAI Images API (fallback), then applies transparency via a Pillow threshold by default or rembg + BiRefNet (opt-in, higher edge quality).
-version: 0.1.0
+description: This skill should be used when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", "generate an icon set", "batch icons", "icon batch", "batch generate icons", or wants flat scientific icons (brain, neuron, DNA, EEG cap, etc.) in the Nature/Science journal style with transparent backgrounds. Generates PNG icons via the Codex CLI image_gen tool (preferred), the OpenAI Images API (fallback), or Atlas Cloud (explicit opt-in), then applies transparency via a Pillow threshold by default or rembg + BiRefNet (opt-in, higher edge quality).
+version: 0.1.1
 ---
 
 # Transparent Icons
@@ -10,12 +10,13 @@ Generate flat scientific icons (Nature/Science journal style) with transparent b
 
 ## Backends
 
-Two generation backends, auto-selected:
+Two generation backends are auto-selected, with a third explicit option:
 
 1. **Codex CLI `image_gen` tool** (preferred). Uses the local Codex authentication (`~/.codex/auth.json`). No `OPENAI_API_KEY` required. Internally uses gpt-image-2 (April 2026). Default when `codex` is on `$PATH` and authenticated.
 2. **OpenAI Images API** (fallback). Calls `client.images.generate(model="gpt-image-2", ...)` directly. Requires `OPENAI_API_KEY` in environment or `.env`.
+3. **Atlas Cloud** (explicit opt-in). Calls the asynchronous Atlas Cloud image API directly with the caller's `ATLASCLOUD_API_KEY`. The default model is `black-forest-labs/flux-schnell`; select another current image model with `--atlas-model` after checking its live schema. The billable generation POST is submitted once, while prediction GET requests use bounded retries.
 
-Why two backends: many researchers have a ChatGPT subscription and `codex login` but no separate API key. Auto-selection routes through Codex first to keep the no-API-key path working; explicit `--backend codex` or `--backend api` overrides.
+Why multiple backends: many researchers have a ChatGPT subscription and `codex login` but no separate API key. Auto-selection routes through Codex first to keep the no-API-key path working; explicit `--backend codex`, `--backend api`, or `--backend atlas` overrides. Atlas is never auto-selected, so existing defaults are unchanged.
 
 ## Transparency
 
@@ -60,6 +61,14 @@ Force a specific backend:
 
 ```bash
 ... --backend codex   # or --backend api
+```
+
+Use Atlas Cloud explicitly:
+
+```bash
+ATLASCLOUD_API_KEY=... uv run --with python-dotenv --with pillow \
+    python scripts/generate_icon.py --template neuron --backend atlas \
+    --atlas-model black-forest-labs/flux-schnell -o neuron.png
 ```
 
 ## Theme bible: keep an icon set consistent

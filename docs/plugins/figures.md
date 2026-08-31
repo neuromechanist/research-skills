@@ -40,7 +40,7 @@ Programmatic checks own anything with ground truth (font minima, palette complia
 - **scientific-figure**: the composer (the sink): `svgutils`-based, exact mm coordinates, `validate_fonts.py` before export, Inkscape/cairosvg backend
 - **plot-styling**: data plots via matplotlib, seaborn, plotnine, plotly, or PyVista, with SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS
 - **svg-figure** / **svg-primitives**: hand-authored or programmatic schematics: boxes, arrows, and labels in SVG, with `svg-primitives` preferred for new work (mm-precise, auto-fit text, tangent-correct arrows, in-process validation)
-- **transparent-icons**: flat scientific icons via the Codex CLI `image_gen` tool or the OpenAI Images API, with Pillow-threshold or opt-in `rembg`+BiRefNet transparency
+- **transparent-icons**: flat scientific icons via the Codex CLI `image_gen` tool, the OpenAI Images API, or explicit Atlas Cloud, with Pillow-threshold or opt-in `rembg`+BiRefNet transparency
 - **ai-full-figure**: an AI-generated pictorial substrate plus programmatic label/arrow/scale-bar overlay, so the model never hallucinates the labels themselves
 - **figure-qa**: the QA agent described above, run against every figure regardless of how it was built
 
