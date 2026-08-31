@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Generate flat scientific icons using gpt-image-2.
 
-Two backends are supported and auto-selected by default:
+Three backends are supported. The first two are auto-selected by default:
 
   1. codex   - Uses the Codex CLI's platform-native image_gen tool. Requires a
                valid `codex login` (ChatGPT subscription or API key in
                ~/.codex/auth.json). No OPENAI_API_KEY needed.
   2. api     - Calls the OpenAI Images API directly. Requires OPENAI_API_KEY
                via environment, .env, or ~/.env.
+  3. atlas   - Calls Atlas Cloud directly with ATLASCLOUD_API_KEY. This backend
+               is explicit-only and never changes the default routing.
 
 Auto selection prefers codex when both `codex` is on PATH and
 ~/.codex/auth.json exists; otherwise it falls back to the API.
@@ -37,12 +39,14 @@ Usage:
     # Force a backend
     uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --backend codex -o neuron.png
     uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --backend api   -o neuron.png
+    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --backend atlas -o neuron.png
 
     # List available templates
     uv run --with python-dotenv python scripts/generate_icon.py --list-templates
 
 Environment:
     OPENAI_API_KEY - Required for the api backend. Read from .env file or environment.
+    ATLASCLOUD_API_KEY - Required for the explicit atlas backend.
     CODEX_HOME     - Optional; defaults to ~/.codex. Auth probed at $CODEX_HOME/auth.json.
 """
 
@@ -50,14 +54,19 @@ from __future__ import annotations
 
 import argparse
 import base64
+import io
 import json
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 
 try:
     from dotenv import load_dotenv
@@ -76,7 +85,6 @@ except ImportError:
 
 try:
     from PIL import Image
-    import io
 
     HAS_PILLOW = True
 except ImportError:
@@ -95,6 +103,11 @@ BASE_STYLE = (
     "no text, no labels, clean edges, centered"
 )
 
+ATLAS_API_BASE = "https://api.atlascloud.ai/api/v1"
+ATLAS_DEFAULT_MODEL = "black-forest-labs/flux-schnell"
+ATLAS_TERMINAL_SUCCESS = {"completed", "succeeded", "success"}
+ATLAS_TERMINAL_FAILURE = {"failed", "canceled", "cancelled"}
+
 
 def load_templates() -> dict[str, Any]:
     """Load icon templates from the icon bible JSON."""
@@ -106,7 +119,9 @@ def load_templates() -> dict[str, Any]:
     return {t["id"]: t for t in data.get("templates", [])}
 
 
-def template_to_prompt(template: dict[str, Any], color_override: str | None = None) -> str:
+def template_to_prompt(
+    template: dict[str, Any], color_override: str | None = None
+) -> str:
     """Convert a template JSON to a detailed generation prompt."""
     parts = [f"A {BASE_STYLE}."]
     parts.append(f"Subject: {template['description']}.")
@@ -135,7 +150,9 @@ def template_to_prompt(template: dict[str, Any], color_override: str | None = No
 
     bg = comp.get("background", "white")
     if bg == "transparent":
-        parts.append("On a transparent/white background (will be removed in post-processing).")
+        parts.append(
+            "On a transparent/white background (will be removed in post-processing)."
+        )
     else:
         parts.append("On a clean white background.")
 
@@ -147,7 +164,9 @@ def template_to_prompt(template: dict[str, Any], color_override: str | None = No
     return " ".join(parts)
 
 
-def build_prompt(subject: str, colors: str | None = None, transparent: bool = False) -> str:
+def build_prompt(
+    subject: str, colors: str | None = None, transparent: bool = False
+) -> str:
     """Build the full prompt from a free-form subject description."""
     parts = [f"A {BASE_STYLE} of {subject}"]
 
@@ -210,6 +229,14 @@ def resolve_backend(requested: str) -> str:
             )
             sys.exit(1)
         return "api"
+    if requested == "atlas":
+        if not os.environ.get("ATLASCLOUD_API_KEY", "").strip():
+            print(
+                "Backend 'atlas' requires ATLASCLOUD_API_KEY in the environment or .env.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        return "atlas"
     print(f"Unknown backend: {requested}", file=sys.stderr)
     sys.exit(1)
 
@@ -271,6 +298,172 @@ def generate_icon_api(
     return image_data
 
 
+def _atlas_base_url() -> str:
+    """Normalize an optional OpenAI-style Atlas base URL to the media API."""
+    base = os.environ.get("ATLASCLOUD_API_BASE", ATLAS_API_BASE).rstrip("/")
+    if base.endswith("/v1") and not base.endswith("/api/v1"):
+        return base[:-3] + "/api/v1"
+    return base
+
+
+def _atlas_json(
+    url: str,
+    api_key: str,
+    *,
+    method: str = "GET",
+    body: dict[str, Any] | None = None,
+    timeout_s: int = 60,
+) -> dict[str, Any]:
+    """Make one Atlas request. Billable POSTs are intentionally never retried."""
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    request = Request(
+        url,
+        data=data,
+        method=method,
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 research-skills-transparent-icons/0.11.1",
+        },
+    )
+    try:
+        with urlopen(request, timeout=timeout_s) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        raise RuntimeError(f"Atlas Cloud HTTP {exc.code}: {detail}") from exc
+    except (URLError, TimeoutError) as exc:
+        raise RuntimeError(f"Atlas Cloud request failed: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("Atlas Cloud returned invalid JSON") from exc
+
+    if not isinstance(payload, dict):
+        raise TypeError("Atlas Cloud returned a non-object response")
+    code = payload.get("code")
+    if code not in (None, 0, 200, "200"):
+        raise RuntimeError(
+            f"Atlas Cloud API error {code}: {payload.get('msg') or payload.get('message')}"
+        )
+    result = payload.get("data", payload)
+    if not isinstance(result, dict):
+        raise TypeError("Atlas Cloud response is missing an object payload")
+    return result
+
+
+def _atlas_output_url(prediction: dict[str, Any]) -> str | None:
+    outputs = prediction.get("outputs") or prediction.get("output")
+    if isinstance(outputs, str):
+        return outputs
+    if isinstance(outputs, list) and outputs:
+        first = outputs[0]
+        if isinstance(first, str):
+            return first
+        if isinstance(first, dict) and isinstance(first.get("url"), str):
+            return first["url"]
+    return None
+
+
+def _ensure_png(image_data: bytes) -> bytes:
+    """Normalize Atlas output to PNG so the CLI's output contract stays stable."""
+    if image_data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return image_data
+    if not HAS_PILLOW:
+        raise RuntimeError(
+            "The Atlas backend requires Pillow to normalize model output to PNG. "
+            "Re-run with `--with pillow`."
+        )
+    image = Image.open(io.BytesIO(image_data))
+    output = io.BytesIO()
+    image.save(output, format="PNG")
+    return output.getvalue()
+
+
+def generate_icon_atlas(
+    prompt: str,
+    model: str = ATLAS_DEFAULT_MODEL,
+    size: int = 1024,
+    transparent: bool = False,
+    transparency_method: str = "threshold",
+    timeout_s: int = 300,
+) -> bytes:
+    """Generate one icon through Atlas Cloud with one submission and bounded polling."""
+    api_key = os.environ.get("ATLASCLOUD_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("ATLASCLOUD_API_KEY is required for the atlas backend")
+    base_url = _atlas_base_url()
+    accepted = _atlas_json(
+        f"{base_url}/model/generateImage",
+        api_key,
+        method="POST",
+        body={
+            "model": model,
+            "prompt": prompt,
+            "size": f"{size}*{size}",
+            "num_images": 1,
+            "seed": -1,
+        },
+    )
+    prediction_id = str(accepted.get("id") or accepted.get("request_id") or "").strip()
+    if not prediction_id:
+        raise RuntimeError("Atlas Cloud submission did not return a prediction id")
+
+    deadline = time.monotonic() + timeout_s
+    consecutive_get_errors = 0
+    while True:
+        try:
+            prediction = _atlas_json(
+                f"{base_url}/model/prediction/{quote(prediction_id, safe='')}",
+                api_key,
+                timeout_s=30,
+            )
+            consecutive_get_errors = 0
+        except RuntimeError:
+            consecutive_get_errors += 1
+            if consecutive_get_errors >= 3 or time.monotonic() >= deadline:
+                raise
+            time.sleep(2 ** (consecutive_get_errors - 1))
+            continue
+
+        status = str(prediction.get("status", "")).lower()
+        if status in ATLAS_TERMINAL_SUCCESS:
+            output_url = _atlas_output_url(prediction)
+            if not output_url:
+                raise RuntimeError(
+                    "Atlas Cloud prediction succeeded without an output URL"
+                )
+            break
+        if status in ATLAS_TERMINAL_FAILURE:
+            detail = (
+                prediction.get("error") or prediction.get("logs") or "unknown error"
+            )
+            raise RuntimeError(f"Atlas Cloud prediction {status}: {detail}")
+        if time.monotonic() >= deadline:
+            raise RuntimeError(
+                f"Atlas Cloud prediction timed out after {timeout_s}s: {prediction_id}"
+            )
+        time.sleep(3)
+
+    try:
+        request = Request(
+            output_url,
+            headers={
+                "Accept": "image/*",
+                "User-Agent": "Mozilla/5.0 research-skills-transparent-icons/0.11.1",
+            },
+        )
+        with urlopen(request, timeout=60) as response:
+            image_data = response.read()
+    except (HTTPError, URLError, TimeoutError) as exc:
+        raise RuntimeError(f"Atlas Cloud image download failed: {exc}") from exc
+    if not image_data:
+        raise RuntimeError("Atlas Cloud returned an empty image")
+    image_data = _ensure_png(image_data)
+    if transparent:
+        image_data = _apply_transparency(image_data, method=transparency_method)
+    return image_data
+
+
 def generate_icon_codex(
     prompt: str,
     size: int = 1024,
@@ -302,8 +495,10 @@ def generate_icon_codex(
         try:
             proc = subprocess.run(
                 [
-                    "codex", "exec",
-                    "--sandbox", "workspace-write",
+                    "codex",
+                    "exec",
+                    "--sandbox",
+                    "workspace-write",
                     "--skip-git-repo-check",
                     codex_prompt,
                 ],
@@ -358,22 +553,38 @@ def _safe_tail(s: Any, n: int) -> str:
 
 def generate_icon(
     backend: str,
-    client: Optional[Any],
+    client: Any | None,
     prompt: str,
     size: int = 1024,
     transparent: bool = False,
     transparency_method: str = "threshold",
+    atlas_model: str = ATLAS_DEFAULT_MODEL,
 ) -> bytes:
     """Dispatch to the selected backend."""
     if backend == "codex":
         return generate_icon_codex(
-            prompt, size=size, transparent=transparent, transparency_method=transparency_method
+            prompt,
+            size=size,
+            transparent=transparent,
+            transparency_method=transparency_method,
         )
     if backend == "api":
         if client is None:
             raise RuntimeError("OpenAI client unavailable for api backend")
         return generate_icon_api(
-            client, prompt, size=size, transparent=transparent, transparency_method=transparency_method
+            client,
+            prompt,
+            size=size,
+            transparent=transparent,
+            transparency_method=transparency_method,
+        )
+    if backend == "atlas":
+        return generate_icon_atlas(
+            prompt,
+            model=atlas_model,
+            size=size,
+            transparent=transparent,
+            transparency_method=transparency_method,
         )
     raise ValueError(f"Unknown backend: {backend}")
 
@@ -474,13 +685,21 @@ def main() -> int:
         description="Generate flat scientific icons using OpenAI gpt-image-2"
     )
     parser.add_argument(
-        "prompt", nargs="?", default=None,
-        help="Icon description or template with {item} placeholder"
+        "prompt",
+        nargs="?",
+        default=None,
+        help="Icon description or template with {item} placeholder",
     )
-    parser.add_argument("-o", "--output", help="Output file path or directory (for batch)")
-    parser.add_argument("--template", help="Template ID from icon bible (e.g., brain-eeg)")
+    parser.add_argument(
+        "-o", "--output", help="Output file path or directory (for batch)"
+    )
+    parser.add_argument(
+        "--template", help="Template ID from icon bible (e.g., brain-eeg)"
+    )
     parser.add_argument("--category", help="Generate all templates in a category")
-    parser.add_argument("--transparent", action="store_true", help="Remove background (requires Pillow)")
+    parser.add_argument(
+        "--transparent", action="store_true", help="Remove background (requires Pillow)"
+    )
     parser.add_argument(
         "--transparency-method",
         choices=["threshold", "birefnet"],
@@ -491,16 +710,32 @@ def main() -> int:
             "for cleaner edges (one-time ~400 MB model download; pass --with rembg --with onnxruntime)."
         ),
     )
-    parser.add_argument("--colors", help="Color palette override (e.g., 'teal,coral' or hex codes)")
-    parser.add_argument("--size", type=int, default=1024, help="Icon size in pixels (default: 1024)")
-    parser.add_argument("--batch", help="Comma-separated items for batch generation (use {item} in prompt)")
-    parser.add_argument("--list-templates", action="store_true", help="List available icon templates")
-    parser.add_argument("--templates-file", type=Path, help="Custom templates JSON file")
+    parser.add_argument(
+        "--colors", help="Color palette override (e.g., 'teal,coral' or hex codes)"
+    )
+    parser.add_argument(
+        "--size", type=int, default=1024, help="Icon size in pixels (default: 1024)"
+    )
+    parser.add_argument(
+        "--batch",
+        help="Comma-separated items for batch generation (use {item} in prompt)",
+    )
+    parser.add_argument(
+        "--list-templates", action="store_true", help="List available icon templates"
+    )
+    parser.add_argument(
+        "--templates-file", type=Path, help="Custom templates JSON file"
+    )
     parser.add_argument(
         "--backend",
-        choices=["auto", "codex", "api"],
+        choices=["auto", "codex", "api", "atlas"],
         default="auto",
         help="Image generation backend (default: auto; prefers codex when authenticated)",
+    )
+    parser.add_argument(
+        "--atlas-model",
+        default=ATLAS_DEFAULT_MODEL,
+        help="Atlas Cloud image model used only with --backend atlas",
     )
     args = parser.parse_args()
 
@@ -538,12 +773,15 @@ def main() -> int:
 
     # Category batch mode
     if args.category:
-        cat_templates = [t for t in templates.values() if t.get("category") == args.category]
+        cat_templates = [
+            t for t in templates.values() if t.get("category") == args.category
+        ]
         if not cat_templates:
             print(f"No templates found for category: {args.category}", file=sys.stderr)
             print(
-                "Available categories: " + ", ".join(
-                    sorted(set(t.get("category", "") for t in templates.values()))
+                "Available categories: "
+                + ", ".join(
+                    sorted({t.get("category", "") for t in templates.values()})
                 ),
                 file=sys.stderr,
             )
@@ -553,13 +791,19 @@ def main() -> int:
         output_dir.mkdir(parents=True, exist_ok=True)
         for t in cat_templates:
             prompt = template_to_prompt(t, color_override=args.colors)
-            transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
+            transparent = (
+                args.transparent
+                or t.get("composition", {}).get("background") == "transparent"
+            )
             print(f"Generating: {t['id']}...")
             data = generate_icon(
-                backend, client, prompt,
+                backend,
+                client,
+                prompt,
                 size=args.size,
                 transparent=transparent,
                 transparency_method=args.transparency_method,
+                atlas_model=args.atlas_model,
             )
             save_icon(data, output_dir / f"{t['id']}.png")
         return 0
@@ -572,14 +816,20 @@ def main() -> int:
             return 1
         t = templates[args.template]
         prompt = template_to_prompt(t, color_override=args.colors)
-        transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
+        transparent = (
+            args.transparent
+            or t.get("composition", {}).get("background") == "transparent"
+        )
         print(f"Generating from template: {args.template}")
         print(f"Prompt: {prompt[:200]}...")
         data = generate_icon(
-            backend, client, prompt,
+            backend,
+            client,
+            prompt,
             size=args.size,
             transparent=transparent,
             transparency_method=args.transparency_method,
+            atlas_model=args.atlas_model,
         )
         save_icon(data, Path(args.output))
         return 0
@@ -598,23 +848,29 @@ def main() -> int:
             )
             print(f"Generating: {item}...")
             data = generate_icon(
-                backend, client, prompt,
+                backend,
+                client,
+                prompt,
                 size=args.size,
                 transparent=args.transparent,
                 transparency_method=args.transparency_method,
+                atlas_model=args.atlas_model,
             )
             save_icon(data, output_dir / f"{item.replace(' ', '_')}.png")
         return 0
 
     # Single free-form prompt mode
     prompt = build_prompt(args.prompt, colors=args.colors, transparent=args.transparent)
-    print(f"Generating icon...")
+    print("Generating icon...")
     print(f"Prompt: {prompt}")
     data = generate_icon(
-        backend, client, prompt,
+        backend,
+        client,
+        prompt,
         size=args.size,
         transparent=args.transparent,
         transparency_method=args.transparency_method,
+        atlas_model=args.atlas_model,
     )
     save_icon(data, Path(args.output))
     return 0
