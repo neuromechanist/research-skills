@@ -182,7 +182,7 @@ SCRIPTS_DIR="${CLAUDE_PLUGIN_ROOT}/agents/figure-qa-scripts"
 if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ] || ! test -d "$SCRIPTS_DIR"; then
     SCRIPTS_DIR="$(find . -type d -name figure-qa-scripts -path '*/figures/agents/*' 2>/dev/null | head -1)"
 fi
-uv run --with pillow --with colorthief python "$SCRIPTS_DIR/check_raster.py" out/substrate.png --journal nature
+uv run --with pillow --with pytesseract python "$SCRIPTS_DIR/check_raster.py" out/substrate.png --journal nature
 ```
 
 This catches substrates that were generated at too-low resolution for the target physical size before they ship in a figure.

@@ -113,7 +113,7 @@ uv run --with pillow --with svgutils --with cairosvg python scripts/build_figure
     --spec figures/fig1/figure.json --out figures/fig1/
 ```
 
-`layout: panels` generates the first panel alone, then the rest in parallel with the first panel attached as a reference so the style stays consistent, composes them at the journal width with `figures:scientific-figure`'s composer, and exports `figure.svg`, `figure.png`, and `figure.pdf`.
+`layout: panels` with `consistency: first-panel` generates the first panel alone, then the rest in parallel with the first panel attached as a reference so the style stays consistent (`consistency: none` generates every panel in parallel with no reference), composes them at the journal width with `figures:scientific-figure`'s composer, and exports `figure.svg`, `figure.png`, and `figure.pdf`.
 `layout: single` renders the whole grid in one image, which suits posters and slides.
 `manifest.json` records every prompt, path, and timing, plus the exact `check_raster.py` commands for QA.
 
