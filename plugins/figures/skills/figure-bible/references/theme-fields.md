@@ -29,7 +29,7 @@ Required keys are `theme_id`, `palette`, `style_tokens`; everything else is opti
 | `composition.perspective` | `orthographic`\|`isometric`\|`perspective` | `orthographic` | |
 | `text.max_words_per_label` | integer | `4` | Word budget for a single on-image label. |
 | `text.max_words_per_title` | integer | `8` | Word budget for a headline/title. |
-| `text.headline_size_class` | `large`\|`medium` | `medium` | Relative size class for the largest on-image text. |
+| `text.headline_size_class` | `large`\|`medium` | `large` | Relative size class for the largest on-image text. |
 | `reference_images` | path array (max 16) | `[]` | Canonical images attached for style transfer. |
 | `model_preferences.codex_model` | string | `gpt-5.6-luna` | Passed to the Codex CLI `image_gen` tool. |
 | `model_preferences.codex_effort` | string | `xhigh` | Codex reasoning effort for prompt planning. |
@@ -46,6 +46,6 @@ Required keys are `theme_id`, `palette`, `style_tokens`; everything else is opti
 1. Required keys present.
 2. Every hex value matches the CSS 3/4/6/8-digit pattern (or is `transparent` where allowed).
 3. `journal` and `postprocess.bg_removal` are in their enums.
-4. WCAG contrast ratio between `palette.background` and `palette.primary`; below 3.0 is a `warning:`-prefixed line, not a hard failure.
+4. Web Content Accessibility Guidelines (WCAG) contrast ratio between `palette.background` and `palette.primary`; below 3.0 is a `warning:`-prefixed line, not a hard failure.
 
 With `jsonschema` installed (`uv run --with jsonschema ...`), the full schema in `schemas/theme.schema.json` runs instead of the hand-written checks above; both report the same class of problems.

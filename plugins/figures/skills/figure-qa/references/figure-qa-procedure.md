@@ -69,7 +69,7 @@ Report `checks.fonts.issues`, `checks.palette.off_palette`, and `checks.geometry
 
 ### Raster branch
 ```bash
-uv run --with pillow --with colorthief \
+uv run --with pillow --with pytesseract \
     python "$SCRIPTS_DIR/check_raster.py" path/to/figure.png \
     --journal nature --expect-transparent > /tmp/raster-report.json 2> /tmp/raster-err.txt
 ```
@@ -78,7 +78,7 @@ Set `--expect-transparent` when the upstream skill (transparent-icons, ai-full-f
 When the upstream generation requested verbatim text (a `--text` item on `generate_figure.py`, or a spec JSON `text[]` entry), run the same script's text check once, passing every expected string, and ask for the merged JSON verdict directly:
 
 ```bash
-uv run --with pillow --with colorthief \
+uv run --with pillow --with pytesseract \
     python "$SCRIPTS_DIR/check_raster.py" path/to/figure.png \
     --journal nature --width-mm 89 --palette theme.json \
     --expect-text "Panel A" --expect-text "lateral sulcus" \
@@ -204,10 +204,10 @@ Fill `action` and `hint` for each finding from this table, and use it to choose 
 |---|---|---|
 | `text_missing` (an expected string was not detected) | `regenerate` | Spell the string letter by letter in the verbatim text block and re-request at the same size class or larger. |
 | `text_too_small` (detected but under the journal's cap-height minimum) | `regenerate` (prefer this when the string is short and fixed) or `overlay` (prefer this when the label must stay independently editable) | State which: "regenerate with size_class=large for '<string>'", or "move '<string>' to overlay_labels.py as a label". |
-| `palette_off` (a color falls outside the theme or allow-list) | `edit` (small, local mismatch) or `regenerate` (pervasive mismatch) | `edit`: "recolor <element> to #<hex>". `regenerate`: put the palette's hex and named-color lines first in the prompt, ahead of style tokens. |
+| `palette_off` (a color falls outside the theme or allow-list) | `recolor` | "recolor <element> to #<hex>" for a local mismatch (apply it with `generate_figure.py --edit`); for a pervasive mismatch, say so and put the palette's hex lines first in the prompt on the next regeneration. |
 | Font below the journal minimum in an SVG overlay | `rescale` | Raise the label's `font_size_pt` (see overlay-recipes.md's headroom guidance), or scale the panel up before composing. |
 | Resolution below the journal DPI minimum | `regenerate` | Re-request at a larger pixel size, respecting the model's max-edge and multiple-of-16 constraints; do not upscale the existing raster. |
-| Alpha / transparency problem (opaque corners, wrong mode) | `overlay` | Rerun the transparency pass (chroma-key removal or the Pillow/BiRefNet post-process); never hand-edit the alpha channel. |
+| Alpha / transparency problem (opaque corners, wrong mode) | `regenerate` | Rerun the transparency pass (chroma-key removal or the Pillow/BiRefNet post-process); never hand-edit the alpha channel. |
 | `bbox_overlap` (two elements' bounding boxes collide) | `overlay` | Move the colliding label's `x`, `y`, or `arrow_to` in the labels JSON and re-run `overlay_labels.py`. |
 
 ## Examples of expected behavior
