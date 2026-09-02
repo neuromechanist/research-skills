@@ -1,7 +1,7 @@
 ---
 description: Epic/sprint development workflow with git worktrees, GitHub issues, and phased delivery
-argument-hint: "<epic description>" or --resume or --next-phase or --finalize
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Skill, Task, AskUserQuestion, EnterPlanMode, ExitPlanMode, TodoWrite
+argument-hint: "<epic description> | --resume | --next-phase | --finalize"
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Skill, Agent, AskUserQuestion, EnterPlanMode, ExitPlanMode, TodoWrite
 ---
 
 # Epic Development Workflow
@@ -148,7 +148,7 @@ Update state: mark phase `in_progress`.
   )"
   ```
 - Push branch: `git -C "$PARENT/{phase-slug}" push -u origin {phase_branch}`
-- Run `/review-pr` (invoke the `pr-review-toolkit:review-pr` skill)
+- Review the phase PR: invoke the `project:pr-review-toolkit` skill (or `/pr-review-toolkit:review-pr` when the external pr-review-toolkit plugin is installed)
 - If critical issues found: present them and ask user how to proceed
 - If no critical issues: summarize findings briefly and proceed
 
@@ -192,7 +192,7 @@ Update state: mark phase `in_progress`.
 
 2. Push epic branch: `git -C "$PARENT/epic-{slug}" push -u origin {epic_branch}`
 
-3. Run `/review-pr` on the full epic PR
+3. Review the full epic PR with `project:pr-review-toolkit` (or `/pr-review-toolkit:review-pr`)
 
 4. **Confirm**: Present review summary and ask user to approve final merge
 
