@@ -1,12 +1,12 @@
 """Coverage for check_raster.py's new --palette compliance and --expect-text
 OCR branches (figure-bible epic).
 
-Real Pillow-rendered images and real colorthief/tesseract calls, no mocks.
+Real Pillow-rendered images and real Pillow/tesseract calls, no mocks.
 The OCR-dependent assertions are skipped (not faked) when the tesseract
 binary is not on PATH; the JSON envelope shape and the ocr_skipped note are
 still asserted unconditionally.
 
-Run: uv run --with pytest --with pillow --with colorthief --with pytesseract \\
+Run: uv run --with pytest --with pillow --with pytesseract \\
     pytest plugins/figures/tests/test_check_raster_text.py -q
 """
 
@@ -85,7 +85,8 @@ def test_expect_text_json_shape_and_ocr_skip_note(tmp_path):
     if not TESSERACT_AVAILABLE:
         assert text["ocr_skip_reason"] is not None
         assert any(
-            f["check"] == "ocr_skipped" and f["severity"] == "info" for f in envelope["findings"]
+            f["check"] == "ocr_skipped" and f["severity"] == "info"
+            for f in envelope["findings"]
         )
         pytest.skip("tesseract not on PATH; OCR-dependent assertions skipped")
 
@@ -94,7 +95,7 @@ def test_expect_text_json_shape_and_ocr_skip_note(tmp_path):
     assert entry["expected"] == "EEG recording"
     assert entry["found"] is True
     assert entry["cap_height_pt"] > 0
-    assert exit_code in (0, 1, 2)
+    assert exit_code == {"ship": 0, "revise": 1, "block": 2}[envelope["status"]]
 
 
 def test_ocr_off_skips_deterministically_and_does_not_block(tmp_path):
@@ -135,7 +136,6 @@ def _solid_two_color_png(
 
 
 def test_palette_compliance_flags_off_palette_colors(tmp_path):
-    pytest.importorskip("colorthief")
     # Saturated magenta/cyan are far (RGB distance > 30) from every color in
     # okabe-ito and are not near-gray or pure black/white, so both should
     # surface as off-palette findings.
@@ -157,7 +157,6 @@ def test_palette_compliance_flags_off_palette_colors(tmp_path):
 
 
 def test_palette_compliance_theme_json_path(tmp_path):
-    pytest.importorskip("colorthief")
     sys.path.insert(0, str(FIGURES_ROOT / "lib"))
     import theme as theme_lib
 
@@ -176,7 +175,9 @@ def test_palette_compliance_theme_json_path(tmp_path):
 
 def test_unknown_palette_spec_is_a_warn_finding_not_a_crash(tmp_path):
     png = _solid_two_color_png(tmp_path / "plain.png", "#123456", "#654321")
-    envelope, exit_code = _run_json([str(png), "--palette", "not-a-real-preset", "--json"])
+    envelope, exit_code = _run_json(
+        [str(png), "--palette", "not-a-real-preset", "--json"]
+    )
     compliance = envelope["measurements"]["palette_compliance"]
     assert compliance["available"] is False
     findings = [f for f in envelope["findings"] if f["check"] == "palette_compliance"]

@@ -15,7 +15,7 @@ Detects:
 
 Run from anywhere:
 
-    uv run --with pillow --with colorthief --with pytesseract \\
+    uv run --with pillow --with pytesseract \\
         python check_raster.py FIGURE.png [--journal nature] \\
         [--expect-transparent] [--palette okabe-ito|theme.json] \\
         [--expect-text "EEG recording" --width-mm 89] [--json]
@@ -38,7 +38,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-# We import Pillow, colorthief, and pytesseract lazily so the help screen runs
+# We import Pillow and pytesseract lazily so the help screen runs
 # even if uv's --with block is missing one of them.
 
 JOURNAL_MIN_DPI: dict[str, int] = {
@@ -95,17 +95,23 @@ _FALLBACK_PALETTE_PRESETS["wong"] = _FALLBACK_PALETTE_PRESETS["okabe-ito"]
 
 
 def _load_theme_lib():  # type: ignore[no-untyped-def]
-    """Import plugins/figures/lib/theme.py by path. Returns the module, or
-    None when the lib package is missing or fails to import (fallback tables
-    take over in that case)."""
-    lib_dir = Path(__file__).resolve().parents[2] / "lib"
-    if str(lib_dir) not in sys.path:
-        sys.path.insert(0, str(lib_dir))
-    try:
-        import theme as theme_lib  # type: ignore[import-not-found]
-    except ImportError:
+    """Import plugins/figures/lib/theme.py by file path under a unique module
+    name (a bare ``import theme`` could collide with an unrelated module).
+    Returns the module, or None when the lib is missing or fails to import."""
+    import importlib.util
+
+    lib_path = Path(__file__).resolve().parents[2] / "lib" / "theme.py"
+    if not lib_path.is_file():
         return None
-    return theme_lib
+    spec = importlib.util.spec_from_file_location("figures_theme_lib", lib_path)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except (ImportError, SyntaxError, OSError):
+        return None
+    return module
 
 
 def _open(image_path: Path):  # type: ignore[no-untyped-def]
@@ -158,7 +164,10 @@ def _white_background_report(img, expect_transparent: bool) -> dict[str, Any]:  
     a pure-white border is plausibly intentional (e.g., ai-full-figure substrates,
     journal-required white margins)."""
     if img.mode in ("RGBA", "LA", "PA"):
-        return {"applicable": False, "reason": "image has alpha channel; use alpha_report instead"}
+        return {
+            "applicable": False,
+            "reason": "image has alpha channel; use alpha_report instead",
+        }
     rgb = img.convert("RGB")
     w, h = rgb.size
     corners = [
@@ -217,24 +226,44 @@ def _resolution_report(img, journal: str | None) -> dict[str, Any]:  # type: ign
     return out
 
 
+def _dominant_colors(
+    image_path: Path, count: int = 6
+) -> tuple[tuple[int, int, int], list[tuple[int, int, int]]]:
+    """Dominant colour and a small palette via Pillow's median-cut quantizer
+    (no third-party colour library). Fully transparent pixels are composited
+    onto white first so an icon's cutout background does not count as a colour."""
+    from PIL import Image
+
+    img = Image.open(image_path).convert("RGBA")
+    img.thumbnail((200, 200))
+    if img.getchannel("A").getextrema()[0] == 0:
+        opaque = Image.new("RGBA", img.size, (255, 255, 255, 255))
+        opaque.paste(img, mask=img.getchannel("A"))
+        img = opaque
+    rgb = img.convert("RGB")
+    quantized = rgb.quantize(colors=count, method=Image.Quantize.MEDIANCUT)
+    palette = quantized.getpalette() or []
+    counts = sorted(quantized.getcolors(maxcolors=count * 4) or [], reverse=True)
+    colors: list[tuple[int, int, int]] = []
+    for _n, index in counts:
+        base = index * 3
+        colors.append((palette[base], palette[base + 1], palette[base + 2]))
+    if not colors:
+        raise ValueError("image has no colours")
+    return colors[0], colors
+
+
 def _palette_report(image_path: Path) -> dict[str, Any]:
-    """Use colorthief (when installed) to extract the dominant colors. This is
-    informational only — the section reports the observed palette so the agent
-    can pass it through VLM judgment. Colorthief failures are surfaced as
-    'script_error' so the caller can decide whether to fail the run."""
+    """Extract the dominant colors with Pillow. This is informational only:
+    the section reports the observed palette so the agent can pass it through
+    VLM judgment. Failures are surfaced as 'script_error'."""
     try:
-        from colorthief import ColorThief  # type: ignore[import-not-found]
-    except ImportError:
-        return {"available": False, "reason": "colorthief not installed; pass --with colorthief"}
-    try:
-        ct = ColorThief(str(image_path))
-        dominant = ct.get_color(quality=10)
-        palette = ct.get_palette(color_count=6, quality=10)
-    except Exception as exc:  # noqa: BLE001 - ColorThief can raise on flat/truncated images; name it, don't crash
+        dominant, palette = _dominant_colors(image_path)
+    except (OSError, ValueError) as exc:
         return {
             "available": True,
             "script_error": True,
-            "error": f"colorthief failed: {exc}",
+            "error": f"dominant-colour extraction failed: {exc}",
         }
     return {
         "available": True,
@@ -260,7 +289,9 @@ def _rgb_distance(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
 
 def _is_near_gray(rgb: tuple[int, int, int], tol: int = 15) -> bool:
     return (
-        abs(rgb[0] - rgb[1]) <= tol and abs(rgb[1] - rgb[2]) <= tol and abs(rgb[0] - rgb[2]) <= tol
+        abs(rgb[0] - rgb[1]) <= tol
+        and abs(rgb[1] - rgb[2]) <= tol
+        and abs(rgb[0] - rgb[2]) <= tol
     )
 
 
@@ -278,10 +309,14 @@ def _resolve_palette_hexes(spec: str, theme_lib) -> tuple[str, list[str]]:  # ty
     if path.exists():
         theme = json.loads(path.read_text())
         palette = theme.get("palette") or {}
-        hexes = [v for v in palette.values() if isinstance(v, str) and v.startswith("#")]
+        hexes = [
+            v for v in palette.values() if isinstance(v, str) and v.startswith("#")
+        ]
         for arr_key in ("categorical", "sequential", "diverging"):
             hexes += [
-                c for c in palette.get(arr_key, []) if isinstance(c, str) and c.startswith("#")
+                c
+                for c in palette.get(arr_key, [])
+                if isinstance(c, str) and c.startswith("#")
             ]
         if not hexes:
             raise ValueError(f"{path}: theme has no usable hex colors in its palette")
@@ -292,7 +327,9 @@ def _resolve_palette_hexes(spec: str, theme_lib) -> tuple[str, list[str]]:  # ty
     )
 
 
-def _palette_compliance_report(image_path: Path, palette_spec: str, theme_lib) -> dict[str, Any]:  # type: ignore[no-untyped-def]
+def _palette_compliance_report(
+    image_path: Path, palette_spec: str, theme_lib
+) -> dict[str, Any]:  # type: ignore[no-untyped-def]
     """Dominant-color compliance against a bible palette. Near-gray and
     pure-black/white samples are exempt, matching check_svg.py's rule."""
     try:
@@ -300,24 +337,13 @@ def _palette_compliance_report(image_path: Path, palette_spec: str, theme_lib) -
     except ValueError as exc:
         return {"palette": palette_spec, "available": False, "reason": str(exc)}
     try:
-        from colorthief import ColorThief  # type: ignore[import-not-found]
-    except ImportError:
-        return {
-            "palette": name,
-            "available": False,
-            "reason": "colorthief not installed; pass --with colorthief",
-        }
-
-    try:
-        ct = ColorThief(str(image_path))
-        dominant = ct.get_color(quality=10)
-        palette_rgb = ct.get_palette(color_count=6, quality=10)
-    except Exception as exc:  # noqa: BLE001 - ColorThief can raise on flat/truncated images; name it, don't crash
+        dominant, palette_rgb = _dominant_colors(image_path)
+    except (OSError, ValueError) as exc:
         return {
             "palette": name,
             "available": True,
             "script_error": True,
-            "error": f"colorthief failed: {exc}",
+            "error": f"dominant-colour extraction failed: {exc}",
         }
 
     allowed_rgb = [_hex_to_rgb(h) for h in hexes]
@@ -381,7 +407,10 @@ def _run_ocr(image_path: Path, mode: str) -> tuple[list[dict[str, Any]], str | N
     try:
         import pytesseract  # type: ignore[import-not-found]
     except ImportError:
-        return [], "pytesseract not installed; re-run with --with pytesseract --with pillow"
+        return (
+            [],
+            "pytesseract not installed; re-run with --with pytesseract --with pillow",
+        )
 
     img = _open(image_path)
     try:
@@ -416,10 +445,17 @@ def _bbox_union(words: list[dict[str, Any]]) -> dict[str, int]:
     tops = [w["top"] for w in words]
     rights = [w["left"] + w["width"] for w in words]
     bottoms = [w["top"] + w["height"] for w in words]
-    return {"left": min(lefts), "top": min(tops), "right": max(rights), "bottom": max(bottoms)}
+    return {
+        "left": min(lefts),
+        "top": min(tops),
+        "right": max(rights),
+        "bottom": max(bottoms),
+    }
 
 
-def _match_expected_text(expected: str, ocr_words: list[dict[str, Any]]) -> dict[str, Any] | None:
+def _match_expected_text(
+    expected: str, ocr_words: list[dict[str, Any]]
+) -> dict[str, Any] | None:
     """Sliding word-window fuzzy match: try window lengths near the expected
     word count (OCR sometimes splits or merges tokens) and accept the lowest
     Levenshtein distance <= 1."""
@@ -487,6 +523,9 @@ def _text_report(
             if width_mm:
                 px_to_mm = width_mm / img_w_px
                 height_px = match["bbox"]["bottom"] - match["bbox"]["top"]
+                # OCR boxes span ascender to descender; the cap height of common
+                # sans-serif faces is about 0.7 of that box (Helvetica 0.72,
+                # Arial 0.72, DejaVu Sans 0.73), so this errs slightly conservative.
                 cap_height_mm = height_px * 0.7 * px_to_mm
                 cap_height_pt = cap_height_mm * 72.0 / 25.4
                 entry["cap_height_mm"] = round(cap_height_mm, 3)
@@ -521,7 +560,9 @@ def check_raster(
         "palette": _palette_report(image_path),
     }
     if palette:
-        checks["palette_compliance"] = _palette_compliance_report(image_path, palette, theme_lib)
+        checks["palette_compliance"] = _palette_compliance_report(
+            image_path, palette, theme_lib
+        )
     if expect_text:
         checks["text"] = _text_report(
             image_path, img, expect_text, ocr_mode, width_mm, journal, theme_lib
@@ -602,7 +643,7 @@ def _findings_from_report(report: dict[str, Any]) -> list[dict[str, Any]]:
                     "severity": "warn",
                     "message": compliance["reason"],
                     "action": "none",
-                    "hint": "install colorthief or pass a valid preset/theme.json",
+                    "hint": "pass a valid preset name or theme.json path to --palette",
                 }
             )
         else:
@@ -677,7 +718,9 @@ def _status_and_exit(findings: list[dict[str, Any]]) -> tuple[str, int]:
     return "ship", 0
 
 
-def _build_envelope(report: dict[str, Any], journal: str | None) -> tuple[dict[str, Any], int]:
+def _build_envelope(
+    report: dict[str, Any], journal: str | None
+) -> tuple[dict[str, Any], int]:
     findings = _findings_from_report(report)
     status, exit_code = _status_and_exit(findings)
     envelope = {
@@ -692,8 +735,12 @@ def _build_envelope(report: dict[str, Any], journal: str | None) -> tuple[dict[s
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Programmatic raster checks for figure-qa.")
-    parser.add_argument("image", type=Path, help="Raster image to inspect (.png, .jpg, .tif)")
+    parser = argparse.ArgumentParser(
+        description="Programmatic raster checks for figure-qa."
+    )
+    parser.add_argument(
+        "image", type=Path, help="Raster image to inspect (.png, .jpg, .tif)"
+    )
     parser.add_argument(
         "--journal",
         choices=["nature", "science", "cell", "pnas", "poster", "slide", "generic"],
@@ -749,7 +796,7 @@ def main(argv: list[str] | None = None) -> int:
     except ImportError as exc:
         print(
             f"error: missing dependency for check_raster.py — re-run with "
-            f"--with pillow [--with colorthief] [--with pytesseract]: {exc}",
+            f"--with pillow [--with pytesseract]: {exc}",
             file=sys.stderr,
         )
         return 2
@@ -767,8 +814,12 @@ def main(argv: list[str] | None = None) -> int:
         print(file=sys.stdout)
     else:
         report["summary"] = {
-            "issue_count": sum(1 for f in envelope["findings"] if f["severity"] == "warn"),
-            "script_error_count": sum(1 for f in envelope["findings"] if f["severity"] == "block"),
+            "issue_count": sum(
+                1 for f in envelope["findings"] if f["severity"] == "warn"
+            ),
+            "script_error_count": sum(
+                1 for f in envelope["findings"] if f["severity"] == "block"
+            ),
         }
         json.dump(report, sys.stdout, indent=2)
         print(file=sys.stdout)

@@ -65,7 +65,13 @@ def test_theme_palette_lines_handles_missing_theme():
 
 
 def test_theme_palette_lines_reports_roles():
-    theme = {"palette": {"primary": "#111111", "accent": "#222222", "categorical": ["#333333"]}}
+    theme = {
+        "palette": {
+            "primary": "#111111",
+            "accent": "#222222",
+            "categorical": ["#333333"],
+        }
+    }
     lines = prompting.theme_palette_lines(theme)
     assert "primary: #111111" in lines
     assert "accent: #222222" in lines
@@ -79,7 +85,9 @@ def test_enforce_text_ladder_accepts_short_items():
 
 def test_enforce_text_ladder_rejects_long_label():
     items = [
-        prompting.TextItem(text="this label has way too many words", role="label", placement="left")
+        prompting.TextItem(
+            text="this label has way too many words", role="label", placement="left"
+        )
     ]
     with pytest.raises(prompting.TextLadderError) as exc_info:
         prompting.enforce_text_ladder(items, theme=None)
@@ -101,14 +109,22 @@ def test_enforce_text_ladder_rejects_unit_glued_to_digit():
 
 
 def test_enforce_text_ladder_honors_theme_overrides():
-    items = [prompting.TextItem(text="one two three four five six", role="label", placement="left")]
+    items = [
+        prompting.TextItem(
+            text="one two three four five six", role="label", placement="left"
+        )
+    ]
     theme = {"text": {"max_words_per_label": 6}}
     prompting.enforce_text_ladder(items, theme)  # 6 words, limit 6: should pass
 
     theme_strict = {"text": {"max_words_per_label": 2}}
     with pytest.raises(prompting.TextLadderError):
         prompting.enforce_text_ladder(
-            [prompting.TextItem(text="three word label", role="label", placement="left")],
+            [
+                prompting.TextItem(
+                    text="three word label", role="label", placement="left"
+                )
+            ],
             theme_strict,
         )
 

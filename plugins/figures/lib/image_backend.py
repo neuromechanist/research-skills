@@ -23,6 +23,7 @@ import os
 import queue
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -52,7 +53,15 @@ class BackendUnavailable(Exception):
 
 
 class GenerationFailed(Exception):
-    """Raised when generation exhausts its retries without producing output."""
+    """Raised when generation exhausts its retries without producing output.
+
+    ``workdir`` is the preserved codex working directory when one exists, so a
+    caller can inspect the logs without parsing the message.
+    """
+
+    def __init__(self, message: str, workdir: Path | None = None) -> None:
+        super().__init__(message)
+        self.workdir = workdir
 
 
 @dataclass
@@ -114,7 +123,6 @@ class GenerationResult:
     backend: str
     elapsed_s: float
     log_path: Path | None
-    workdir: Path | None
     final_message: str | None
 
 
@@ -358,6 +366,10 @@ def _fake_image_size(size: str) -> tuple[int, int]:
 def _generate_fake(req: GenerationRequest) -> tuple[list[Path], str | None]:
     from PIL import Image, ImageDraw, ImageFont
 
+    fail_marker = os.environ.get("FIGURES_FAKE_FAIL_SUBSTR")
+    if fail_marker and fail_marker in str(req.out):
+        raise GenerationFailed(f"fake backend: forced failure for {req.out.name}")
+
     w, h = _fake_image_size(req.size)
     n = max(1, req.n)
     out_paths = _candidate_paths(req.out, n)
@@ -425,7 +437,7 @@ def _stream_process(
     while True:
         elapsed = time.monotonic() - start
         if elapsed > timeout_s:
-            proc.kill()
+            _kill_process_group(proc)
             try:
                 proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
@@ -445,6 +457,14 @@ def _stream_process(
             print(f"[image_backend] {int(now - start)} s elapsed ...", file=sys.stderr)
             last_heartbeat = now
     proc.wait(timeout=max(1, int(timeout_s)))
+
+
+def _kill_process_group(proc: subprocess.Popen) -> None:
+    """Kill codex and the code-mode host it spawned (same session, see Popen call)."""
+    try:
+        os.killpg(proc.pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError, OSError):
+        proc.kill()
 
 
 def _discover_output(workdir: Path) -> Path | None:
@@ -500,18 +520,33 @@ def _codex_attempt(
 
     with log_path.open("a", encoding="utf-8") as log_fh:
         log_fh.write(f"--- attempt at {time.strftime('%Y-%m-%dT%H:%M:%S')} ---\n")
-        proc = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            cwd=workdir,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1,
-        )
-        assert proc.stdin is not None
-        proc.stdin.write(prompt)
-        proc.stdin.close()
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                cwd=workdir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                start_new_session=True,
+            )
+        except OSError as exc:
+            raise GenerationFailed(
+                f"could not launch {executable}: {exc}", workdir
+            ) from exc
+
+        # Feed the prompt from a thread so a chatty codex startup cannot deadlock
+        # against a full stdout pipe while we are still blocked on the write.
+        def feed_stdin() -> None:
+            assert proc.stdin is not None
+            try:
+                proc.stdin.write(prompt)
+                proc.stdin.close()
+            except BrokenPipeError:
+                log_fh.write("WARNING: codex closed stdin before reading the prompt\n")
+
+        threading.Thread(target=feed_stdin, daemon=True).start()
         try:
             _stream_process(proc, log_fh, req.timeout_s, req.verbose)
         except TimeoutError:
@@ -533,12 +568,17 @@ def _generate_codex(
     executable = pf.codex_path or "codex"
 
     try:
-        for out_path in out_paths:
+        for idx, out_path in enumerate(out_paths, 1):
             discovered = None
             last_log_lines: list[str] = []
-            for _attempt in range(2):  # one retry on any failure
+            attempt_dir = workdir
+            for attempt in range(1, 3):  # one retry on any failure
+                # A fresh directory per attempt so a stale PNG from a failed attempt
+                # can never be discovered as the output of the next one.
+                attempt_dir = workdir / f"candidate{idx}_attempt{attempt}"
+                attempt_dir.mkdir(parents=True, exist_ok=True)
                 discovered = _codex_attempt(
-                    req, workdir, log_path, req.prompt, executable
+                    req, attempt_dir, log_path, req.prompt, executable
                 )
                 if log_path.exists():
                     last_log_lines = log_path.read_text(
@@ -554,17 +594,17 @@ def _generate_codex(
                     f"Workdir preserved at {workdir}.\n"
                     "Last log lines:\n"
                     + "\n".join(last_log_lines)
-                    + (f"\nPreflight hints:\n{hints}" if hints else "")
+                    + (f"\nPreflight hints:\n{hints}" if hints else ""),
+                    workdir,
                 )
 
             out_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(discovered), str(out_path))
-            last_txt = workdir / "last.txt"
+            last_txt = attempt_dir / "last.txt"
             if last_txt.exists():
                 final_message = last_txt.read_text(
                     encoding="utf-8", errors="replace"
                 ).strip()
-                last_txt.unlink()  # avoid re-discovering a stale path for the next candidate
     except GenerationFailed:
         print(f"workdir preserved: {workdir}", file=sys.stderr)
         raise
@@ -592,6 +632,8 @@ def _generate_api(req: GenerationRequest) -> tuple[list[Path], str | None]:
         size=size,
         quality=req.quality,
         output_format="png",
+        # gpt-image-2 rejects background="transparent"; transparent requests are
+        # cut out locally by _finalize_transparency after download.
         background="opaque",
         moderation="auto",
     )
@@ -650,11 +692,51 @@ def _finalize_opacity(
             _flatten_to_opaque(p, background_color)
 
 
+def _has_transparent_corners(path: Path) -> bool:
+    from PIL import Image
+
+    img = Image.open(path)
+    if img.mode not in ("RGBA", "LA", "PA"):
+        return False
+    rgba = img.convert("RGBA")
+    w, h = rgba.size
+    corners = [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]
+    return all(rgba.getpixel(c)[3] == 0 for c in corners)
+
+
+def _threshold_to_alpha(path: Path, threshold: int = 240) -> None:
+    """Make near-white pixels transparent (all channels >= threshold)."""
+    from PIL import Image, ImageChops
+
+    rgba = Image.open(path).convert("RGBA")
+    r, g, b, _ = rgba.split()
+    darkest = ImageChops.darker(ImageChops.darker(r, g), b)
+    alpha = darkest.point(lambda v: 0 if v >= threshold else 255)
+    rgba.putalpha(alpha)
+    rgba.save(path)
+
+
+def _finalize_transparency(paths: list[Path], background: str) -> None:
+    """A transparent request must yield alpha on every backend. The API path
+    (gpt-image-2) always returns opaque PNGs, and codex occasionally does; fall
+    back to a local near-white cutout so callers never get a surprise opaque
+    icon."""
+    if background != "transparent":
+        return
+    for p in paths:
+        if p.exists() and not _has_transparent_corners(p):
+            print(
+                f"[image_backend] {p.name}: backend returned an opaque image for a "
+                "transparent request; applying a local near-white cutout",
+                file=sys.stderr,
+            )
+            _threshold_to_alpha(p)
+
+
 def generate(req: GenerationRequest) -> GenerationResult:
     pf = preflight(req.backend, req.codex_bin)
     resolved = resolve_backend(req.backend, pf)
     start = time.monotonic()
-    workdir: Path | None = None
     log_path = req.log_path
 
     if resolved == "fake":
@@ -668,13 +750,13 @@ def generate(req: GenerationRequest) -> GenerationResult:
         raise BackendUnavailable(f"unhandled backend: {resolved}")
 
     _finalize_opacity(paths, req.background, req.background_color)
+    _finalize_transparency(paths, req.background)
     elapsed = time.monotonic() - start
     return GenerationResult(
         paths=paths,
         backend=resolved,
         elapsed_s=elapsed,
         log_path=log_path,
-        workdir=workdir,
         final_message=final_message,
     )
 
@@ -729,7 +811,6 @@ def edit(
     pf = preflight(backend, codex_bin)
     resolved = resolve_backend(backend, pf)
     start = time.monotonic()
-    workdir: Path | None = None
 
     if resolved == "fake":
         paths, final_message = _edit_fake(image, instruction, out)
@@ -774,6 +855,5 @@ def edit(
         backend=resolved,
         elapsed_s=elapsed,
         log_path=log_path,
-        workdir=workdir,
         final_message=final_message,
     )
