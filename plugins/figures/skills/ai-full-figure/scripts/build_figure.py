@@ -95,11 +95,14 @@ def _wrap_png_as_svg(png_path: Path, width_mm: float) -> Path:
     pw, ph = _png_size(png_path)
     height_mm = width_mm * (ph / pw)
     b64 = base64.b64encode(png_path.read_bytes()).decode("ascii")
+    # The viewBox is in millimetres so svgutils places the panel at scale 1.0 on the
+    # mm canvas; a pixel viewBox would be placed one user unit per mm.
     svg = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width_mm}mm" '
-        f'height="{height_mm:.3f}mm" viewBox="0 0 {pw} {ph}">\n'
-        f'  <image href="data:image/png;base64,{b64}" x="0" y="0" width="{pw}" height="{ph}"/>\n'
+        f'height="{height_mm:.3f}mm" viewBox="0 0 {width_mm} {height_mm:.3f}">\n'
+        f'  <image href="data:image/png;base64,{b64}" x="0" y="0" '
+        f'width="{width_mm}" height="{height_mm:.3f}"/>\n'
         "</svg>\n"
     )
     wrapper_path = png_path.with_suffix(".svg")
@@ -125,7 +128,7 @@ def _qa_command(
 ) -> str:
     check_script = plugin_root / "agents" / "figure-qa-scripts" / "check_raster.py"
     parts = [
-        "uv run --with pillow --with colorthief python",
+        "uv run --with pillow --with colorthief --with pytesseract python",
         str(check_script),
         str(png),
         "--json",
@@ -264,7 +267,9 @@ def _generate_panel(
             error=None,
         )
     except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
-        report.update(success=False, path=None, backend=None, elapsed_s=None, error=str(exc))
+        report.update(
+            success=False, path=None, backend=None, elapsed_s=None, error=str(exc)
+        )
     return report
 
 
@@ -272,13 +277,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Multi-panel AI figure orchestrator.")
     parser.add_argument("--spec", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True, help="Output directory")
-    parser.add_argument("--backend", choices=["auto", "codex", "api", "fake"], default="auto")
+    parser.add_argument(
+        "--backend", choices=["auto", "codex", "api", "fake"], default="auto"
+    )
     parser.add_argument(
         "--codex-bin",
         default=None,
         help="Explicit codex executable path (else $CODEX_BIN, then PATH)",
     )
-    parser.add_argument("--parallel", type=int, default=None, help="Override spec.parallel")
+    parser.add_argument(
+        "--parallel", type=int, default=None, help="Override spec.parallel"
+    )
     parser.add_argument("--timeout", type=int, default=600)
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--print-prompts", action="store_true")
@@ -309,7 +318,10 @@ def main(argv: list[str] | None = None) -> int:
 
     layout = spec_doc.get("layout", "panels")
     if layout not in ("single", "panels"):
-        print(f"error: spec layout must be 'single' or 'panels', got {layout!r}", file=sys.stderr)
+        print(
+            f"error: spec layout must be 'single' or 'panels', got {layout!r}",
+            file=sys.stderr,
+        )
         return 2
 
     panels = spec_doc.get("panels") or []
@@ -319,11 +331,15 @@ def main(argv: list[str] | None = None) -> int:
 
     model_prefs = (theme or {}).get("model_preferences") or {}
     default_size_req = spec_doc.get("size", "auto")
-    default_quality = spec_doc.get("quality") or model_prefs.get("image_quality") or "high"
+    default_quality = (
+        spec_doc.get("quality") or model_prefs.get("image_quality") or "high"
+    )
     model = model_prefs.get("codex_model") or image_backend.DEFAULT_MODEL
     effort = model_prefs.get("codex_effort") or image_backend.DEFAULT_EFFORT
     background = spec_doc.get("background", "opaque")
-    background_color = ((theme or {}).get("palette") or {}).get("background") or "#FFFFFF"
+    background_color = ((theme or {}).get("palette") or {}).get(
+        "background"
+    ) or "#FFFFFF"
     consistency = spec_doc.get("consistency", "none")
     parallel = args.parallel or int(spec_doc.get("parallel", 3))
 
@@ -346,7 +362,9 @@ def main(argv: list[str] | None = None) -> int:
             print(f"error: {exc}", file=sys.stderr)
             return 2
         try:
-            prompt, texts = _build_single_prompt(spec_doc, theme, size, default_quality, background)
+            prompt, texts = _build_single_prompt(
+                spec_doc, theme, size, default_quality, background
+            )
         except prompting.TextLadderError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 2
@@ -372,7 +390,10 @@ def main(argv: list[str] | None = None) -> int:
                 codex_bin=args.codex_bin,
             )
             result = image_backend.generate(req)
-        except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+        except (
+            image_backend.BackendUnavailable,
+            image_backend.GenerationFailed,
+        ) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
@@ -403,7 +424,10 @@ def main(argv: list[str] | None = None) -> int:
         except prompting.TextLadderError as exc:
             ladder_errors.append(f"panel {p['id']}: {exc}")
     if ladder_errors:
-        print("error: text ladder violation(s):\n" + "\n".join(ladder_errors), file=sys.stderr)
+        print(
+            "error: text ladder violation(s):\n" + "\n".join(ladder_errors),
+            file=sys.stderr,
+        )
         return 2
 
     common_kwargs = {
@@ -446,9 +470,13 @@ def main(argv: list[str] | None = None) -> int:
                 )
         else:
             ref_path = Path(first_report["path"])
-            with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, parallel)) as pool:
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=max(1, parallel)
+            ) as pool:
                 futures = [
-                    pool.submit(_generate_panel, p, references=[ref_path], **common_kwargs)
+                    pool.submit(
+                        _generate_panel, p, references=[ref_path], **common_kwargs
+                    )
                     for p in rest
                 ]
                 for fut in concurrent.futures.as_completed(futures):
@@ -456,9 +484,12 @@ def main(argv: list[str] | None = None) -> int:
                     reports.append(r)
                     _print_prompt(r)
     else:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, parallel)) as pool:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=max(1, parallel)
+        ) as pool:
             futures = [
-                pool.submit(_generate_panel, p, references=[], **common_kwargs) for p in panels
+                pool.submit(_generate_panel, p, references=[], **common_kwargs)
+                for p in panels
             ]
             for fut in concurrent.futures.as_completed(futures):
                 r = fut.result()
@@ -470,7 +501,9 @@ def main(argv: list[str] | None = None) -> int:
     failed = [r["id"] for r in reports if not r["success"]]
 
     if failed:
-        print(f"error: panel generation failed for: {', '.join(failed)}", file=sys.stderr)
+        print(
+            f"error: panel generation failed for: {', '.join(failed)}", file=sys.stderr
+        )
         for r in reports:
             if not r["success"]:
                 print(f"  {r['id']}: {r['error']}", file=sys.stderr)
@@ -481,7 +514,9 @@ def main(argv: list[str] | None = None) -> int:
             "elapsed_s": time.monotonic() - start,
             "qa_commands": [],
         }
-        (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, default=str))
+        (out_dir / "manifest.json").write_text(
+            json.dumps(manifest, indent=2, default=str)
+        )
         return 1
 
     # --- compose ---
@@ -505,16 +540,32 @@ def main(argv: list[str] | None = None) -> int:
         row_y[r_idx] = row_y[r_idx - 1] + row_heights[r_idx - 1] + gap_mm
     fig_height_mm = (row_y[-1] + row_heights[-1]) if rows else 0.0
 
-    compose_mod = _load_module("_build_figure_compose", _SCIENTIFIC_FIGURE_SCRIPTS / "compose.py")
-    export_mod = _load_module("_build_figure_export", _SCIENTIFIC_FIGURE_SCRIPTS / "export.py")
+    compose_mod = _load_module(
+        "_build_figure_compose", _SCIENTIFIC_FIGURE_SCRIPTS / "compose.py"
+    )
+    export_mod = _load_module(
+        "_build_figure_export", _SCIENTIFIC_FIGURE_SCRIPTS / "export.py"
+    )
 
-    fig = compose_mod.Figure(width_mm=fig_width_mm, height_mm=fig_height_mm, journal=journal)
+    fig = compose_mod.Figure(
+        width_mm=fig_width_mm, height_mm=fig_height_mm, journal=journal
+    )
     for idx, r in enumerate(reports):
         col = idx % columns
         row = idx // columns
         x_mm = col * (panel_width_mm + gap_mm)
         y_mm = row_y[row]
-        label = _panel_label(r["id"], label_style)
+        # The model already rendered the panel letter when the spec asked for one;
+        # do not stamp a second letter from the composer.
+        spec_panel = next((sp for sp in panels if sp.get("id") == r["id"]), {})
+        has_letter = any(
+            t.get("role") == "panel-letter" for t in spec_panel.get("text", [])
+        )
+        label = (
+            None
+            if (has_letter or label_style == "none")
+            else _panel_label(r["id"], label_style)
+        )
         svg_src = _wrap_png_as_svg(Path(r["path"]), panel_width_mm)
         fig.add_panel(str(svg_src), x_mm=x_mm, y_mm=y_mm, scale=1.0, label=label)
 
@@ -533,7 +584,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"warning: PDF export skipped: {exc}", file=sys.stderr)
 
     qa_commands = [
-        _qa_command(_PLUGIN_ROOT, Path(r["path"]), journal, panel_width_mm, theme_path, r["texts"])
+        _qa_command(
+            _PLUGIN_ROOT,
+            Path(r["path"]),
+            journal,
+            panel_width_mm,
+            theme_path,
+            r["texts"],
+        )
         for r in reports
     ]
     qa_commands.append(
