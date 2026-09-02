@@ -145,11 +145,13 @@ The schematic is typically sized at the **final** panel dimensions and composed 
 
 ## Quality assurance
 
-After authoring, invoke `figures:figure-qa`:
+After authoring, invoke `figures:figure-qa` through the host's skill-invocation mechanism (its programmatic branch is the command below):
 
 ```bash
+SCRIPTS_DIR="${CLAUDE_PLUGIN_ROOT}/agents/figure-qa-scripts"
+[ -d "$SCRIPTS_DIR" ] || SCRIPTS_DIR="$(find . -type d -name figure-qa-scripts -path '*/figures/agents/*' | head -1)"
 uv run --with lxml --with svgelements --with shapely \
-    python "$FIGURE_QA_SCRIPTS/check_svg.py" schematics/circuit.svg \
+    python "$SCRIPTS_DIR/check_svg.py" schematics/circuit.svg \
     --journal nature --palette okabe-ito
 ```
 

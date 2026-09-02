@@ -97,10 +97,12 @@ Common matplotlib output failures and the SciencePlots-style fix:
 
 ## Quality assurance
 
-After authoring a plot script, run `figures:figure-qa`:
+After authoring a plot script, invoke `figures:figure-qa` through the host's skill-invocation mechanism (its programmatic branch is the command below):
 
 ```bash
-uv run python "$FIGURE_QA_SCRIPTS/check_plot_script.py" panel.py --journal nature
+SCRIPTS_DIR="${CLAUDE_PLUGIN_ROOT}/agents/figure-qa-scripts"
+[ -d "$SCRIPTS_DIR" ] || SCRIPTS_DIR="$(find . -type d -name figure-qa-scripts -path '*/figures/agents/*' | head -1)"
+uv run python "$SCRIPTS_DIR/check_plot_script.py" panel.py --journal nature
 ```
 
 The plot-script branch detects the libraries used, reports rcParams font sizes (numeric and dynamic), inspects every `savefig` call, and offers a library-switch recommendation when the chart type would benefit. After running the script for real and producing the SVG, the raster/SVG branches verify the output too.

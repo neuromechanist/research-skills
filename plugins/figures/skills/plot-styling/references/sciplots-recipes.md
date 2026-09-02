@@ -145,7 +145,9 @@ plt.rcParams.update({
 ## Verifying with figure-qa
 
 ```bash
-uv run python "$FIGURE_QA_SCRIPTS/check_plot_script.py" panel.py --journal nature
+SCRIPTS_DIR="${CLAUDE_PLUGIN_ROOT}/agents/figure-qa-scripts"
+[ -d "$SCRIPTS_DIR" ] || SCRIPTS_DIR="$(find . -type d -name figure-qa-scripts -path '*/figures/agents/*' | head -1)"
+uv run python "$SCRIPTS_DIR/check_plot_script.py" panel.py --journal nature
 ```
 
 A well-formed script under SciencePlots produces:

@@ -54,7 +54,7 @@ See `references/theme-fields.md` for the full field table (type, default, meanin
 ## How other skills consume the theme
 
 - **Generators** (`figures:ai-full-figure`, `figures:transparent-icons`, `figures:scientific-figure`, `figures:svg-primitives`, `figures:plot-styling`) read `palette`, `typography`, `style_tokens`/`negative_tokens`, `composition`, `text`, and `model_preferences` from the theme to build prompts and defaults consistently.
-  Invoke them with the Skill tool by those names once the bible exists.
+  Invoke them by their fully qualified names through the host's skill-invocation mechanism once the bible exists.
 - **QA** (`figures:figure-qa`, and directly `check_svg.py`/`check_raster.py`) accepts `--palette figures/theme.json` in place of a preset name, so palette-compliance findings are checked against the project's own bible instead of a hardcoded allow-list.
 - `plugins/figures/lib/theme.py` is the single implementation shared by all of the above: `load_theme`, `validate_theme`, `palette_hexes`, `theme_defaults`, `resolve_palette`, `JOURNAL_PROFILES`, `PALETTE_PRESETS`.
 
