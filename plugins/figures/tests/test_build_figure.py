@@ -32,7 +32,16 @@ UV_PREFIX = [
 
 
 def _run(spec_path: Path, out_dir: Path, *extra: str) -> subprocess.CompletedProcess:
-    cmd = [*UV_PREFIX, "--spec", str(spec_path), "--out", str(out_dir), "--backend", "fake", *extra]
+    cmd = [
+        *UV_PREFIX,
+        "--spec",
+        str(spec_path),
+        "--out",
+        str(out_dir),
+        "--backend",
+        "fake",
+        *extra,
+    ]
     return subprocess.run(cmd, capture_output=True, text=True, timeout=180, check=False)
 
 
@@ -46,15 +55,24 @@ def test_panels_mode_produces_manifest_svg_and_pngs(tmp_path):
             {
                 "id": "a",
                 "subject": "a neuron with dendrites",
-                "text": [{"role": "panel-letter", "text": "a", "placement": "top-left"}],
+                "text": [
+                    {"role": "panel-letter", "text": "a", "placement": "top-left"}
+                ],
             },
             {
                 "id": "b",
                 "subject": "a synapse close-up",
-                "text": [{"role": "panel-letter", "text": "b", "placement": "top-left"}],
+                "text": [
+                    {"role": "panel-letter", "text": "b", "placement": "top-left"}
+                ],
             },
         ],
-        "compose": {"journal": "nature", "columns": 2, "gap_mm": 3, "label_style": "lowercase"},
+        "compose": {
+            "journal": "nature",
+            "columns": 2,
+            "gap_mm": 3,
+            "label_style": "lowercase",
+        },
     }
     spec_path = tmp_path / "spec.json"
     spec_path.write_text(json.dumps(spec))
@@ -154,3 +172,55 @@ def test_panels_mode_rejects_text_ladder_violation(tmp_path):
     result = _run(spec_path, out_dir)
     assert result.returncode == 2, f"stdout={result.stdout}\nstderr={result.stderr}"
     assert not (out_dir / "manifest.json").exists()
+
+
+def test_panel_failure_exits_1_with_uniform_manifest(tmp_path, monkeypatch):
+    """A failed panel must not crash the run: exit 1, and every panel entry in
+    manifest.json carries the same keys so downstream tooling can branch on it."""
+    import os
+
+    spec = tmp_path / "figure.json"
+    spec.write_text(
+        json.dumps(
+            {
+                "layout": "panels",
+                "size": "816x816",
+                "consistency": "none",
+                "panels": [
+                    {"id": "a", "subject": "a head", "text": []},
+                    {"id": "b", "subject": "a network", "text": []},
+                ],
+                "compose": {"journal": "nature", "columns": 2},
+            }
+        )
+    )
+    out_dir = tmp_path / "out"
+    env = dict(os.environ, FIGURES_FAKE_FAIL_SUBSTR="panel_b")
+    cmd = [*UV_PREFIX, "--spec", str(spec), "--out", str(out_dir), "--backend", "fake"]
+    proc = subprocess.run(
+        cmd, capture_output=True, text=True, timeout=180, check=False, env=env
+    )
+    assert proc.returncode == 1, proc.stderr
+    manifest = json.loads((out_dir / "manifest.json").read_text())
+    key_sets = {tuple(sorted(p.keys())) for p in manifest["panels"]}
+    assert len(key_sets) == 1, key_sets
+    by_id = {p["id"]: p for p in manifest["panels"]}
+    assert by_id["a"]["success"] is True
+    assert by_id["b"]["success"] is False
+    assert "forced failure" in by_id["b"]["error"]
+
+
+def test_spec_validation_exits_2(tmp_path):
+    spec = tmp_path / "bad.json"
+    spec.write_text(
+        json.dumps(
+            {
+                "layout": "panels",
+                "panels": [{"id": "a", "subject": "x", "size": "1000x1000"}],
+                "compose": {"columns": 0},
+            }
+        )
+    )
+    proc = _run(spec, tmp_path / "out", "--backend", "fake")
+    assert proc.returncode == 2
+    assert "multiple" in proc.stderr or "columns" in proc.stderr

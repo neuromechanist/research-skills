@@ -42,6 +42,7 @@ import concurrent.futures
 import importlib.util
 import json
 import math
+import shlex
 import sys
 import time
 from pathlib import Path
@@ -128,7 +129,7 @@ def _qa_command(
 ) -> str:
     check_script = plugin_root / "agents" / "figure-qa-scripts" / "check_raster.py"
     parts = [
-        "uv run --with pillow --with colorthief --with pytesseract python",
+        "uv run --with pillow --with pytesseract python",
         str(check_script),
         str(png),
         "--json",
@@ -140,7 +141,7 @@ def _qa_command(
     if theme_path is not None:
         parts += ["--palette", str(theme_path)]
     for t in texts:
-        parts += ["--expect-text", f'"{t}"']
+        parts += ["--expect-text", shlex.quote(t)]
     return " ".join(parts)
 
 
@@ -220,28 +221,24 @@ def _generate_panel(
     verbose: bool,
     references: list[Path],
 ) -> dict:
-    pid = panel_spec["id"]
-    text_items = _text_items_from_spec(panel_spec.get("text", []))
-    size = image_backend.validate_size(panel_spec.get("size", default_size))
-    quality = panel_spec.get("quality", default_quality)
-    prompt = prompting.build_figure_prompt(
-        panel_spec["subject"],
-        theme=theme,
-        text=text_items,
-        size=size,
-        quality=quality,
-        background=background,
-        layout=panel_spec.get("layout"),
-        extra_avoid=[],
-    )
-    out_path = out_dir / f"panel_{pid}.png"
-    report: dict = {
-        "id": pid,
-        "prompt": prompt,
-        "texts": [t.text for t in text_items],
-        "size": size,
-    }
+    pid = str(panel_spec.get("id", "?"))
+    report: dict = {"id": pid, "prompt": None, "texts": [], "size": None}
     try:
+        text_items = _text_items_from_spec(panel_spec.get("text", []))
+        size = image_backend.validate_size(panel_spec.get("size", default_size))
+        quality = panel_spec.get("quality", default_quality)
+        prompt = prompting.build_figure_prompt(
+            panel_spec["subject"],
+            theme=theme,
+            text=text_items,
+            size=size,
+            quality=quality,
+            background=background,
+            layout=panel_spec.get("layout"),
+            extra_avoid=[],
+        )
+        out_path = out_dir / f"panel_{pid}.png"
+        report.update(prompt=prompt, texts=[t.text for t in text_items], size=size)
         req = image_backend.GenerationRequest(
             prompt=prompt,
             out=out_path,
@@ -266,7 +263,13 @@ def _generate_panel(
             elapsed_s=result.elapsed_s,
             error=None,
         )
-    except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+    except (
+        image_backend.BackendUnavailable,
+        image_backend.GenerationFailed,
+        ValueError,
+        KeyError,
+        OSError,
+    ) as exc:
         report.update(
             success=False, path=None, backend=None, elapsed_s=None, error=str(exc)
         )
@@ -315,6 +318,32 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, json.JSONDecodeError) as exc:
             print(f"error: could not load theme '{theme_path}': {exc}", file=sys.stderr)
             return 2
+
+    panels = spec_doc.get("panels") or []
+    if not panels:
+        print("error: spec has no panels", file=sys.stderr)
+        return 2
+    for i, panel in enumerate(panels):
+        for key in ("id", "subject"):
+            if not panel.get(key):
+                print(
+                    f"error: panel {i} is missing required key {key!r}", file=sys.stderr
+                )
+                return 2
+        try:
+            image_backend.validate_size(panel.get("size", spec_doc.get("size", "auto")))
+        except ValueError as exc:
+            print(f"error: panel {panel['id']}: {exc}", file=sys.stderr)
+            return 2
+    columns_cfg = (spec_doc.get("compose") or {}).get("columns")
+    if columns_cfg is not None and (
+        not isinstance(columns_cfg, int) or columns_cfg < 1
+    ):
+        print(
+            f"error: compose.columns must be a positive integer, got {columns_cfg!r}",
+            file=sys.stderr,
+        )
+        return 2
 
     layout = spec_doc.get("layout", "panels")
     if layout not in ("single", "panels"):
@@ -463,8 +492,11 @@ def main(argv: list[str] | None = None) -> int:
                         "id": p["id"],
                         "prompt": None,
                         "texts": [],
+                        "size": None,
                         "success": False,
                         "path": None,
+                        "backend": None,
+                        "elapsed_s": None,
                         "error": "skipped: first panel (consistency reference) failed to generate",
                     }
                 )

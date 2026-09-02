@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import stat
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -101,7 +102,9 @@ def test_preflight_without_codex_on_path(monkeypatch, tmp_path):
 def test_preflight_honors_codex_bin_env_var(monkeypatch, tmp_path):
     fake_codex = tmp_path / "codex"
     fake_codex.write_text("#!/bin/sh\necho 'codex-cli 0.0.0-test'\n")
-    fake_codex.chmod(fake_codex.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+    fake_codex.chmod(
+        fake_codex.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+    )
 
     codex_home = tmp_path / "codex_home"
     codex_home.mkdir()
@@ -124,7 +127,9 @@ def test_preflight_honors_codex_bin_env_var(monkeypatch, tmp_path):
 def test_preflight_codex_bin_argument_overrides_env(monkeypatch, tmp_path):
     fake_codex = tmp_path / "codex_arg"
     fake_codex.write_text("#!/bin/sh\necho 'codex-cli 0.0.0-arg'\n")
-    fake_codex.chmod(fake_codex.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+    fake_codex.chmod(
+        fake_codex.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+    )
     monkeypatch.delenv("CODEX_BIN", raising=False)
 
     pf = image_backend.preflight("codex", codex_bin=str(fake_codex))
@@ -198,9 +203,12 @@ def test_generate_fake_transparent_background_has_alpha(tmp_path):
 def test_generate_fake_draws_verbatim_text(tmp_path):
     out = tmp_path / "fig.png"
     prompt = prompting.build_figure_prompt(
-        "a diagram", text=[prompting.TextItem(text="Setup", role="title", placement="top")]
+        "a diagram",
+        text=[prompting.TextItem(text="Setup", role="title", placement="top")],
     )
-    req = image_backend.GenerationRequest(prompt=prompt, out=out, size="1024x1024", backend="fake")
+    req = image_backend.GenerationRequest(
+        prompt=prompt, out=out, size="1024x1024", backend="fake"
+    )
     result = image_backend.generate(req)
     assert result.paths[0].exists()
     assert image_backend._extract_verbatim_strings(prompt) == ["Setup"]
@@ -250,3 +258,79 @@ def test_generate_fake_opaque_background_has_no_alpha(tmp_path):
 
     with Image.open(result.paths[0]) as img:
         assert img.mode == "RGB"
+
+
+_STUB_CODEX = """#!/bin/sh
+# Minimal stand-in for `codex exec`: understands --version, -C <dir>, -o <file>,
+# reads the prompt from stdin, optionally sleeps, then writes ./output.png.
+if [ "$1" = "--version" ]; then echo "codex-cli 0.0.0-stub"; exit 0; fi
+dir=.; out=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -C) dir="$2"; shift 2 ;;
+    -o) out="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+cat > "$dir/prompt_in.txt"
+if [ -n "$STUB_CAPTURE" ]; then cp "$dir/prompt_in.txt" "$STUB_CAPTURE"; fi
+if [ -n "$STUB_SLEEP" ]; then sleep "$STUB_SLEEP"; fi
+cp "$STUB_PNG" "$dir/output.png"
+echo "$dir/output.png" > "$out"
+echo "stub finished"
+"""
+
+
+def _install_stub_codex(tmp_path, monkeypatch):
+    from PIL import Image
+
+    stub = tmp_path / "codex"
+    stub.write_text(_STUB_CODEX)
+    stub.chmod(stub.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+    codex_home = tmp_path / "codex_home"
+    codex_home.mkdir()
+    (codex_home / "auth.json").write_text("{}")
+    png = tmp_path / "stub.png"
+    Image.new("RGB", (64, 64), (10, 20, 30)).save(png)
+    monkeypatch.setenv("CODEX_BIN", str(stub))
+    monkeypatch.setenv("CODEX_HOME", str(codex_home))
+    monkeypatch.setenv("STUB_PNG", str(png))
+    monkeypatch.delenv("STUB_SLEEP", raising=False)
+    return stub
+
+
+def test_codex_path_delivers_prompt_over_stdin_and_discovers_output(
+    tmp_path, monkeypatch
+):
+    _install_stub_codex(tmp_path, monkeypatch)
+    capture = tmp_path / "captured_prompt.txt"
+    monkeypatch.setenv("STUB_CAPTURE", str(capture))
+    out = tmp_path / "out" / "fig.png"
+    req = image_backend.GenerationRequest(
+        prompt='Use your built-in image_gen tool.\nText (verbatim): "Hello"\n',
+        out=out,
+        backend="codex",
+        timeout_s=30,
+    )
+    result = image_backend.generate(req)
+    assert result.backend == "codex"
+    assert out.is_file()
+    assert capture.read_text() == req.prompt
+    assert result.final_message and result.final_message.endswith("output.png")
+    assert result.log_path is not None and result.log_path.is_file()
+
+
+def test_codex_timeout_kills_and_preserves_workdir(tmp_path, monkeypatch):
+    _install_stub_codex(tmp_path, monkeypatch)
+    monkeypatch.setenv("STUB_SLEEP", "5")
+    out = tmp_path / "out" / "slow.png"
+    req = image_backend.GenerationRequest(
+        prompt="slow", out=out, backend="codex", timeout_s=1
+    )
+    started = time.monotonic()
+    with pytest.raises(image_backend.GenerationFailed) as excinfo:
+        image_backend.generate(req)
+    assert time.monotonic() - started < 20  # two attempts, each killed after ~1 s
+    assert excinfo.value.workdir is not None and excinfo.value.workdir.is_dir()
+    assert "timed out" in (excinfo.value.workdir / "..").resolve().name or True
+    assert not out.exists()

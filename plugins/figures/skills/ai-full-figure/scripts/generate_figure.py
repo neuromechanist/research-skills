@@ -42,7 +42,9 @@ def _parse_text_arg(raw: str) -> prompting.TextItem:
         raise ValueError(f"--text must be ROLE:PLACEMENT:STRING, got {raw!r}")
     role, placement, text = (p.strip() for p in parts)
     if role not in prompting.VALID_ROLES:
-        raise ValueError(f"--text role must be one of {prompting.VALID_ROLES}, got {role!r}")
+        raise ValueError(
+            f"--text role must be one of {prompting.VALID_ROLES}, got {role!r}"
+        )
     if not text:
         raise ValueError(f"--text string must not be empty, got {raw!r}")
     return prompting.TextItem(text=text, role=role, placement=placement or "center")
@@ -77,13 +79,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--out", type=Path, required=True, help="Output PNG path")
     parser.add_argument(
-        "--spec", type=Path, help="Single-panel spec JSON (build_figure schema, first panel)"
+        "--spec",
+        type=Path,
+        help="Single-panel spec JSON (build_figure schema, first panel)",
     )
     parser.add_argument("--theme", type=Path, help="Path to a theme.json")
     parser.add_argument(
         "--size", default=None, help="'auto' or WIDTHxHEIGHT (edges multiples of 16)"
     )
-    parser.add_argument("--quality", default=None, choices=["low", "medium", "high", "auto"])
+    parser.add_argument(
+        "--quality", default=None, choices=["low", "medium", "high", "auto"]
+    )
     parser.add_argument(
         "--text",
         action="append",
@@ -97,8 +103,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default="opaque",
         help="'chroma' is a legacy alias for 'transparent'.",
     )
-    parser.add_argument("--layout", default=None, help="Free-text composition/layout hint")
-    parser.add_argument("--backend", choices=["auto", "codex", "api", "fake"], default="auto")
+    parser.add_argument(
+        "--layout", default=None, help="Free-text composition/layout hint"
+    )
+    parser.add_argument(
+        "--backend", choices=["auto", "codex", "api", "fake"], default="auto"
+    )
     parser.add_argument(
         "--codex-bin",
         default=None,
@@ -106,7 +116,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--model", default=None)
     parser.add_argument("--effort", default=None)
-    parser.add_argument("--n", type=int, default=1, help="Number of candidates to generate")
+    parser.add_argument(
+        "--n", type=int, default=1, help="Number of candidates to generate"
+    )
     parser.add_argument(
         "--ref",
         action="append",
@@ -122,7 +134,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Previous image to edit; SUBJECT becomes the instruction",
     )
     parser.add_argument(
-        "--timeout", type=int, default=600, help="Generation timeout in seconds (default: 600)"
+        "--timeout",
+        type=int,
+        default=600,
+        help="Generation timeout in seconds (default: 600)",
     )
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--print-prompt", action="store_true")
@@ -160,7 +175,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.edit:
         if not args.subject:
-            print("error: --edit requires SUBJECT to be the edit instruction", file=sys.stderr)
+            print(
+                "error: --edit requires SUBJECT to be the edit instruction",
+                file=sys.stderr,
+            )
             return 2
         instruction = args.subject
         subject = None
@@ -172,7 +190,10 @@ def main(argv: list[str] | None = None) -> int:
             or (spec_doc.get("subject") if spec_doc else None)
         )
         if not subject:
-            print("error: a subject is required (positional argument or --spec)", file=sys.stderr)
+            print(
+                "error: a subject is required (positional argument or --spec)",
+                file=sys.stderr,
+            )
             return 2
 
     text_items: list[prompting.TextItem] = []
@@ -220,7 +241,9 @@ def main(argv: list[str] | None = None) -> int:
         or "high"
     )
     model = args.model or model_prefs.get("codex_model") or image_backend.DEFAULT_MODEL
-    effort = args.effort or model_prefs.get("codex_effort") or image_backend.DEFAULT_EFFORT
+    effort = (
+        args.effort or model_prefs.get("codex_effort") or image_backend.DEFAULT_EFFORT
+    )
 
     if args.edit:
         prompt_text = instruction
@@ -240,7 +263,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.print_prompt:
         print(prompt_text)
 
-    background_color = ((theme or {}).get("palette") or {}).get("background") or "#FFFFFF"
+    background_color = ((theme or {}).get("palette") or {}).get(
+        "background"
+    ) or "#FFFFFF"
 
     start = time.monotonic()
     try:

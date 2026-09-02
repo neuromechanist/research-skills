@@ -21,8 +21,16 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-import theme as theme_lib
+_LIB_DIR = Path(__file__).resolve().parents[3] / "lib"
+sys.path.insert(0, str(_LIB_DIR))
+try:
+    import theme as theme_lib
+except ImportError as exc:  # the plugin lib/ directory is missing or broken
+    print(
+        f"error: cannot import the figures theme library from {_LIB_DIR}: {exc}",
+        file=sys.stderr,
+    )
+    sys.exit(2)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -59,7 +67,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.json:
         json.dump(
-            {"valid": not errors, "problems": problems, "checked": checked}, sys.stdout, indent=2
+            {"valid": not errors, "problems": problems, "checked": checked},
+            sys.stdout,
+            indent=2,
         )
         print(file=sys.stdout)
         return 1 if errors else 0

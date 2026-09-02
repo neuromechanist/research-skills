@@ -13,7 +13,7 @@ uv run --with pytest --with lxml --with svgelements --with shapely \
     --with svgpathtools --with fonttools \
     pytest tests/ -q
 
-uv run --with pytest --with pillow --with colorthief --with jsonschema \
+uv run --with pytest --with pillow --with jsonschema \
     --with pytesseract --with lxml --with svgelements --with shapely \
     --with svgutils --with cairosvg \
     pytest plugins/figures/tests -q

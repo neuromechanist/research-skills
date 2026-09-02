@@ -30,10 +30,20 @@ import sys
 from pathlib import Path
 from typing import Any
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "lib"))
-import theme as theme_lib
+_LIB_DIR = Path(__file__).resolve().parents[3] / "lib"
+sys.path.insert(0, str(_LIB_DIR))
+try:
+    import theme as theme_lib
+except ImportError as exc:  # the plugin lib/ directory is missing or broken
+    print(
+        f"error: cannot import the figures theme library from {_LIB_DIR}: {exc}",
+        file=sys.stderr,
+    )
+    sys.exit(2)
 
-_HEX_RE = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
+_HEX_RE = re.compile(
+    r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+)
 
 
 def _theme_id_from_stem(out: Path) -> str:
@@ -59,7 +69,9 @@ def _apply_overrides(theme: dict[str, Any], args: argparse.Namespace) -> None:
     if args.style:
         theme["style_tokens"] = [t.strip() for t in args.style.split(",") if t.strip()]
     if args.negative:
-        theme["negative_tokens"] = [t.strip() for t in args.negative.split(",") if t.strip()]
+        theme["negative_tokens"] = [
+            t.strip() for t in args.negative.split(",") if t.strip()
+        ]
     if args.reference:
         theme["reference_images"] = list(args.reference)
     if args.codex_model:
@@ -103,7 +115,9 @@ def main(argv: list[str] | None = None) -> int:
         choices=sorted(theme_lib.JOURNAL_PROFILES),
         help="Target venue profile.",
     )
-    parser.add_argument("--out", required=True, type=Path, help="Path to write the theme.json.")
+    parser.add_argument(
+        "--out", required=True, type=Path, help="Path to write the theme.json."
+    )
     parser.add_argument(
         "--preset",
         default="okabe-ito",
@@ -114,11 +128,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--accent", help="Override the accent color (hex).")
     parser.add_argument("--neutral", help="Override the neutral color (hex).")
     parser.add_argument("--font", help="Typography family, e.g. Helvetica.")
-    parser.add_argument("--style", help="Comma-separated style_tokens, replacing the defaults.")
+    parser.add_argument(
+        "--style", help="Comma-separated style_tokens, replacing the defaults."
+    )
     parser.add_argument(
         "--negative", help="Comma-separated negative_tokens, replacing the defaults."
     )
-    parser.add_argument("--reference", action="append", help="Reference image path (repeatable).")
+    parser.add_argument(
+        "--reference", action="append", help="Reference image path (repeatable)."
+    )
     parser.add_argument(
         "--codex-model", default=None, help="Override model_preferences.codex_model."
     )
@@ -131,7 +149,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.out.exists() and not args.force:
-        print(f"error: {args.out} already exists; pass --force to overwrite.", file=sys.stderr)
+        print(
+            f"error: {args.out} already exists; pass --force to overwrite.",
+            file=sys.stderr,
+        )
         return 2
 
     theme_id = _theme_id_from_stem(args.out)
@@ -152,7 +173,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"warning: {w[len('warning: ') :]}", file=sys.stderr)
     if errors:
         print(
-            f"error: written theme failed validation ({len(errors)} problem(s)):", file=sys.stderr
+            f"error: written theme failed validation ({len(errors)} problem(s)):",
+            file=sys.stderr,
         )
         for e in errors:
             print(f"  - {e}", file=sys.stderr)

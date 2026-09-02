@@ -73,7 +73,9 @@ PALETTE_PRESETS["wong"] = PALETTE_PRESETS["okabe-ito"]
 _PALETTE_ROLE_ORDER = ("primary", "accent", "neutral", "background")
 _PALETTE_ARRAY_KEYS = ("categorical", "sequential", "diverging")
 
-_HEX_RE = re.compile(r"^#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})$")
+_HEX_RE = re.compile(
+    r"^#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})$"
+)
 
 
 def _is_hex(value: Any) -> bool:
@@ -99,7 +101,9 @@ def _relative_luminance(rgb: tuple[int, int, int]) -> float:
 
     def channel(c: int) -> float:
         c_norm = c / 255.0
-        return c_norm / 12.92 if c_norm <= 0.03928 else ((c_norm + 0.055) / 1.055) ** 2.4
+        return (
+            c_norm / 12.92 if c_norm <= 0.03928 else ((c_norm + 0.055) / 1.055) ** 2.4
+        )
 
     r, g, b = rgb
     return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
@@ -152,7 +156,9 @@ def _structural_check(theme: dict[str, Any]) -> list[str]:
                 continue
             for v in values:
                 if not _is_hex(v):
-                    problems.append(f"palette.{arr_key} contains invalid hex color '{v}'")
+                    problems.append(
+                        f"palette.{arr_key} contains invalid hex color '{v}'"
+                    )
 
     style_tokens = theme.get("style_tokens")
     if style_tokens is not None and not isinstance(style_tokens, list):
@@ -175,7 +181,12 @@ def _structural_check(theme: dict[str, Any]) -> list[str]:
     postprocess = theme.get("postprocess")
     if isinstance(postprocess, dict):
         bg_removal = postprocess.get("bg_removal")
-        if bg_removal is not None and bg_removal not in ("auto", "pillow", "rembg", "none"):
+        if bg_removal is not None and bg_removal not in (
+            "auto",
+            "pillow",
+            "rembg",
+            "none",
+        ):
             problems.append(
                 f"postprocess.bg_removal '{bg_removal}' is not one of auto|pillow|rembg|none"
             )
@@ -199,7 +210,9 @@ def validate_theme(theme: dict[str, Any]) -> list[str]:
         validator = jsonschema.Draft7Validator(schema)
         problems = [
             f"{'.'.join(str(p) for p in error.path) or '<root>'}: {error.message}"
-            for error in sorted(validator.iter_errors(theme), key=lambda e: list(e.path))
+            for error in sorted(
+                validator.iter_errors(theme), key=lambda e: list(e.path)
+            )
         ]
 
     palette = theme.get("palette")
@@ -244,10 +257,14 @@ def theme_defaults(
     style/negative tokens, references, model preferences) from CLI args."""
     profile = JOURNAL_PROFILES.get(journal.lower())
     if profile is None:
-        raise ValueError(f"unknown journal '{journal}'; known: {sorted(JOURNAL_PROFILES)}")
+        raise ValueError(
+            f"unknown journal '{journal}'; known: {sorted(JOURNAL_PROFILES)}"
+        )
     colors = PALETTE_PRESETS.get(preset.lower())
     if colors is None:
-        raise ValueError(f"unknown palette preset '{preset}'; known: {sorted(PALETTE_PRESETS)}")
+        raise ValueError(
+            f"unknown palette preset '{preset}'; known: {sorted(PALETTE_PRESETS)}"
+        )
     primary = colors[0]
     accent = colors[1] if len(colors) > 1 else colors[0]
     neutral = colors[2] if len(colors) > 2 else colors[0]
@@ -270,11 +287,15 @@ def theme_defaults(
         "stroke": {"weight_px": 4, "linejoin": "round", "linecap": "round"},
         "style_tokens": ["flat vector", "minimal", "no shading"],
         "negative_tokens": ["gradient", "3D", "shadow", "watermark"],
-        "composition": {"aspect": "4:3", "padding_pct": 8, "perspective": "orthographic"},
+        "composition": {
+            "aspect": "4:3",
+            "padding_pct": 8,
+            "perspective": "orthographic",
+        },
         "text": {
             "max_words_per_label": 4,
             "max_words_per_title": 8,
-            "headline_size_class": "medium",
+            "headline_size_class": "large",
         },
         "reference_images": [],
         "model_preferences": {
@@ -300,7 +321,9 @@ def resolve_palette(spec: str) -> tuple[str, list[str]]:
         theme = load_theme(theme_path)
         hexes = palette_hexes(theme)
         if not hexes:
-            raise ValueError(f"{theme_path}: theme has no usable hex colors in its palette")
+            raise ValueError(
+                f"{theme_path}: theme has no usable hex colors in its palette"
+            )
         return str(theme.get("theme_id") or theme_path.stem), hexes
     raise ValueError(
         f"'{spec}' is neither a known palette preset ({sorted(PALETTE_PRESETS)}) "

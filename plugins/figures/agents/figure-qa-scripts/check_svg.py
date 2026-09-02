@@ -36,24 +36,25 @@ from typing import Any
 
 
 def _load_theme_lib():  # type: ignore[no-untyped-def]
-    """Import plugins/figures/lib/theme.py by path, mirroring check_raster.py.
-    Returns the module, or None when the lib package is missing or fails to
-    import (ALLOWED_PALETTES below takes over in that case)."""
-    lib_dir = Path(__file__).resolve().parents[2] / "lib"
-    if str(lib_dir) not in sys.path:
-        sys.path.insert(0, str(lib_dir))
-    try:
-        import theme as theme_lib  # type: ignore[import-not-found]
-    except ImportError:
+    """Import plugins/figures/lib/theme.py by file path under a unique module
+    name (a bare ``import theme`` could collide with an unrelated module).
+    Returns the module, or None when the lib is missing or fails to import."""
+    import importlib.util
+
+    lib_path = Path(__file__).resolve().parents[2] / "lib" / "theme.py"
+    if not lib_path.is_file():
         return None
-    return theme_lib
+    spec = importlib.util.spec_from_file_location("figures_theme_lib", lib_path)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except (ImportError, SyntaxError, OSError):
+        return None
+    return module
 
 
-# Curated colorblind-safe palettes (hex without alpha). The agent passes one of
-# these names via --palette; downstream checks compute Euclidean RGB distance and
-# flag samples that are too far from every allowed color. Near-gray colors
-# (axis spines, tick marks) are exempted before comparison so they do not
-# produce false positives.
 ALLOWED_PALETTES: dict[str, list[str]] = {
     "okabe-ito": [
         "#000000",
@@ -75,9 +76,6 @@ ALLOWED_PALETTES: dict[str, list[str]] = {
         "#BBBBBB",
     ],
 }
-# Wong 2011 republished the Okabe-Ito 2008 palette unchanged; keep both names
-# pointing to the same list so users see the canonical citation either way.
-ALLOWED_PALETTES["wong"] = ALLOWED_PALETTES["okabe-ito"]
 
 
 def _validate_fonts(svg: Path, journal: str | None) -> dict[str, Any] | None:
@@ -87,7 +85,9 @@ def _validate_fonts(svg: Path, journal: str | None) -> dict[str, Any] | None:
     if journal is None:
         return None
     plugin_root = Path(__file__).resolve().parents[2]  # plugins/figures/
-    validator = plugin_root / "skills" / "scientific-figure" / "scripts" / "validate_fonts.py"
+    validator = (
+        plugin_root / "skills" / "scientific-figure" / "scripts" / "validate_fonts.py"
+    )
     if not validator.exists():
         return {"available": False, "reason": f"validator not found at {validator}"}
     try:
@@ -164,7 +164,9 @@ def _is_near_gray(rgb: tuple[int, int, int], tol: int = 15) -> bool:
     """True when all three channels are within tol of each other (axis spines,
     ticks, gridlines, background neutrals)."""
     return (
-        abs(rgb[0] - rgb[1]) <= tol and abs(rgb[1] - rgb[2]) <= tol and abs(rgb[0] - rgb[2]) <= tol
+        abs(rgb[0] - rgb[1]) <= tol
+        and abs(rgb[1] - rgb[2]) <= tol
+        and abs(rgb[0] - rgb[2]) <= tol
     )
 
 
@@ -196,10 +198,14 @@ def _resolve_palette(spec: str, theme_lib) -> tuple[str, list[str]]:  # type: ig
     if path.exists():
         theme = json.loads(path.read_text())
         palette = theme.get("palette") or {}
-        hexes = [v for v in palette.values() if isinstance(v, str) and v.startswith("#")]
+        hexes = [
+            v for v in palette.values() if isinstance(v, str) and v.startswith("#")
+        ]
         for arr_key in ("categorical", "sequential", "diverging"):
             hexes += [
-                c for c in palette.get(arr_key, []) if isinstance(c, str) and c.startswith("#")
+                c
+                for c in palette.get(arr_key, [])
+                if isinstance(c, str) and c.startswith("#")
             ]
         if not hexes:
             raise ValueError(f"{path}: theme has no usable hex colors in its palette")
@@ -209,7 +215,9 @@ def _resolve_palette(spec: str, theme_lib) -> tuple[str, list[str]]:  # type: ig
     )
 
 
-def _palette_compliance(root, palette_name: str | None, theme_lib) -> dict[str, Any] | None:  # type: ignore[no-untyped-def]
+def _palette_compliance(
+    root, palette_name: str | None, theme_lib
+) -> dict[str, Any] | None:  # type: ignore[no-untyped-def]
     if palette_name is None:
         return None
     try:
@@ -233,7 +241,11 @@ def _palette_compliance(root, palette_name: str | None, theme_lib) -> dict[str, 
         nearest = min(_rgb_distance(rgb, allowed) for allowed in allowed_rgb)
         if nearest > 30:  # Euclidean RGB cutoff for "clearly off-palette"
             issues.append(
-                {"color": hex_color, "rgb": list(rgb), "nearest_distance": round(nearest, 2)}
+                {
+                    "color": hex_color,
+                    "rgb": list(rgb),
+                    "nearest_distance": round(nearest, 2),
+                }
             )
     return {
         "palette": name,
@@ -264,7 +276,9 @@ def _viewbox_mm_per_unit(root) -> float:  # type: ignore[no-untyped-def]
     if not vb or not width:
         return 1.0
     try:
-        vb_w = float(re.split(r"[\s,]+", vb.strip())[2])  # viewBox may be comma- or space-delimited
+        vb_w = float(
+            re.split(r"[\s,]+", vb.strip())[2]
+        )  # viewBox may be comma- or space-delimited
     except (IndexError, ValueError):
         return 1.0
     match = re.match(r"\s*(-?[0-9.]+)\s*([a-z%]*)\s*$", width, re.IGNORECASE)
@@ -290,7 +304,9 @@ def _text_bbox(
     """Estimate a text element's bounding box in user units from its anchor point
     (ax, ay), font size, and content. Honours text-anchor (x) and dominant-baseline (y)."""
     w = len(text) * fs * _TEXT_ADVANCE_EM
-    anchor = (elem.values.get("text-anchor") or getattr(elem, "anchor", "") or "start").lower()
+    anchor = (
+        elem.values.get("text-anchor") or getattr(elem, "anchor", "") or "start"
+    ).lower()
     if anchor in ("middle", "center"):
         xmin, xmax = ax - w / 2.0, ax + w / 2.0
     elif anchor == "end":
@@ -351,7 +367,9 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
     """
     import importlib.util
 
-    missing = [m for m in ("svgelements", "shapely") if importlib.util.find_spec(m) is None]
+    missing = [
+        m for m in ("svgelements", "shapely") if importlib.util.find_spec(m) is None
+    ]
     if missing:
         return {
             "available": False,
@@ -382,11 +400,15 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
             "available": True,
             "error": f"svgelements parse failed: {type(exc).__name__}: {exc}",
         }
-    if not factor:  # width="0" or similar; fall back to 1:1 rather than dividing by zero
+    if (
+        not factor
+    ):  # width="0" or similar; fall back to 1:1 rather than dividing by zero
         factor = 1.0
 
     mm_per_unit = _viewbox_mm_per_unit(root)
-    tol = _GEOM_TOL_MM / mm_per_unit if mm_per_unit else _GEOM_TOL_MM  # tolerance in user units
+    tol = (
+        _GEOM_TOL_MM / mm_per_unit if mm_per_unit else _GEOM_TOL_MM
+    )  # tolerance in user units
 
     def to_user(v: float) -> float:
         return v / factor
@@ -394,7 +416,8 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
     closed: list[dict[str, Any]] = []  # filled shapes: bbox + id
     texts: list[dict[str, Any]] = []  # estimated text bbox + label
     arrows: list[dict[str, Any]] = []  # marker-end tip point + label
-    skipped_texts = 0  # <text> whose bbox could not be resolved
+    skipped_texts = 0
+    skipped_images = 0  # <text> whose bbox could not be resolved
     skipped_arrows = 0  # marker-end element whose tip could not be resolved
     simple_closed_types = (Rect, Circle, Ellipse, Polygon)
 
@@ -433,9 +456,15 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
                 bx = e.bbox()
             except Exception:  # noqa: BLE001 - missing Pillow or undecodable data
                 bx = None
+            if not (bx and any(bx)):
+                skipped_images += 1
+                continue
             if bx and any(bx):
                 closed.append(
-                    {"bbox": tuple(to_user(v) for v in bx), "id": e.values.get("id") or "image"}
+                    {
+                        "bbox": tuple(to_user(v) for v in bx),
+                        "id": e.values.get("id") or "image",
+                    }
                 )
             continue
         try:
@@ -463,7 +492,10 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
             )
         elif isinstance(e, Path) and bx and _is_closed_path(e):
             closed.append(
-                {"bbox": tuple(to_user(v) for v in bx), "id": e.values.get("id") or "path"}
+                {
+                    "bbox": tuple(to_user(v) for v in bx),
+                    "id": e.values.get("id") or "path",
+                }
             )
 
     # 1. Text bleeding out of every shape it overlaps.
@@ -527,9 +559,13 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
         "text_count": len(texts),
         "shape_count": len(closed),
         "skipped_texts": skipped_texts,
+        "skipped_images": skipped_images,
         "skipped_arrows": skipped_arrows,
         "arrows_without_targets": arrows_without_targets,
-        "units": {"mm_per_user_unit": round(mm_per_unit, 4), "tolerance_mm": _GEOM_TOL_MM},
+        "units": {
+            "mm_per_user_unit": round(mm_per_unit, 4),
+            "tolerance_mm": _GEOM_TOL_MM,
+        },
         "text_overflow": text_overflow,
         "arrow_tip_issues": arrow_tip_issues,
         "bbox_overlaps": bbox_overlaps,
@@ -537,7 +573,9 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
     }
 
 
-def check_svg(svg_path: Path, journal: str | None, palette: str | None) -> dict[str, Any]:
+def check_svg(
+    svg_path: Path, journal: str | None, palette: str | None
+) -> dict[str, Any]:
     """Top-level entry point. Raises FileNotFoundError / lxml.etree.XMLSyntaxError on bad input."""
     from lxml import etree  # type: ignore[import-not-found]
 
@@ -586,6 +624,7 @@ def _summarize(report: dict[str, Any]) -> tuple[int, int, int]:
             # Elements that could not be measured (or arrows with no target shape) are
             # warnings, not clean: the agent should cover them with VLM judgment.
             warnings += int(geom.get("skipped_texts") or 0)
+            warnings += int(geom.get("skipped_images") or 0)
             warnings += int(geom.get("skipped_arrows") or 0)
             warnings += int(geom.get("arrows_without_targets") or 0)
     return issues, warnings, script_errors
@@ -615,8 +654,11 @@ def _findings_from_report(report: dict[str, Any]) -> list[dict[str, Any]]:
                     {
                         "check": "font_too_small",
                         "severity": "block",
-                        "message": str(issue),
-                        "action": "edit",
+                        "message": (
+                            f"'{issue.get('text', '')}' measures {issue.get('effective_pt')} pt, "
+                            f"below the {issue.get('minimum_pt')} pt minimum"
+                        ),
+                        "action": "rescale",
                         "hint": "increase font-size or route the label through svg-primitives auto-fit text",
                     }
                 )
@@ -694,7 +736,7 @@ def _findings_from_report(report: dict[str, Any]) -> list[dict[str, Any]]:
                         "check": "bbox_overlap",
                         "severity": "warn",
                         "message": f"shapes '{item['a_id']}' and '{item['b_id']}' overlap",
-                        "action": "edit",
+                        "action": "overlay",
                         "hint": "reposition or resize one of the overlapping shapes",
                     }
                 )
@@ -708,6 +750,19 @@ def _findings_from_report(report: dict[str, Any]) -> list[dict[str, Any]]:
                         "hint": "close the target <path> or verify manually",
                     }
                 )
+        if int(geom.get("skipped_images") or 0):
+            findings.append(
+                {
+                    "check": "image_unmeasured",
+                    "severity": "warn",
+                    "message": (
+                        f"{geom['skipped_images']} <image> element(s) could not be decoded; "
+                        "run with --with pillow so substrates count as shapes"
+                    ),
+                    "action": "none",
+                    "hint": "Re-run check_svg.py with --with pillow.",
+                }
+            )
 
     return findings
 
@@ -735,7 +790,9 @@ def _build_envelope(report: dict[str, Any], journal: str | None) -> dict[str, An
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Programmatic SVG checks for the figure-qa agent.")
+    parser = argparse.ArgumentParser(
+        description="Programmatic SVG checks for the figure-qa agent."
+    )
     parser.add_argument("svg", type=Path, help="Composed SVG to inspect")
     parser.add_argument(
         "--journal",
@@ -767,7 +824,8 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     except Exception as exc:  # noqa: BLE001 - malformed XML or other parser failures; name it, don't crash
         print(
-            f"error ({type(exc).__name__}): could not analyze '{args.svg}': {exc}", file=sys.stderr
+            f"error ({type(exc).__name__}): could not analyze '{args.svg}': {exc}",
+            file=sys.stderr,
         )
         return 2
 
@@ -778,25 +836,28 @@ def main(argv: list[str] | None = None) -> int:
         "script_error_count": script_errors,
     }
 
+    envelope = _build_envelope(report, args.journal)
+    status, exit_code = _status_and_exit(envelope["findings"])
     if args.json:
-        envelope = _build_envelope(report, args.journal)
         json.dump(envelope, sys.stdout, indent=2)
         print(file=sys.stdout)
     else:
         json.dump(report, sys.stdout, indent=2)
         print(file=sys.stdout)
 
+    # The exit code follows the same severity model as the JSON status, so a
+    # caller gating on either sees one answer: 0 ship, 1 revise, 2 block.
     if script_errors:
         print(
             f"check_svg: {script_errors} section(s) failed to run; see report.",
             file=sys.stderr,
         )
         return 2
-    if issues:
-        print(f"check_svg: {issues} issue(s), {warnings} warning(s).", file=sys.stderr)
-        return 1
-    print(f"check_svg: clean ({warnings} warning(s)).", file=sys.stderr)
-    return 0
+    print(
+        f"check_svg: {status} ({issues} issue(s), {warnings} warning(s)).",
+        file=sys.stderr,
+    )
+    return exit_code
 
 
 if __name__ == "__main__":
