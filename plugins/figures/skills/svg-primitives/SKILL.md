@@ -239,11 +239,13 @@ The editor-handoff reference in `[[svg-figure]]` explains why.
 
 ## Cross-references
 
-- `[[svg-figure]]` — hand-authored SVG patterns; reference material for writing SVG by hand or generating it ad-hoc.
-- `[[scientific-figure]]` — multi-panel composer that loads SVGs produced here.
-- `[[plot-styling]]` — data plots (matplotlib / seaborn / plotnine / plotly / PyVista).
-- `[[ai-full-figure]]` — AI-generated pictorial substrate; overlay labels with `LabeledBox` / `Arrow` here.
-- `[[transparent-icons]]` — flat scientific icons; place them inside a `LabeledBox` neighborhood with `Arrow.connect`.
+Invoke each with the Skill tool by its `figures:` name; Codex and Copilot load the same names as skills.
+
+- `figures:svg-figure` — hand-authored SVG patterns; reference material for writing SVG by hand or generating it ad-hoc.
+- `figures:scientific-figure` — multi-panel composer that loads SVGs produced here.
+- `figures:plot-styling` — data plots (matplotlib / seaborn / plotnine / plotly / PyVista).
+- `figures:ai-full-figure` — AI-generated pictorial substrate; overlay labels with `LabeledBox` / `Arrow` here.
+- `figures:transparent-icons` — flat scientific icons; place them inside a `LabeledBox` neighborhood with `Arrow.connect`.
 - `[[figure-qa]]` — QA agent that validates the rendered SVG.
 
 ## Running in CI
