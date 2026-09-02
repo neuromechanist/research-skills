@@ -25,7 +25,7 @@ Review validity depends on independence: a reviewer that shares the conversation
 
 Pick the branch for the current tool. In every branch the reviewer follows `references/review-procedure.md`.
 
-- **Claude Code:** `Task(subagent_type: "paper-review", ...)` passing the manuscript path, target journal/type, and mode. For panel mode, launch one `Task` per lens in parallel, then a final synthesis `Task`.
+- **Claude Code:** `Agent(subagent_type: "manuscript:paper-review", ...)` passing the manuscript path, target journal/type, and mode. For panel mode, issue one `Agent` call per lens in a single message so they run in parallel, then a final synthesis `Agent` call.
 - **Codex CLI:** plugin installation exposes this skill, not a Codex subagent. To use a fresh-context Codex reviewer, first copy `agents/templates/paper-review.toml` to `~/.codex/agents/` or `.codex/agents/`, then invoke that configured agent if the current Codex surface supports `/agent`. For panel mode, ensure `max_threads` covers the lens count. If no Codex subagent is configured or available, use the fallback branch.
 - **Copilot CLI:** plugin installation exposes this skill and, through `.github/plugin/plugin.json`, the `.agent.md` reviewer in `agents/templates/`. Invoke that configured agent when the current Copilot surface supports custom agents; use `/fleet` for panel mode when available. If running outside a plugin install, copy `agents/templates/paper-review.agent.md` to `.github/agents/` or `~/.copilot/agents/`. If no custom agent is available, use the fallback branch.
 - **Fallback** (no subagent support, or the user wants an interactive in-thread review): first locate the rubric (`$CLAUDE_PLUGIN_ROOT/skills/paper-review/references`, else `find . -type d -path '*/skills/paper-review/references' | head -1`); if it cannot be found, stop and tell the user to install the manuscript plugin rather than reviewing from memory. Then follow `references/review-procedure.md` directly in this context.
@@ -37,4 +37,4 @@ Pick the branch for the current tool. In every branch the reviewer follows `refe
 - `references/review-principles.md` -- review philosophy and severity calibration.
 - `references/review-output-template.md` -- the Synopsis / Critical / Major / Minor / References / Editor Note format.
 - `examples/sample-manuscript-review.md` -- worked review for calibration; `examples/sample-manuscript-excerpt.md` -- sample manuscript input for testing.
-- Sister skill `manuscript:humanizer` -- AI-writing patterns to flag in the prose-quality pass.
+- Sister skill `manuscript:humanizer` (invoke with the Skill tool by that name) -- AI-writing patterns to flag in the prose-quality pass.

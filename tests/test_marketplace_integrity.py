@@ -339,3 +339,44 @@ def test_agent_guard_points_at_existing_procedure(plugin, stem):
     assert "invoked by the" in front[1].lower(), (
         f"{stem}: agent description is not scoped to 'invoked by the <skill> skill'"
     )
+
+
+DISPATCH_RE = re.compile(r'subagent_type:\s*"([^"]+)"')
+
+
+def _dispatching_skills() -> list[tuple[str, Path, str]]:
+    found = []
+    for plugin in PLUGINS:
+        for skill_md in sorted((PLUGINS_DIR / plugin / "skills").glob("*/SKILL.md")):
+            for target in DISPATCH_RE.findall(skill_md.read_text()):
+                found.append((plugin, skill_md, target))
+    return found
+
+
+def test_claude_dispatch_targets_are_namespaced_and_exist():
+    """Claude Code registers plugin agents as ``<plugin>:<agent>``.
+
+    A bare agent name never resolves, so the primary dispatch path silently
+    degrades to the inline fallback. Every ``subagent_type`` string in a skill
+    must carry its own plugin's namespace and point at a shipped agent file.
+    """
+    dispatches = _dispatching_skills()
+    assert dispatches, "expected at least one dispatching skill"
+    for plugin, skill_md, target in dispatches:
+        rel = skill_md.relative_to(ROOT)
+        assert ":" in target, f"{rel}: subagent_type {target!r} is not namespaced"
+        target_plugin, agent = target.split(":", 1)
+        assert target_plugin == plugin, (
+            f"{rel}: subagent_type {target!r} names plugin {target_plugin!r}, expected {plugin!r}"
+        )
+        agent_file = PLUGINS_DIR / plugin / "agents" / f"{agent}.md"
+        assert agent_file.is_file(), f"{rel}: subagent_type {target!r} has no agent at {agent_file.relative_to(ROOT)}"
+
+
+def test_claude_dispatch_uses_agent_tool_name():
+    """The subagent tool is ``Agent``; ``Task(subagent_type ...)`` is the pre-rename form."""
+    stale = []
+    for path in sorted(PLUGINS_DIR.rglob("*.md")):
+        if "Task(subagent_type" in path.read_text():
+            stale.append(str(path.relative_to(ROOT)))
+    assert not stale, f"stale Task(subagent_type ...) dispatch in: {stale}"
