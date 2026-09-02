@@ -24,7 +24,7 @@ Slug derivation for names: take the phase title, drop stopwords, keep 2-3
 words with the object noun first, kebab-case ("backend-metrics",
 "sync-engine"; never "implement-the-new-backend-metrics").
 
-Related skills: implementation-planning (writing each phase plan),
+Related skills, invoked with the Skill tool by their `project:` names: implementation-planning (writing each phase plan),
 agent-fanout (parallel implementers, one worktree each), engineering-loop
 (the inner loop within a phase), debugging (when a phase's tests fail for
 unclear reasons).
@@ -168,8 +168,8 @@ gh pr create --base {integration_branch} --title "{epic_title}" --body "Closes #
 
 **Confirm (pause and ask):**
 - Epic plan: before creating issues and branches, present the full plan
-- Implementation plan: after `/plan` mode produces the plan, wait for approval
-- Critical review findings: if `/review-pr` finds critical issues, present them
+- Implementation plan: after plan mode (EnterPlanMode) produces the plan, wait for approval
+- Critical review findings: if the PR review finds critical issues, present them
 - Final epic merge: before merging epic branch to integration
 
 **Auto-proceed (no confirmation):**
@@ -213,9 +213,9 @@ When invoked with `--finalize`:
 
 ## Integration with Other Skills/Commands
 
-- **`/plan`** or **EnterPlanMode**: Invoke at the start of each phase for implementation planning
-- **`/review-pr`** or **`/pr-review-toolkit:review-pr`**: Invoke before merging each phase PR and the final epic PR
-- **`/feature-dev`**: Optionally invoke within a phase for complex implementation (user decides)
+- **EnterPlanMode**: Invoke at the start of each phase for implementation planning (Codex and Copilot: write the plan before editing)
+- **`project:pr-review-toolkit`** (or **`/pr-review-toolkit:review-pr`** from the external plugin): Invoke before merging each phase PR and the final epic PR
+- **`project:engineering-loop`**: Optionally follow within a phase for the single-PR change workflow (user decides)
 - **TodoWrite**: Track all phases and steps throughout
 
 ## Naming Conventions

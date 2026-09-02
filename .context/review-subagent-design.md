@@ -34,7 +34,7 @@ The **skill owns the triggers**. Each Claude agent's `description` is scoped to 
 
 `SKILL.md` selects a branch:
 
-- **Claude Code:** `Task(subagent_type: "<name>", ...)`.
+- **Claude Code:** `Agent(subagent_type: "<plugin>:<name>", ...)` (plugin agents are registered under their plugin namespace).
 - **Codex CLI:** run the `<name>` subagent (`/agent`) after the template is installed.
 - **Copilot CLI:** run the `<name>` agent (`/fleet` for parallel) after the template is installed.
 - **Fallback:** no subagent support, or the user wants an interactive in-thread review -> run the procedure inline by following `references/`.
