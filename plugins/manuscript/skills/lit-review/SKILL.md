@@ -165,6 +165,8 @@ The cite-card cross-link convention from Phase 3 still applies regardless of whe
 
 ## Sister skills
 
+Invoke each with the Skill tool by its `plugin:skill` name; Codex and Copilot load the same names as skills.
+
 | Skill | Used for |
 |---|---|
 | `opencite:opencite` | DOI lookup, PDF retrieval, PDF -> markdown, BibTeX export |

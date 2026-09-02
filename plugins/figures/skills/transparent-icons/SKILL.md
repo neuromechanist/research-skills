@@ -1,101 +1,79 @@
 ---
 name: transparent-icons
-description: This skill should be used when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", "generate an icon set", "batch icons", "icon batch", "batch generate icons", or wants flat scientific icons (brain, neuron, DNA, EEG cap, etc.) in the Nature/Science journal style with transparent backgrounds. Generates PNG icons via the Codex CLI image_gen tool (preferred) or the OpenAI Images API (fallback), then applies transparency via a Pillow threshold by default or rembg + BiRefNet (opt-in, higher edge quality).
-version: 0.1.0
+description: Use this skill when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", "generate an icon set", "batch icons", or wants flat scientific icons (brain, neuron, DNA, EEG cap, microscope) with transparent backgrounds in a journal style. Generates PNG icons with gpt-image-2 through the Codex CLI (or the OpenAI Images API), keeps the model's native alpha, and reads palette and model settings from the project theme made by figures:figure-bible.
+version: 0.2.0
 ---
 
 # Transparent Icons
 
-Generate flat scientific icons (Nature/Science journal style) with transparent backgrounds. Used as panel elements by the `[[scientific-figure]]` composer or as standalone graphics for posters, presentations, and grants.
+Generate flat scientific icons with transparent backgrounds, styled by the project's `figures/theme.json`,
+for use as panel elements in `figures:scientific-figure`, in `figures:svg-primitives` schematics, or on their own in posters, slides, and grants.
+Sister skills are invoked with the Skill tool by their `figures:` names.
 
 ## Backends
 
-Two generation backends, auto-selected:
+Generation goes through the shared backend in `plugins/figures/lib/image_backend.py`, the same one `figures:ai-full-figure` uses.
 
-1. **Codex CLI `image_gen` tool** (preferred). Uses the local Codex authentication (`~/.codex/auth.json`). No `OPENAI_API_KEY` required. Internally uses gpt-image-2 (April 2026). Default when `codex` is on `$PATH` and authenticated.
-2. **OpenAI Images API** (fallback). Calls `client.images.generate(model="gpt-image-2", ...)` directly. Requires `OPENAI_API_KEY` in environment or `.env`.
+1. **Codex CLI `image_gen`** (default when `codex` is logged in). No API key needed.
+   The model and effort come from the theme's `model_preferences` (default `gpt-5.6-luna` at `xhigh`), which lands good icons at the cheapest tier in one to two minutes each.
+2. **OpenAI Images API** (`--backend api`) with `OPENAI_API_KEY`.
 
-Why two backends: many researchers have a ChatGPT subscription and `codex login` but no separate API key. Auto-selection routes through Codex first to keep the no-API-key path working; explicit `--backend codex` or `--backend api` overrides.
+The backend preflights Codex with a 10 second timeout and explains the fix when the binary hangs (approve it once from Terminal.app, or copy `codex` and `codex-code-mode-host` to a folder you own, `xattr -c` both, and set `CODEX_BIN`).
+`--backend fake` renders placeholder icons for tests.
 
 ## Transparency
 
-`gpt-image-2` (April 2026) does **not** accept `background="transparent"` — both backends always generate opaque PNGs. Transparency is applied as a post-process. Two methods:
-
-- **`threshold`** (default) — drop near-white pixels via Pillow. Fast, no extra deps. Works well for flat 2-color icons on a clean white background. Can leave fringes on anti-aliased edges and may erase highlights where the foreground itself is near-white.
-- **`birefnet`** (opt-in) — `rembg` + BiRefNet ONNX model with alpha matting. Cleaner edges, handles complex foregrounds. One-time ~400 MB model download on first run; requires extra deps (`rembg`, `onnxruntime`).
-
-Pick `threshold` for the canonical flat-icon use case. Pick `birefnet` when the icon contains light-colored content (white parts of a brain MRI, light reflections on glass) that the threshold method would erase, or when the icon will be composited at large sizes where fringes are visible.
+Icons are requested with a transparent background and the model's alpha channel is kept as is.
+`--transparency-method auto` (default) runs no local processing when the PNG already has a clean cutout, so light strokes are never eaten by a second threshold pass.
+If the returned image is opaque, `auto` falls back to `threshold` (Pillow near-white removal);
+`birefnet` (opt-in, `--with rembg --with onnxruntime`) gives cleaner edges on complex foregrounds.
 
 ## Usage
 
-Free-form prompt:
+Free-form subject with the project theme:
 
 ```bash
-uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py \
-    "a human brain with EEG electrodes" -o brain_eeg.png --transparent
+uv run --with pillow python scripts/generate_icon.py \
+    "a human brain with EEG electrodes" --theme figures/theme.json -o icons/brain_eeg.png
 ```
 
-From the icon bible (curated templates with palettes, descriptions, and prompt hints):
+From the icon bible (curated templates with prompt hints):
 
 ```bash
-uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py \
-    --template brain-eeg -o brain_eeg.png --transparent
+uv run --with pillow python scripts/generate_icon.py --template brain-eeg --theme figures/theme.json -o icons/brain_eeg.png
+uv run --with pillow python scripts/generate_icon.py --list-templates
+uv run --with pillow python scripts/generate_icon.py --category neuroscience --theme figures/theme.json -o icons/
 ```
 
-With BiRefNet transparency (higher edge quality, extra deps):
+Batch with a placeholder:
 
 ```bash
-uv run --with openai --with python-dotenv --with pillow --with rembg --with onnxruntime \
-    python scripts/generate_icon.py --template neuron -o neuron.png \
-    --transparent --transparency-method birefnet
+uv run --with pillow python scripts/generate_icon.py "a flat icon of a {item}" \
+    --batch "neuron,synapse,electrode" --theme figures/theme.json -o icons/
 ```
 
-List templates:
+Other flags: `--colors "teal,coral"` overrides the theme palette for one run; `--size 1024` (square);
+`--backend auto|codex|api|fake`; `--codex-bin`; `--timeout`; `--verbose`; `--print-prompt`.
+A log is written next to each output as `<out>.codex.log`.
 
-```bash
-uv run --with python-dotenv python scripts/generate_icon.py --list-templates
-```
+## Theme bible
 
-Force a specific backend:
-
-```bash
-... --backend codex   # or --backend api
-```
-
-## Theme bible: keep an icon set consistent
-
-When generating multiple icons that need to look like they belong together (same line weight, same color palette, same perspective), use a `theme.json` file. The schema is in `references/theme.schema.json` and is shared with the `[[ai-full-figure]]` skill. At a minimum:
-
-```json
-{
-  "theme_id": "neuro-flat-v1",
-  "palette": {"primary": "#1F3A5F", "accent": "#E07A5F", "neutral": "#F4F1DE", "bg": "transparent"},
-  "stroke": {"weight_px": 4, "linejoin": "round"},
-  "style_tokens": ["flat 2D", "single continuous line", "no shading", "centered"],
-  "negative_tokens": ["text", "labels", "watermark", "gradient", "3D", "shadow"],
-  "composition": {"aspect": "1:1", "padding_pct": 12, "perspective": "orthographic"}
-}
-```
-
-`examples/icon_set.py` demonstrates loading a theme (including stroke weight and line-join hints) and generating an icon set with consistent prompts.
-
-## When to use this skill vs the icon bible
-
-- **Bible templates** (`--template <id>`) are curated for common research subjects (brain, neuron, EEG cap, DNA, microscope, etc.) and produce predictable output. Use them first.
-- **Free-form prompts** are right when the subject is not in the bible or needs a specific composition not captured by a template.
-- **`--category`** generates every template in a category at once; useful for stocking a project's icon directory.
-
-See `references/icon-bible.md` for the template schema and `references/prompt-patterns.md` for what works and what to avoid in prompts.
+Icons should never be generated without a theme when they need to match other figures.
+Invoke `figures:figure-bible` to scaffold and validate `figures/theme.json` (schema at `plugins/figures/schemas/theme.schema.json`).
+The icon prompt uses `palette`, `stroke.weight_px`, `style_tokens`, `negative_tokens`, `composition`, and `model_preferences`.
+`examples/icon_set.py` generates a small consistent set from one theme.
 
 ## Quality assurance
 
-The `[[figure-qa]]` agent proactively runs on generated icons to check for transparency correctness (alpha-channel + corner sampling), palette compliance (with near-gray exemption for chrome), DPI vs the journal target, and dominant colors. Pass `--expect-transparent` so the raster branch flags any opaque output as a regression.
+Invoke `figures:figure-qa` after generation unless the user passed `no-qa`.
+Its raster branch checks the alpha channel and corners (`--expect-transparent`), palette compliance against the theme (`--palette figures/theme.json`), resolution, and dominant colours,
+and the vision pass judges whether the icon reads as the intended concept, which is the most common miss.
 
 ## Additional resources
 
-- `references/icon-bible.md` — icon template schema and category catalog
-- `references/prompt-patterns.md` — model-specific prompt patterns and failure modes
-- `references/theme.schema.json` — JSON schema for the theme bible (shared with ai-full-figure)
-- `scripts/generate_icon.py` — CLI entry point with auto backend selection
-- `scripts/icon-templates.json` — bible templates loaded by `--template` / `--category`
-- `examples/icon_set.py` — generate a 3-icon set with a shared theme (use `--smoke` for a single-icon verification run)
+- `references/icon-bible.md`: template schema and category catalog
+- `references/prompt-patterns.md`: prompt patterns and failure modes for icons
+- `scripts/generate_icon.py`: CLI entry point
+- `scripts/icon-templates.json`: bible templates loaded by `--template` and `--category`
+- `examples/icon_set.py`: themed icon set (`--smoke` for a one-icon check)
+- Shared code: `../../lib/image_backend.py`, `../../lib/prompting.py`, `../../lib/theme.py`

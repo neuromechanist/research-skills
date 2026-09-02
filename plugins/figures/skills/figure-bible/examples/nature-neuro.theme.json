@@ -1,0 +1,32 @@
+{
+  "theme_id": "nature-neuro-v1",
+  "journal": "nature",
+  "palette": {
+    "primary": "#1F3A5F",
+    "accent": "#E07A5F",
+    "neutral": "#F4F1DE",
+    "background": "#FFFFFF",
+    "categorical": ["#1F3A5F", "#E07A5F", "#F4F1DE", "#C45146", "#2A6F3D", "#7E57C2"]
+  },
+  "typography": {
+    "family": "Helvetica",
+    "min_pt": 5.0,
+    "panel_letter": {"weight": "bold", "case": "lower"}
+  },
+  "stroke": {"weight_px": 4, "linejoin": "round", "linecap": "round"},
+  "style_tokens": ["flat vector", "minimal", "single continuous line", "no shading", "centered subject"],
+  "negative_tokens": ["gradient", "3D", "shadow", "watermark", "photorealistic"],
+  "composition": {"aspect": "4:3", "padding_pct": 8, "perspective": "orthographic"},
+  "text": {
+    "max_words_per_label": 4,
+    "max_words_per_title": 8,
+    "headline_size_class": "medium"
+  },
+  "reference_images": [],
+  "model_preferences": {
+    "codex_model": "gpt-5.6-luna",
+    "codex_effort": "xhigh",
+    "image_quality": "high"
+  },
+  "postprocess": {"bg_removal": "auto"}
+}

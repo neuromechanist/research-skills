@@ -139,7 +139,7 @@ Consult `references/writing-style-guide.md` and `references/tone-guide.md` for e
 - Bold claims backed by technical precision
 - First person for vision ("I propose"), "we" for team work
 
-After drafting, run `manuscript:humanizer` as a final natural-writing pass. Pay particular attention to:
+After drafting, invoke `manuscript:humanizer` with the Skill tool as a final natural-writing pass. Pay particular attention to:
 
 - Pattern 1 (significance inflation): strip filler ("pivotal moment", "evolving landscape") but keep evidence-backed importance ("affects 1.2M patients annually").
 - Pattern 4 (promotional language): "groundbreaking", "transformative", "paradigm-shifting" read as red flags in Innovation sections. Let the methods carry the claim.
@@ -289,7 +289,7 @@ For detailed guidance, consult:
 
 ### Literature Search
 
-Use the **opencite** skill for literature searches to support proposals:
+Use the `opencite:opencite` skill (invoke with the Skill tool by that name) for literature searches to support proposals:
 ```bash
 uvx opencite search "topic" --max 20 -f bibtex -o refs.bib
 uvx opencite canonical "field" --max 10
