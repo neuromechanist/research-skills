@@ -26,9 +26,9 @@ Reach for `svg-primitives` when:
 
 Reach for a different tool when:
 
-- The figure is **plotted from numbers** (matplotlib/seaborn/plotnine) → use `[[plot-styling]]`.
-- The figure is a **photographic / pictorial substrate** (a brain scene, microscope setup) → use `[[ai-full-figure]]` for the substrate and overlay labels via Arrow/LabeledBox here.
-- The figure is **hand-authored SVG** or the patterns are reference material for hand-authoring → use `[[svg-figure]]` (this skill's library-agnostic counterpart).
+- The figure is **plotted from numbers** (matplotlib/seaborn/plotnine) → use `figures:plot-styling`.
+- The figure is a **photographic / pictorial substrate** (a brain scene, microscope setup) → use `figures:ai-full-figure` for the substrate and overlay labels via Arrow/LabeledBox here.
+- The figure is **hand-authored SVG** or the patterns are reference material for hand-authoring → use `figures:svg-figure` (this skill's library-agnostic counterpart).
 
 ## Quick start
 
@@ -161,11 +161,11 @@ The validators that run:
 
 Each `Finding` carries `category`, `message`, `element_id`, and `location` (mm). See `examples/validation_demo.py` for a runnable demonstration.
 
-`svg-primitives` validation is complementary to the `[[figure-qa]]` agent: `figure-qa` validates any SVG (including hand-authored ones); this validates SVGs produced by this skill, in-process, before they hit disk.
+`svg-primitives` validation is complementary to the `figures:figure-qa` agent: `figure-qa` validates any SVG (including hand-authored ones); this validates SVGs produced by this skill, in-process, before they hit disk.
 
 ## Composition into a panel
 
-Once authored, the SVG is a panel source for `[[scientific-figure]]`:
+Once authored, the SVG is a panel source for `figures:scientific-figure`:
 
 ```python
 from compose import Figure
@@ -203,7 +203,7 @@ Expected: all tests pass (50+ tests covering text containment, arrow geometry, l
 
 ## Quality assurance
 
-After authoring, run `[[figure-qa]]` for the standard pre-export font / palette / geometry checks:
+After authoring, run `figures:figure-qa` for the standard pre-export font / palette / geometry checks:
 
 ```bash
 uv run --with lxml --with svgelements --with svgpathtools --with shapely \
@@ -225,9 +225,9 @@ and middle-anchored labels
 `Annotation` defaults to middle but is configurable).
 When a figure goes to a human editor,
 derive the handoff copy with the editor-prep pass
-in the `[[svg-figure]]` skill's `scripts/editor_prep.py`,
+in the `figures:svg-figure` skill's `scripts/editor_prep.py`,
 which bakes markers into rotated geometry and resolves anchors to measured left edges.
-The editor-handoff reference in `[[svg-figure]]` explains why.
+The editor-handoff reference in `figures:svg-figure` explains why.
 
 ## Additional resources
 
@@ -246,7 +246,7 @@ Invoke each with the Skill tool by its `figures:` name; Codex and Copilot load t
 - `figures:plot-styling` — data plots (matplotlib / seaborn / plotnine / plotly / PyVista).
 - `figures:ai-full-figure` — AI-generated pictorial substrate; overlay labels with `LabeledBox` / `Arrow` here.
 - `figures:transparent-icons` — flat scientific icons; place them inside a `LabeledBox` neighborhood with `Arrow.connect`.
-- `[[figure-qa]]` — QA agent that validates the rendered SVG.
+- `figures:figure-qa` — QA agent that validates the rendered SVG.
 
 ## Running in CI
 
