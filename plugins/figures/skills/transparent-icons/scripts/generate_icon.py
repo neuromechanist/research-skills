@@ -1,433 +1,156 @@
 #!/usr/bin/env python3
-"""Generate flat scientific icons using gpt-image-2.
+"""Generate flat scientific icons via the shared image backend.
 
-Two backends are supported and auto-selected by default:
-
-  1. codex   - Uses the Codex CLI's platform-native image_gen tool. Requires a
-               valid `codex login` (ChatGPT subscription or API key in
-               ~/.codex/auth.json). No OPENAI_API_KEY needed.
-  2. api     - Calls the OpenAI Images API directly. Requires OPENAI_API_KEY
-               via environment, .env, or ~/.env.
-
-Auto selection prefers codex when both `codex` is on PATH and
-~/.codex/auth.json exists; otherwise it falls back to the API.
-
-Recommended runner (declares all deps via --with):
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py ...
+Icons always request a transparent background (`prompting.build_icon_prompt`,
+which asks for a real alpha channel and falls back to a chroma-key
+background only when the model cannot produce transparency directly). After
+generation, `--transparency-method auto` (the default) skips local
+background removal whenever the returned PNG already has a usable alpha
+channel with transparent corners, and otherwise falls back to a Pillow
+near-white threshold. `birefnet` (rembg + BiRefNet) remains available as an
+opt-in, higher-quality alternative.
 
 Usage:
     # Free-form prompt
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py "a human brain with EEG electrodes" -o brain_eeg.png
+    uv run --with pillow python generate_icon.py "a human brain with EEG electrodes" -o brain_eeg.png
 
-    # From template (icon bible)
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template brain-eeg -o brain_eeg.png
-
-    # Override template colors
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --colors "#3498DB,#E74C3C" -o neuron.png
-
-    # With transparency
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template dna-helix -o dna.png --transparent
+    # From template (icon bible), with a shared theme
+    uv run --with pillow python generate_icon.py --template brain-eeg -o brain_eeg.png --theme theme.json
 
     # Batch from template category
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --category neuroscience -o icons/neuro/
+    uv run --with pillow python generate_icon.py --category neuroscience -o icons/neuro/
 
     # Batch from free-form prompt
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py "a flat icon of a {item}" -o icons/ --batch "brain,heart,lung"
+    uv run --with pillow python generate_icon.py "a flat icon of a {item}" -o icons/ --batch "brain,heart,lung"
 
     # Force a backend
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --backend codex -o neuron.png
-    uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py --template neuron --backend api   -o neuron.png
+    uv run --with pillow python generate_icon.py --template neuron --backend codex -o neuron.png
 
     # List available templates
-    uv run --with python-dotenv python scripts/generate_icon.py --list-templates
+    uv run --with pillow python generate_icon.py --list-templates
 
-Environment:
-    OPENAI_API_KEY - Required for the api backend. Read from .env file or environment.
-    CODEX_HOME     - Optional; defaults to ~/.codex. Auth probed at $CODEX_HOME/auth.json.
+Exit codes: 0 success, 1 generation failure (any icon in a batch), 2 usage error.
 """
 
 from __future__ import annotations
 
 import argparse
-import base64
+import io
 import json
-import os
-import shutil
-import subprocess
 import sys
-import tempfile
+import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-try:
-    from dotenv import load_dotenv
-except ImportError:
-    print(
-        "Missing dependency: python-dotenv. Run via: "
-        "uv run --with openai --with python-dotenv --with pillow python scripts/generate_icon.py",
-        file=sys.stderr,
-    )
-    sys.exit(1)
+_PLUGIN_ROOT = Path(__file__).resolve().parents[3]
+if str(_PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PLUGIN_ROOT))
 
-try:
-    from openai import OpenAI
-except ImportError:
-    OpenAI = None  # api backend unavailable; codex backend may still work
+from lib import image_backend, prompting
 
-try:
-    from PIL import Image
-    import io
-
-    HAS_PILLOW = True
-except ImportError:
-    HAS_PILLOW = False
-
-# Load .env from current directory, then home directory
-load_dotenv()
-load_dotenv(Path.home() / ".env")
-
-# Path to icon templates relative to this script
 TEMPLATES_PATH = Path(__file__).parent / "icon-templates.json"
 
-BASE_STYLE = (
-    "flat minimalist scientific icon, Nature/Science journal figure style, "
-    "simple geometric shapes, no gradients, no shadows, no 3D effects, "
-    "no text, no labels, clean edges, centered"
-)
 
-
-def load_templates() -> dict[str, Any]:
+def load_templates(path: Path = TEMPLATES_PATH) -> dict[str, Any]:
     """Load icon templates from the icon bible JSON."""
-    if not TEMPLATES_PATH.exists():
-        print(f"Warning: templates file not found at {TEMPLATES_PATH}", file=sys.stderr)
+    if not path.exists():
         return {}
-    with open(TEMPLATES_PATH) as f:
-        data = json.load(f)
+    data = json.loads(path.read_text())
     return {t["id"]: t for t in data.get("templates", [])}
 
 
-def template_to_prompt(template: dict[str, Any], color_override: str | None = None) -> str:
-    """Convert a template JSON to a detailed generation prompt."""
-    parts = [f"A {BASE_STYLE}."]
-    parts.append(f"Subject: {template['description']}.")
-
-    # Describe each element
-    parts.append("Elements:")
-    for elem in template.get("elements", []):
-        desc = elem["description"]
-        fill = elem.get("fill", "")
-        if fill and fill != "none":
-            desc += f" (color: {fill})"
-        parts.append(f"- {desc}")
-
-    # Apply palette
-    palette = template.get("palette", {})
+def _template_subject(template: dict[str, Any], color_override: str | None) -> str:
+    """Compose the template's structured description into a free-text subject."""
+    parts = [template["description"]]
+    elems = template.get("elements", [])
+    if elems:
+        parts.append("Elements: " + "; ".join(e["description"] for e in elems) + ".")
     if color_override:
-        parts.append(f"Color palette: {color_override}.")
-    elif palette:
-        colors = ", ".join(f"{k}: {v}" for k, v in palette.items())
-        parts.append(f"Color palette: {colors}.")
-
-    # Composition hints
-    comp = template.get("composition", {})
-    style = comp.get("style", "flat-minimalist")
-    parts.append(f"Style: {style}.")
-
-    bg = comp.get("background", "white")
-    if bg == "transparent":
-        parts.append("On a transparent/white background (will be removed in post-processing).")
-    else:
-        parts.append("On a clean white background.")
-
-    # Additional hints
-    hints = template.get("prompt_hints", [])
-    if hints:
-        parts.append("Additional: " + ", ".join(hints) + ".")
-
+        parts.append(f"Use exactly this color palette: {color_override}.")
     return " ".join(parts)
 
 
-def build_prompt(subject: str, colors: str | None = None, transparent: bool = False) -> str:
-    """Build the full prompt from a free-form subject description."""
-    parts = [f"A {BASE_STYLE} of {subject}"]
+def _template_theme(theme: dict | None, template: dict[str, Any]) -> dict:
+    """Merge a template's bible palette under a caller theme, without overwriting it."""
+    merged = dict(theme or {})
+    if not merged.get("palette") and template.get("palette"):
+        merged = {**merged, "palette": template["palette"]}
+    return merged
 
+
+def _apply_colors(subject: str, colors: str | None) -> str:
     if colors:
-        parts.append(f"using {colors} color palette")
-
-    if transparent:
-        parts.append("on a transparent background")
-    else:
-        parts.append("on a clean white background")
-
-    return ", ".join(parts) + "."
+        return f"{subject} Use exactly this color palette: {colors}."
+    return subject
 
 
-def codex_available() -> bool:
-    """Detect a usable Codex CLI install with valid auth.
+def list_templates(templates: dict[str, Any]) -> None:
+    categories: dict[str, list[dict[str, Any]]] = {}
+    for t in templates.values():
+        categories.setdefault(t.get("category", "uncategorized"), []).append(t)
+    for cat in sorted(categories):
+        print(f"\n  {cat}:")
+        for t in sorted(categories[cat], key=lambda x: x["id"]):
+            print(f"    {t['id']:25s} {t['name']}")
+            print(f"    {'':25s} {t['description'][:70]}")
 
-    Auth is gated on the Codex CLI auth file (`$CODEX_HOME/auth.json`, default
-    `~/.codex/auth.json`). Env-var-only paths are intentionally NOT treated as
-    Codex auth: a user with `OPENAI_API_KEY` set but no `codex login` would
-    otherwise be silently routed through `codex exec` and hit a runtime auth
-    error instead of the OpenAI Images API.
-    """
-    if shutil.which("codex") is None:
+
+def _has_real_alpha(png_bytes: bytes) -> bool:
+    """True if the PNG already has an alpha channel that is transparent at
+    all four corners -- i.e. Codex already returned a clean cutout and any
+    further local processing would only damage light strokes."""
+    from PIL import Image
+
+    img = Image.open(io.BytesIO(png_bytes))
+    if img.mode not in ("RGBA", "LA", "PA"):
         return False
-    codex_home = Path(os.environ.get("CODEX_HOME") or (Path.home() / ".codex"))
-    return (codex_home / "auth.json").exists()
-
-
-def resolve_backend(requested: str) -> str:
-    """Resolve `auto` to a concrete backend; validate explicit choices."""
-    if requested == "auto":
-        if codex_available():
-            return "codex"
-        if OpenAI is not None:
-            return "api"
-        print(
-            "No usable backend found. Either:\n"
-            "  - Run `codex login` to enable the Codex backend, or\n"
-            "  - Re-run with `--with openai` to enable the API backend "
-            "(also requires OPENAI_API_KEY).",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-    if requested == "codex":
-        if not codex_available():
-            print(
-                "Backend 'codex' requested but no Codex CLI/auth found. "
-                "Run: codex login",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-        return "codex"
-    if requested == "api":
-        if OpenAI is None:
-            print(
-                "Backend 'api' requested but `openai` is not installed. "
-                "Re-run with `--with openai`.",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-        return "api"
-    print(f"Unknown backend: {requested}", file=sys.stderr)
-    sys.exit(1)
-
-
-def build_openai_client() -> Any:
-    """Construct the OpenAI client with a friendly error if no API key is set."""
-    assert OpenAI is not None  # caller routes via resolve_backend()
-    # OpenAIError covers missing key, invalid key, and configuration errors. We narrow to
-    # this class rather than `except Exception` so unrelated bugs (TypeError from a future
-    # SDK signature change, etc.) surface with their real traceback.
-    try:
-        from openai import OpenAIError  # type: ignore[import-not-found]
-    except ImportError:
-        OpenAIError = Exception  # type: ignore[assignment,misc]
-    try:
-        return OpenAI()  # reads OPENAI_API_KEY from env
-    except OpenAIError as exc:
-        print(
-            "Backend 'api' requires OPENAI_API_KEY. "
-            "Set it in your environment, .env, or ~/.env, "
-            f"or use --backend codex if you have run `codex login`. ({exc})",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-
-def generate_icon_api(
-    client: Any,
-    prompt: str,
-    size: int = 1024,
-    transparent: bool = False,
-    transparency_method: str = "threshold",
-) -> bytes:
-    """Generate a single icon via the OpenAI Images API."""
-    size_str = f"{size}x{size}"
-
-    # gpt-image-2 supports flexible sizes (multiples of 16, max edge 3840, aspect <=3:1)
-    if size_str not in ("1024x1024", "1024x1536", "1536x1024", "2048x2048"):
-        size_str = "1024x1024"
-
-    # gpt-image-2 (April 2026) rejects `background="transparent"`, so we always generate
-    # opaque and apply transparency in post when requested.
-    result = client.images.generate(
-        model="gpt-image-2",
-        prompt=prompt,
-        n=1,
-        size=size_str,
-        quality="high",
-        output_format="png",
-        background="opaque",
-        moderation="auto",
-    )
-
-    image_data = base64.b64decode(result.data[0].b64_json)
-
-    if transparent:
-        image_data = _apply_transparency(image_data, method=transparency_method)
-
-    return image_data
-
-
-def generate_icon_codex(
-    prompt: str,
-    size: int = 1024,
-    transparent: bool = False,
-    transparency_method: str = "threshold",
-    timeout_s: int = 300,
-) -> bytes:
-    """Generate a single icon by invoking the Codex CLI's image_gen tool.
-
-    The CLI runs in a temp workspace with `--sandbox workspace-write`; the
-    selected image is saved to ./output.png inside that workspace, which we
-    then read back as bytes.
-    """
-    workdir = Path(tempfile.mkdtemp(prefix="codex_icon_"))
-    target = workdir / "output.png"
-    try:
-        # The user-supplied `prompt` is concatenated into a natural-language
-        # instruction below. We trust the prompt because it originates from
-        # the same shell session that runs this script; if you ever surface
-        # this script over an untrusted boundary, sanitize `prompt` first.
-        codex_prompt = (
-            f"Use your platform-native image_gen tool to generate exactly one image. "
-            f"Prompt: {prompt} "
-            f"Square aspect, target {size}x{size}. "
-            f"Save the final selected image to ./output.png in the current working directory. "
-            f"Do not display the image inline. "
-            f"Reply with only the absolute path on success or ERROR on failure."
-        )
-        try:
-            proc = subprocess.run(
-                [
-                    "codex", "exec",
-                    "--sandbox", "workspace-write",
-                    "--skip-git-repo-check",
-                    codex_prompt,
-                ],
-                cwd=workdir,
-                capture_output=True,
-                text=True,
-                timeout=timeout_s,
-                check=False,
-            )
-        except subprocess.TimeoutExpired as exc:
-            stderr_tail = _safe_tail(exc.stderr, 300)
-            raise RuntimeError(
-                f"Codex exec timed out after {timeout_s}s. "
-                f"Try --backend api or raise the timeout. "
-                f"stderr tail: {stderr_tail}"
-            ) from exc
-
-        # Surface non-zero exits explicitly. Codex emits an unrelated
-        # "failed to record rollout items" stderr line on success too, so we
-        # rely on returncode rather than stderr scanning.
-        if proc.returncode != 0:
-            raise RuntimeError(
-                f"Codex exec exited rc={proc.returncode}. "
-                f"stderr tail: {_safe_tail(proc.stderr, 300)}"
-            )
-        if not target.exists():
-            raise RuntimeError(
-                "Codex exec succeeded but did not produce ./output.png. "
-                f"stderr tail: {_safe_tail(proc.stderr, 300)}"
-            )
-        image_data = target.read_bytes()
-        if transparent:
-            image_data = _apply_transparency(image_data, method=transparency_method)
-        return image_data
-    finally:
-        # Best-effort cleanup; tempfile.mkdtemp guarantees an isolated path,
-        # so a stale dir at most leaks a few MB into $TMPDIR.
-        shutil.rmtree(workdir, ignore_errors=True)
-
-
-def _safe_tail(s: Any, n: int) -> str:
-    """Tail-truncate stderr for error messages without echoing the
-    user-supplied prompt. Codex echoes the prompt into stdout but not stderr,
-    so we never use stdout for diagnostics. Accepts str/bytes/None because
-    subprocess.TimeoutExpired carries bytes even under text=True."""
-    if not s:
-        return "(empty)"
-    if isinstance(s, bytes):
-        s = s.decode("utf-8", errors="replace")
-    return s[-n:]
-
-
-def generate_icon(
-    backend: str,
-    client: Optional[Any],
-    prompt: str,
-    size: int = 1024,
-    transparent: bool = False,
-    transparency_method: str = "threshold",
-) -> bytes:
-    """Dispatch to the selected backend."""
-    if backend == "codex":
-        return generate_icon_codex(
-            prompt, size=size, transparent=transparent, transparency_method=transparency_method
-        )
-    if backend == "api":
-        if client is None:
-            raise RuntimeError("OpenAI client unavailable for api backend")
-        return generate_icon_api(
-            client, prompt, size=size, transparent=transparent, transparency_method=transparency_method
-        )
-    raise ValueError(f"Unknown backend: {backend}")
+    rgba = img.convert("RGBA")
+    w, h = rgba.size
+    corners = [
+        rgba.getpixel((0, 0)),
+        rgba.getpixel((w - 1, 0)),
+        rgba.getpixel((0, h - 1)),
+        rgba.getpixel((w - 1, h - 1)),
+    ]
+    return all(c[3] == 0 for c in corners)
 
 
 def _apply_transparency_threshold(png_bytes: bytes, threshold: int = 240) -> bytes:
-    """Remove near-white pixels from PNG, making them transparent. Fast (Pillow only).
-    Works well for flat icons on a clean white background; can leave fringes on anti-aliased
-    edges and may erase highlights where the foreground itself is near-white."""
-    if not HAS_PILLOW:
-        raise RuntimeError(
-            "Transparency method 'threshold' requires Pillow. Re-run with: "
-            "`uv run --with openai --with python-dotenv --with pillow "
-            "python scripts/generate_icon.py ...`"
-        )
+    """Drop near-white pixels to transparent. Fast, Pillow-only; can leave a
+    fringe on anti-aliased edges and erase near-white foreground highlights."""
+    from PIL import Image
+
     img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
     data = img.getdata()
-
-    new_data = []
-    for r, g, b, a in data:
-        if r > threshold and g > threshold and b > threshold:
-            new_data.append((r, g, b, 0))
-        else:
-            new_data.append((r, g, b, a))
-
+    new_data = [
+        (r, g, b, 0) if (r > threshold and g > threshold and b > threshold) else (r, g, b, a)
+        for r, g, b, a in data
+    ]
     img.putdata(new_data)
-    output = io.BytesIO()
-    img.save(output, format="PNG")
-    return output.getvalue()
+    out = io.BytesIO()
+    img.save(out, format="PNG")
+    return out.getvalue()
 
 
 def _apply_transparency_birefnet(png_bytes: bytes) -> bytes:
-    """Remove background via rembg + BiRefNet (cleaner edges than threshold). Requires a
-    one-time ONNX model download (~400 MB on first run) and `rembg` + `onnxruntime` deps."""
+    """Remove the background via rembg + BiRefNet (cleaner edges than
+    threshold). Requires a one-time ONNX model download (~400 MB)."""
     try:
-        from rembg import new_session, remove  # type: ignore[import-not-found]
+        from rembg import new_session, remove
     except ImportError as exc:
         raise RuntimeError(
-            "Transparency method 'birefnet' requires rembg. Re-run with: "
-            "`uv run --with openai --with python-dotenv --with pillow "
-            "--with rembg --with onnxruntime python scripts/generate_icon.py ...`"
+            "Transparency method 'birefnet' requires rembg. Re-run with "
+            "--with rembg --with onnxruntime."
         ) from exc
     try:
         session = new_session("birefnet-general")
-    except Exception as exc:
-        # One-time BiRefNet ONNX model download can fail on network, disk, proxy, or
-        # cache-permission errors. Surface an actionable hint rather than the raw
-        # onnxruntime/urllib traceback.
+    except OSError as exc:
         raise RuntimeError(
-            "BiRefNet model download failed. Check your network connection and that "
-            "$U2NET_HOME (or ~/.u2net) is writable; alternatively re-run with "
-            f"`--transparency-method threshold` to skip the model. Underlying: {exc}"
+            "BiRefNet model download failed. Check your network connection and "
+            "that $U2NET_HOME (or ~/.u2net) is writable, or re-run with "
+            "--transparency-method threshold to skip the model. "
+            f"Underlying: {exc}"
         ) from exc
-    # alpha_matting_erode_size defaults to 10 px (rembg default); reasonable for 1024 px
-    # icons. Increase if foreground edges show halos after matting.
     return remove(
         png_bytes,
         session=session,
@@ -437,83 +160,117 @@ def _apply_transparency_birefnet(png_bytes: bytes) -> bytes:
     )
 
 
-def _apply_transparency(png_bytes: bytes, method: str = "threshold") -> bytes:
-    """Dispatch to the requested transparency method."""
-    if method == "threshold":
-        return _apply_transparency_threshold(png_bytes)
-    if method == "birefnet":
-        return _apply_transparency_birefnet(png_bytes)
-    raise ValueError(
-        f"unknown transparency method '{method}'; expected 'threshold' or 'birefnet'"
+def finalize_transparency(png_path: Path, method: str) -> None:
+    """Apply transparency post-processing to png_path in place."""
+    data = png_path.read_bytes()
+    resolved = method
+    if resolved == "auto":
+        if _has_real_alpha(data):
+            return  # already a clean cutout; re-thresholding would damage light strokes
+        resolved = "threshold"
+    if resolved == "threshold":
+        png_path.write_bytes(_apply_transparency_threshold(data))
+    elif resolved == "birefnet":
+        png_path.write_bytes(_apply_transparency_birefnet(data))
+    else:
+        raise ValueError(f"unknown transparency method: {resolved!r}")
+
+
+def generate_one(
+    subject: str,
+    out_path: Path,
+    *,
+    theme: dict | None,
+    size: str,
+    backend: str,
+    codex_bin: str | None,
+    transparency_method: str,
+    timeout_s: int,
+    verbose: bool,
+    print_prompt: bool,
+) -> float:
+    """Generate one icon and apply transparency post-processing. Returns elapsed seconds."""
+    prompt = prompting.build_icon_prompt(subject, theme=theme, size=size, chroma=True)
+    if print_prompt:
+        print(prompt)
+    model_prefs = (theme or {}).get("model_preferences") or {}
+    req = image_backend.GenerationRequest(
+        prompt=prompt,
+        out=out_path,
+        size=size,
+        quality=model_prefs.get("image_quality", "high"),
+        n=1,
+        model=model_prefs.get("codex_model", image_backend.DEFAULT_MODEL),
+        effort=model_prefs.get("codex_effort", image_backend.DEFAULT_EFFORT),
+        timeout_s=timeout_s,
+        background="transparent",
+        verbose=verbose,
+        backend=backend,
+        codex_bin=codex_bin,
     )
+    start = time.monotonic()
+    result = image_backend.generate(req)
+    finalize_transparency(result.paths[0], transparency_method)
+    elapsed = time.monotonic() - start
+    print(f"Saved: {result.paths[0]} ({result.backend}, {elapsed:.1f}s)")
+    return elapsed
 
 
-def save_icon(data: bytes, path: Path) -> None:
-    """Save icon bytes to a file."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(data)
-    print(f"Saved: {path} ({len(data)} bytes)")
-
-
-def list_templates(templates: dict[str, Any]) -> None:
-    """Print available templates grouped by category."""
-    categories: dict[str, list[dict[str, Any]]] = {}
-    for t in templates.values():
-        cat = t.get("category", "uncategorized")
-        categories.setdefault(cat, []).append(t)
-
-    for cat in sorted(categories):
-        print(f"\n  {cat}:")
-        for t in sorted(categories[cat], key=lambda x: x["id"]):
-            print(f"    {t['id']:25s} {t['name']}")
-            print(f"    {'':25s} {t['description'][:70]}")
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Generate flat scientific icons using OpenAI gpt-image-2"
-    )
+def build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Generate flat scientific icons via gpt-image-2.")
     parser.add_argument(
-        "prompt", nargs="?", default=None,
-        help="Icon description or template with {item} placeholder"
+        "prompt",
+        nargs="?",
+        default=None,
+        help="Icon description or template with {item} placeholder",
     )
-    parser.add_argument("-o", "--output", help="Output file path or directory (for batch)")
-    parser.add_argument("--template", help="Template ID from icon bible (e.g., brain-eeg)")
+    parser.add_argument("-o", "--output", help="Output file path or directory (for batch/category)")
+    parser.add_argument("--template", help="Template ID from the icon bible (e.g. brain-eeg)")
     parser.add_argument("--category", help="Generate all templates in a category")
-    parser.add_argument("--transparent", action="store_true", help="Remove background (requires Pillow)")
+    parser.add_argument("--theme", type=Path, help="Path to a theme.json")
+    parser.add_argument("--colors", help="Color palette override (e.g. 'teal,coral' or hex codes)")
     parser.add_argument(
-        "--transparency-method",
-        choices=["threshold", "birefnet"],
-        default="threshold",
-        help=(
-            "Background-removal method when --transparent is set. 'threshold' (default) uses "
-            "Pillow to drop near-white pixels (fast, dep-free). 'birefnet' uses rembg + BiRefNet "
-            "for cleaner edges (one-time ~400 MB model download; pass --with rembg --with onnxruntime)."
-        ),
+        "--size", type=int, default=1024, help="Icon size in pixels (square; default 1024)"
     )
-    parser.add_argument("--colors", help="Color palette override (e.g., 'teal,coral' or hex codes)")
-    parser.add_argument("--size", type=int, default=1024, help="Icon size in pixels (default: 1024)")
-    parser.add_argument("--batch", help="Comma-separated items for batch generation (use {item} in prompt)")
-    parser.add_argument("--list-templates", action="store_true", help="List available icon templates")
+    parser.add_argument(
+        "--batch", help="Comma-separated items for batch generation (use {item} in prompt)"
+    )
+    parser.add_argument("--list-templates", action="store_true")
     parser.add_argument("--templates-file", type=Path, help="Custom templates JSON file")
     parser.add_argument(
-        "--backend",
-        choices=["auto", "codex", "api"],
-        default="auto",
-        help="Image generation backend (default: auto; prefers codex when authenticated)",
+        "--transparent",
+        action="store_true",
+        help="Deprecated no-op: icons always request a transparent background now.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--transparency-method",
+        choices=["auto", "threshold", "birefnet"],
+        default="auto",
+        help=(
+            "'auto' (default) skips local removal when the PNG already has a clean alpha "
+            "cutout, else falls back to 'threshold'. 'birefnet' uses rembg (opt-in, "
+            "--with rembg --with onnxruntime)."
+        ),
+    )
+    parser.add_argument("--backend", choices=["auto", "codex", "api", "fake"], default="auto")
+    parser.add_argument(
+        "--codex-bin",
+        default=None,
+        help="Explicit codex executable path (else $CODEX_BIN, then PATH)",
+    )
+    parser.add_argument("--timeout", type=int, default=300)
+    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--print-prompt", action="store_true")
+    return parser
 
-    # Load templates
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_arg_parser()
+    args = parser.parse_args(argv)
+
     templates_path = args.templates_file or TEMPLATES_PATH
-    if templates_path.exists():
-        with open(templates_path) as f:
-            data = json.load(f)
-        templates = {t["id"]: t for t in data.get("templates", [])}
-    else:
-        templates = {}
+    templates = load_templates(templates_path)
 
-    # List templates mode
     if args.list_templates:
         if not templates:
             print("No templates found.")
@@ -522,101 +279,95 @@ def main() -> int:
             list_templates(templates)
         return 0
 
-    # Validate arguments
     if not args.prompt and not args.template and not args.category:
         parser.error("Provide a prompt, --template, or --category")
-    if not args.output and not args.list_templates:
+    if not args.output:
         parser.error("--output is required")
 
-    # Transparency dependency checks are performed at the use site (raise from
-    # _apply_transparency_*) so the user sees the actionable error AFTER they have
-    # confirmed which method they want, not as a coarse early-exit warning.
+    theme: dict | None = None
+    if args.theme:
+        try:
+            theme = json.loads(args.theme.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"error: could not load theme '{args.theme}': {exc}", file=sys.stderr)
+            return 2
 
-    backend = resolve_backend(args.backend)
-    client: Any = build_openai_client() if backend == "api" else None
-    print(f"Backend: {backend}")
+    try:
+        size = image_backend.validate_size(f"{args.size}x{args.size}")
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
 
-    # Category batch mode
+    common = {
+        "size": size,
+        "backend": args.backend,
+        "codex_bin": args.codex_bin,
+        "transparency_method": args.transparency_method,
+        "timeout_s": args.timeout,
+        "verbose": args.verbose,
+        "print_prompt": args.print_prompt,
+    }
+    failures = 0
+
     if args.category:
         cat_templates = [t for t in templates.values() if t.get("category") == args.category]
         if not cat_templates:
+            categories = sorted({t.get("category", "") for t in templates.values()})
             print(f"No templates found for category: {args.category}", file=sys.stderr)
-            print(
-                "Available categories: " + ", ".join(
-                    sorted(set(t.get("category", "") for t in templates.values()))
-                ),
-                file=sys.stderr,
-            )
+            print(f"Available categories: {', '.join(categories)}", file=sys.stderr)
             return 1
-
         output_dir = Path(args.output)
         output_dir.mkdir(parents=True, exist_ok=True)
         for t in cat_templates:
-            prompt = template_to_prompt(t, color_override=args.colors)
-            transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
-            print(f"Generating: {t['id']}...")
-            data = generate_icon(
-                backend, client, prompt,
-                size=args.size,
-                transparent=transparent,
-                transparency_method=args.transparency_method,
-            )
-            save_icon(data, output_dir / f"{t['id']}.png")
-        return 0
+            subject = _apply_colors(_template_subject(t, args.colors), None)
+            t_theme = _template_theme(theme, t)
+            print(f"generating {t['id']}...")
+            try:
+                generate_one(subject, output_dir / f"{t['id']}.png", theme=t_theme, **common)
+            except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+                print(f"  failed: {exc}", file=sys.stderr)
+                failures += 1
+        print(f"{len(cat_templates) - failures}/{len(cat_templates)} icons generated")
+        return 0 if failures == 0 else 1
 
-    # Template mode
     if args.template:
         if args.template not in templates:
             print(f"Template not found: {args.template}", file=sys.stderr)
-            print("Available: " + ", ".join(sorted(templates.keys())), file=sys.stderr)
+            print(f"Available: {', '.join(sorted(templates.keys()))}", file=sys.stderr)
             return 1
         t = templates[args.template]
-        prompt = template_to_prompt(t, color_override=args.colors)
-        transparent = args.transparent or t.get("composition", {}).get("background") == "transparent"
-        print(f"Generating from template: {args.template}")
-        print(f"Prompt: {prompt[:200]}...")
-        data = generate_icon(
-            backend, client, prompt,
-            size=args.size,
-            transparent=transparent,
-            transparency_method=args.transparency_method,
-        )
-        save_icon(data, Path(args.output))
+        subject = _template_subject(t, args.colors)
+        t_theme = _template_theme(theme, t)
+        try:
+            generate_one(subject, Path(args.output), theme=t_theme, **common)
+        except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
         return 0
 
-    # Free-form batch mode
     if args.batch:
         items = [item.strip() for item in args.batch.split(",")]
         output_dir = Path(args.output)
         output_dir.mkdir(parents=True, exist_ok=True)
-
         for item in items:
-            prompt = build_prompt(
-                args.prompt.replace("{item}", item),
-                colors=args.colors,
-                transparent=args.transparent,
-            )
-            print(f"Generating: {item}...")
-            data = generate_icon(
-                backend, client, prompt,
-                size=args.size,
-                transparent=args.transparent,
-                transparency_method=args.transparency_method,
-            )
-            save_icon(data, output_dir / f"{item.replace(' ', '_')}.png")
-        return 0
+            subject = _apply_colors(args.prompt.replace("{item}", item), args.colors)
+            print(f"generating {item}...")
+            try:
+                generate_one(
+                    subject, output_dir / f"{item.replace(' ', '_')}.png", theme=theme, **common
+                )
+            except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+                print(f"  failed: {exc}", file=sys.stderr)
+                failures += 1
+        print(f"{len(items) - failures}/{len(items)} icons generated")
+        return 0 if failures == 0 else 1
 
-    # Single free-form prompt mode
-    prompt = build_prompt(args.prompt, colors=args.colors, transparent=args.transparent)
-    print(f"Generating icon...")
-    print(f"Prompt: {prompt}")
-    data = generate_icon(
-        backend, client, prompt,
-        size=args.size,
-        transparent=args.transparent,
-        transparency_method=args.transparency_method,
-    )
-    save_icon(data, Path(args.output))
+    subject = _apply_colors(args.prompt, args.colors)
+    try:
+        generate_one(subject, Path(args.output), theme=theme, **common)
+    except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 
