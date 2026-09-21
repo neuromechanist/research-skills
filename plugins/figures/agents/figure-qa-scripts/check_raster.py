@@ -507,6 +507,12 @@ def _text_report(
         "unexpected_text": [],
     }
     if skip_reason is not None:
+        # Keep the requested-text contract stable even when OCR cannot run. These
+        # entries are unknown, not missing; _findings_from_report suppresses
+        # text_missing findings while the skip reason is present.
+        out["expected"] = [
+            {"expected": expected, "found": False} for expected in expect_text
+        ]
         return out
 
     used_ids: set[int] = set()
@@ -670,30 +676,31 @@ def _findings_from_report(report: dict[str, Any]) -> list[dict[str, Any]]:
                     "hint": None,
                 }
             )
-        for entry in text.get("expected", []):
-            if not entry["found"]:
-                findings.append(
-                    {
-                        "check": "text_missing",
-                        "severity": "block",
-                        "message": f"expected text not found via OCR: '{entry['expected']}'",
-                        "action": "regenerate",
-                        "hint": f'add literal on-image text via the model prompt: Text (verbatim): "{entry["expected"]}"',
-                    }
-                )
-            elif entry.get("too_small"):
-                findings.append(
-                    {
-                        "check": "text_too_small",
-                        "severity": "block",
-                        "message": (
-                            f"'{entry['expected']}' measures {entry['cap_height_pt']} pt, "
-                            f"below the {entry['min_pt_required']} pt minimum"
-                        ),
-                        "action": "regenerate",
-                        "hint": "increase relative text size in the prompt or overlay the label instead",
-                    }
-                )
+        if not text.get("ocr_skip_reason"):
+            for entry in text.get("expected", []):
+                if not entry["found"]:
+                    findings.append(
+                        {
+                            "check": "text_missing",
+                            "severity": "block",
+                            "message": f"expected text not found via OCR: '{entry['expected']}'",
+                            "action": "regenerate",
+                            "hint": f'add literal on-image text via the model prompt: Text (verbatim): "{entry["expected"]}"',
+                        }
+                    )
+                elif entry.get("too_small"):
+                    findings.append(
+                        {
+                            "check": "text_too_small",
+                            "severity": "block",
+                            "message": (
+                                f"'{entry['expected']}' measures {entry['cap_height_pt']} pt, "
+                                f"below the {entry['min_pt_required']} pt minimum"
+                            ),
+                            "action": "regenerate",
+                            "hint": "increase relative text size in the prompt or overlay the label instead",
+                        }
+                    )
         if text.get("unexpected_text"):
             words = ", ".join(f"'{w['text']}'" for w in text["unexpected_text"])
             findings.append(
