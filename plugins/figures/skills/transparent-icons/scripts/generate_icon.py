@@ -247,9 +247,12 @@ def _ensure_png(image_data: bytes) -> bytes:
             "The Atlas backend requires Pillow to normalize model output to PNG. "
             "Re-run with --with pillow."
         ) from exc
-    image = Image.open(io.BytesIO(image_data))
-    output = io.BytesIO()
-    image.save(output, format="PNG")
+    try:
+        image = Image.open(io.BytesIO(image_data))
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+    except OSError as exc:
+        raise RuntimeError("Atlas Cloud returned invalid image data") from exc
     return output.getvalue()
 
 
@@ -519,6 +522,7 @@ def main(argv: list[str] | None = None) -> int:
                 image_backend.BackendUnavailable,
                 image_backend.GenerationFailed,
                 RuntimeError,
+                TypeError,
             ) as exc:
                 print(f"  failed: {exc}", file=sys.stderr)
                 failures += 1
@@ -539,6 +543,7 @@ def main(argv: list[str] | None = None) -> int:
             image_backend.BackendUnavailable,
             image_backend.GenerationFailed,
             RuntimeError,
+            TypeError,
         ) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
@@ -559,6 +564,7 @@ def main(argv: list[str] | None = None) -> int:
                 image_backend.BackendUnavailable,
                 image_backend.GenerationFailed,
                 RuntimeError,
+                TypeError,
             ) as exc:
                 print(f"  failed: {exc}", file=sys.stderr)
                 failures += 1
@@ -572,6 +578,7 @@ def main(argv: list[str] | None = None) -> int:
         image_backend.BackendUnavailable,
         image_backend.GenerationFailed,
         RuntimeError,
+        TypeError,
     ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

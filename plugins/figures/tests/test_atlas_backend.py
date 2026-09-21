@@ -41,3 +41,8 @@ def test_atlas_output_is_normalized_to_png():
     Image.new("RGB", (4, 4), (12, 34, 56)).save(source, format="JPEG")
     png = icon_cli._ensure_png(source.getvalue())
     assert png.startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_atlas_rejects_invalid_image_data_as_user_error():
+    with pytest.raises(RuntimeError, match="invalid image data"):
+        icon_cli._ensure_png(b"not-an-image")
