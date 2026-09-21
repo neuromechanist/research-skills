@@ -14,9 +14,9 @@ All three CLIs support subagents (2026), but they differ in format and, critical
 |---|---|---|---|
 | Claude Code | Markdown + YAML frontmatter | plugin `agents/*.md` | **Yes** |
 | Codex CLI | TOML | `~/.codex/agents/` or `.codex/agents/` | No (plugins distribute skills) |
-| Copilot CLI | Markdown `.agent.md` | `.github/agents/` or `~/.copilot/agents/` | Not supported / not documented |
+| Copilot CLI | Markdown `.agent.md` | plugin manifest's `agents` path, `.github/agents/`, or `~/.copilot/agents/` | Yes when the installed legacy plugin manifest exposes its `agents` directory |
 
-Only Claude Code ships agents inside an installed plugin. Therefore the portable, install-time artifact must be the **skill**, and the agents are thin per-tool shells.
+Claude Code and legacy Copilot plugin manifests can ship agents inside an installed plugin; Codex plugin installation exposes skills but not custom subagents. Therefore skills remain the portable install-time artifact, while agents stay thin per-tool shells and Codex templates remain opt-in.
 
 ## The invariant
 
@@ -24,7 +24,7 @@ For a review/QA surface named `<name>`:
 
 - **`skills/<name>/SKILL.md`, thin dispatch.** Owns the user-facing trigger phrases. Body routes to the right execution path per tool and selects the mode. No rubric content.
 - **`skills/<name>/references/`, the brain.** Rubric, criteria, procedure, output templates. Single source of truth. This is the only artifact all three ecosystems bundle on install, so the rubric must live here and nowhere else. (Engine scripts, where applicable, live in `references/` or a sibling `scripts/`.)
-- **Per-tool shells, thin.** `agents/<name>.md` (Claude, bundled), `agents/templates/<name>.toml` (Codex), `agents/templates/<name>.agent.md` (Copilot). Each loads `references/` and emits the structured report. The Codex/Copilot templates are opt-in: the user copies them into `.codex/agents/` or `.github/agents/` because those tools do not bundle plugin agents.
+- **Per-tool shells, thin.** `agents/<name>.md` (Claude, bundled), `agents/templates/<name>.toml` (Codex), `agents/templates/<name>.agent.md` (Copilot). Each loads `references/` and emits the structured report. Codex templates are opt-in: the user copies them into `.codex/agents/` or `~/.codex/agents/`. Copilot templates are exposed through the plugin manifest's `agents` path when the host supports that legacy plugin component; otherwise the user may copy them into `.github/agents/` or `~/.copilot/agents/`.
 
 ## Trigger ownership
 
@@ -34,9 +34,9 @@ The **skill owns the triggers**. Each Claude agent's `description` is scoped to 
 
 `SKILL.md` selects a branch:
 
-- **Claude Code:** `Task(subagent_type: "<name>", ...)`.
+- **Claude Code:** `Agent(subagent_type: "<plugin>:<name>", ...)` (plugin agents are registered under their plugin namespace).
 - **Codex CLI:** run the `<name>` subagent (`/agent`) after the template is installed.
-- **Copilot CLI:** run the `<name>` agent (`/fleet` for parallel) after the template is installed.
+- **Copilot CLI:** run the `<name>` agent (`/fleet` for parallel) from the installed plugin's exposed `agents` directory or after installing the template into a supported agent directory. Agent Plugins 1.0 does not define a portable agent component, so preserve the documented legacy-plugin fallback.
 - **Fallback:** no subagent support, or the user wants an interactive in-thread review -> run the procedure inline by following `references/`.
 
 Pass only **framing** to the reviewer (artifact path, type/mechanism, target venue, resubmission status), never the authoring rationale. Independent must not mean blind.

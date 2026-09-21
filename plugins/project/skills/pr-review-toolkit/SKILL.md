@@ -26,7 +26,7 @@ Prefer a fresh-context reviewer when the current tool supports subagents. The
 reviewer must read `references/review-procedure.md` and
 `references/review-rubrics.md` before producing findings.
 
-- **Claude Code:** run `Task(subagent_type: "pr-review-toolkit", ...)` if the bundled agent is available; otherwise follow the fallback branch.
+- **Claude Code:** run `Agent(subagent_type: "project:pr-review-toolkit", ...)` if the bundled agent is available; otherwise follow the fallback branch.
 - **Codex CLI:** plugin installation exposes this skill, not a Codex subagent. To use a fresh-context Codex reviewer, first copy `agents/templates/pr-review-toolkit.toml` to `~/.codex/agents/` or `.codex/agents/`, then invoke that configured agent if the current Codex surface supports `/agent`. If no Codex subagent is configured or available, use the fallback branch.
 - **Copilot CLI:** plugin installation exposes this skill and, through `.github/plugin/plugin.json`, the `.agent.md` reviewer in `agents/templates/`. Invoke that configured agent when the current Copilot surface supports custom agents. If running outside a plugin install, copy `agents/templates/pr-review-toolkit.agent.md` to `.github/agents/` or `~/.copilot/agents/`. If no custom agent is available, use the fallback branch.
 - **Fallback:** run the review inline in the current context after reading both reference files. This is the portable default path.

@@ -59,10 +59,10 @@ If a journal's guide explicitly requires something humanizer flags (e.g., title 
 
 ### When to invoke this skill in the writing workflow
 
-- After drafting any section with `manuscript-writing` or `grant-writing`, before peer or self-review.
-- As the final polish step before `manuscript-formatting` (which applies journal-specific formatting on top).
+- After drafting any section with `manuscript:manuscript-writing` or `grant:grant-writing`, before peer or self-review.
+- As the final polish step before `manuscript:manuscript-formatting` (which applies journal-specific formatting on top).
 - During response-to-reviewers drafting, since reviewer letters benefit heavily from natural voice.
-- On synthesized lit-review prose from `lit-review`; these passages are particularly prone to "evolving landscape" filler.
+- On synthesized lit-review prose from `manuscript:lit-review`; these passages are particularly prone to "evolving landscape" filler.
 
 ## Voice Calibration (Optional)
 
@@ -556,6 +556,8 @@ Provide:
 4. A brief summary of changes made (optional, if helpful)
 
 ## Cross-references in the research-skills marketplace
+
+Invoke each installed skill by its fully qualified `<plugin>:<skill>` name through the host's skill-invocation mechanism. Keep host-specific command or tool syntax in the host adapter, not in shared skill instructions.
 
 - `manuscript:manuscript-writing` for paper drafting and section-level guidance. Run humanizer after drafting and before review.
 - `manuscript:paper-review` for peer-review feedback. Humanizer is often the right fix for a "writing quality" comment from a reviewer.

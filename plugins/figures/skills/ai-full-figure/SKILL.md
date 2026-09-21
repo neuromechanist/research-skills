@@ -6,7 +6,7 @@ version: 0.1.0
 
 # AI Full Figure
 
-Generate a pictorial substrate via AI (Codex CLI or OpenAI Images API) and overlay labels, arrows, and scale bars programmatically. The output is an SVG that embeds the raster substrate and lets the `[[scientific-figure]]` composer place it as a panel.
+Generate a pictorial substrate via AI (Codex CLI or OpenAI Images API) and overlay labels, arrows, and scale bars programmatically. The output is an SVG that embeds the raster substrate and lets the `figures:scientific-figure` composer place it as a panel.
 
 ## When to use this skill
 
@@ -21,10 +21,10 @@ Reach for a different skill when the figure is **information-dense**:
 
 | Figure type | Skill |
 |---|---|
-| Data plot (matplotlib, seaborn, plotly) | `[[plot-styling]]` for the plot, then `[[scientific-figure]]` to compose |
-| Schematic with boxes / arrows / process flow | `[[svg-primitives]]` (programmatic) or `[[svg-figure]]` (hand-authored conventions) |
-| Flat scientific icon as part of a figure | `[[transparent-icons]]` |
-| Multi-panel journal figure | `[[scientific-figure]]` as the composer |
+| Data plot (matplotlib, seaborn, plotly) | `figures:plot-styling` for the plot, then `figures:scientific-figure` to compose |
+| Schematic with boxes / arrows / process flow | `figures:svg-primitives` (programmatic) or `figures:svg-figure` (hand-authored conventions) |
+| Flat scientific icon as part of a figure | `figures:transparent-icons` |
+| Multi-panel journal figure | `figures:scientific-figure` as the composer |
 
 ## Hard ceiling on AI generation
 
@@ -42,11 +42,11 @@ The right pattern when those are needed: **substrate-only generation, programmat
 2. Compose labels, arrows, scale bars, and panel letters as a separate SVG layer.
 3. Ship the combined SVG.
 
-If the user is asking for a figure that violates the hard ceiling, route to `[[svg-figure]]` or `[[scientific-figure]]` and explain why. AI generation for embedded text remains unreliable as of 2026.
+If the user is asking for a figure that violates the hard ceiling, route to `figures:svg-figure` or `figures:scientific-figure` and explain why. AI generation for embedded text remains unreliable as of 2026.
 
 ## The theme bible (shared with transparent-icons)
 
-A `theme.json` keeps an AI-generated substrate visually consistent with the rest of the figure's palette and stroke language. The schema is the same one used by `[[transparent-icons]]`:
+A `theme.json` keeps an AI-generated substrate visually consistent with the rest of the figure's palette and stroke language. The schema is the same one used by `figures:transparent-icons`:
 
 ```
 plugins/figures/skills/transparent-icons/references/theme.schema.json
@@ -86,7 +86,7 @@ uv run --with svgwrite --with pillow \
     -o out/brain_labeled.svg
 ```
 
-The output SVG embeds the PNG via `<image>` and adds `<text>` / `<line>` / arrow markers on top. The SVG's `viewBox` matches the PNG's pixel dimensions so coordinates are pixel-addressed; `width`/`height` use a `mm` value so `[[scientific-figure]]` can compose it without rescaling math.
+The output SVG embeds the PNG via `<image>` and adds `<text>` / `<line>` / arrow markers on top. The SVG's `viewBox` matches the PNG's pixel dimensions so coordinates are pixel-addressed; `width`/`height` use a `mm` value so `figures:scientific-figure` can compose it without rescaling math.
 
 Label positions can be pre-computed in code (when overlay is data-driven) or eyeballed via Pillow's image viewer. The `overlay_labels.py` script accepts `--label "text@x,y"` shorthand or a JSON `--labels-file` for batch overlay.
 
@@ -115,7 +115,7 @@ See `examples/poster_substrate.py` for an end-to-end runnable demo with a small 
 
 ## Quality assurance
 
-Invoke `[[figure-qa]]` after generation. The agent runs the raster branch on the substrate (alpha channel, DPI, dominant colors) and the SVG branch on the labeled output (label legibility, palette compliance, no text bleed). VLM judgment then rates aesthetic and journal-fit.
+Invoke `figures:figure-qa` after generation. The agent runs the raster branch on the substrate (alpha channel, DPI, dominant colors) and the SVG branch on the labeled output (label legibility, palette compliance, no text bleed). VLM judgment then rates aesthetic and journal-fit.
 
 ## Additional resources
 

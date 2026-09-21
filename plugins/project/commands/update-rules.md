@@ -38,8 +38,7 @@ If the above command failed or the output does not contain `STATUS=complete` as 
 - Present each missing rule with a brief description and ask which to add
 
 **Changed rules (RULE_CHANGED):**
-- For each changed rule, show a unified diff:
-  !diff --unified "$(project-templates-path)/claude/rules/<filename>" ".rules/<filename>"
+- For each changed rule, show a unified diff by running `diff --unified "$(project-templates-path)/claude/rules/<filename>" ".rules/<filename>"` with the rule filename substituted
 - Analyze: are the differences template improvements or user customizations?
 - Present options: (a) accept template version, (b) merge specific changes, (c) skip
 

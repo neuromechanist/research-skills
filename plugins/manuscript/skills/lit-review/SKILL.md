@@ -165,6 +165,8 @@ The cite-card cross-link convention from Phase 3 still applies regardless of whe
 
 ## Sister skills
 
+Invoke each installed skill by its fully qualified `<plugin>:<skill>` name through the host's skill-invocation mechanism. Keep host-specific command or tool syntax in the host adapter, not in shared skill instructions.
+
 | Skill | Used for |
 |---|---|
 | `opencite:opencite` | DOI lookup, PDF retrieval, PDF -> markdown, BibTeX export |

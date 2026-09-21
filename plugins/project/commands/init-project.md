@@ -1,7 +1,7 @@
 ---
 description: Initialize a new project with cross-agent vibe-rules templates
 argument-hint: <project-description>
-allowed-tools: Bash, Read, Write, Edit
+allowed-tools: Bash, Read, Write, Edit, Skill
 ---
 
 # Project Initialization with Vibe Rules

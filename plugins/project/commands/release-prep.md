@@ -1,7 +1,7 @@
 ---
 description: Prepare a project release with version bump, changelog, and validation
 argument-hint: <version> or --patch or --minor or --major
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Skill, Agent
 ---
 
 # Release Preparation

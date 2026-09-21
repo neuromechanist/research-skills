@@ -105,4 +105,4 @@ After drafting, check:
 
 - Reference: [references/section-templates.md](references/section-templates.md) - Templates for each manuscript section
 - Reference: [references/revision-response.md](references/revision-response.md) - How to write point-by-point responses to reviewers
-- Sister skill: `manuscript:humanizer` - Removes 29 categories of AI-writing tells while respecting academic conventions (e.g., passive voice in Methods, hedging in Discussion). Run after drafting and before peer review.
+- Sister skill: `manuscript:humanizer` (invoke through the host's skill-invocation mechanism) - Removes 29 categories of AI-writing tells while respecting academic conventions (e.g., passive voice in Methods, hedging in Discussion). Run after drafting and before peer review.
