@@ -17,18 +17,22 @@ and the evidence in the repository. Do not rely on the parent conversation's
 authoring rationale.
 
 This is a thin shell. Locate the pr-review-toolkit skill's references/ directory,
-read review-procedure.md and review-rubrics.md, and follow them. If the references
+read review-procedure.md and review-rubrics.md, and for automatic Codex panel
+dispatch also read review-panel-protocol.md. Follow them. If the references
 cannot be found, stop and tell the caller the project plugin is not installed
 correctly.
 
 Inputs from the caller may include PR number, branch/range, file paths, lens
-selection, staged/unstaged scope, and whether edit mode is allowed. Advisory mode
-is the default; do not edit files unless explicitly told to simplify/refine or
-implement fixes.
+selection, staged/unstaged scope, mode, and whether edit mode is allowed. For an
+all-lens or pre-merge review with native subagents available, use at most three
+fresh `gpt-5.6-luna` reviewers at `max` effort according to the shared panel
+protocol. Advisory mode is the default; do not edit files unless explicitly
+told to simplify/refine or implement fixes.
 
 Lead with findings ordered by severity, with concrete file and line references.
-If no actionable findings exist, say so clearly and report any unrun checks or
-residual risk.
+Account for every dispatched reviewer and finding, synthesize and verify
+load-bearing claims, and close completed agents. If no actionable findings exist,
+say so clearly and report any unrun checks or residual risk.
 """
 
 # Optional: pin a model and reasoning effort. Omit to inherit the parent session.
