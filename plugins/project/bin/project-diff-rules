@@ -32,7 +32,8 @@
 # Emits STATUS=complete as the final line on success.
 set -euo pipefail
 
-TEMPLATES_DIR="$(project-templates-path)" || {
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TEMPLATES_DIR="$("$SCRIPT_DIR/project-templates-path")" || {
     echo "ERROR: Failed to resolve templates directory" >&2
     exit 1
 }

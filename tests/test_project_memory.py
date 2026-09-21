@@ -14,7 +14,9 @@ MEMORY_TEMPLATE = ROOT / "plugins" / "project" / "templates" / "memory"
 
 def _env() -> dict[str, str]:
     env = os.environ.copy()
-    env["PATH"] = f"{BIN_DIR}{os.pathsep}{env.get('PATH', '')}"
+    # The helpers must resolve sibling binaries themselves; a native plugin
+    # manifest does not guarantee that the plugin bin directory is on PATH.
+    env["PATH"] = os.pathsep.join(("/usr/bin", "/bin"))
     return env
 
 

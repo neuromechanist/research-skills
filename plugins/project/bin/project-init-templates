@@ -3,7 +3,8 @@
 # Locates the templates directory via the sibling project-templates-path script.
 set -euo pipefail
 
-TEMPLATES_DIR="$(project-templates-path)" || exit 1
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TEMPLATES_DIR="$("$SCRIPT_DIR/project-templates-path")" || exit 1
 
 TARGET_DIR="${1:-.}"
 

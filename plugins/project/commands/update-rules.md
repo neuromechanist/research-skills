@@ -23,7 +23,7 @@ Determine the level from `$ARGUMENTS`:
 If `$ARGUMENTS` is empty or not one of `user`/`project`, ask the user which level to update.
 
 ### 2. Run Comparison
-!project-diff-rules $ARGUMENTS
+!"${CLAUDE_PLUGIN_ROOT}/bin/project-diff-rules" $ARGUMENTS
 
 Run this comparison only for `project`. For `user`, do not run the legacy
 Claude-only comparison script; transfer control to
@@ -41,7 +41,7 @@ If the above command failed or the output does not contain `STATUS=complete` as 
 - Present each missing rule with a brief description and ask which to add
 
 **Changed rules (RULE_CHANGED):**
-- For each changed rule, show a unified diff by running `diff --unified "$(project-templates-path)/claude/rules/<filename>" ".rules/<filename>"` with the rule filename substituted
+- For each changed rule, show a unified diff by running `diff --unified "${CLAUDE_PLUGIN_ROOT}/templates/claude/rules/<filename>" ".rules/<filename>"` with the rule filename substituted
 - Analyze: are the differences template improvements or user customizations?
 - Present options: (a) accept template version, (b) merge specific changes, (c) skip
 
@@ -95,6 +95,6 @@ For each approved change:
 - **New list items:** use Edit to append to existing lists
 
 ### 6. Verify
-!project-diff-rules $ARGUMENTS
+!"${CLAUDE_PLUGIN_ROOT}/bin/project-diff-rules" $ARGUMENTS
 
 Confirm that approved changes were applied. Report final status.

@@ -29,9 +29,12 @@ variation details, then follow this procedure as the execution contract.
 
 ## Phase 0: Repository Detection
 
-1. Run `project-preflight --format json` from the target repository. This is a
-   read-only startup probe for the repository, shell, terminal, GitHub CLI, and
-   native-agent surface. It never spawns agents or prints credentials.
+1. Invoke the `project-preflight` skill's bundled
+   `<project-plugin-root>/bin/project-preflight --format json` executable by
+   absolute path from the target repository. Do not assume the plugin's
+   `bin/` directory is on `PATH`. This is a read-only startup probe for the
+   repository, shell, terminal, GitHub CLI, and native-agent surface. It never
+   spawns agents or prints credentials.
 2. Validate required values before continuing:
    - `INTEGRATION_BRANCH`
    - `REPO_ROOT`

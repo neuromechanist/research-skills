@@ -33,7 +33,7 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 **Goal**: Detect repo configuration and validate prerequisites.
 
 **Actions**:
-1. Run `project-preflight --format json` and parse the output. Keep the
+1. Run `${CLAUDE_PLUGIN_ROOT}/bin/project-preflight --format json` and parse the output. Keep the
    legacy `project-detect-repo-config` fallback for installations that predate
    the preflight binary.
 2. **Validate all required values are present**: `integration_branch`,
