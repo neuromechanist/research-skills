@@ -891,8 +891,10 @@
 <p>The same epic → sub-issue → worktree shape generalizes beyond code changes. <code>epic-dev</code> is the entry point other skills delegate to when they need git-tracked, parallelizable phase decomposition. For example, <code>manuscript:lit-review</code>'s multi-phase mode delegates strand orchestration (one strand per literature-review theme, each with its own sub-issue, worktree, and collection folder) to <code>project:epic-dev</code>:</p>
 <p><img alt="Strand fan-out: one epic issue decomposed into four strand sub-issues, each with its own collection folder and acceptance criteria" src="../../assets/diagrams/strand-fanout.svg" /></p>
 <p><code>workflow-reference</code> documents the branch, state-file, worktree, and GitHub command conventions this pattern relies on.</p>
-<p>Before an epic or PR workflow, <code>project-preflight --format json</code> reports the
-actual repository root, branch/worktree state, shell and terminal, GitHub CLI
+<p>Before an epic or PR workflow, invoke the bundled
+<code>&lt;project-plugin-root&gt;/bin/project-preflight --format json</code> executable by
+absolute path; do not assume the plugin's <code>bin/</code> directory is on <code>PATH</code>. It
+reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI
 command/network/auth/token status, child-shell credential inheritance, and
 native-agent capability. It is read-only, never spawns agents, and keeps
 optional capability failures separate from repository detection failures.</p>

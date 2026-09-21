@@ -961,7 +961,7 @@
 <h2 id="releases-and-citation">Releases and citation<a class="headerlink" href="#releases-and-citation" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The marketplace version lives in <code>.claude-plugin/marketplace.json</code> and <code>.github/plugin/marketplace.json</code> (the Codex <code>.agents/plugins/marketplace.json</code> carries no top-level version).</li>
-<li>GitHub release tags mirror the marketplace top-level version: marketplace <code>0.15.13</code> gets tag <code>v0.15.13</code>, not a separately incrementing release sequence.</li>
+<li>GitHub release tags mirror the marketplace top-level version: marketplace <code>&lt;version&gt;</code> gets tag <code>v&lt;version&gt;</code>, not a separately incrementing release sequence.</li>
 <li>The repository is archived to Zenodo on every GitHub release, minting a versioned DOI under a stable concept DOI. When the marketplace version bumps for a release, <code>CITATION.cff</code>'s <code>version</code> and <code>date-released</code> fields get bumped alongside it, and <code>.zenodo.json</code> stays in sync.</li>
 <li>The concept DOI (in <code>CITATION.cff</code>'s <code>doi:</code> field and the README badge) is stable across versions and does not change.</li>
 </ul>
