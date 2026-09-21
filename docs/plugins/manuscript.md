@@ -1,6 +1,6 @@
 # Manuscript
 
-The `manuscript` plugin covers the full manuscript lifecycle: literature review, writing (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), journal-specific formatting, and a final humanizer pass that strips AI-writing tells.
+The `manuscript` plugin covers the full manuscript lifecycle: literature review, writing (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), journal-specific formatting, guarded semantic line breaks for source readability, and a final humanizer pass that strips AI-writing tells.
 
 ## The manuscript pipeline
 

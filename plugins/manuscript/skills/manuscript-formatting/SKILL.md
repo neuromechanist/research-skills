@@ -1,7 +1,7 @@
 ---
 name: manuscript-formatting
 description: "Use this skill for \"format manuscript\", \"prepare for submission\", \"journal formatting\", \"LaTeX template\", \"submission checklist\", \"format references\", \"BibTeX\", \"author guidelines\", \"page limits\", \"format for Nature\", \"format for IEEE\", or when the user wants to format a manuscript for journal submission."
-version: 0.2.1
+version: 0.3.0
 ---
 
 # Manuscript Formatting and Submission Preparation
@@ -169,6 +169,45 @@ pandoc manuscript.docx -o manuscript.tex --extract-media=figures/
 ```bash
 pandoc manuscript.tex -o manuscript.docx --bibliography=refs.bib --citeproc
 ```
+
+## Semantic Line Breaks
+
+Semantic line breaks put each substantial unit of thought on its own source
+line, so a small prose edit produces a small, reviewable diff. The
+[SemBr specification](https://sembr.org/) requires that this formatting not
+alter the rendered document. The [`sembr` CLI](https://pypi.org/project/sembr/)
+supports Markdown, plain text, and LaTeX and can be installed portably with
+`uv tool install sembr`.
+
+Raw SemBr output is reasonable for ordinary Markdown after review. Do not
+trust raw output on LaTeX: line breaks can change comment scope or corrupt
+commands and escape sequences. Use the bundled safety wrapper for LaTeX:
+
+```bash
+uv run python plugins/manuscript/skills/manuscript-formatting/scripts/semantic_breaks.py \
+  manuscript.tex manuscript-semantic.tex \
+  --compile-command latexmk -pdf -interaction=nonstopmode \
+  -outdir '{build_dir}' '{source}'
+```
+
+The wrapper performs these gates before writing the destination:
+
+1. It replaces `\\begin{verbatim}...\\end{verbatim}` blocks and full-line `%`
+   comments with atomic placeholders, then restores them after SemBr.
+2. It aligns whitespace-delimited tokens with Python's
+   `difflib.SequenceMatcher`. If any token content diverges, it restores the
+   original paragraph containing that divergence; whitespace-only changes in
+   other paragraphs remain available as semantic breaks. A whitespace-collapsed
+   string comparison alone is unsafe because it misses `%` comment truncation.
+3. When `--compile-command` is supplied, it compiles the original and guarded
+   versions separately, runs `pdftotext` on both PDFs, and refuses to write the
+   result unless the extracted bytes are identical. The compiler command must
+   use `{source}` for its input and route generated files into `{build_dir}`;
+   arguments after `--compile-command` are consumed by the wrapper.
+
+Inspect the resulting diff and keep the compiled-output check in the workflow;
+matching extracted text is a safety gate, not a substitute for reviewing the
+source and the rendered PDF.
 
 ## Additional Resources
 

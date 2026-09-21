@@ -31,6 +31,7 @@
     },
     {
       "name": "manuscript",
+      "description": "Academic manuscript toolkit with literature review, peer review, writing, semantic-line-break-safe formatting, and humanizer workflows",
       "source": {
         "source": "local",
         "path": "./plugins/manuscript"
