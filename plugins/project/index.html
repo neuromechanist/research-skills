@@ -882,7 +882,7 @@
 
 
 <h1 id="project">Project<a class="headerlink" href="#project" title="Permanent link">&para;</a></h1>
-<p>The <code>project</code> plugin is the marketplace's development-lifecycle toolkit: initialization, cross-agent user instructions, tiered model routing, epic/sprint workflow, PR review, CI/CD scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, and multi-agent orchestration.</p>
+<p>The <code>project</code> plugin is the marketplace's development-lifecycle toolkit: initialization, tracked cross-agent project memory, cross-agent user instructions, tiered model routing, epic/sprint workflow, PR review, CI/CD scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, and multi-agent orchestration.</p>
 <h2 id="epics-phases-and-worktrees">Epics, phases, and worktrees<a class="headerlink" href="#epics-phases-and-worktrees" title="Permanent link">&para;</a></h2>
 <p>Complex, multi-phase features are epics: one epic issue, broken into phase sub-issues, each developed in its own git worktree so phases can run in parallel without stepping on each other's working tree.</p>
 <p><img alt="Epic branching: main branches to an epic branch, which branches into phases P1 through P6, which integrate back into the epic branch before merging to main" src="../../assets/diagrams/epic-branching.svg" /></p>
@@ -891,14 +891,20 @@
 <p>The same epic → sub-issue → worktree shape generalizes beyond code changes. <code>epic-dev</code> is the entry point other skills delegate to when they need git-tracked, parallelizable phase decomposition. For example, <code>manuscript:lit-review</code>'s multi-phase mode delegates strand orchestration (one strand per literature-review theme, each with its own sub-issue, worktree, and collection folder) to <code>project:epic-dev</code>:</p>
 <p><img alt="Strand fan-out: one epic issue decomposed into four strand sub-issues, each with its own collection folder and acceptance criteria" src="../../assets/diagrams/strand-fanout.svg" /></p>
 <p><code>workflow-reference</code> documents the branch, state-file, worktree, and GitHub command conventions this pattern relies on.</p>
+<p>Before an epic or PR workflow, <code>project-preflight --format json</code> reports the
+actual repository root, branch/worktree state, shell and terminal, GitHub CLI
+command/network/auth/token status, child-shell credential inheritance, and
+native-agent capability. It is read-only, never spawns agents, and keeps
+optional capability failures separate from repository detection failures.</p>
 <h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>init-project</strong>: scaffold new projects with <code>AGENTS.md</code>, a Claude Code <code>CLAUDE.md</code> import wrapper, <code>.rules/</code>, <code>.context/</code>, and config files</li>
-<li><strong>update-rules</strong>: non-destructive project sync of <code>AGENTS.md</code>, the <code>CLAUDE.md</code> adapter, and <code>.rules/</code>; user-level setup delegates to <code>install-user-instructions</code></li>
+<li><strong>init-project</strong>: scaffold new projects with <code>AGENTS.md</code>, a Claude Code <code>CLAUDE.md</code> import wrapper, <code>.rules/</code>, <code>.context/</code>, <code>.memory/</code>, and config files. <code>.memory/</code> contains one Markdown observation per file plus an index; reruns add only missing convention files.</li>
+<li><strong>project-preflight</strong>: read-only startup detection of repository, shell, terminal, GitHub, and native-agent surfaces with <code>KEY=VALUE</code> or JSON output</li>
+<li><strong>update-rules</strong>: non-destructive project sync of <code>AGENTS.md</code>, the <code>CLAUDE.md</code> adapter, <code>.rules/</code>, and <code>.memory/</code> convention files; user-level setup delegates to <code>install-user-instructions</code></li>
 <li><strong>install-user-instructions</strong>: ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure, then preview and install shared personal defaults at each documented user surface without copying them into downstream repositories</li>
 <li><strong>epic-dev</strong>: the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery</li>
 <li><strong>workflow-reference</strong>: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows</li>
-<li><strong>pr-review-toolkit</strong>: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification</li>
+<li><strong>pr-review-toolkit</strong>: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification; Codex <code>all</code>/pre-merge reviews use a bounded three-reviewer Luna/max panel when preflight detects native subagents, with single/inline fallback and explicit accounting</li>
 <li><strong>codebase-onboarding</strong>: verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions</li>
 <li><strong>implementation-planning</strong>: strongest-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list</li>
 <li><strong>engineering-loop</strong>: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons</li>

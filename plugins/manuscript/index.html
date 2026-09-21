@@ -904,7 +904,7 @@
 
 
 <h1 id="manuscript">Manuscript<a class="headerlink" href="#manuscript" title="Permanent link">&para;</a></h1>
-<p>The <code>manuscript</code> plugin covers the full manuscript lifecycle: literature review, writing (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), journal-specific formatting, and a final humanizer pass that strips AI-writing tells.</p>
+<p>The <code>manuscript</code> plugin covers the full manuscript lifecycle: literature review, writing (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), journal-specific formatting, guarded semantic line breaks for source readability, and a final humanizer pass that strips AI-writing tells.</p>
 <h2 id="the-manuscript-pipeline">The manuscript pipeline<a class="headerlink" href="#the-manuscript-pipeline" title="Permanent link">&para;</a></h2>
 <p>Like the grant pipeline, a manuscript moves through five managed stages, but it crosses a loop boundary partway through: the first four stages are an agent + author co-writing loop inside the repo (GitHub-native: epics, sub-issues, worktrees, <code>pr-review-toolkit</code>, the <code>manuscript:*</code> and <code>figures:*</code> skills), and the last stage hands off to a human co-author review loop in Overleaf.</p>
 <p><img alt="Manuscript pipeline: Lit review, Draft, Figures, Self-review as an agent loop inside GitHub, then Format &amp; submit as a human loop in Overleaf, with a boomerang from review findings" src="../../assets/diagrams/manuscript-pipeline.svg" /></p>
