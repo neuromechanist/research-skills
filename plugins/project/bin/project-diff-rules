@@ -8,12 +8,16 @@
 #
 # Output keys (project level):
 #   HAS_RULES_DIR=true|false
+#   HAS_MEMORY_DIR=true|false
 #   HAS_AGENTS_MD=true|false
 #   HAS_CLAUDE_MD=true|false
 #   RULE_MISSING=<filename>     -- template rule not found in project
 #   RULE_CURRENT=<filename>     -- rule matches template exactly
 #   RULE_CHANGED=<filename>     -- rule differs from template
 #   RULE_CUSTOM=<filename>      -- user rule not in templates
+#   MEMORY_FILE_MISSING=<filename> -- template memory file not found
+#   MEMORY_FILE_CURRENT=<filename> -- memory template matches exactly
+#   MEMORY_FILE_CHANGED=<filename> -- memory template differs
 #   PROJECT_SECTION=<line>      -- H2 header from project AGENTS.md (or CLAUDE.md fallback)
 #   PROJECT_SECTION_SOURCE=agents|claude  -- which file PROJECT_SECTION lines came from
 #   TEMPLATE_SECTION=<line>     -- H2 header from template AGENTS.md
@@ -48,6 +52,10 @@ if [ ! -d "$TEMPLATES_DIR/claude/rules" ]; then
     echo "ERROR: Template rules directory not found at $TEMPLATES_DIR/claude/rules/" >&2
     exit 1
 fi
+if [ ! -d "$TEMPLATES_DIR/memory" ]; then
+    echo "ERROR: Template memory directory not found at $TEMPLATES_DIR/memory/" >&2
+    exit 1
+fi
 
 case "$LEVEL" in
     project)
@@ -63,6 +71,13 @@ case "$LEVEL" in
             echo "HAS_RULES_DIR=true"
         else
             echo "HAS_RULES_DIR=false"
+        fi
+
+        # --- Project memory status ---
+        if [ -d "$TARGET_DIR/.memory" ]; then
+            echo "HAS_MEMORY_DIR=true"
+        else
+            echo "HAS_MEMORY_DIR=false"
         fi
 
         # --- Agent instructions status ---
@@ -110,6 +125,28 @@ case "$LEVEL" in
                 fi
             done
         fi
+
+        # --- Project memory template comparison ---
+        for template_memory in "$TEMPLATES_DIR/memory/"*.md; do
+            [ -f "$template_memory" ] || continue
+            memory_name="$(basename "$template_memory")"
+            target_memory="$TARGET_DIR/.memory/$memory_name"
+
+            if [ ! -f "$target_memory" ]; then
+                echo "MEMORY_FILE_MISSING=$memory_name"
+            else
+                diff_status=0
+                diff -q "$template_memory" "$target_memory" >/dev/null 2>&1 || diff_status=$?
+                if [ "$diff_status" -eq 0 ]; then
+                    echo "MEMORY_FILE_CURRENT=$memory_name"
+                elif [ "$diff_status" -eq 1 ]; then
+                    echo "MEMORY_FILE_CHANGED=$memory_name"
+                else
+                    echo "ERROR: Failed to compare memory file '$memory_name'" >&2
+                    exit 1
+                fi
+            fi
+        done
 
         # --- Project instruction section headers ---
         # PROJECT_SECTION_SOURCE tells the consumer which file the headers came from,

@@ -57,7 +57,7 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.8.0 | Project lifecycle with startup preflight, bounded native PR review panels, init, cross-agent user instructions, tiered model routing, epic workflow, onboarding, planning, engineering loop, debugging, agent fan-out, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `install-user-instructions`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `codebase-onboarding`, `implementation-planning`, `engineering-loop`, `debugging`, `agent-fanout`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **project** | 0.9.0 | Project lifecycle with startup preflight, bounded native PR review panels, tracked cross-agent project memory, init, cross-agent user instructions, tiered model routing, epic workflow, onboarding, planning, engineering loop, debugging, agent fan-out, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `install-user-instructions`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `codebase-onboarding`, `implementation-planning`, `engineering-loop`, `debugging`, `agent-fanout`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
 | **grant** | 0.5.0 | NIH/NSF and SBIR/STTR grant proposal writing, merit/readability review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
 | **manuscript** | 0.5.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.2 | Literature search, citation management, PDF retrieval | `opencite` | -- |
@@ -145,8 +145,8 @@ Neuroscience data standards, experiment design, and dataset validation:
 
 Complete project lifecycle toolkit combining initialization, epic/sprint workflow, and CI/CD management:
 
-- **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/`, and config files
-- **update-rules** -- non-destructive project sync of AGENTS.md, the CLAUDE.md adapter, and `.rules/` against latest templates; user-level setup delegates to `install-user-instructions`
+- **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/`, `.memory/`, and config files
+- **update-rules** -- non-destructive project sync of AGENTS.md, the CLAUDE.md adapter, `.rules/`, and `.memory/` convention files against latest templates; user-level setup delegates to `install-user-instructions`
 - **install-user-instructions** -- ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure; preview and install a managed global-default block at each supported user surface without duplicating it in repositories
 - **epic-dev** -- Codex-facing entrypoint for the `/epic-dev` multi-phase feature workflow with git worktrees, GitHub issues, and phased PR delivery
 - **workflow-reference** -- branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
@@ -197,6 +197,7 @@ research-skills/
 ├── .claude-plugin/marketplace.json
 ├── .agents/plugins/marketplace.json
 ├── .github/plugin/marketplace.json
+├── .memory/                    # Tracked, cross-agent project observations
 ├── plugins/
 │   ├── project/                   # Project lifecycle (init, workflow, CI, Docker, security, docs)
 │   ├── grant/                     # Grant proposals (writing, review, figure QA)
@@ -228,7 +229,7 @@ Skills are the preferred surface for agent-callable capabilities and auto-trigge
 
 ## Cross-agent instructions
 
-Use `AGENTS.md` as the shared project instruction file. `CLAUDE.md` imports it with `@AGENTS.md`, then leaves room for Claude Code-only plugin, skill, command, or MCP notes. Use `install-user-instructions` for personal defaults across Claude Code, Codex, Copilot CLI, and Cursor; keep repository files limited to project facts and tool-specific deltas so global rules are not repeated downstream.
+Use `AGENTS.md` as the shared project instruction file. `CLAUDE.md` imports it with `@AGENTS.md`, then leaves room for Claude Code-only plugin, skill, command, or MCP notes. Use `.memory/` for durable, non-binding observations that any agent or human can review; keep `.context/decisions/` for binding ADRs and `.context/` for analysis. Use `install-user-instructions` for personal defaults across Claude Code, Codex, Copilot CLI, and Cursor; keep repository files limited to project facts and tool-specific deltas so global rules are not repeated downstream.
 
 ## Versioning
 
