@@ -627,6 +627,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-generate-qa-fix-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The generate, QA, fix loop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#skills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -873,6 +884,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-generate-qa-fix-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The generate, QA, fix loop
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#skills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -931,8 +953,8 @@
 <p>A figure moves through five steps, each with its own mechanical defense against the most common failure at that step, and a boomerang from validation straight back to building when a font fails:</p>
 <p><img alt="Figure pipeline: Plan, Build, Compose, Validate, Export, with a boomerang from Validate back to Build on font failure" src="../../assets/diagrams/figures-pipeline.svg" /></p>
 <ol>
-<li><strong>Plan</strong>: journal, size, panel grid, palette and theme</li>
-<li><strong>Build</strong>: <code>plot-styling</code> for data plots, <code>svg-figure</code>/<code>svg-primitives</code> for schematics, icons, or an AI-generated substrate</li>
+<li><strong>Plan</strong>: journal, size, panel grid, and the bible. <code>figure-bible</code> scaffolds and validates one <code>figures/theme.json</code> per project (palette, typography, text limits, Codex model settings) that every other skill and the QA scripts read</li>
+<li><strong>Build</strong>: <code>plot-styling</code> for data plots, <code>svg-figure</code>/<code>svg-primitives</code> for schematics, <code>transparent-icons</code> for icons, or <code>ai-full-figure</code> for single panels and whole multi-panel figures rendered by gpt-image-2 through the Codex CLI, with large verbatim titles and panel letters</li>
 <li><strong>Compose</strong>: <code>svgutils</code> places panels at exact mm coordinates, with text preserved as inspectable <code>&lt;text&gt;</code> elements</li>
 <li><strong>Validate</strong>: <code>validate_fonts.py</code> reports the effective point size against the journal minimum</li>
 <li><strong>Export</strong>: Inkscape when available on <code>$PATH</code>, <code>cairosvg</code> fallback otherwise</li>
@@ -945,25 +967,32 @@
 <p><code>figure-qa</code> dispatches on input type, runs the matching deterministic check script, then always adds a VLM aesthetic pass on top:</p>
 <p><img alt="Figure QA dispatch: detects SVG, raster, plot-script, or composed-figure-directory input, runs the matching check script, then a VLM aesthetic pass on every input type" src="../../assets/diagrams/figure-qa-dispatch.svg" /></p>
 <ul>
-<li><strong>SVG</strong> → <code>check_svg.py</code> (bbox / arrow-tip-to-target / point size / palette)</li>
-<li><strong>Raster</strong> (PNG/JPG/TIFF) → <code>check_raster.py</code> (DPI / embedded fonts / alpha channel)</li>
+<li><strong>SVG</strong> → <code>check_svg.py</code> (bbox / arrow-tip-to-target / point size / palette against the theme)</li>
+<li><strong>Raster</strong> (PNG/JPG/TIFF) → <code>check_raster.py</code> (DPI / alpha channel / palette against the theme / OCR of the expected strings with their measured point size)</li>
 <li><strong>Plot script</strong> → <code>check_plot_script.py</code> (<code>savefig</code> kwargs / rcParams)</li>
 <li><strong>Composed-figure directory</strong> → all of the above, per panel</li>
 </ul>
-<p>Programmatic checks own anything with ground truth (font minima, palette compliance, geometry); the VLM judgment pass is reserved for "does this look balanced": hierarchy, alignment, palette coherence, journal fit.</p>
+<p>Programmatic checks own anything with ground truth (font minima, palette compliance, geometry, rendered text); the VLM judgment pass is reserved for "does this look balanced": hierarchy, alignment, palette coherence, journal fit.
+Every report ends with a JSON verdict (<code>status</code>, <code>findings[].action</code>, <code>hint</code>) that generation skills branch on.</p>
+<h2 id="the-generate-qa-fix-loop">The generate, QA, fix loop<a class="headerlink" href="#the-generate-qa-fix-loop" title="Permanent link">&para;</a></h2>
+<p>AI-generated figures follow a bounded loop defined in <code>figure-qa/references/iterate-loop.md</code>: generate N candidates in parallel, QA all of them in one parallel dispatch of Sonnet-tier reviewers, rank by status and findings, apply exactly one targeted change (a Codex edit, a regenerated prompt, or moving a string to the overlay), re-QA, and stop at <code>ship</code> or after three iterations.
+Text placement follows a ladder: the model renders panel letters, titles, and short labels at large size; dense labels go to the SVG overlay; numerals, axes, and equations go to the plot or vector skills.</p>
 <h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>
 <ul>
+<li><strong>figure-bible</strong>: step zero; scaffolds and validates <code>figures/theme.json</code>, the single palette and model-settings source for every other skill and for QA</li>
 <li><strong>scientific-figure</strong>: the composer (the sink): <code>svgutils</code>-based, exact mm coordinates, <code>validate_fonts.py</code> before export, Inkscape/cairosvg backend</li>
 <li><strong>plot-styling</strong>: data plots via matplotlib, seaborn, plotnine, plotly, or PyVista, with SciencePlots recipes for Nature/IEEE/Science/Cell/PNAS/APS</li>
 <li><strong>svg-figure</strong> / <strong>svg-primitives</strong>: hand-authored or programmatic schematics: boxes, arrows, and labels in SVG, with <code>svg-primitives</code> preferred for new work (mm-precise, auto-fit text, tangent-correct arrows, in-process validation)</li>
-<li><strong>transparent-icons</strong>: flat scientific icons via the Codex CLI <code>image_gen</code> tool or the OpenAI Images API, with Pillow-threshold or opt-in <code>rembg</code>+BiRefNet transparency</li>
-<li><strong>ai-full-figure</strong>: an AI-generated pictorial substrate plus programmatic label/arrow/scale-bar overlay, so the model never hallucinates the labels themselves</li>
+<li><strong>transparent-icons</strong>: flat scientific icons through the shared Codex or API backend, keeping the model's native alpha</li>
+<li><strong>ai-full-figure</strong>: single panels or whole multi-panel figures rendered by gpt-image-2 (Codex CLI, default <code>gpt-5.6-luna</code> at max effort) with verbatim text, panels generated in parallel with reference-image consistency and composed at journal width, plus the SVG overlay for dense labels</li>
 <li><strong>figure-qa</strong>: the QA agent described above, run against every figure regardless of how it was built</li>
 </ul>
 <h2 id="try-it">Try it<a class="headerlink" href="#try-it" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>&quot;Create a Nature 2-column figure with 3 panels showing EEG spectrograms&quot;
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>&quot;QA this figure for Science submission requirements&quot;
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>&quot;Generate a transparent icon of a neuron for my poster&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>&quot;Set up a figure bible for my Nature paper&quot;
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>&quot;Generate a two-panel AI figure: EEG headset and a foundation model, with titles&quot;
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>&quot;Create a Nature 2-column figure with 3 panels showing EEG spectrograms&quot;
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>&quot;QA this figure for Science submission requirements&quot;
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>&quot;Generate a transparent icon of a neuron for my poster&quot;
 </code></pre></div>
 <h2 id="learn-more">Learn more<a class="headerlink" href="#learn-more" title="Permanent link">&para;</a></h2>
 <p>The <a href="https://courses.osc.earth/agentic-research/">Agentic Research Course</a> week 8, "Scientific Figures," covers this plugin hands-on.</p>
