@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/neuromechanist/research-skills/figures/theme.schema.json",
+  "title": "Figure Theme Bible",
+  "description": "Shared theme specification authored once per project before any figure, icon, or plot is generated. Read by figure-bible's init_theme.py/validate_theme.py, by every generator skill (ai-full-figure, transparent-icons, scientific-figure, svg-primitives, plot-styling) for palette/typography/model defaults, and by the figure-qa scripts (check_svg.py, check_raster.py) via lib/theme.py's resolve_palette() for palette compliance.",
+  "type": "object",
+  "required": ["theme_id", "palette", "style_tokens"],
+  "definitions": {
+    "hex": {
+      "type": "string",
+      "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+    },
+    "hexOrTransparent": {
+      "type": "string",
+      "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|transparent)$"
+    }
+  },
+  "properties": {
+    "theme_id": {
+      "type": "string",
+      "description": "Short identifier for the theme; used to label generated artifacts.",
+      "pattern": "^[a-z0-9][a-z0-9_-]*$"
+    },
+    "journal": {
+      "type": "string",
+      "description": "Target venue profile. Drives the default page width and the minimum text size from lib/theme.py's JOURNAL_PROFILES.",
+      "enum": ["nature", "science", "cell", "pnas", "poster", "slide", "custom"]
+    },
+    "palette": {
+      "type": "object",
+      "description": "Hex color codes referenced by the prompt and by figure-qa palette compliance. Recommended roles: primary, accent, neutral, background, categorical. Accepts 3-, 4-, 6-, or 8-digit CSS hex codes, or 'transparent' for background.",
+      "properties": {
+        "primary": {"$ref": "#/definitions/hexOrTransparent"},
+        "accent": {"$ref": "#/definitions/hexOrTransparent"},
+        "neutral": {"$ref": "#/definitions/hexOrTransparent"},
+        "background": {"$ref": "#/definitions/hexOrTransparent"},
+        "categorical": {
+          "type": "array",
+          "description": "Ordered list of hex colors for categorical data series.",
+          "items": {"$ref": "#/definitions/hex"},
+          "minItems": 1
+        },
+        "sequential": {
+          "type": "array",
+          "description": "Ordered list of hex colors for a sequential (low-to-high) scale.",
+          "items": {"$ref": "#/definitions/hex"}
+        },
+        "diverging": {
+          "type": "array",
+          "description": "Ordered list of hex colors for a diverging (two-sided) scale.",
+          "items": {"$ref": "#/definitions/hex"}
+        }
+      },
+      "additionalProperties": {"$ref": "#/definitions/hexOrTransparent"}
+    },
+    "typography": {
+      "type": "object",
+      "description": "Font family and minimum sizes shared by generators and font-size QA.",
+      "properties": {
+        "family": {"type": "string", "description": "e.g. 'Helvetica', 'Arial'."},
+        "min_pt": {"type": "number", "minimum": 0, "description": "Minimum text size in points for this venue."},
+        "panel_letter": {
+          "type": "object",
+          "properties": {
+            "weight": {"type": "string", "enum": ["bold", "regular"]},
+            "case": {"type": "string", "enum": ["lower", "upper"]}
+          }
+        }
+      }
+    },
+    "stroke": {
+      "type": "object",
+      "description": "Line treatment for icons and overlays.",
+      "properties": {
+        "weight_px": {"type": "number", "minimum": 0},
+        "linejoin": {"type": "string", "enum": ["miter", "round", "bevel"]},
+        "linecap": {"type": "string", "enum": ["butt", "round", "square"]}
+      }
+    },
+    "style_tokens": {
+      "type": "array",
+      "description": "Positive prompt fragments (e.g., 'flat 2D', 'single continuous line', 'no shading').",
+      "items": {"type": "string"}
+    },
+    "negative_tokens": {
+      "type": "array",
+      "description": "Negative prompt fragments (e.g., 'text', 'labels', 'watermark', 'gradient', '3D', 'shadow').",
+      "items": {"type": "string"}
+    },
+    "composition": {
+      "type": "object",
+      "description": "Layout conventions for the generated images.",
+      "properties": {
+        "aspect": {"type": "string", "description": "e.g. '1:1', '16:9'"},
+        "padding_pct": {"type": "number", "minimum": 0, "maximum": 50},
+        "perspective": {"type": "string", "enum": ["orthographic", "isometric", "perspective"]}
+      }
+    },
+    "text": {
+      "type": "object",
+      "description": "Text ladder budget: how much verbatim text the image model is allowed to render.",
+      "properties": {
+        "max_words_per_label": {"type": "integer", "minimum": 1, "default": 4},
+        "max_words_per_title": {"type": "integer", "minimum": 1, "default": 8},
+        "headline_size_class": {"type": "string", "enum": ["large", "medium"]}
+      }
+    },
+    "reference_images": {
+      "type": "array",
+      "description": "Up to 16 file paths of canonical reference images attached to each generation for style transfer (gpt-image-2 multi-reference feature).",
+      "maxItems": 16,
+      "items": {"type": "string"}
+    },
+    "model_preferences": {
+      "type": "object",
+      "description": "Per-use-case model selection and generation parameters. Values are advisory hints consumed by the generator scripts.",
+      "properties": {
+        "codex_model": {"type": "string", "default": "gpt-5.6-luna"},
+        "codex_effort": {"type": "string", "default": "xhigh"},
+        "image_quality": {"type": "string", "default": "high"},
+        "icons": {"type": "string", "description": "Legacy per-use-case override, kept optional for backward compatibility."},
+        "figures": {"type": "string", "description": "Legacy per-use-case override, kept optional for backward compatibility."},
+        "poster_text": {"type": "string", "description": "Legacy per-use-case override, kept optional for backward compatibility."}
+      }
+    },
+    "postprocess": {
+      "type": "object",
+      "description": "Post-processing pipeline applied after generation.",
+      "properties": {
+        "bg_removal": {
+          "type": "string",
+          "enum": ["auto", "pillow", "rembg", "none"],
+          "description": "auto picks pillow-threshold unless the theme calls for BiRefNet edge quality; none leaves the raw model output untouched."
+        },
+        "alpha_matting": {"type": "boolean"},
+        "threshold": {"type": "integer", "minimum": 0, "maximum": 255}
+      }
+    }
+  }
+}

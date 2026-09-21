@@ -11,10 +11,14 @@ Detects common geometric and content problems in a composed SVG:
 Run from anywhere:
 
     uv run --with lxml --with svgelements --with shapely \\
-        python check_svg.py FIGURE.svg [--journal nature] [--palette okabe-ito]
+        python check_svg.py FIGURE.svg [--journal nature] \\
+        [--palette okabe-ito|path/to/theme.json] [--json]
 
-Emits a single JSON document on stdout describing each check. Exit code 0 on
-clean, 1 on any failure detected, 2 on parse/IO error.
+Default output is a single JSON document (the per-check report) on stdout.
+With --json, stdout carries only the unified finding envelope shared with
+check_raster.py; human-readable summaries always go to stderr.
+
+Exit code 0 on clean, 1 on any failure detected, 2 on parse/IO error.
 """
 
 from __future__ import annotations
@@ -31,24 +35,47 @@ from typing import Any
 # block is missing one of them.
 
 
-# Curated colorblind-safe palettes (hex without alpha). The agent passes one of
-# these names via --palette; downstream checks compute Euclidean RGB distance and
-# flag samples that are too far from every allowed color. Near-gray colors
-# (axis spines, tick marks) are exempted before comparison so they do not
-# produce false positives.
+def _load_theme_lib():  # type: ignore[no-untyped-def]
+    """Import plugins/figures/lib/theme.py by file path under a unique module
+    name (a bare ``import theme`` could collide with an unrelated module).
+    Returns the module, or None when the lib is missing or fails to import."""
+    import importlib.util
+
+    lib_path = Path(__file__).resolve().parents[2] / "lib" / "theme.py"
+    if not lib_path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("figures_theme_lib", lib_path)
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except (ImportError, SyntaxError, OSError):
+        return None
+    return module
+
+
 ALLOWED_PALETTES: dict[str, list[str]] = {
     "okabe-ito": [
-        "#000000", "#E69F00", "#56B4E9", "#009E73",
-        "#F0E442", "#0072B2", "#D55E00", "#CC79A7",
+        "#000000",
+        "#E69F00",
+        "#56B4E9",
+        "#009E73",
+        "#F0E442",
+        "#0072B2",
+        "#D55E00",
+        "#CC79A7",
     ],
     "tol-bright": [
-        "#4477AA", "#EE6677", "#228833", "#CCBB44",
-        "#66CCEE", "#AA3377", "#BBBBBB",
+        "#4477AA",
+        "#EE6677",
+        "#228833",
+        "#CCBB44",
+        "#66CCEE",
+        "#AA3377",
+        "#BBBBBB",
     ],
 }
-# Wong 2011 republished the Okabe-Ito 2008 palette unchanged; keep both names
-# pointing to the same list so users see the canonical citation either way.
-ALLOWED_PALETTES["wong"] = ALLOWED_PALETTES["okabe-ito"]
 
 
 def _validate_fonts(svg: Path, journal: str | None) -> dict[str, Any] | None:
@@ -59,11 +86,7 @@ def _validate_fonts(svg: Path, journal: str | None) -> dict[str, Any] | None:
         return None
     plugin_root = Path(__file__).resolve().parents[2]  # plugins/figures/
     validator = (
-        plugin_root
-        / "skills"
-        / "scientific-figure"
-        / "scripts"
-        / "validate_fonts.py"
+        plugin_root / "skills" / "scientific-figure" / "scripts" / "validate_fonts.py"
     )
     if not validator.exists():
         return {"available": False, "reason": f"validator not found at {validator}"}
@@ -73,6 +96,7 @@ def _validate_fonts(svg: Path, journal: str | None) -> dict[str, Any] | None:
             capture_output=True,
             text=True,
             timeout=60,
+            check=False,  # non-zero (1) means "issues found", handled below, not a crash
         )
     except subprocess.TimeoutExpired:
         return {
@@ -160,16 +184,46 @@ def _extract_fill_stroke_colors(root) -> set[str]:  # type: ignore[no-untyped-de
     return colors
 
 
-def _palette_compliance(root, palette_name: str | None) -> dict[str, Any] | None:  # type: ignore[no-untyped-def]
+def _resolve_palette(spec: str, theme_lib) -> tuple[str, list[str]]:  # type: ignore[no-untyped-def]
+    """Resolve --palette to (name, hex list): a known preset name, or a path
+    to a theme.json (flattened via lib/theme.py's palette_hexes ordering).
+    Falls back to the local ALLOWED_PALETTES + a naive theme.json reader when
+    lib/theme.py cannot be imported."""
+    if theme_lib is not None:
+        return theme_lib.resolve_palette(spec)
+    preset = ALLOWED_PALETTES.get(spec.lower())
+    if preset is not None:
+        return spec.lower(), list(preset)
+    path = Path(spec)
+    if path.exists():
+        theme = json.loads(path.read_text())
+        palette = theme.get("palette") or {}
+        hexes = [
+            v for v in palette.values() if isinstance(v, str) and v.startswith("#")
+        ]
+        for arr_key in ("categorical", "sequential", "diverging"):
+            hexes += [
+                c
+                for c in palette.get(arr_key, [])
+                if isinstance(c, str) and c.startswith("#")
+            ]
+        if not hexes:
+            raise ValueError(f"{path}: theme has no usable hex colors in its palette")
+        return str(theme.get("theme_id") or path.stem), hexes
+    raise ValueError(
+        f"'{spec}' is neither a known palette preset ({sorted(ALLOWED_PALETTES)}) nor an existing theme.json path"
+    )
+
+
+def _palette_compliance(
+    root, palette_name: str | None, theme_lib
+) -> dict[str, Any] | None:  # type: ignore[no-untyped-def]
     if palette_name is None:
         return None
-    allowed = ALLOWED_PALETTES.get(palette_name.lower())
-    if allowed is None:
-        return {
-            "palette": palette_name,
-            "available": False,
-            "reason": f"unknown palette; known: {sorted(ALLOWED_PALETTES)}",
-        }
+    try:
+        name, allowed = _resolve_palette(palette_name, theme_lib)
+    except ValueError as exc:
+        return {"palette": palette_name, "available": False, "reason": str(exc)}
     allowed_rgb = [_hex_to_rgb(c) for c in allowed]
     issues = []
     seen = _extract_fill_stroke_colors(root)
@@ -186,9 +240,15 @@ def _palette_compliance(root, palette_name: str | None) -> dict[str, Any] | None
             continue
         nearest = min(_rgb_distance(rgb, allowed) for allowed in allowed_rgb)
         if nearest > 30:  # Euclidean RGB cutoff for "clearly off-palette"
-            issues.append({"color": hex_color, "rgb": list(rgb), "nearest_distance": round(nearest, 2)})
+            issues.append(
+                {
+                    "color": hex_color,
+                    "rgb": list(rgb),
+                    "nearest_distance": round(nearest, 2),
+                }
+            )
     return {
-        "palette": palette_name,
+        "palette": name,
         "available": True,
         "distinct_colors_seen": len(seen),
         "off_palette_count": len(issues),
@@ -216,24 +276,37 @@ def _viewbox_mm_per_unit(root) -> float:  # type: ignore[no-untyped-def]
     if not vb or not width:
         return 1.0
     try:
-        vb_w = float(re.split(r"[\s,]+", vb.strip())[2])  # viewBox may be comma- or space-delimited
+        vb_w = float(
+            re.split(r"[\s,]+", vb.strip())[2]
+        )  # viewBox may be comma- or space-delimited
     except (IndexError, ValueError):
         return 1.0
     match = re.match(r"\s*(-?[0-9.]+)\s*([a-z%]*)\s*$", width, re.IGNORECASE)
     if not match or vb_w == 0:
         return 1.0
     val, unit = float(match.group(1)), match.group(2).lower()
-    to_mm = {"mm": 1.0, "cm": 10.0, "in": 25.4, "pt": 25.4 / 72.0, "pc": 25.4 / 6.0, "px": 25.4 / 96.0}
+    to_mm = {
+        "mm": 1.0,
+        "cm": 10.0,
+        "in": 25.4,
+        "pt": 25.4 / 72.0,
+        "pc": 25.4 / 6.0,
+        "px": 25.4 / 96.0,
+    }
     if unit not in to_mm:  # unitless or "%": assume user units are already millimetres
         return 1.0
     return (val * to_mm[unit]) / vb_w
 
 
-def _text_bbox(elem, ax: float, ay: float, fs: float, text: str) -> tuple[float, float, float, float]:  # type: ignore[no-untyped-def]
+def _text_bbox(
+    elem, ax: float, ay: float, fs: float, text: str
+) -> tuple[float, float, float, float]:  # type: ignore[no-untyped-def]
     """Estimate a text element's bounding box in user units from its anchor point
     (ax, ay), font size, and content. Honours text-anchor (x) and dominant-baseline (y)."""
     w = len(text) * fs * _TEXT_ADVANCE_EM
-    anchor = (elem.values.get("text-anchor") or getattr(elem, "anchor", "") or "start").lower()
+    anchor = (
+        elem.values.get("text-anchor") or getattr(elem, "anchor", "") or "start"
+    ).lower()
     if anchor in ("middle", "center"):
         xmin, xmax = ax - w / 2.0, ax + w / 2.0
     elif anchor == "end":
@@ -283,9 +356,11 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
       overlap, neither containing the other; containment is treated as intentional,
       e.g. an icon foreground over its background rect).
 
-    Only Rect, Circle, Ellipse, and Polygon are recognized as closed shapes/targets;
-    arbitrary closed `<path>` elements are not detected (arrows aimed at them are
-    reported via `arrows_without_targets`).
+    Rect, Circle, Ellipse, and Polygon are recognized as closed shapes/targets, as
+    are `<image>` elements (the substrate of an ai-full-figure overlay composition)
+    and closed `<path>` elements (path data ending in 'z'/'Z'); an open `<path>`
+    (e.g. a hand-drawn box with no closing segment) is not treated as a shape, so
+    arrows aimed at one are reported via `arrows_without_targets` instead.
 
     Needs svgelements (resolved geometry) and shapely (distance). When a dependency is
     missing the section is marked unavailable so the agent falls back to VLM judgment.
@@ -293,42 +368,68 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
     import importlib.util
 
     missing = [
-        m for m in ("svgelements", "shapely")
-        if importlib.util.find_spec(m) is None
+        m for m in ("svgelements", "shapely") if importlib.util.find_spec(m) is None
     ]
     if missing:
         return {
             "available": False,
             "reason": (
-                f"missing dependencies: {missing}. Re-run with "
-                "--with svgelements --with shapely."
+                f"missing dependencies: {missing}. Re-run with --with svgelements --with shapely."
             ),
         }
 
-    from svgelements import SVG, Text, Rect, Circle, Ellipse, Polygon  # type: ignore[import-not-found]
-    from shapely.geometry import Point, box as shapely_box  # type: ignore[import-not-found]
+    from shapely.geometry import Point  # type: ignore[import-not-found]
+    from shapely.geometry import box as shapely_box
+    from svgelements import (  # type: ignore[import-not-found]
+        SVG,
+        Circle,
+        Ellipse,
+        Image,
+        Path,
+        Polygon,
+        Rect,
+        Text,
+    )
 
     try:
         doc = SVG.parse(str(svg_path), reify=True)
         vb_w = float(doc.viewbox.width) if doc.viewbox else float(doc.width)
         factor = float(doc.width) / vb_w if vb_w else 1.0
     except Exception as exc:  # noqa: BLE001 - a geometry parse failure must not abort the report
-        return {"available": True, "error": f"svgelements parse failed: {type(exc).__name__}: {exc}"}
-    if not factor:  # width="0" or similar; fall back to 1:1 rather than dividing by zero
+        return {
+            "available": True,
+            "error": f"svgelements parse failed: {type(exc).__name__}: {exc}",
+        }
+    if (
+        not factor
+    ):  # width="0" or similar; fall back to 1:1 rather than dividing by zero
         factor = 1.0
 
     mm_per_unit = _viewbox_mm_per_unit(root)
-    tol = _GEOM_TOL_MM / mm_per_unit if mm_per_unit else _GEOM_TOL_MM  # tolerance in user units
+    tol = (
+        _GEOM_TOL_MM / mm_per_unit if mm_per_unit else _GEOM_TOL_MM
+    )  # tolerance in user units
 
     def to_user(v: float) -> float:
         return v / factor
 
     closed: list[dict[str, Any]] = []  # filled shapes: bbox + id
-    texts: list[dict[str, Any]] = []   # estimated text bbox + label
+    texts: list[dict[str, Any]] = []  # estimated text bbox + label
     arrows: list[dict[str, Any]] = []  # marker-end tip point + label
-    skipped_texts = 0   # <text> whose bbox could not be resolved
+    skipped_texts = 0
+    skipped_images = 0  # <text> whose bbox could not be resolved
     skipped_arrows = 0  # marker-end element whose tip could not be resolved
-    closed_types = (Rect, Circle, Ellipse, Polygon)
+    simple_closed_types = (Rect, Circle, Ellipse, Polygon)
+
+    def _is_closed_path(el) -> bool:  # type: ignore[no-untyped-def]
+        """A <path> counts as a closed shape (bbox target for text/arrow checks)
+        when its data ends in a close-path command. svgelements normalizes the
+        command casing on reify, so 'z'/'Z' both surface as an uppercase 'Z'."""
+        try:
+            d = el.d()
+        except Exception:  # noqa: BLE001 - malformed path data must not abort the report
+            return False
+        return d.strip().upper().endswith("Z")
 
     for e in doc.elements():
         if isinstance(e, Text):
@@ -346,6 +447,26 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
             ax, ay = to_user(bx[0]), to_user(bx[1])
             texts.append({"bbox": _text_bbox(e, ax, ay, fs, raw), "text": raw})
             continue
+        if isinstance(e, Image):
+            # Image.bbox() reports (0, 0, 0, 0) until the pixel data has been
+            # decoded (needed to resolve preserveAspectRatio); load it first so
+            # an ai-full-figure substrate is treated as a real shape, not skipped.
+            try:
+                e.load()
+                bx = e.bbox()
+            except Exception:  # noqa: BLE001 - missing Pillow or undecodable data
+                bx = None
+            if not (bx and any(bx)):
+                skipped_images += 1
+                continue
+            if bx and any(bx):
+                closed.append(
+                    {
+                        "bbox": tuple(to_user(v) for v in bx),
+                        "id": e.values.get("id") or "image",
+                    }
+                )
+            continue
         try:
             bx = e.bbox()
         except Exception:  # noqa: BLE001
@@ -354,12 +475,27 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
         if marker_end:
             try:  # the tip is the path end; svgelements exposes it as point(1)
                 tip = e.point(1)
-                arrows.append({"tip": (to_user(tip.x), to_user(tip.y)), "label": e.values.get("id") or "arrow"})
+                arrows.append(
+                    {
+                        "tip": (to_user(tip.x), to_user(tip.y)),
+                        "label": e.values.get("id") or "arrow",
+                    }
+                )
             except Exception:  # noqa: BLE001
                 skipped_arrows += 1
-        if isinstance(e, closed_types) and bx:
+        if isinstance(e, simple_closed_types) and bx:
             closed.append(
-                {"bbox": tuple(to_user(v) for v in bx), "id": e.values.get("id") or type(e).__name__.lower()}
+                {
+                    "bbox": tuple(to_user(v) for v in bx),
+                    "id": e.values.get("id") or type(e).__name__.lower(),
+                }
+            )
+        elif isinstance(e, Path) and bx and _is_closed_path(e):
+            closed.append(
+                {
+                    "bbox": tuple(to_user(v) for v in bx),
+                    "id": e.values.get("id") or "path",
+                }
             )
 
     # 1. Text bleeding out of every shape it overlaps.
@@ -423,9 +559,13 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
         "text_count": len(texts),
         "shape_count": len(closed),
         "skipped_texts": skipped_texts,
+        "skipped_images": skipped_images,
         "skipped_arrows": skipped_arrows,
         "arrows_without_targets": arrows_without_targets,
-        "units": {"mm_per_user_unit": round(mm_per_unit, 4), "tolerance_mm": _GEOM_TOL_MM},
+        "units": {
+            "mm_per_user_unit": round(mm_per_unit, 4),
+            "tolerance_mm": _GEOM_TOL_MM,
+        },
         "text_overflow": text_overflow,
         "arrow_tip_issues": arrow_tip_issues,
         "bbox_overlaps": bbox_overlaps,
@@ -433,18 +573,21 @@ def _bbox_overlaps_and_arrow_geometry(root, svg_path: Path) -> dict[str, Any]:  
     }
 
 
-def check_svg(svg_path: Path, journal: str | None, palette: str | None) -> dict[str, Any]:
+def check_svg(
+    svg_path: Path, journal: str | None, palette: str | None
+) -> dict[str, Any]:
     """Top-level entry point. Raises FileNotFoundError / lxml.etree.XMLSyntaxError on bad input."""
     from lxml import etree  # type: ignore[import-not-found]
 
     tree = etree.parse(str(svg_path))
     root = tree.getroot()
+    theme_lib = _load_theme_lib()
 
     return {
         "input": str(svg_path),
         "checks": {
             "fonts": _validate_fonts(svg_path, journal),
-            "palette": _palette_compliance(root, palette),
+            "palette": _palette_compliance(root, palette, theme_lib),
             "geometry": _bbox_overlaps_and_arrow_geometry(root, svg_path),
         },
     }
@@ -481,9 +624,169 @@ def _summarize(report: dict[str, Any]) -> tuple[int, int, int]:
             # Elements that could not be measured (or arrows with no target shape) are
             # warnings, not clean: the agent should cover them with VLM judgment.
             warnings += int(geom.get("skipped_texts") or 0)
+            warnings += int(geom.get("skipped_images") or 0)
             warnings += int(geom.get("skipped_arrows") or 0)
             warnings += int(geom.get("arrows_without_targets") or 0)
     return issues, warnings, script_errors
+
+
+def _findings_from_report(report: dict[str, Any]) -> list[dict[str, Any]]:
+    """Normalize every check section into the shared finding shape used by
+    both check_svg.py and check_raster.py's --json output."""
+    findings: list[dict[str, Any]] = []
+    checks = report.get("checks", {})
+
+    fonts = checks.get("fonts")
+    if fonts and fonts.get("available") is not False:
+        if fonts.get("error"):
+            findings.append(
+                {
+                    "check": "fonts",
+                    "severity": "block",
+                    "message": fonts["error"],
+                    "action": "none",
+                    "hint": None,
+                }
+            )
+        else:
+            for issue in fonts.get("issues") or []:
+                findings.append(
+                    {
+                        "check": "font_too_small",
+                        "severity": "block",
+                        "message": (
+                            f"'{issue.get('text', '')}' measures {issue.get('effective_pt')} pt, "
+                            f"below the {issue.get('minimum_pt')} pt minimum"
+                        ),
+                        "action": "rescale",
+                        "hint": "increase font-size or route the label through svg-primitives auto-fit text",
+                    }
+                )
+
+    palette = checks.get("palette")
+    if palette is not None:
+        if palette.get("error"):
+            findings.append(
+                {
+                    "check": "palette",
+                    "severity": "block",
+                    "message": palette["error"],
+                    "action": "none",
+                    "hint": None,
+                }
+            )
+        elif palette.get("available") is False:
+            findings.append(
+                {
+                    "check": "palette",
+                    "severity": "warn",
+                    "message": palette["reason"],
+                    "action": "none",
+                    "hint": "pass a known preset or a valid theme.json path",
+                }
+            )
+        else:
+            for off in palette.get("off_palette", []):
+                findings.append(
+                    {
+                        "check": "palette_off",
+                        "severity": "warn",
+                        "message": f"color {off['color']} is {off['nearest_distance']} from the nearest palette color",
+                        "action": "recolor",
+                        "hint": None,
+                    }
+                )
+
+    geom = checks.get("geometry")
+    if geom and geom.get("available"):
+        if geom.get("error"):
+            findings.append(
+                {
+                    "check": "geometry",
+                    "severity": "block",
+                    "message": geom["error"],
+                    "action": "none",
+                    "hint": None,
+                }
+            )
+        else:
+            for item in geom.get("text_overflow", []):
+                findings.append(
+                    {
+                        "check": "text_overflow",
+                        "severity": "warn",
+                        "message": f"text '{item['text']}' overflows container {item['container_id']}",
+                        "action": "edit",
+                        "hint": "shrink the label or widen its container",
+                    }
+                )
+            for item in geom.get("arrow_tip_issues", []):
+                findings.append(
+                    {
+                        "check": "arrow_tip_miss",
+                        "severity": "warn",
+                        "message": f"arrow '{item['label']}' tip is {item['distance_mm']} mm from its nearest target",
+                        "action": "edit",
+                        "hint": "snap the arrow endpoint to the target shape's edge",
+                    }
+                )
+            for item in geom.get("bbox_overlaps", []):
+                findings.append(
+                    {
+                        "check": "bbox_overlap",
+                        "severity": "warn",
+                        "message": f"shapes '{item['a_id']}' and '{item['b_id']}' overlap",
+                        "action": "overlay",
+                        "hint": "reposition or resize one of the overlapping shapes",
+                    }
+                )
+            if geom.get("arrows_without_targets"):
+                findings.append(
+                    {
+                        "check": "arrow_without_target",
+                        "severity": "info",
+                        "message": f"{geom['arrows_without_targets']} arrow(s) point at a shape the checker could not resolve",
+                        "action": "none",
+                        "hint": "close the target <path> or verify manually",
+                    }
+                )
+        if int(geom.get("skipped_images") or 0):
+            findings.append(
+                {
+                    "check": "image_unmeasured",
+                    "severity": "warn",
+                    "message": (
+                        f"{geom['skipped_images']} <image> element(s) could not be decoded; "
+                        "run with --with pillow so substrates count as shapes"
+                    ),
+                    "action": "none",
+                    "hint": "Re-run check_svg.py with --with pillow.",
+                }
+            )
+
+    return findings
+
+
+def _status_and_exit(findings: list[dict[str, Any]]) -> tuple[str, int]:
+    severities = {f["severity"] for f in findings}
+    if "block" in severities:
+        return "block", 2
+    if "warn" in severities:
+        return "revise", 1
+    return "ship", 0
+
+
+def _build_envelope(report: dict[str, Any], journal: str | None) -> dict[str, Any]:
+    findings = _findings_from_report(report)
+    status, _ = _status_and_exit(findings)
+    return {
+        "file": report["input"],
+        "type": "svg",
+        "journal": journal,
+        "status": status,
+        "findings": findings,
+        "measurements": report["checks"],
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -498,7 +801,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--palette",
-        help=f"Color allow-list name; known: {sorted(ALLOWED_PALETTES)}",
+        help=f"Color preset name ({sorted(ALLOWED_PALETTES)}) or a path to a theme.json.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the unified finding envelope (shared with check_raster.py) instead of the per-check report.",
     )
     args = parser.parse_args(argv)
 
@@ -514,8 +822,11 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 2
-    except Exception as exc:  # malformed XML or other parser failures
-        print(f"error ({type(exc).__name__}): could not analyze '{args.svg}': {exc}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001 - malformed XML or other parser failures; name it, don't crash
+        print(
+            f"error ({type(exc).__name__}): could not analyze '{args.svg}': {exc}",
+            file=sys.stderr,
+        )
         return 2
 
     issues, warnings, script_errors = _summarize(report)
@@ -524,19 +835,29 @@ def main(argv: list[str] | None = None) -> int:
         "warning_count": warnings,
         "script_error_count": script_errors,
     }
-    json.dump(report, sys.stdout, indent=2)
-    print(file=sys.stdout)
+
+    envelope = _build_envelope(report, args.journal)
+    status, exit_code = _status_and_exit(envelope["findings"])
+    if args.json:
+        json.dump(envelope, sys.stdout, indent=2)
+        print(file=sys.stdout)
+    else:
+        json.dump(report, sys.stdout, indent=2)
+        print(file=sys.stdout)
+
+    # The exit code follows the same severity model as the JSON status, so a
+    # caller gating on either sees one answer: 0 ship, 1 revise, 2 block.
     if script_errors:
         print(
             f"check_svg: {script_errors} section(s) failed to run; see report.",
             file=sys.stderr,
         )
         return 2
-    if issues:
-        print(f"check_svg: {issues} issue(s), {warnings} warning(s).", file=sys.stderr)
-        return 1
-    print(f"check_svg: clean ({warnings} warning(s)).", file=sys.stderr)
-    return 0
+    print(
+        f"check_svg: {status} ({issues} issue(s), {warnings} warning(s)).",
+        file=sys.stderr,
+    )
+    return exit_code
 
 
 if __name__ == "__main__":

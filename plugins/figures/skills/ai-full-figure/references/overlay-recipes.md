@@ -1,17 +1,19 @@
 # Overlay Recipes
 
-How to place labels, arrows, and scale bars on top of an AI-generated substrate so the final SVG is composable by `[[scientific-figure]]` and verifiable by the `[[figure-qa]]` agent.
+How to place labels, arrows, and scale bars on top of an AI-generated substrate, so the final SVG is composable by `figures:scientific-figure` (invoke with the Skill tool) and verifiable by `figures:figure-qa` (invoke with the Skill tool).
+
+This is rung 2 of the text ladder described in `prompt-patterns.md`: use overlay for dense labels, leader-line annotations, scale bars, and anything that must be edited later without a full regeneration.
 
 ## The output SVG shape
 
 `overlay_labels.py` emits:
 
 ```svg
-<svg width="89mm" height="50.06mm" viewBox="0 0 1920 1080">
+<svg width="89mm" height="50.06mm" viewBox="0 0 1024 576">
   <defs>
-    <marker id="overlay-arrow" ...>
+    <marker id="overlay-arrow-1f3a5f" ...>
   </defs>
-  <image href="data:image/png;base64,..." x="0" y="0" width="1920" height="1080"/>
+  <image href="data:image/png;base64,..." x="0" y="0" width="1024" height="576"/>
   <text .../>     <!-- label 1 -->
   <line .../>     <!-- arrow 1 -->
   <text .../>     <!-- label 2 -->
@@ -21,10 +23,23 @@ How to place labels, arrows, and scale bars on top of an AI-generated substrate 
 
 Key design choices:
 
-- **viewBox uses substrate pixels.** Every label coordinate is addressed in the substrate's native pixel grid. No coordinate transform between "where I see this in the image viewer" and "where I write this in the JSON."
+- **viewBox uses substrate pixels.** Every label coordinate is addressed in the substrate's native pixel grid. There is no coordinate transform between "where I see this in the image" and "where I write this in the JSON."
 - **width/height use mm.** The composer can place this SVG at the target physical size without rescaling the substrate or the labels.
-- **Substrate is base64-embedded.** The SVG is self-contained — no external file references — so it composes correctly when the panel is moved between machines.
-- **Labels carry a white stroke under the text** (`stroke="white" stroke-width="2" paint-order="stroke"`). This makes text legible against any substrate without requiring background detection.
+- **Substrate is base64-embedded.** The SVG is self-contained; there are no external file references, so it composes correctly when the panel is moved between machines.
+- **Labels carry a configurable legibility halo under the text** (`stroke` set to `stroke_under` or white by default, `paint-order="stroke"`). This makes text legible against any substrate without requiring background detection.
+- **One `<marker>` per distinct color**, named `overlay-arrow-<hex>` where `<hex>` is the lowercased, `#`-stripped stroke color (for example `overlay-arrow-1f3a5f` for the default `#1F3A5F`). Arrowheads and their line always match because the marker id is derived from the color, not a fixed literal.
+
+### Font size and stroke width are physical points, not raw pixels
+
+The document root declares a physical width in millimeters (`width="89mm"`) over a pixel `viewBox`. A bare (unitless) SVG `font-size` or `stroke-width` number is one user unit per viewBox pixel, not one point; writing `font_size_pt: 8` directly as `font-size="8"` under a 1024 px viewBox at 89 mm rendered at roughly 2.5 pt, well under every documented journal minimum. This is what `figures:scientific-figure`'s `validate_fonts.py` computes as `_root_unit_to_pt`: points per user unit equal `(width_mm * 72 / 25.4) / viewbox_width`.
+
+`overlay_labels.py` now inverts that formula once per document:
+
+```
+units_per_pt = viewbox_width / (width_mm * 72 / 25.4)
+```
+
+and multiplies every pt-denominated value by it before writing the bare SVG number: `font_size_pt`, the arrow stroke width, the scale-bar stroke width, and the text legibility halo stroke width. A label written with `font_size_pt: 8` now measures 8 pt when read back by `validate_fonts.py`, regardless of the substrate's pixel resolution or the chosen `--width-mm`.
 
 ## Recipe 1: leader-line label
 
@@ -47,7 +62,7 @@ Or programmatically via JSON:
 }
 ```
 
-The label sits at `(900, 200)`. The arrow head lands at `(760, 380)` — the actual cortex location. The leader keeps the label out of the visual area.
+The label sits at `(900, 200)`. The arrow head lands at `(760, 380)`, the actual cortex location. The leader keeps the label out of the visual area.
 
 ## Recipe 2: scale bar
 
@@ -67,7 +82,7 @@ Default length is 80 pixels; customize via JSON:
 }
 ```
 
-The scale-bar line is at `y=950`; the caption sits 8 px above. Position bars near a corner — typically bottom-left or bottom-right — so they don't compete with the subject.
+The scale-bar line is at `y=950`; the caption sits 8 px above. Position bars near a corner, typically bottom-left or bottom-right, so they do not compete with the subject.
 
 ## Recipe 3: multi-label dense overlay (anatomical figure)
 
@@ -86,7 +101,7 @@ When the substrate has many points to label, write a JSON config rather than rep
 }
 ```
 
-Keep label `font_size_pt` consistent across the set (8 pt is a good default for poster-scale; 10 pt for slide-scale). The `figure-qa` SVG branch's font check uses the journal minimum, so 5 pt is the absolute floor.
+Choose `font_size_pt` from the journal minimum plus headroom, not from a flat rule of thumb; `validate_fonts.py`'s per-journal floor is 5 pt for Nature and generic, 6 pt for Science, Cell, and PNAS. Because `font_size_pt` is now a true physical point size, a submission-bound overlay should sit at least 1 to 2 pt above that floor (6 to 8 pt for Nature, 7 to 9 pt for Science/Cell/PNAS) so a later crop or rescale does not push it back under the minimum. Poster- and slide-scale overlays are not journal-constrained; pick a size for the intended viewing distance instead (roughly 12 to 18 pt for an A0 poster viewed from 1 to 2 m, 18 to 28 pt for a projected slide). Keep `font_size_pt` consistent across one label set regardless of the scale you choose.
 
 ## Recipe 4: programmatic label placement (data-driven)
 
@@ -112,29 +127,34 @@ Then run the overlay once with `--labels-file labels.json`.
 
 ## Coordinate-finding workflow
 
-When labels are eyeballed rather than data-driven:
+When labels are eyeballed rather than data-driven, do not hover a cursor over the substrate in an image viewer to read pixel coordinates; that workflow does not work for an agent without a display, and it is slow even at a keyboard. Instead, generate a grid overlay and read coordinates from it directly:
 
-1. Open the substrate PNG in any image viewer (Preview on macOS, `xdg-open` on Linux).
-2. Hover the cursor over each anatomical feature; note the (x, y) pixel coordinates from the viewer's status bar.
-3. Add a 40–80 px offset for the label position to keep the text out of the feature.
-4. Write the label with `arrow_to` pointing at the original feature coordinate.
+```bash
+overlay_labels.py substrate.png -o out/labeled.svg --grid
+```
 
-For features that are obvious from context (no leader needed), skip `arrow_to` — the text sits at its `(x, y)` without a connector.
+This writes a sibling `out/labeled.grid.png` with a red 100 px grid and `x,y` coordinate labels burned into the image at every grid intersection. Read that PNG (the Read tool renders it as pixels) to pick each feature's approximate `(x, y)`, refine within the nearest 100 px cell by proportion, then:
+
+1. Add a 40 to 80 px offset for the label position, to keep the text out of the feature.
+2. Write the label with `arrow_to` pointing at the original feature coordinate.
+3. Re-run `overlay_labels.py` and re-read the grid PNG (or the composed SVG) to confirm placement; iterate rather than guessing twice.
+
+For features that are obvious from context (no leader needed), skip `arrow_to`; the text sits at its `(x, y)` without a connector.
 
 ## Working around substrate hot spots
 
-White text on a near-white substrate, or dark text on a dark substrate, becomes invisible. The default overlay paints a white stroke under the text via `paint-order="stroke"`. To customize for a substrate where white doesn't read well:
+White text on a near-white substrate, or dark text on a dark substrate, becomes invisible. The default overlay paints a white legibility halo under the text via `paint-order="stroke"`. `overlay_labels.py` reads a `stroke_under` key directly, so a substrate where white does not read well needs no code changes:
 
 ```json
-{"text": "...", "x": ..., "y": ..., "color": "#FFFFFF",
+{"text": "...", "x": 400, "y": 300, "color": "#FFFFFF",
  "stroke_under": "#000000"}
 ```
 
-(The shipped `_label_svg` always uses a 2-px white stroke; if you need black-on-dark with a colored halo, edit `overlay_labels.py` or write the SVG `<text>` directly.)
+`stroke_under` is honored on both `labels` and `scale_bars` entries.
 
 ## Composing into a multi-panel figure
 
-The overlay SVG is a valid panel source for `[[scientific-figure]]`:
+The overlay SVG is a valid panel source for `figures:scientific-figure` (invoke with the Skill tool):
 
 ```python
 from compose import Figure
@@ -149,16 +169,20 @@ The labeled SVG carries its own `width="89mm"` from the overlay step; the compos
 
 ## Quality check
 
-After overlay, the figure-qa agent's SVG branch will report:
+Invoke `figures:figure-qa` (with the Skill tool) after overlay. Its SVG branch reports:
 
-- Font sizes vs journal minimum (delegated to `validate_fonts.py`).
-- Palette compliance for label colors (set `--palette okabe-ito` or your project's allow-list).
+- Font sizes vs. the journal minimum, now measured correctly because the overlay emits true physical points (see "Font size and stroke width are physical points, not raw pixels" above).
+- Palette compliance for label colors (pass `--palette theme.json` or `--palette okabe-ito`).
 - Geometry counts; the raster substrate counts as one `<image>` element.
 
-The agent's raster branch should also be run on the substrate itself (before overlay) to verify DPI and dominant colors:
+The raster branch should also run on the substrate itself (before overlay) to verify DPI and dominant colors. Locate the helper scripts the same way `figure-qa-procedure.md` does, do not hardcode a path:
 
 ```bash
-uv run --with pillow --with colorthief python "$FIGURE_QA_SCRIPTS/check_raster.py" out/substrate.png --journal nature
+SCRIPTS_DIR="${CLAUDE_PLUGIN_ROOT}/agents/figure-qa-scripts"
+if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ] || ! test -d "$SCRIPTS_DIR"; then
+    SCRIPTS_DIR="$(find . -type d -name figure-qa-scripts -path '*/figures/agents/*' 2>/dev/null | head -1)"
+fi
+uv run --with pillow --with pytesseract python "$SCRIPTS_DIR/check_raster.py" out/substrate.png --journal nature
 ```
 
 This catches substrates that were generated at too-low resolution for the target physical size before they ship in a figure.

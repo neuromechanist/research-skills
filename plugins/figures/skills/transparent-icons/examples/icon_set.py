@@ -2,13 +2,17 @@
 
 Run from the example directory:
 
-    uv run --with openai --with python-dotenv --with pillow \\
-        python icon_set.py
+    uv run --with pillow python icon_set.py
 
 Generates three transparent PNG icons (brain, neuron, DNA) in `out/` next to
-this script, with prompts derived from a single `theme.json`. The Codex CLI
-backend is used by default (preferred when `codex login` is configured); the
-script falls back to the OpenAI Images API when Codex is unavailable.
+this script, from a single `theme.json`. Subjects and the theme are passed
+straight through to `generate_icon.py`, which builds the actual verbatim
+prompt via `lib.prompting.build_icon_prompt` -- this script does not
+pre-build a prompt string itself, so the theme is applied exactly once.
+
+The Codex CLI backend is used by default (preferred when `codex login` is
+configured); the script falls back to the OpenAI Images API when Codex is
+unavailable, or to the offline fake backend with `--backend fake`.
 
 Smoke-test variant: pass --smoke to generate only the first icon (cheaper for
 verification runs).
@@ -33,7 +37,7 @@ THEME = {
         "primary": "#1F3A5F",
         "accent": "#E07A5F",
         "neutral": "#F4F1DE",
-        "bg": "transparent",
+        "background": "transparent",
     },
     "stroke": {"weight_px": 4, "linejoin": "round", "linecap": "round"},
     "style_tokens": [
@@ -45,6 +49,11 @@ THEME = {
     ],
     "negative_tokens": ["text", "labels", "watermark", "gradient", "3D", "shadow"],
     "composition": {"aspect": "1:1", "padding_pct": 12, "perspective": "orthographic"},
+    "model_preferences": {
+        "codex_model": "gpt-5.6-luna",
+        "codex_effort": "xhigh",
+        "image_quality": "high",
+    },
 }
 
 ICONS = [
@@ -54,41 +63,20 @@ ICONS = [
 ]
 
 
-def build_prompt(subject: str, theme: dict) -> str:
-    palette = theme["palette"]
-    positive = ", ".join(theme["style_tokens"])
-    negative = ", ".join(theme["negative_tokens"])
-    stroke = theme.get("stroke", {})
-    stroke_bits = []
-    if "weight_px" in stroke:
-        stroke_bits.append(f"{stroke['weight_px']} px stroke weight")
-    if "linejoin" in stroke:
-        stroke_bits.append(f"{stroke['linejoin']} line joins")
-    if "linecap" in stroke:
-        stroke_bits.append(f"{stroke['linecap']} line caps")
-    stroke_str = (" Stroke: " + ", ".join(stroke_bits) + ".") if stroke_bits else ""
-    return (
-        f"{subject}. Style: {positive}.{stroke_str} "
-        f"Primary color {palette['primary']}, accent {palette['accent']}, "
-        f"neutral {palette['neutral']}. "
-        f"Negative (do not include): {negative}. "
-        f"Centered with {theme['composition']['padding_pct']}% padding. "
-        f"On a clean white background (will be removed in post)."
-    )
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate a style-consistent icon set.")
-    parser.add_argument("--smoke", action="store_true", help="Generate only the first icon (smoke test)")
+    parser.add_argument(
+        "--smoke", action="store_true", help="Generate only the first icon (smoke test)"
+    )
     parser.add_argument(
         "--transparency-method",
-        choices=["threshold", "birefnet"],
-        default="threshold",
-        help="Background-removal method (default: threshold).",
+        choices=["auto", "threshold", "birefnet"],
+        default="auto",
+        help="Background-removal method (default: auto).",
     )
     parser.add_argument(
         "--backend",
-        choices=["auto", "codex", "api"],
+        choices=["auto", "codex", "api", "fake"],
         default="auto",
         help="Image generation backend (default: auto; prefers codex when authenticated).",
     )
@@ -106,17 +94,17 @@ def main() -> int:
     targets = ICONS[:1] if args.smoke else ICONS
     failures = 0
     for filename, subject in targets:
-        prompt = build_prompt(subject, THEME)
         out_path = OUT / filename
         print(f"\ngenerating {filename} (subject: {subject})")
         result = subprocess.run(
             [
                 sys.executable,
                 str(SCRIPTS / "generate_icon.py"),
-                prompt,
+                subject,
                 "-o",
                 str(out_path),
-                "--transparent",
+                "--theme",
+                str(theme_path),
                 "--transparency-method",
                 args.transparency_method,
                 "--backend",

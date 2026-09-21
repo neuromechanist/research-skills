@@ -26,7 +26,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 JOURNAL_MIN_PT: dict[str, float] = {
     "nature": 5.0,
     "science": 6.0,
@@ -73,12 +72,19 @@ def _is_rcparams_target(receiver: ast.AST) -> bool:
 
 # Font-size-like rcParam keys whose values matter for journal compliance.
 _FONT_SIZE_KEYS = (
-    "font.size", "axes.labelsize", "axes.titlesize",
-    "xtick.labelsize", "ytick.labelsize", "legend.fontsize", "legend.title_fontsize",
+    "font.size",
+    "axes.labelsize",
+    "axes.titlesize",
+    "xtick.labelsize",
+    "ytick.labelsize",
+    "legend.fontsize",
+    "legend.title_fontsize",
 )
 
 
-def _find_rcparam_font_sizes(tree: ast.AST) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _find_rcparam_font_sizes(
+    tree: ast.AST,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Find rcParams.update({...}) and rcParams['key'] = N assignments.
 
     Returns (findings, skipped). Findings have a numeric pt value; skipped records
@@ -106,7 +112,12 @@ def _find_rcparam_font_sizes(tree: ast.AST) -> tuple[list[dict[str, Any]], list[
                 if isinstance(v, ast.Constant) and isinstance(v.value, (int, float)):
                     findings.append({"key": k.value, "pt": float(v.value)})
                 else:
-                    skipped.append({"key": k.value, "reason": "dynamic value not evaluated statically"})
+                    skipped.append(
+                        {
+                            "key": k.value,
+                            "reason": "dynamic value not evaluated statically",
+                        }
+                    )
         # rcParams["font.size"] = 9
         if (
             isinstance(node, ast.Assign)
@@ -119,10 +130,14 @@ def _find_rcparam_font_sizes(tree: ast.AST) -> tuple[list[dict[str, Any]], list[
             key = node.targets[0].slice.value
             if not any(fk in key for fk in _FONT_SIZE_KEYS):
                 continue
-            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, (int, float)):
+            if isinstance(node.value, ast.Constant) and isinstance(
+                node.value.value, (int, float)
+            ):
                 findings.append({"key": key, "pt": float(node.value.value)})
             else:
-                skipped.append({"key": key, "reason": "dynamic value not evaluated statically"})
+                skipped.append(
+                    {"key": key, "reason": "dynamic value not evaluated statically"}
+                )
     return findings, skipped
 
 
@@ -162,7 +177,10 @@ def _recommend_library(libs: list[str], source: str) -> str | None:
         # Already using a higher-level wrapper alongside matplotlib; no rec.
         return None
     src = source.lower()
-    if any(token in src for token in (".boxplot", ".violinplot", ".regplot", "regression", "facet")):
+    if any(
+        token in src
+        for token in (".boxplot", ".violinplot", ".regplot", "regression", "facet")
+    ):
         return (
             "matplotlib used for a statistical plot (box/violin/regression/facet). "
             "Consider seaborn for better defaults and less code."
@@ -192,12 +210,14 @@ def check_plot_script(script_path: Path, journal: str | None) -> dict[str, Any]:
         else:
             for r in rcparams:
                 if r["pt"] < min_pt:
-                    issues.append({
-                        "kind": "font_size_below_journal",
-                        "key": r["key"],
-                        "pt": r["pt"],
-                        "minimum_pt": min_pt,
-                    })
+                    issues.append(
+                        {
+                            "kind": "font_size_below_journal",
+                            "key": r["key"],
+                            "pt": r["pt"],
+                            "minimum_pt": min_pt,
+                        }
+                    )
 
     for sf in savefigs:
         spread = sf.get("_has_kwargs_spread", False)
@@ -205,16 +225,24 @@ def check_plot_script(script_path: Path, journal: str | None) -> dict[str, Any]:
         # Flag both explicit-False and absent transparent kwarg (default in matplotlib is
         # opaque). Suppress when **kwargs is present since we can't see those statically,
         # and when transparent appears in _dynamic (variable value, can't evaluate).
-        if not spread and "transparent" not in dynamic and sf.get("transparent") is not True:
-            issues.append({
-                "kind": "savefig_not_transparent",
-                "note": "transparent=True is recommended so the figure composites cleanly on any background.",
-            })
+        if (
+            not spread
+            and "transparent" not in dynamic
+            and sf.get("transparent") is not True
+        ):
+            issues.append(
+                {
+                    "kind": "savefig_not_transparent",
+                    "note": "transparent=True is recommended so the figure composites cleanly on any background.",
+                }
+            )
         if not spread and "bbox_inches" not in dynamic and "bbox_inches" not in sf:
-            issues.append({
-                "kind": "savefig_missing_bbox_inches",
-                "note": "bbox_inches='tight' avoids leftover whitespace around the saved figure.",
-            })
+            issues.append(
+                {
+                    "kind": "savefig_missing_bbox_inches",
+                    "note": "bbox_inches='tight' avoids leftover whitespace around the saved figure.",
+                }
+            )
 
     return {
         "input": str(script_path),
@@ -229,7 +257,9 @@ def check_plot_script(script_path: Path, journal: str | None) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Static analysis on a Python plot script.")
+    parser = argparse.ArgumentParser(
+        description="Static analysis on a Python plot script."
+    )
     parser.add_argument("script", type=Path, help="Python script to inspect")
     parser.add_argument(
         "--journal",
@@ -244,7 +274,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.script.suffix == ".ipynb":
         print(
             "error: .ipynb not supported directly. Extract code cells first, e.g.:\n"
-            "  uv run --with nbformat python -c \"import nbformat,sys; "
+            '  uv run --with nbformat python -c "import nbformat,sys; '
             "nb=nbformat.read(sys.argv[1],as_version=4); "
             "print('\\n'.join(c.source for c in nb.cells if c.cell_type=='code'))\" "
             f"{args.script} > /tmp/extracted.py\n"
