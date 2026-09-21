@@ -259,6 +259,9 @@ fi
 agent_model="${PROJECT_PREFLIGHT_AGENT_MODEL:-${CODEX_MODEL:-${CLAUDE_MODEL:-${COPILOT_MODEL:-unknown}}}}"
 agent_effort="${PROJECT_PREFLIGHT_AGENT_EFFORT:-${CODEX_REASONING_EFFORT:-${CLAUDE_EFFORT:-${COPILOT_EFFORT:-unknown}}}}"
 agent_max_reviewers="${PROJECT_PREFLIGHT_MAX_REVIEWERS:-3}"
+case "$agent_max_reviewers" in
+    ''|*[!0-9]*) agent_max_reviewers="3" ;;
+esac
 
 if [ -z "$gh_error" ] && [ "$has_gh" != "true" ]; then
     gh_error="GitHub CLI access is not verified"
