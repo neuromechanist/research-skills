@@ -20,11 +20,10 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 VERBATIM_RE = re.compile(
-    r"(?ms)^[ \t]*\\begin\{verbatim\}.*?^[ \t]*\\end\{verbatim\}[ \t]*(?:\r\n|\n|$)"
+    r"(?ms)(?:^|\r?\n)[ \t]*\\begin\{verbatim\}.*?^[ \t]*\\end\{verbatim\}[ \t]*(?:\r\n|\n|$)"
 )
-COMMENT_RE = re.compile(r"(?m)^[ \t]*%[^\r\n]*(?:\r\n|\n|$)")
-BEGIN_VERBATIM_RE = re.compile(r"\\begin\{verbatim\}")
-END_VERBATIM_RE = re.compile(r"\\end\{verbatim\}")
+COMMENT_RE = re.compile(r"(?m)(?:^|\r?\n)[ \t]*%[^\r\n]*(?:\r\n|\n|$)")
+VERBATIM_MARKER_RE = re.compile(r"\\(?P<kind>begin|end)\{verbatim\}")
 PARAGRAPH_SEPARATOR_RE = re.compile(r"(\r?\n[ \t]*\r?\n+)")
 
 
@@ -52,7 +51,15 @@ def protect_latex_regions(source: str) -> tuple[str, dict[str, str]]:
     rather than passed through to a formatter that could corrupt it.
     """
 
-    if len(BEGIN_VERBATIM_RE.findall(source)) != len(END_VERBATIM_RE.findall(source)):
+    depth = 0
+    for marker in VERBATIM_MARKER_RE.finditer(source):
+        if marker.group("kind") == "begin":
+            depth += 1
+        elif depth == 0:
+            raise ValueError("unmatched \\begin{verbatim} or \\end{verbatim} block")
+        else:
+            depth -= 1
+    if depth:
         raise ValueError("unmatched \\begin{verbatim} or \\end{verbatim} block")
 
     regions: list[tuple[int, int]] = [
@@ -93,10 +100,12 @@ def restore_latex_regions(source: str, protected: dict[str, str]) -> str:
             )
         start = restored.index(token)
         end = start + len(token)
-        if _line_ending(raw) == "\r\n" and restored.startswith("\r\n", end):
-            end += 2
-        elif _line_ending(raw) == "\n" and restored.startswith("\n", end):
-            end += 1
+        if _line_ending(raw):
+            generated_whitespace = re.match(
+                r"[ \t]*(?:(?:\r\n|\n)[ \t]*)*", restored[end:]
+            )
+            if generated_whitespace:
+                end += generated_whitespace.end()
         restored = restored[:start] + raw + restored[end:]
     return restored
 

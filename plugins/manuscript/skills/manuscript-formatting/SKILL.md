@@ -187,7 +187,7 @@ commands and escape sequences. Use the bundled safety wrapper for LaTeX:
 uv run python plugins/manuscript/skills/manuscript-formatting/scripts/semantic_breaks.py \
   manuscript.tex manuscript-semantic.tex \
   --compile-command latexmk -pdf -interaction=nonstopmode \
-  -outdir {build_dir} {source}
+  -outdir '{build_dir}' '{source}'
 ```
 
 The wrapper performs these gates before writing the destination:

@@ -76,6 +76,20 @@ def test_protected_content_divergence_is_restored_before_unprotecting():
     assert restore_latex_regions(guarded, regions) == source
 
 
+def test_protected_region_restoration_discards_formatter_whitespace():
+    source = "Before.\n% Keep this comment.\nAfter.\n"
+    protected, regions = protect_latex_regions(source)
+    token = next(iter(regions))
+    candidate = protected.replace(token, f"{token}  \n\n", 1)
+
+    assert restore_latex_regions(candidate, regions) == source
+
+
 def test_unmatched_verbatim_block_is_rejected():
     with pytest.raises(ValueError, match="unmatched"):
         protect_latex_regions("\\begin{verbatim}\nnever closes\n")
+
+
+def test_verbatim_end_before_begin_is_rejected():
+    with pytest.raises(ValueError, match="unmatched"):
+        protect_latex_regions("\\end{verbatim}\n")
