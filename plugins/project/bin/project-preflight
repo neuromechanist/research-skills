@@ -1,0 +1,322 @@
+#!/usr/bin/env bash
+# Identify the execution space and optional access surfaces before project work.
+#
+# The default output is legacy-friendly KEY=VALUE. Use --format json for a
+# machine-readable object. Probes are read-only and never print credentials.
+set -u -o pipefail
+
+FORMAT="kv"
+case "${1:-}" in
+    --format)
+        FORMAT="${2:-kv}"
+        shift 2
+        ;;
+    --json)
+        FORMAT="json"
+        shift
+        ;;
+    --help|-h)
+        cat <<'EOF'
+Usage: project-preflight [--format kv|json]
+
+Read-only startup probe for the repository, shell, terminal, GitHub CLI, and
+native agent surface. Optional capability failures are reported as status
+fields and do not make this command fail. No token, credential, file content,
+or customer data is printed.
+
+Deterministic test probes can set PROJECT_PREFLIGHT_NETWORK_PROBE_COMMAND to a
+real zero-argument command such as true or false, and can set
+PROJECT_PREFLIGHT_CHILD_GH_TOKEN_PRESENT or PROJECT_PREFLIGHT_AGENT_STATUS.
+These overrides are intended for contract tests, not normal workflow use.
+EOF
+        exit 0
+        ;;
+    "")
+        ;;
+    *)
+        echo "ERROR=Unknown argument: $1" >&2
+        exit 2
+        ;;
+esac
+
+if [ "$FORMAT" != "kv" ] && [ "$FORMAT" != "json" ]; then
+    echo "ERROR=Unsupported format: $FORMAT" >&2
+    exit 2
+fi
+
+has_command() {
+    local candidate="$1"
+    if [[ "$candidate" == */* ]]; then
+        [ -x "$candidate" ]
+    else
+        command -v "$candidate" >/dev/null 2>&1
+    fi
+}
+
+json_escape() {
+    local value="$1"
+    value=${value//\\/\\\\}
+    value=${value//"/\\"}
+    value=${value//$'\n'/\\n}
+    value=${value//$'\r'/\\r}
+    value=${value//$'\t'/\\t}
+    printf '%s' "$value"
+}
+
+bool_from_token() {
+    case "${1:-}" in
+        1|true|TRUE|yes|YES|available|AVAILABLE) printf 'true' ;;
+        *) printf 'false' ;;
+    esac
+}
+
+repo_root=""
+if ! repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || [ -z "$repo_root" ]; then
+    echo "ERROR=Not inside a git repository" >&2
+    exit 1
+fi
+
+if git rev-parse --verify refs/heads/develop >/dev/null 2>&1 || \
+   git rev-parse --verify refs/remotes/origin/develop >/dev/null 2>&1; then
+    integration_branch="develop"
+else
+    integration_branch=""
+    default_ref="$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || true)"
+    if [ -n "$default_ref" ]; then
+        integration_branch="${default_ref##*/}"
+    fi
+    if [ -z "$integration_branch" ] && git rev-parse --verify refs/heads/main >/dev/null 2>&1; then
+        integration_branch="main"
+    fi
+    if [ -z "$integration_branch" ] && git rev-parse --verify refs/heads/master >/dev/null 2>&1; then
+        integration_branch="master"
+    fi
+    integration_branch="${integration_branch:-main}"
+fi
+
+current_branch="$(git branch --show-current 2>/dev/null || true)"
+current_branch="${current_branch:-detached}"
+worktree_raw="$(git worktree list --porcelain 2>/dev/null || true)"
+worktree_count="$(printf '%s\n' "$worktree_raw" | awk '/^worktree / {count++} END {print count+0}')"
+
+dirty_raw="$(git status --porcelain=v1 2>/dev/null || true)"
+dirty_count="$(printf '%s\n' "$dirty_raw" | awk 'NF {count++} END {print count+0}')"
+dirty_paths=""
+dirty_json=""
+while IFS= read -r dirty_line; do
+    [ -n "$dirty_line" ] || continue
+    dirty_path="${dirty_line:3}"
+    if [ -n "$dirty_paths" ]; then
+        dirty_paths+=";"
+        dirty_json+=","
+    fi
+    dirty_paths+="$dirty_path"
+    dirty_json+="\"$(json_escape "$dirty_path")\""
+done <<< "$dirty_raw"
+
+shell_path="${SHELL:-${BASH:-unknown}}"
+shell_name="$(basename "$shell_path" 2>/dev/null || printf 'unknown')"
+parent_shell="$(ps -p "${PPID:-0}" -o comm= 2>/dev/null | tr -d '[:space:]' || true)"
+parent_shell="${parent_shell:-unknown}"
+if [ -n "${TERM_PROGRAM:-}" ]; then
+    terminal="${TERM_PROGRAM}"
+elif [ -n "${WT_SESSION:-}" ]; then
+    terminal="Windows Terminal"
+elif [ -n "${ConEmuANSI:-}" ]; then
+    terminal="ConEmu"
+elif [ -n "${TERM:-}" ]; then
+    terminal="${TERM}"
+else
+    terminal="unknown"
+fi
+
+child_shell_path="${PROJECT_PREFLIGHT_CHILD_SHELL:-$shell_path}"
+child_shell_status="unavailable"
+child_shell_name="unknown"
+child_token_present="unknown"
+if has_command "$child_shell_path"; then
+    child_shell_status="available"
+    child_shell_name="$("$child_shell_path" -c 'basename "${SHELL:-unknown}"' 2>/dev/null | head -n 1 || true)"
+    child_shell_name="${child_shell_name:-unknown}"
+    if [ -n "${PROJECT_PREFLIGHT_CHILD_GH_TOKEN_PRESENT:-}" ]; then
+        child_token_present="$(bool_from_token "$PROJECT_PREFLIGHT_CHILD_GH_TOKEN_PRESENT")"
+    else
+        child_token_present="$("$child_shell_path" -c 'if [ -n "${GH_TOKEN:-}" ] || [ -n "${GITHUB_TOKEN:-}" ]; then printf true; else printf false; fi' 2>/dev/null || printf unknown)"
+    fi
+fi
+
+current_token_present="false"
+if [ -n "${GH_TOKEN:-}" ] || [ -n "${GITHUB_TOKEN:-}" ]; then
+    current_token_present="true"
+fi
+if [ "$child_token_present" = "unknown" ]; then
+    child_credential_status="not_probed"
+elif [ "$current_token_present" = "$child_token_present" ]; then
+    child_credential_status="match"
+else
+    child_credential_status="mismatch"
+fi
+
+gh_bin="${PROJECT_PREFLIGHT_GH_BIN:-gh}"
+if has_command "$gh_bin"; then
+    gh_command_status="available"
+    if gh_path="$(command -v "$gh_bin" 2>/dev/null)"; then
+        gh_bin="$gh_path"
+    fi
+else
+    gh_command_status="unavailable"
+fi
+
+network_host="${PROJECT_PREFLIGHT_NETWORK_HOST:-api.github.com}"
+network_status="unknown"
+network_probe="${PROJECT_PREFLIGHT_NETWORK_PROBE_COMMAND:-}"
+if [ -n "$network_probe" ]; then
+    if has_command "$network_probe" && "$network_probe" >/dev/null 2>&1; then
+        network_status="reachable"
+    else
+        network_status="unreachable"
+    fi
+elif has_command "curl"; then
+    if curl --silent --show-error --location --max-time 5 --output /dev/null "https://${network_host}/" >/dev/null 2>&1; then
+        network_status="reachable"
+    else
+        network_status="unreachable"
+    fi
+fi
+
+gh_auth_status="not_checked"
+gh_token_status="not_checked"
+gh_child_auth_status="not_checked"
+has_gh="false"
+gh_error=""
+if [ "$gh_command_status" = "unavailable" ]; then
+    gh_auth_status="unavailable"
+    gh_token_status="unavailable"
+    gh_error="gh CLI is not installed"
+elif [ "$network_status" = "unreachable" ]; then
+    gh_auth_status="unknown_network_unavailable"
+    gh_token_status="unknown_network_unavailable"
+    gh_error="GitHub network is unreachable; authentication was not classified"
+else
+    if "$gh_bin" auth status >/dev/null 2>&1; then
+        gh_auth_status="authenticated"
+        if [ "$network_status" = "reachable" ] && "$gh_bin" api user >/dev/null 2>&1; then
+            gh_token_status="valid"
+            has_gh="true"
+        elif [ "$network_status" = "unknown" ]; then
+            gh_token_status="unknown_network"
+            gh_error="gh authentication is configured but token validity was not verified"
+        else
+            gh_token_status="invalid"
+            gh_error="gh authentication is configured but the token was rejected"
+        fi
+    elif [ "$network_status" = "unknown" ]; then
+        gh_auth_status="unknown"
+        gh_token_status="unknown"
+        gh_error="gh authentication could not be classified without a network probe"
+    else
+        gh_auth_status="not_authenticated"
+        gh_token_status="missing_or_invalid"
+        gh_error="gh CLI is not authenticated (run 'gh auth login')"
+    fi
+fi
+
+if [ "$child_shell_status" = "available" ] && [ "$gh_command_status" = "available" ]; then
+    if GH_BIN="$gh_bin" "$child_shell_path" -c '"$GH_BIN" auth status >/dev/null 2>&1' >/dev/null 2>&1; then
+        gh_child_auth_status="authenticated"
+    elif [ "$network_status" = "unreachable" ]; then
+        gh_child_auth_status="unknown_network_unavailable"
+    else
+        gh_child_auth_status="not_authenticated"
+    fi
+    if [ "$gh_auth_status" != "not_checked" ] && \
+       [ "$gh_child_auth_status" != "not_checked" ] && \
+       [ "$gh_auth_status" != "$gh_child_auth_status" ] && \
+       [ "$gh_auth_status" != "unknown" ] && \
+       [ "$gh_child_auth_status" != "unknown" ]; then
+        child_credential_status="mismatch"
+    fi
+fi
+
+agent_status_override="${PROJECT_PREFLIGHT_AGENT_STATUS:-}"
+agent_surface="${PROJECT_PREFLIGHT_AGENT_SURFACE:-none}"
+if [ -n "$agent_status_override" ]; then
+    agent_status="$agent_status_override"
+elif [ "${CODEX_NATIVE_SUBAGENTS:-}" = "true" ]; then
+    agent_status="available"
+    agent_surface="codex"
+elif [ "${CLAUDE_NATIVE_AGENTS:-}" = "true" ]; then
+    agent_status="available"
+    agent_surface="claude"
+elif [ "${COPILOT_NATIVE_AGENTS:-}" = "true" ]; then
+    agent_status="available"
+    agent_surface="copilot"
+elif has_command "codex" || has_command "claude" || has_command "copilot"; then
+    agent_status="unknown"
+else
+    agent_status="unavailable"
+fi
+agent_model="${PROJECT_PREFLIGHT_AGENT_MODEL:-${CODEX_MODEL:-${CLAUDE_MODEL:-${COPILOT_MODEL:-unknown}}}}"
+agent_effort="${PROJECT_PREFLIGHT_AGENT_EFFORT:-${CODEX_REASONING_EFFORT:-${CLAUDE_EFFORT:-${COPILOT_EFFORT:-unknown}}}}"
+agent_max_reviewers="${PROJECT_PREFLIGHT_MAX_REVIEWERS:-3}"
+
+if [ -z "$gh_error" ] && [ "$has_gh" != "true" ]; then
+    gh_error="GitHub CLI access is not verified"
+fi
+
+if [ "$FORMAT" = "kv" ]; then
+    printf 'REPO_ROOT=%s\n' "$repo_root"
+    printf 'INTEGRATION_BRANCH=%s\n' "$integration_branch"
+    printf 'CURRENT_BRANCH=%s\n' "$current_branch"
+    printf 'WORKTREE_COUNT=%s\n' "$worktree_count"
+    printf 'DIRTY_PATH_COUNT=%s\n' "$dirty_count"
+    printf 'DIRTY_PATHS=%s\n' "$dirty_paths"
+    printf 'SHELL_PATH=%s\n' "$shell_path"
+    printf 'SHELL_NAME=%s\n' "$shell_name"
+    printf 'PARENT_SHELL=%s\n' "$parent_shell"
+    printf 'CHILD_SHELL_PATH=%s\n' "$child_shell_path"
+    printf 'CHILD_SHELL_NAME=%s\n' "$child_shell_name"
+    printf 'TERMINAL=%s\n' "$terminal"
+    printf 'GH_COMMAND_STATUS=%s\n' "$gh_command_status"
+    printf 'GH_NETWORK_STATUS=%s\n' "$network_status"
+    printf 'GH_AUTH_STATUS=%s\n' "$gh_auth_status"
+    printf 'GH_TOKEN_STATUS=%s\n' "$gh_token_status"
+    printf 'GH_CHILD_AUTH_STATUS=%s\n' "$gh_child_auth_status"
+    printf 'GH_CHILD_CREDENTIAL_STATUS=%s\n' "$child_credential_status"
+    printf 'HAS_GH=%s\n' "$has_gh"
+    [ -n "$gh_error" ] && printf 'GH_ERROR=%s\n' "$gh_error"
+    printf 'NATIVE_AGENT_STATUS=%s\n' "$agent_status"
+    printf 'NATIVE_AGENT_SURFACE=%s\n' "$agent_surface"
+    printf 'AGENT_MODEL=%s\n' "$agent_model"
+    printf 'AGENT_EFFORT=%s\n' "$agent_effort"
+    printf 'AGENT_MAX_REVIEWERS=%s\n' "$agent_max_reviewers"
+    exit 0
+fi
+
+printf '{\n'
+printf '  "repo_root": "%s",\n' "$(json_escape "$repo_root")"
+printf '  "integration_branch": "%s",\n' "$(json_escape "$integration_branch")"
+printf '  "current_branch": "%s",\n' "$(json_escape "$current_branch")"
+printf '  "worktree_count": %s,\n' "$worktree_count"
+printf '  "dirty_path_count": %s,\n' "$dirty_count"
+printf '  "dirty_paths": [%s],\n' "$dirty_json"
+printf '  "shell_path": "%s",\n' "$(json_escape "$shell_path")"
+printf '  "shell_name": "%s",\n' "$(json_escape "$shell_name")"
+printf '  "parent_shell": "%s",\n' "$(json_escape "$parent_shell")"
+printf '  "child_shell_path": "%s",\n' "$(json_escape "$child_shell_path")"
+printf '  "child_shell_name": "%s",\n' "$(json_escape "$child_shell_name")"
+printf '  "terminal": "%s",\n' "$(json_escape "$terminal")"
+printf '  "gh_command_status": "%s",\n' "$gh_command_status"
+printf '  "gh_network_status": "%s",\n' "$network_status"
+printf '  "gh_auth_status": "%s",\n' "$gh_auth_status"
+printf '  "gh_token_status": "%s",\n' "$gh_token_status"
+printf '  "gh_child_auth_status": "%s",\n' "$gh_child_auth_status"
+printf '  "gh_child_credential_status": "%s",\n' "$child_credential_status"
+printf '  "has_gh": %s,\n' "$has_gh"
+printf '  "gh_error": "%s",\n' "$(json_escape "$gh_error")"
+printf '  "native_agent_status": "%s",\n' "$(json_escape "$agent_status")"
+printf '  "native_agent_surface": "%s",\n' "$(json_escape "$agent_surface")"
+printf '  "agent_model": "%s",\n' "$(json_escape "$agent_model")"
+printf '  "agent_effort": "%s",\n' "$(json_escape "$agent_effort")"
+printf '  "agent_max_reviewers": %s\n' "$agent_max_reviewers"
+printf '}\n'

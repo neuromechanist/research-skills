@@ -18,9 +18,16 @@ The same epic → sub-issue → worktree shape generalizes beyond code changes. 
 
 `workflow-reference` documents the branch, state-file, worktree, and GitHub command conventions this pattern relies on.
 
+Before an epic or PR workflow, `project-preflight --format json` reports the
+actual repository root, branch/worktree state, shell and terminal, GitHub CLI
+command/network/auth/token status, child-shell credential inheritance, and
+native-agent capability. It is read-only, never spawns agents, and keeps
+optional capability failures separate from repository detection failures.
+
 ## Skills
 
 - **init-project**: scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, and config files
+- **project-preflight**: read-only startup detection of repository, shell, terminal, GitHub, and native-agent surfaces with `KEY=VALUE` or JSON output
 - **update-rules**: non-destructive project sync of `AGENTS.md`, the `CLAUDE.md` adapter, and `.rules/`; user-level setup delegates to `install-user-instructions`
 - **install-user-instructions**: ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure, then preview and install shared personal defaults at each documented user surface without copying them into downstream repositories
 - **epic-dev**: the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery

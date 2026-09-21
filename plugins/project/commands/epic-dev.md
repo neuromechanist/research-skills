@@ -33,11 +33,21 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 **Goal**: Detect repo configuration and validate prerequisites.
 
 **Actions**:
-1. Run `project-detect-repo-config` and parse the output
-2. **Validate all required values are present**: `INTEGRATION_BRANCH`, `REPO_ROOT`, `CURRENT_BRANCH` must be non-empty. If any are missing or if `ERROR` is set, report the error to the user and stop.
-3. **Validate gh is functional**: If `HAS_GH=false` or `GH_ERROR` is set, tell the user what needs to be fixed and stop.
-4. If `HAS_GH_SUBISSUE=false`, install it: `gh extension install agbiotech/gh-sub-issue`
-5. Store detected values: `INTEGRATION_BRANCH`, `REPO_ROOT`, `HAS_EPIC_STATE`
+1. Run `project-preflight --format json` and parse the output. Keep the
+   legacy `project-detect-repo-config` fallback for installations that predate
+   the preflight binary.
+2. **Validate all required values are present**: `integration_branch`,
+   `repo_root`, and `current_branch` must be non-empty. If any are missing or
+   if `ERROR` is set, report the error to the user and stop.
+3. **Validate gh only when a GitHub operation is about to run**: require
+   `has_gh=true`, then use `gh_command_status`, `gh_network_status`,
+   `gh_auth_status`, and `gh_token_status` to give the repair-specific error.
+   Do not report a generic unauthenticated state when the network or child-shell
+   credential probe failed.
+4. If `gh-sub-issue` is needed and missing, install it:
+   `gh extension install agbiotech/gh-sub-issue`
+5. Store detected values: `integration_branch`, `repo_root`, `current_branch`,
+   `native_agent_status`, and `native_agent_surface`.
 6. Create initial todo list tracking all workflow phases
 
 ---
@@ -224,7 +234,7 @@ Update state: mark phase `in_progress`.
 
 ## Error Handling
 
-- **Detection script failure**: If `project-detect-repo-config` fails or returns `ERROR`, report the exact error and stop. Do not proceed with empty configuration values.
+- **Detection script failure**: If `project-preflight` fails or returns `ERROR`, report the exact error and stop. Do not proceed with empty configuration values.
 - **Git conflicts**: Stop and present the conflict. Ask user to resolve manually, then continue.
 - **Test failures**: Present test output, then fix and rerun by default (root-cause the failure; never delete or weaken the failing test to pass). Ask the user only if two fix attempts fail or the fix would expand the phase's scope.
 - **PR check failures**: Wait for CI, present results. If failing, ask user how to proceed.
