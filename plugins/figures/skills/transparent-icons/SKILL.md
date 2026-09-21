@@ -6,7 +6,7 @@ version: 0.1.0
 
 # Transparent Icons
 
-Generate flat scientific icons (Nature/Science journal style) with transparent backgrounds. Used as panel elements by the ``figures:scientific-figure`` composer or as standalone graphics for posters, presentations, and grants.
+Generate flat scientific icons (Nature/Science journal style) with transparent backgrounds. Used as panel elements by the `figures:scientific-figure` composer or as standalone graphics for posters, presentations, and grants.
 
 ## Backends
 
@@ -64,7 +64,7 @@ Force a specific backend:
 
 ## Theme bible: keep an icon set consistent
 
-When generating multiple icons that need to look like they belong together (same line weight, same color palette, same perspective), use a `theme.json` file. The schema is in `references/theme.schema.json` and is shared with the ``figures:ai-full-figure`` skill. At a minimum:
+When generating multiple icons that need to look like they belong together (same line weight, same color palette, same perspective), use a `theme.json` file. The schema is in `references/theme.schema.json` and is shared with the `figures:ai-full-figure` skill. At a minimum:
 
 ```json
 {
@@ -89,7 +89,7 @@ See `references/icon-bible.md` for the template schema and `references/prompt-pa
 
 ## Quality assurance
 
-The ``figures:figure-qa`` agent proactively runs on generated icons to check for transparency correctness (alpha-channel + corner sampling), palette compliance (with near-gray exemption for chrome), DPI vs the journal target, and dominant colors. Pass `--expect-transparent` so the raster branch flags any opaque output as a regression.
+The `figures:figure-qa` agent proactively runs on generated icons to check for transparency correctness (alpha-channel + corner sampling), palette compliance (with near-gray exemption for chrome), DPI vs the journal target, and dominant colors. Pass `--expect-transparent` so the raster branch flags any opaque output as a regression.
 
 ## Additional resources
 
