@@ -210,7 +210,7 @@ def _atlas_json(
         raise RuntimeError("Atlas Cloud returned invalid JSON") from exc
 
     if not isinstance(payload, dict):
-        raise RuntimeError("Atlas Cloud returned a non-object response")
+        raise TypeError("Atlas Cloud returned a non-object response")
     code = payload.get("code")
     if code not in (None, 0, 200, "200"):
         raise RuntimeError(
@@ -219,7 +219,7 @@ def _atlas_json(
         )
     result = payload.get("data", payload)
     if not isinstance(result, dict):
-        raise RuntimeError("Atlas Cloud response is missing an object payload")
+        raise TypeError("Atlas Cloud response is missing an object payload")
     return result
 
 
