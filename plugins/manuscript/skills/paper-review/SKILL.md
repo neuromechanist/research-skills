@@ -37,4 +37,4 @@ Pick the branch for the current tool. In every branch the reviewer follows `refe
 - `references/review-principles.md` -- review philosophy and severity calibration.
 - `references/review-output-template.md` -- the Synopsis / Critical / Major / Minor / References / Editor Note format.
 - `examples/sample-manuscript-review.md` -- worked review for calibration; `examples/sample-manuscript-excerpt.md` -- sample manuscript input for testing.
-- Sister skill `manuscript:humanizer` (invoke with the Skill tool by that name) -- AI-writing patterns to flag in the prose-quality pass.
+- Sister skill `manuscript:humanizer` (invoke through the host's skill-invocation mechanism) -- AI-writing patterns to flag in the prose-quality pass.

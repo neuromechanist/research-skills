@@ -37,6 +37,15 @@ apply.
   repo, use `agents/templates/` as the plugin `agents` path when a plugin ships
   Copilot agent templates.
 
+### Cross-skill invocation
+
+- Shared skill instructions may name sibling skills with fully qualified
+  `<plugin>:<skill>` names.
+- In shared `SKILL.md` files, tell the host to invoke that name through its own
+  skill-invocation mechanism. Do not embed Claude, Codex, or Copilot-specific
+  command/tool syntax in portable instructions; put host-specific syntax in the
+  corresponding adapter.
+
 ## User-Level Instructions
 
 - Ask which systems the user wants configured; detection is not permission to

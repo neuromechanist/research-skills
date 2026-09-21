@@ -24,7 +24,7 @@ Slug derivation for names: take the phase title, drop stopwords, keep 2-3
 words with the object noun first, kebab-case ("backend-metrics",
 "sync-engine"; never "implement-the-new-backend-metrics").
 
-Related skills, invoked with the Skill tool by their `project:` names: implementation-planning (writing each phase plan),
+Related skills, invoked by their fully qualified `project:<skill>` names through the host's skill-invocation mechanism: implementation-planning (writing each phase plan),
 agent-fanout (parallel implementers, one worktree each), engineering-loop
 (the inner loop within a phase), debugging (when a phase's tests fail for
 unclear reasons).

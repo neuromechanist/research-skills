@@ -380,3 +380,32 @@ def test_claude_dispatch_uses_agent_tool_name():
         if "Task(subagent_type" in path.read_text():
             stale.append(str(path.relative_to(ROOT)))
     assert not stale, f"stale Task(subagent_type ...) dispatch in: {stale}"
+
+
+_QUALIFIED_SKILL_RE = re.compile(r"`([a-z0-9-]+:[a-z0-9-]+)`")
+_WIKI_SKILL_RE = re.compile(r"\[\[[a-z0-9-]+\]\]")
+
+
+def test_shared_skill_docs_use_portable_cross_skill_references():
+    """Shared skill docs must not encode one host's skill-link syntax."""
+    known = {
+        f"{skill.parent.parent.parent.name}:{skill.parent.name}"
+        for skill in PLUGINS_DIR.glob("*/skills/*/SKILL.md")
+    }
+    violations = []
+    unknown = []
+    for path in sorted(PLUGINS_DIR.glob("*/skills/*/SKILL.md")):
+        text = path.read_text()
+        if "Skill tool" in text or _WIKI_SKILL_RE.search(text):
+            violations.append(str(path.relative_to(ROOT)))
+        unknown.extend(
+            (str(path.relative_to(ROOT)), ref)
+            for ref in _QUALIFIED_SKILL_RE.findall(text)
+            if ref.split(":", 1)[0] in PLUGINS and ref not in known
+        )
+
+    assert not violations, (
+        "shared skill docs contain host-specific or wiki-link cross-references: "
+        f"{violations}"
+    )
+    assert not unknown, f"unknown qualified skill references: {unknown}"

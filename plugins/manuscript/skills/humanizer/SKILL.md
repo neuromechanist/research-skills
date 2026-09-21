@@ -557,7 +557,7 @@ Provide:
 
 ## Cross-references in the research-skills marketplace
 
-Invoke each with the Skill tool by its `plugin:skill` name; Codex and Copilot load the same names as skills.
+Invoke each installed skill by its fully qualified `<plugin>:<skill>` name through the host's skill-invocation mechanism. Keep host-specific command or tool syntax in the host adapter, not in shared skill instructions.
 
 - `manuscript:manuscript-writing` for paper drafting and section-level guidance. Run humanizer after drafting and before review.
 - `manuscript:paper-review` for peer-review feedback. Humanizer is often the right fix for a "writing quality" comment from a reviewer.

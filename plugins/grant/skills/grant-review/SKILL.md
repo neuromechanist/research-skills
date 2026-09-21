@@ -38,4 +38,4 @@ Pick the branch for the current tool. In every branch the reviewer follows `refe
 - `references/review-best-practices.md` -- calibration and common reviewer comments.
 - `references/review-output-templates.md` -- NIH and NSF output format.
 - `examples/sample-nih-r01-review.md` -- worked review; `examples/sample-r01-aims.md` -- sample proposal input for testing.
-- Sister skill `manuscript:humanizer` (invoke with the Skill tool by that name) -- AI-writing patterns to flag in grant prose.
+- Sister skill `manuscript:humanizer` (invoke through the host's skill-invocation mechanism) -- AI-writing patterns to flag in grant prose.

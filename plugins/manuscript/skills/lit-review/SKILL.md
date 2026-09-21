@@ -165,7 +165,7 @@ The cite-card cross-link convention from Phase 3 still applies regardless of whe
 
 ## Sister skills
 
-Invoke each with the Skill tool by its `plugin:skill` name; Codex and Copilot load the same names as skills.
+Invoke each installed skill by its fully qualified `<plugin>:<skill>` name through the host's skill-invocation mechanism. Keep host-specific command or tool syntax in the host adapter, not in shared skill instructions.
 
 | Skill | Used for |
 |---|---|

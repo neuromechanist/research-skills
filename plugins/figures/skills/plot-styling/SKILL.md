@@ -6,7 +6,7 @@ version: 0.1.0
 
 # Plot Styling
 
-Choose the right Python plotting library for the chart type, then apply journal-quality defaults so the panel that comes out of `savefig` is ready for the `[[scientific-figure]]` composer — no manual cleanup, no font-size firefighting, no chart junk.
+Choose the right Python plotting library for the chart type, then apply journal-quality defaults so the panel that comes out of `savefig` is ready for the ``figures:scientific-figure`` composer — no manual cleanup, no font-size firefighting, no chart junk.
 
 ## Two questions, two minutes
 
@@ -70,7 +70,7 @@ That single style declaration sets sans-serif fonts at journal-appropriate sizes
 
 ## Export conventions
 
-Every plot panel that will be composed by `[[scientific-figure]]` should:
+Every plot panel that will be composed by ``figures:scientific-figure`` should:
 
 1. **Save as SVG.** `savefig("panel.svg", ...)`. SVG preserves text as `<text>` so `validate_fonts.py` can inspect every label.
 2. **Use `transparent=True`.** The composer expects panels with transparent backgrounds so they composite cleanly onto the figure canvas. `figure-qa`'s plot-script branch flags `transparent=False` and missing-`transparent` as issues.
@@ -97,7 +97,7 @@ Common matplotlib output failures and the SciencePlots-style fix:
 
 ## Quality assurance
 
-After authoring a plot script, run `[[figure-qa]]`:
+After authoring a plot script, run ``figures:figure-qa``:
 
 ```bash
 uv run python "$FIGURE_QA_SCRIPTS/check_plot_script.py" panel.py --journal nature
