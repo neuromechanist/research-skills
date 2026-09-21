@@ -66,12 +66,15 @@ research-skills/
 │       ├── .codex-plugin/plugin.json
 │       ├── .github/plugin/plugin.json
 │       └── skills/runpod/ + references/ + templates/
-└── .context/
+├── .context/
     └── plan.md
+└── .memory/
+    ├── README.md
+    └── INDEX.md
 ```
 
 ## Plugins
-- **project** (v0.8.0): Project lifecycle toolkit with read-only startup preflight for repository, shell, terminal, GitHub, and native-agent surfaces; bounded native PR review panels; initialization, cross-agent user-instruction installation, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing. Commands: `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep`. `install-user-instructions` configures Claude Code, Codex, Copilot CLI, and Cursor at their supported user surfaces without duplicating general rules downstream. Model routing keeps design, observation, supervision, and synthesis on Claude Fable/Opus or Codex Sol; uses Codex Terra for approved phase-plan elaboration; and delegates detailed implementation to Claude Sonnet or Codex Luna with mechanical gates. Completed one-off agents must be closed/removed after their reports are incorporated. GitHub issue and PR bodies keep each paragraph on one source line, while semantic line breaks remain the default elsewhere.
+- **project** (v0.9.0): Project lifecycle toolkit with read-only startup preflight for repository, shell, terminal, GitHub, and native-agent surfaces; bounded native PR review panels; tracked cross-agent `.memory/` scaffolding; initialization, cross-agent user-instruction installation, rule/config updates, epic/sprint workflow, CI/CD scaffolding, Docker packaging, security audit, and document processing. Commands: `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep`. `install-user-instructions` configures Claude Code, Codex, Copilot CLI, and Cursor at their supported user surfaces without duplicating general rules downstream. Model routing keeps design, observation, supervision, and synthesis on Claude Fable/Opus or Codex Sol; uses Codex Terra for approved phase-plan elaboration; and delegates detailed implementation to Claude Sonnet or Codex Luna with mechanical gates. Completed one-off agents must be closed/removed after their reports are incorporated. GitHub issue and PR bodies keep each paragraph on one source line, while semantic line breaks remain the default elsewhere.
 - **grant** (v0.5.0): NIH/NSF grant proposal writing, merit and non-scoring readability review, and figure quality assurance. The `grant-review` NIH rubric follows the three-factor Simplified Review Framework (NOT-OD-24-010) for RPG mechanisms (Factor 1 Importance and Factor 2 Rigor & Feasibility scored 1-9; Factor 3 Expertise & Resources assessed, not scored); F fellowships (NOT-OD-24-107) and T training grants (NOT-OD-24-129) have their own separately revised frameworks, and K scored criteria are unchanged for 2025, so K/F/T stay out of the RPG three-factor structure. The readability mode follows `references/readability-procedure.md` and runs before merit review without assigning scores. Cross-references `manuscript:humanizer` from grant-writing and grant-review for natural-writing passes. Both review surfaces follow the review-subagent pattern (epic #61): `grant-review` and `grant-figure-qa` are thin dispatch skills with Claude-bundled fresh-context agents, Codex templates, Copilot plugin-agent templates, and inline fallback through the same `references/` procedures when no configured subagent is available.
 - **manuscript** (v0.5.3): Literature review (multi-phase citation-traceable corpus protocol + single-pass thematic synthesis), peer review, writing guidance, journal-specific formatting for submission, and the `humanizer` skill for a final natural-writing pass (adapted from [blader/humanizer](https://github.com/blader/humanizer), MIT, Siqi Chen). `paper-review` follows the same pattern: thin dispatch skill, Claude-bundled fresh-context agent, Codex template, Copilot plugin-agent template, and inline fallback through `references/`.
 - **opencite** (v0.3.2): Academic literature search, citation management, PDF retrieval, identifier conversion, and BibTeX export. Skills only. (Single-pass literature-review synthesis moved to `manuscript:lit-review`.)
@@ -89,6 +92,17 @@ research-skills/
 - Each plugin has independent versioning in its own plugin.json
 - No mocks in tests. See `.rules/testing.md`.
 - No emojis in commits or code. See `.rules/git.md`.
+
+## Project Memory
+
+This repository tracks durable, cross-agent operational observations in
+`.memory/`. Read `.memory/INDEX.md` before repeating project work, and write one
+fact per Markdown file with frontmatter for its name, type, recording date, and
+revalidation date. `.context/decisions/` remains the binding ADR store;
+`.context/` remains the non-binding analysis store; `.memory/` is non-binding
+observation only. Never commit secrets, tokens, credentials, private
+transcripts, customer or personal data, or information about a named
+individual. Correct or delete entries when they become false.
 
 ## Releases & Citation
 - The marketplace version lives in `.claude-plugin/marketplace.json` and `.github/plugin/marketplace.json` (the Codex `.agents/plugins/marketplace.json` carries no top-level version).

@@ -1,12 +1,15 @@
 ---
-description: Update AGENTS.md/CLAUDE.md and .rules/ from latest templates
+description: Update AGENTS.md/CLAUDE.md, .rules/, and .memory/ from latest templates
 argument-hint: <user|project>
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Skill
 ---
 
 # Update Rules and Configuration
 
-Update existing AGENTS.md/CLAUDE.md and .rules/ files from the latest plugin templates without overwriting user customizations. Load the `project:update-rules` skill for the full comparison strategy and non-destructive guarantees.
+Update existing AGENTS.md/CLAUDE.md, `.rules/`, and project-memory
+scaffolding from the latest plugin templates without overwriting user
+customizations. Load the `project:update-rules` skill for the full comparison
+strategy and non-destructive guarantees.
 
 ## Setup Process:
 
@@ -15,7 +18,7 @@ Update existing AGENTS.md/CLAUDE.md and .rules/ files from the latest plugin tem
 Determine the level from `$ARGUMENTS`:
 - `user` -> load `project:install-user-instructions`, ask which supported
   systems to configure, and follow that skill instead of this command
-- `project` -> update `./AGENTS.md` + Claude adapter `./CLAUDE.md` + `.rules/`
+- `project` -> update `./AGENTS.md` + Claude adapter `./CLAUDE.md` + `.rules/` + `.memory/` convention files
 
 If `$ARGUMENTS` is empty or not one of `user`/`project`, ask the user which level to update.
 
@@ -48,6 +51,12 @@ If the above command failed or the output does not contain `STATUS=complete` as 
 **Custom rules (RULE_CUSTOM):**
 - Report as user-created (preserved, no action needed)
 
+**Project memory comparison:**
+- `MEMORY_FILE_MISSING` -> offer to add the missing template README or INDEX
+- `MEMORY_FILE_CHANGED` -> show a unified diff and offer accept, merge, or skip
+- `MEMORY_FILE_CURRENT` -> report as current
+- Any other `.memory/*.md` file is a project fact and must be preserved
+
 **AGENTS.md section comparison:**
 - Read template AGENTS.md and the project AGENTS.md in full
 - Compare H2 sections: identify sections in template missing from project
@@ -78,6 +87,8 @@ Ask the user which changes to apply. Never apply without confirmation.
 
 For each approved change:
 - **New .rules/ files:** use Write to create them
+- **Missing `.memory/` directory or template files:** create only missing files;
+  never overwrite existing facts or customized README/INDEX
 - **Existing .rules/ files:** use Edit for surgical modifications, or Write if accepting full template version
 - **AGENTS.md sections:** use Edit to insert or update specific sections
 - **CLAUDE.md adapter:** ensure it starts with `@AGENTS.md`, then preserves or appends only Claude-specific guidance

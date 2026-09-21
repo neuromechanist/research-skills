@@ -1,7 +1,7 @@
 {
   "name": "project",
-  "version": "0.8.0",
-  "description": "Complete project lifecycle toolkit: read-only startup preflight, bounded native PR review panels, initialization, cross-agent user-instruction setup, tiered model routing, epic/sprint workflow, onboarding, planning, debugging, engineering loop, agent fan-out, CI/CD, Docker, security, and document processing",
+  "version": "0.9.0",
+  "description": "Complete project lifecycle toolkit: read-only startup preflight, bounded native PR review panels, tracked cross-agent project memory, initialization, cross-agent user-instruction setup, tiered model routing, epic/sprint workflow, onboarding, planning, debugging, engineering loop, agent fan-out, CI/CD, Docker, security, and document processing",
   "author": {
     "name": "Seyed Yahya Shirazi",
     "email": "shirazi@ieee.org"
