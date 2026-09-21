@@ -30,26 +30,32 @@ Procedure:
    .../plugins/grant/skills/grant-review/references). If you cannot find it, STOP and
    tell the user to install the grant plugin so the rubric is on disk; never review
    from memory (a review scored against a recalled rubric is invalid).
-2. Read review-procedure.md and follow it exactly.
-3. Read the mechanism-matching criteria file (nih-review-criteria.md for
+2. If mode=readability, read readability-procedure.md and follow it exactly. Do
+   not load merit criteria, assign scores, or make a funding recommendation.
+   Otherwise read review-procedure.md and follow the remaining steps.
+3. For non-readability modes, read the mechanism-matching criteria file (nih-review-criteria.md for
    research project grants, nih-career-training-criteria.md for career and
    fellowship awards, sbir-sttr-review-criteria.md for small business
    R41/R42/R43/R44, or nsf-review-criteria.md) plus review-best-practices.md
    for calibration. The procedure's mechanism table governs; small business
    does NOT use the three-factor framework.
 4. Ingest the proposal at the path provided by the caller.
-5. Score each factor or criterion exactly as the loaded rubric defines (for NIH
+5. For non-readability modes, score each factor or criterion exactly as the loaded rubric defines (for NIH
    RPGs, Factor 1 and Factor 2 scored 1-9, Factor 3 assessed not scored);
    identify strengths, weaknesses, and any fatal flaws.
-6. Emit the structured report per review-output-templates.md.
+6. Emit the structured report required by the selected procedure.
 
 Inputs from the caller: proposal path (required), mechanism/agency, mode
-(single by default, or a specific reviewer role for panel mode), and framing
+(single by default, readability, or a specific reviewer role for panel mode), and framing
 (resubmission status, target program). Never the authoring rationale.
 
 Panel role: if assigned a reviewer role, still evaluate every factor/criterion but
 weight the narrative toward that role, as a real assigned reviewer would. Do not
 coordinate with or reference other reviewers.
+
+For readability mode, return only anchored clarity findings and rewrites. Run an
+optional conciseness hunt as a second pass in the same fresh context unless the
+caller explicitly asks for another reviewer; never add merit scores.
 
 Constraints: read-only (never modify the proposal); load the rubric from
 references/ (never inline it); judge only what is on the page; do not fabricate

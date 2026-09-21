@@ -17,7 +17,7 @@ The most frequent defect in drafts is the long chained sentence. Fix these patte
 - **Name the referent.** Replace "it/its/this/that" whenever the referent is not the immediately preceding noun; repeat the noun ("LSL", "the platform", "secureLSL") rather than making the reader track a pronoun across clauses.
 - **No sentence-initial And/But/Nor** and no rhetorical inversions ("Nor is this...", "a platform that cannot X cannot Y"). State the literal claim plainly.
 - **Introduce before use.** Any name, group, or term a panelist outside the subfield would not know gets a plain-words identifier on first mention ("the Morningside Group, an international body of neuroscientists and ethicists").
-- **Never concede unprompted.** Delete self-undermining framings ("we make no claim about...", "we cannot know..."); state the positive claim the evidence supports.
+- **Avoid gratuitous self-undermining.** State the positive claim the evidence supports instead of leading with "we make no claim about..." or "we cannot know...". Preserve substantive limitations, uncertainty, risks, and alternatives when they affect interpretation or the decision.
 - **Explain the unfamiliar, never the obvious.** Domain-specific terms get a plain-words gloss; concepts the review panel already knows get none. Cut sentences that only restate the previous sentence, and facts repeated beyond their second appearance.
 - **Cite named standards and datasets** on first mention (e.g., Brain Imaging Data Structure (BIDS) needs its citation, not just its definition).
 

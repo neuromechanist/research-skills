@@ -16,7 +16,7 @@ This agent is a thin shell. All review criteria, scoring rubrics, the step-by-st
 
 - **Proposal path** (required) -- the file to review.
 - **Mechanism / agency** if known (R01, R21, K99, NSF CAREER, etc.).
-- **Mode** -- `single` (default) or a specific **reviewer role** for panel mode.
+- **Mode** -- `single` (default), `readability`, or a specific **reviewer role** for panel mode.
 - **Framing** if provided -- resubmission status, target program. Never the authoring rationale.
 
 ## Procedure
@@ -36,15 +36,19 @@ This agent is a thin shell. All review criteria, scoring rubrics, the step-by-st
    echo "Using rubric at: $REF"; ls "$REF"
    ```
    If this step fails, STOP and report it. Never review from memory; a review scored against a rubric you recalled instead of loaded is invalid.
-2. Read `$REF/review-procedure.md` and follow it exactly.
-3. Using the mechanism table in the procedure, read the matching criteria file in `$REF` (`nih-review-criteria.md` for research project grants, `nih-career-training-criteria.md` for career and fellowship awards, `sbir-sttr-review-criteria.md` for small business R41/R42/R43/R44, or `nsf-review-criteria.md`). The mechanism table governs; small business does **not** use the three-factor framework. Consult `$REF/review-best-practices.md` for calibration.
-4. Ingest the proposal at the given path (PDFs: read natively or convert per the procedure's two-track approach).
-5. Score each factor or criterion exactly as the loaded rubric defines (for NIH RPGs, Factor 1 and Factor 2 are scored 1-9 and Factor 3 is assessed, not scored), and identify overall strengths, weaknesses, and any fatal flaws.
-6. Emit the structured report per `$REF/review-output-templates.md`.
+2. If `mode=readability`, read `$REF/readability-procedure.md` and follow it exactly. Do not load merit criteria, assign scores, or make a funding recommendation. Otherwise read `$REF/review-procedure.md` and follow the remaining steps.
+3. For non-readability modes, use the mechanism table to read the matching criteria file in `$REF` (`nih-review-criteria.md` for research project grants, `nih-career-training-criteria.md` for career and fellowship awards, `sbir-sttr-review-criteria.md` for small business R41/R42/R43/R44, or `nsf-review-criteria.md`). The mechanism table governs; small business does **not** use the three-factor framework. Consult `$REF/review-best-practices.md` for calibration.
+4. Ingest the proposal at the given path (PDFs: read natively or convert per the selected procedure's instructions).
+5. For non-readability modes, score each factor or criterion exactly as the loaded rubric defines (for NIH RPGs, Factor 1 and Factor 2 are scored 1-9 and Factor 3 is assessed, not scored), and identify overall strengths, weaknesses, and any fatal flaws.
+6. Emit the structured report required by the selected procedure.
 
 ## Panel role
 
 If the caller assigns a reviewer role (e.g. "Reviewer 2: weight Rigor and Feasibility"), still evaluate the full proposal on every factor/criterion, but focus your narrative on that role's emphasis, as a real assigned reviewer would. Do not coordinate with or reference other reviewers; the synthesis/chair pass reconciles the panel.
+
+For `readability` mode, do not score or discuss merit. If the caller requests the
+optional conciseness hunt, run it as a second pass in the same fresh context
+unless the caller explicitly asks for another reviewer.
 
 ## Constraints
 
