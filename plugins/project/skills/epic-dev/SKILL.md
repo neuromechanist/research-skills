@@ -29,15 +29,27 @@ variation details, then follow this procedure as the execution contract.
 
 ## Phase 0: Repository Detection
 
-1. Run `project-detect-repo-config` from the target repository.
+1. Run `project-preflight --format json` from the target repository. This is a
+   read-only startup probe for the repository, shell, terminal, GitHub CLI, and
+   native-agent surface. It never spawns agents or prints credentials.
 2. Validate required values before continuing:
    - `INTEGRATION_BRANCH`
    - `REPO_ROOT`
    - `CURRENT_BRANCH`
-3. Stop and report the exact error if `ERROR` is set or required values are empty.
-4. Validate GitHub CLI access. If `HAS_GH=false` or `GH_ERROR` is set, tell the user what to fix and stop.
-5. If `HAS_GH_SUBISSUE=false`, install `gh-sub-issue` with `gh extension install agbiotech/gh-sub-issue` after normal approval rules for networked commands.
-6. Read existing state from `.claude/epic.local.md` if present. New Codex runs may continue using that file for compatibility with the Claude command.
+3. If preflight reports `ERROR` or a required field is empty, report the exact
+   diagnostic and stop. Optional capability states (`gh_*`, `native_agent_*`)
+   are diagnostics, not repository-detection failures.
+4. Before a GitHub operation, require `has_gh=true`. If it is false, use the
+   separate `gh_command_status`, `gh_network_status`, `gh_auth_status`, and
+   `gh_token_status` fields to tell the user whether to install `gh`, repair
+   network access, or run `gh auth login`; never collapse a network failure into
+   a generic unauthenticated message. If `gh_child_credential_status=mismatch`,
+   explain that the current shell and its child do not see the same credentials.
+5. If the project requires sub-issue operations and `gh-sub-issue` is absent,
+   install it with `gh extension install agbiotech/gh-sub-issue` after normal
+   approval rules for networked commands.
+6. Read existing state from `.claude/epic.local.md` if present. New Codex runs
+   may continue using that file for compatibility with the Claude command.
 
 ## Mode Parsing
 
@@ -126,7 +138,9 @@ For each phase, starting from the current state:
 
 ## Error Handling
 
-- Detection failure: stop with the exact `project-detect-repo-config` error.
+- Detection failure: stop with the exact `project-preflight` error for missing
+  repository fields; preserve the separate GitHub and optional-agent
+  diagnostics for repair guidance.
 - Git conflict: stop, show conflicted files, and ask the user to resolve or direct the strategy.
 - Test failure: report the failing command and failure summary; fix and rerun unless the user directs otherwise.
 - GitHub API failure: show what was already created and ask whether to retry or abort.
