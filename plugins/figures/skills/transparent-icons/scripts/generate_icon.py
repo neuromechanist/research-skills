@@ -37,10 +37,14 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
 import sys
 import time
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 
 _PLUGIN_ROOT = Path(__file__).resolve().parents[3]
 if str(_PLUGIN_ROOT) not in sys.path:
@@ -49,6 +53,11 @@ if str(_PLUGIN_ROOT) not in sys.path:
 from lib import image_backend, prompting
 
 TEMPLATES_PATH = Path(__file__).parent / "icon-templates.json"
+
+ATLAS_API_BASE = "https://api.atlascloud.ai/api/v1"
+ATLAS_DEFAULT_MODEL = "black-forest-labs/flux-schnell"
+ATLAS_TERMINAL_SUCCESS = {"completed", "succeeded", "success"}
+ATLAS_TERMINAL_FAILURE = {"failed", "canceled", "cancelled"}
 
 
 def load_templates(path: Path = TEMPLATES_PATH) -> dict[str, Any]:
@@ -160,6 +169,170 @@ def _apply_transparency_birefnet(png_bytes: bytes) -> bytes:
     )
 
 
+def _atlas_base_url() -> str:
+    """Normalize an optional Atlas base URL to its media API root."""
+    base = os.environ.get("ATLASCLOUD_API_BASE", ATLAS_API_BASE).rstrip("/")
+    if base.endswith("/v1") and not base.endswith("/api/v1"):
+        return base[:-3] + "/api/v1"
+    return base
+
+
+def _atlas_json(
+    url: str,
+    api_key: str,
+    *,
+    method: str = "GET",
+    body: dict[str, Any] | None = None,
+    timeout_s: int = 60,
+) -> dict[str, Any]:
+    """Make one Atlas request; never retry a billable generation POST."""
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    request = Request(
+        url,
+        data=data,
+        method=method,
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "research-skills-transparent-icons",
+        },
+    )
+    try:
+        with urlopen(request, timeout=timeout_s) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        raise RuntimeError(f"Atlas Cloud HTTP {exc.code}: {detail}") from exc
+    except (URLError, TimeoutError) as exc:
+        raise RuntimeError(f"Atlas Cloud request failed: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("Atlas Cloud returned invalid JSON") from exc
+
+    if not isinstance(payload, dict):
+        raise TypeError("Atlas Cloud returned a non-object response")
+    code = payload.get("code")
+    if code not in (None, 0, 200, "200"):
+        raise RuntimeError(
+            f"Atlas Cloud API error {code}: "
+            f"{payload.get('msg') or payload.get('message')}"
+        )
+    result = payload.get("data", payload)
+    if not isinstance(result, dict):
+        raise TypeError("Atlas Cloud response is missing an object payload")
+    return result
+
+
+def _atlas_output_url(prediction: dict[str, Any]) -> str | None:
+    outputs = prediction.get("outputs") or prediction.get("output")
+    if isinstance(outputs, str):
+        return outputs
+    if isinstance(outputs, list) and outputs:
+        first = outputs[0]
+        if isinstance(first, str):
+            return first
+        if isinstance(first, dict) and isinstance(first.get("url"), str):
+            return first["url"]
+    return None
+
+
+def _ensure_png(image_data: bytes) -> bytes:
+    """Normalize Atlas output to PNG so the CLI output contract stays stable."""
+    if image_data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return image_data
+    try:
+        from PIL import Image
+    except ImportError as exc:
+        raise RuntimeError(
+            "The Atlas backend requires Pillow to normalize model output to PNG. "
+            "Re-run with --with pillow."
+        ) from exc
+    try:
+        image = Image.open(io.BytesIO(image_data))
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+    except OSError as exc:
+        raise RuntimeError("Atlas Cloud returned invalid image data") from exc
+    return output.getvalue()
+
+
+def generate_icon_atlas(
+    prompt: str,
+    *,
+    model: str = ATLAS_DEFAULT_MODEL,
+    size: int = 1024,
+    timeout_s: int = 300,
+) -> bytes:
+    """Generate one icon through Atlas Cloud with bounded result polling."""
+    api_key = os.environ.get("ATLASCLOUD_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("Atlas backend requires ATLASCLOUD_API_KEY")
+
+    base_url = _atlas_base_url()
+    accepted = _atlas_json(
+        f"{base_url}/model/generateImage",
+        api_key,
+        method="POST",
+        body={
+            "model": model,
+            "prompt": prompt,
+            "size": f"{size}*{size}",
+            "seed": -1,
+            "output_format": "png",
+        },
+    )
+    prediction_id = str(accepted.get("id") or accepted.get("request_id") or "").strip()
+    if not prediction_id:
+        raise RuntimeError("Atlas Cloud submission did not return a prediction id")
+
+    deadline = time.monotonic() + timeout_s
+    consecutive_get_errors = 0
+    while True:
+        try:
+            prediction = _atlas_json(
+                f"{base_url}/model/prediction/{quote(prediction_id, safe='')}",
+                api_key,
+                timeout_s=30,
+            )
+            consecutive_get_errors = 0
+        except RuntimeError:
+            consecutive_get_errors += 1
+            if consecutive_get_errors >= 3 or time.monotonic() >= deadline:
+                raise
+            time.sleep(2 ** (consecutive_get_errors - 1))
+            continue
+
+        status = str(prediction.get("status", "")).lower()
+        if status in ATLAS_TERMINAL_SUCCESS:
+            output_url = _atlas_output_url(prediction)
+            if not output_url:
+                raise RuntimeError(
+                    "Atlas Cloud prediction succeeded without an output URL"
+                )
+            break
+        if status in ATLAS_TERMINAL_FAILURE:
+            detail = prediction.get("error") or prediction.get("logs") or "unknown error"
+            raise RuntimeError(f"Atlas Cloud prediction {status}: {detail}")
+        if time.monotonic() >= deadline:
+            raise RuntimeError(
+                f"Atlas Cloud prediction timed out after {timeout_s}s: {prediction_id}"
+            )
+        time.sleep(3)
+
+    try:
+        request = Request(
+            output_url,
+            headers={"Accept": "image/*", "User-Agent": "research-skills-transparent-icons"},
+        )
+        with urlopen(request, timeout=60) as response:
+            image_data = response.read()
+    except (HTTPError, URLError, TimeoutError) as exc:
+        raise RuntimeError(f"Atlas Cloud image download failed: {exc}") from exc
+    if not image_data:
+        raise RuntimeError("Atlas Cloud returned an empty image")
+    return _ensure_png(image_data)
+
+
 def finalize_transparency(png_path: Path, method: str) -> None:
     """Apply transparency post-processing to png_path in place."""
     data = png_path.read_bytes()
@@ -188,31 +361,44 @@ def generate_one(
     timeout_s: int,
     verbose: bool,
     print_prompt: bool,
+    atlas_model: str,
 ) -> float:
     """Generate one icon and apply transparency post-processing. Returns elapsed seconds."""
     prompt = prompting.build_icon_prompt(subject, theme=theme, size=size, chroma=True)
     if print_prompt:
         print(prompt)
-    model_prefs = (theme or {}).get("model_preferences") or {}
-    req = image_backend.GenerationRequest(
-        prompt=prompt,
-        out=out_path,
-        size=size,
-        quality=model_prefs.get("image_quality", "high"),
-        n=1,
-        model=model_prefs.get("codex_model", image_backend.DEFAULT_MODEL),
-        effort=model_prefs.get("codex_effort", image_backend.DEFAULT_EFFORT),
-        timeout_s=timeout_s,
-        background="transparent",
-        verbose=verbose,
-        backend=backend,
-        codex_bin=codex_bin,
-    )
     start = time.monotonic()
-    result = image_backend.generate(req)
-    finalize_transparency(result.paths[0], transparency_method)
+    if backend == "atlas":
+        width, _height = (int(value) for value in size.split("x", 1))
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_bytes(
+            generate_icon_atlas(
+                prompt, model=atlas_model, size=width, timeout_s=timeout_s
+            )
+        )
+        resolved_backend = "atlas"
+    else:
+        model_prefs = (theme or {}).get("model_preferences") or {}
+        req = image_backend.GenerationRequest(
+            prompt=prompt,
+            out=out_path,
+            size=size,
+            quality=model_prefs.get("image_quality", "high"),
+            n=1,
+            model=model_prefs.get("codex_model", image_backend.DEFAULT_MODEL),
+            effort=model_prefs.get("codex_effort", image_backend.DEFAULT_EFFORT),
+            timeout_s=timeout_s,
+            background="transparent",
+            verbose=verbose,
+            backend=backend,
+            codex_bin=codex_bin,
+        )
+        result = image_backend.generate(req)
+        out_path = result.paths[0]
+        resolved_backend = result.backend
+    finalize_transparency(out_path, transparency_method)
     elapsed = time.monotonic() - start
-    print(f"Saved: {result.paths[0]} ({result.backend}, {elapsed:.1f}s)")
+    print(f"Saved: {out_path} ({resolved_backend}, {elapsed:.1f}s)")
     return elapsed
 
 
@@ -252,7 +438,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "--with rembg --with onnxruntime)."
         ),
     )
-    parser.add_argument("--backend", choices=["auto", "codex", "api", "fake"], default="auto")
+    parser.add_argument(
+        "--backend", choices=["auto", "codex", "api", "fake", "atlas"], default="auto"
+    )
+    parser.add_argument(
+        "--atlas-model",
+        default=ATLAS_DEFAULT_MODEL,
+        help="Atlas Cloud model used only with --backend atlas",
+    )
     parser.add_argument(
         "--codex-bin",
         default=None,
@@ -306,6 +499,7 @@ def main(argv: list[str] | None = None) -> int:
         "timeout_s": args.timeout,
         "verbose": args.verbose,
         "print_prompt": args.print_prompt,
+        "atlas_model": args.atlas_model,
     }
     failures = 0
 
@@ -324,7 +518,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"generating {t['id']}...")
             try:
                 generate_one(subject, output_dir / f"{t['id']}.png", theme=t_theme, **common)
-            except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+            except (
+                image_backend.BackendUnavailable,
+                image_backend.GenerationFailed,
+                RuntimeError,
+                TypeError,
+            ) as exc:
                 print(f"  failed: {exc}", file=sys.stderr)
                 failures += 1
         print(f"{len(cat_templates) - failures}/{len(cat_templates)} icons generated")
@@ -340,7 +539,12 @@ def main(argv: list[str] | None = None) -> int:
         t_theme = _template_theme(theme, t)
         try:
             generate_one(subject, Path(args.output), theme=t_theme, **common)
-        except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+        except (
+            image_backend.BackendUnavailable,
+            image_backend.GenerationFailed,
+            RuntimeError,
+            TypeError,
+        ) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
         return 0
@@ -356,7 +560,12 @@ def main(argv: list[str] | None = None) -> int:
                 generate_one(
                     subject, output_dir / f"{item.replace(' ', '_')}.png", theme=theme, **common
                 )
-            except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+            except (
+                image_backend.BackendUnavailable,
+                image_backend.GenerationFailed,
+                RuntimeError,
+                TypeError,
+            ) as exc:
                 print(f"  failed: {exc}", file=sys.stderr)
                 failures += 1
         print(f"{len(items) - failures}/{len(items)} icons generated")
@@ -365,7 +574,12 @@ def main(argv: list[str] | None = None) -> int:
     subject = _apply_colors(args.prompt, args.colors)
     try:
         generate_one(subject, Path(args.output), theme=theme, **common)
-    except (image_backend.BackendUnavailable, image_backend.GenerationFailed) as exc:
+    except (
+        image_backend.BackendUnavailable,
+        image_backend.GenerationFailed,
+        RuntimeError,
+        TypeError,
+    ) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
     return 0
