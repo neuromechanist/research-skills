@@ -16,7 +16,7 @@ Initialize this project using bundled vibe-rules templates from the init-project
 !ls -la
 
 ### 2. Copy templates and set up project structure
-!project-init-templates .
+!"${CLAUDE_PLUGIN_ROOT}/bin/project-init-templates" .
 
 If the above command failed, report the exact error to the user and stop. Do not proceed with remaining steps.
 
@@ -40,7 +40,8 @@ Now analyze the project and customize the AGENTS.md file using the project descr
 
 ### 5. Cursor setup (optional)
 If the user also uses Cursor, offer to set up Cursor templates.
-Use `project-templates-path` to locate the templates directory, then copy:
+Use `${CLAUDE_PLUGIN_ROOT}/bin/project-templates-path` to locate the templates
+directory, then copy:
 - .cursorrules from `<templates>/cursor/`
 - core_rules/ .mdc files
 - Planning workflow (default or advanced-taskmaster based on preference)

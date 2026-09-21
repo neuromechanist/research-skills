@@ -9,7 +9,7 @@ still loads `review-procedure.md` and `review-rubrics.md`.
 Before dispatching, run the read-only startup probe:
 
 ```bash
-project-preflight --format json
+<project-plugin-root>/bin/project-preflight --format json
 ```
 
 Use the panel only when all of these are true:

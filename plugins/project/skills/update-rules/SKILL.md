@@ -61,7 +61,10 @@ as Claude-only.
 
 ### Step 1: Run Comparison Script
 
-Run `project-diff-rules <level>` to get structured comparison data. The script outputs KEY=VALUE pairs categorizing each rule file and listing section headers from both sources.
+Run the bundled `bin/project-diff-rules <level>` helper by absolute path from the
+project plugin installation; do not assume the plugin's `bin/` directory is on
+`PATH`. The script outputs KEY=VALUE pairs categorizing each rule file and
+listing section headers from both sources.
 
 ### Step 2: Read and Analyze
 
@@ -69,8 +72,8 @@ For project level:
 - Read each `RULE_CHANGED` file from both template and project to understand the differences
 - Read AGENTS.md from both sources to compare sections
 - Read CLAUDE.md to verify it imports AGENTS.md with `@AGENTS.md` and contains only Claude-specific additions
-- Run `diff --unified "$(project-templates-path)/claude/rules/<file>" ".rules/<file>"` for each changed rule
-- Read each missing or changed memory template and run `diff --unified "$(project-templates-path)/memory/<file>" ".memory/<file>"` when the project file exists. Treat project fact files as user content, not template drift.
+- Run `diff --unified "<project-plugin-root>/templates/claude/rules/<file>" ".rules/<file>"` for each changed rule
+- Read each missing or changed memory template and run `diff --unified "<project-plugin-root>/templates/memory/<file>" ".memory/<file>"` when the project file exists. Treat project fact files as user content, not template drift.
 
 For user level, stop this comparison workflow and use
 `install-user-instructions`. Read only the selected systems' targets and
@@ -97,7 +100,8 @@ Show preview of what will change for each item. Ask user to confirm which change
 
 ### Step 5: Verify
 
-Run `project-diff-rules <level>` again to confirm all approved changes were applied.
+Run the bundled `<project-plugin-root>/bin/project-diff-rules <level>` helper
+again to confirm all approved changes were applied.
 
 ## Non-Destructive Guarantees
 

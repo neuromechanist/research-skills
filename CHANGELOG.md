@@ -2,14 +2,16 @@
 
 All notable changes to the Research Skills marketplace are documented here.
 
-## [0.16.3] - 2026-09-20
+## [0.16.4] - 2026-09-20
 
 This release consolidates the changes merged after `v0.15.13`, including the
-cross-agent runtime work tracked by issues #87, #97, and #98.
+cross-agent runtime work tracked by issues #87, #97, and #98, and the final
+cross-agent packaging corrections identified during release review.
 
 ### Added
 
-- **Project plugin 0.9.0:** a read-only `project-preflight` probe for the
+- **Project plugin 0.10.0:** a discoverable `project-preflight` skill and
+  read-only probe for the
   repository, worktree, shell, terminal, GitHub CLI, credentials, and native
   agent capability surfaces.
 - **Project plugin 0.9.0:** a bounded fresh-context PR review panel with
@@ -39,6 +41,9 @@ cross-agent runtime work tracked by issues #87, #97, and #98.
   supported agent surfaces.
 - Figure, grant, manuscript, and project documentation and validation contracts
   were updated to match the shipped workflows.
+- Project helper scripts now resolve their sibling tools directly, and shared
+  instructions use absolute plugin-root paths so Codex and Copilot do not rely
+  on a plugin `bin/` directory being injected into `PATH`.
 
 ### Fixed
 
