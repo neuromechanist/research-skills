@@ -154,6 +154,27 @@ def test_project_model_routing_contract_is_cross_agent():
         )
 
 
+def test_pr_review_panel_contract_is_bounded_and_has_fallback():
+    skill = (PLUGINS_DIR / "project" / "skills" / "pr-review-toolkit" / "SKILL.md").read_text()
+    protocol = (
+        PLUGINS_DIR
+        / "project"
+        / "skills"
+        / "pr-review-toolkit"
+        / "references"
+        / "review-panel-protocol.md"
+    ).read_text()
+
+    assert "project-preflight --format json" in skill
+    assert "gpt-5.6-luna" in protocol
+    assert "max" in protocol
+    assert "at most three" in protocol
+    assert "single" in skill and "inline" in skill
+    assert "native_agent_status" in protocol
+    assert "account for every" in protocol
+    assert "close completed" in protocol
+
+
 def test_github_body_writers_state_semantic_break_exception():
     writers = [
         PLUGINS_DIR / "project" / "commands" / "epic-dev.md",
