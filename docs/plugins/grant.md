@@ -44,7 +44,7 @@ SBIR and STTR applications are a different genre from a research grant, and the 
 ## Skills
 
 - **grant-writing**: research strategy guidelines, writing style, budget justification, and resubmission response, with mechanism-specific templates, including a milestone-driven aims template and Commercialization Plan guide for small business applications
-- **grant-review**: the NIH/NSF study-section simulation described above; a thin-dispatch skill with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template; when no agent is configured, the skill runs the same reference procedure inline
+- **grant-review**: the NIH/NSF study-section simulation described above, plus a non-scoring `readability` mode for anchored clarity rewrites before merit review; a thin-dispatch skill with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template; when no agent is configured, the skill runs the selected reference procedure inline
 - **grant-figure-qa**: checks figures for resolution, accessibility, and NIH/NSF compliance, following the same dispatch pattern as `grant-review`
 
 ## Try it
@@ -52,6 +52,7 @@ SBIR and STTR applications are a different genre from a research grant, and the 
 ```
 "Write the significance section for an R01 on motor cortex"
 "Review my R21 proposal at proposal.pdf as an NIH study section"
+"Run a readability review on my R21 proposal before the panel"
 "Draft milestone-driven specific aims for an SBIR Phase I"
 "Write the commercialization plan for my Phase II application"
 ```
