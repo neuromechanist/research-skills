@@ -24,7 +24,7 @@ Whenever any text item is present, the builder also requests `quality: high`; ve
 
 ### The text ladder's rejection rules
 
-Not every text request belongs on rung 1. `generate_figure.py` rejects, rather than silently mis-rendering:
+Not every text request belongs on rung 1. `generate_figure.py` rejects, rather than rendering these requests incorrectly:
 
 - a `label` longer than `theme.text.max_words_per_label` words (default 4),
 - a `title` longer than 8 words,
