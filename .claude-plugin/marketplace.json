@@ -34,8 +34,8 @@
     },
     {
       "name": "manuscript",
-      "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, journal-specific formatting for submission, and humanizer pass to remove AI-writing tells",
-      "version": "0.5.3",
+      "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, journal-specific formatting with semantic-line-break safety, and humanizer pass to remove AI-writing tells",
+      "version": "0.6.0",
       "author": {
         "name": "Seyed Yahya Shirazi",
         "email": "shirazi@ieee.org"
