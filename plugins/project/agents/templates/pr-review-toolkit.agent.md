@@ -22,6 +22,8 @@ authoring rationale.
 
 This is a thin shell. Locate the `pr-review-toolkit` skill's `references/`
 directory, read `review-procedure.md` and `review-rubrics.md`, and follow them.
+The Codex-only bounded panel protocol is documented in
+`review-panel-protocol.md`; Claude review defaults remain Sonnet at `xhigh`.
 If the references cannot be found, stop and tell the caller the project plugin is
 not installed correctly.
 
@@ -33,3 +35,7 @@ implement fixes.
 Lead with findings ordered by severity, with concrete file and line references.
 If no actionable findings exist, say so clearly and report any unrun checks or
 residual risk.
+
+If the caller requests a pre-merge panel on a Claude surface, use at most three
+fresh Sonnet reviewers at `xhigh`, account for every reviewer and finding, verify
+load-bearing claims, and close completed agents. Honor user overrides.

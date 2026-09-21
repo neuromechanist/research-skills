@@ -1,6 +1,6 @@
 # Project
 
-The `project` plugin is the marketplace's development-lifecycle toolkit: initialization, cross-agent user instructions, tiered model routing, epic/sprint workflow, PR review, CI/CD scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, and multi-agent orchestration.
+The `project` plugin is the marketplace's development-lifecycle toolkit: initialization, tracked cross-agent project memory, cross-agent user instructions, tiered model routing, epic/sprint workflow, PR review, CI/CD scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, and multi-agent orchestration.
 
 ## Epics, phases, and worktrees
 
@@ -18,14 +18,21 @@ The same epic → sub-issue → worktree shape generalizes beyond code changes. 
 
 `workflow-reference` documents the branch, state-file, worktree, and GitHub command conventions this pattern relies on.
 
+Before an epic or PR workflow, `project-preflight --format json` reports the
+actual repository root, branch/worktree state, shell and terminal, GitHub CLI
+command/network/auth/token status, child-shell credential inheritance, and
+native-agent capability. It is read-only, never spawns agents, and keeps
+optional capability failures separate from repository detection failures.
+
 ## Skills
 
-- **init-project**: scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, and config files
-- **update-rules**: non-destructive project sync of `AGENTS.md`, the `CLAUDE.md` adapter, and `.rules/`; user-level setup delegates to `install-user-instructions`
+- **init-project**: scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, `.memory/`, and config files. `.memory/` contains one Markdown observation per file plus an index; reruns add only missing convention files.
+- **project-preflight**: read-only startup detection of repository, shell, terminal, GitHub, and native-agent surfaces with `KEY=VALUE` or JSON output
+- **update-rules**: non-destructive project sync of `AGENTS.md`, the `CLAUDE.md` adapter, `.rules/`, and `.memory/` convention files; user-level setup delegates to `install-user-instructions`
 - **install-user-instructions**: ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure, then preview and install shared personal defaults at each documented user surface without copying them into downstream repositories
 - **epic-dev**: the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery
 - **workflow-reference**: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
-- **pr-review-toolkit**: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification
+- **pr-review-toolkit**: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification; Codex `all`/pre-merge reviews use a bounded three-reviewer Luna/max panel when preflight detects native subagents, with single/inline fallback and explicit accounting
 - **codebase-onboarding**: verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
 - **implementation-planning**: strongest-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
 - **engineering-loop**: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons

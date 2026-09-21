@@ -79,6 +79,38 @@ else
     echo ".context/decisions directory already exists, skipping"
 fi
 
+# .memory/ for durable, project-scoped observations. Unlike the other
+# scaffolding directories, add only missing files on every run: user memory
+# entries are project data and must never be overwritten by a template update.
+if [ ! -d "$TARGET_DIR/.memory" ]; then
+    mkdir -p "$TARGET_DIR/.memory"
+    echo "Created .memory/ directory"
+else
+    echo ".memory directory already exists, preserving existing entries"
+fi
+
+if [ ! -d "$TEMPLATES_DIR/memory" ]; then
+    echo "ERROR: template directory missing: $TEMPLATES_DIR/memory" >&2
+    exit 1
+fi
+shopt -s nullglob
+memory_files=("$TEMPLATES_DIR/memory/"*.md)
+shopt -u nullglob
+if [ ${#memory_files[@]} -eq 0 ]; then
+    echo "ERROR: no .md files found in $TEMPLATES_DIR/memory (broken memory template install)" >&2
+    exit 1
+fi
+for memory_template in "${memory_files[@]}"; do
+    memory_name="$(basename "$memory_template")"
+    memory_target="$TARGET_DIR/.memory/$memory_name"
+    if [ ! -e "$memory_target" ]; then
+        cp "$memory_template" "$memory_target"
+        echo "Created .memory/$memory_name"
+    else
+        echo ".memory/$memory_name already exists, skipping"
+    fi
+done
+
 # Python pre-commit hook
 if [ -f "$TARGET_DIR/requirements.txt" ] || [ -f "$TARGET_DIR/pyproject.toml" ] || [ -f "$TARGET_DIR/setup.py" ]; then
     if ! git -C "$TARGET_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then

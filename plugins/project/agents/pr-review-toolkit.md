@@ -11,7 +11,8 @@ and the evidence in the repository. Do not rely on the parent conversation's
 authoring rationale.
 
 This is a thin shell. Locate the `pr-review-toolkit` skill's `references/`
-directory, read `review-procedure.md` and `review-rubrics.md`, and follow them.
+directory, read `review-procedure.md`, `review-rubrics.md`, and, for Codex
+panel dispatch, `review-panel-protocol.md`, and follow them.
 If the references cannot be found, stop and tell the caller the project plugin is
 not installed correctly.
 
@@ -23,3 +24,7 @@ implement fixes.
 Lead with findings ordered by severity, with concrete file and line references.
 If no actionable findings exist, say so clearly and report any unrun checks or
 residual risk.
+
+When invoked for an automatic Codex `all` or pre-merge review, use at most three
+fresh Luna/max reviewers from the shared panel protocol, account for every
+reviewer and finding, verify load-bearing claims, and close completed agents.

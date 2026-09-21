@@ -57,9 +57,9 @@ Skills auto-trigger on user intent (described per-plugin below). Slash commands 
 
 | Plugin | Version | Description | Skills | Commands |
 |--------|---------|-------------|--------|----------|
-| **project** | 0.6.0 | Project lifecycle: init, cross-agent user instructions, tiered model routing, epic workflow, PR review, onboarding, planning, engineering loop, debugging, agent fan-out, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `install-user-instructions`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `codebase-onboarding`, `implementation-planning`, `engineering-loop`, `debugging`, `agent-fanout`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
+| **project** | 0.9.0 | Project lifecycle with startup preflight, bounded native PR review panels, tracked cross-agent project memory, init, cross-agent user instructions, tiered model routing, epic workflow, onboarding, planning, engineering loop, debugging, agent fan-out, CI/CD, Docker, security, doc-processing | `init-project`, `update-rules`, `install-user-instructions`, `workflow-reference`, `epic-dev`, `pr-review-toolkit`, `codebase-onboarding`, `implementation-planning`, `engineering-loop`, `debugging`, `agent-fanout`, `ci-scaffolding`, `docker-packaging`, `security-audit`, `document-processing` | `/init-project`, `/update-rules`, `/epic-dev`, `/epic-status`, `/release-prep` |
 | **grant** | 0.5.0 | NIH/NSF and SBIR/STTR grant proposal writing, merit/readability review, and figure QA | `grant-writing`, `grant-review`, `grant-figure-qa` | -- |
-| **manuscript** | 0.5.2 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
+| **manuscript** | 0.6.0 | Academic manuscript multi-phase + single-pass lit review, peer review, writing, semantic-line-break-safe journal formatting, and humanizer pass | `lit-review`, `paper-review`, `manuscript-writing`, `manuscript-formatting`, `humanizer` | -- |
 | **opencite** | 0.3.2 | Literature search, citation management, PDF retrieval | `opencite` | -- |
 | **figures** | 0.13.0 | Publication-quality figures plugin (eight skills + QA agent; explicit Atlas Cloud icon backend) | `scientific-figure`, `figure-bible`, `transparent-icons`, `svg-figure`, `svg-primitives`, `ai-full-figure`, `plot-styling`, `figure-qa` | -- |
 | **presentation** | 0.2.4 | Interactive Reveal.js presentations from JSON | `presentation-builder` | -- |
@@ -90,7 +90,7 @@ Draft and review NIH and NSF grant proposals with mechanism-specific templates (
 
 ### manuscript
 
-Academic manuscript toolkit covering the full lifecycle: literature review (both multi-phase citation-traceable corpus protocol and single-pass thematic synthesis), writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management). Includes revision response templates. As of epic #61, `paper-review` is a thin-dispatch skill with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template; when those agents are not configured, the skill runs the same reference procedure inline.
+Academic manuscript toolkit covering the full lifecycle: literature review (both multi-phase citation-traceable corpus protocol and single-pass thematic synthesis), writing guidance (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), and journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management) with a guarded semantic-line-break wrapper for SemBr. Includes revision response templates. As of epic #61, `paper-review` is a thin-dispatch skill with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template; when those agents are not configured, the skill runs the same reference procedure inline.
 
 The `manuscript:lit-review` skill covers two modes: a rigorous, iterable, citation-traceable multi-phase workflow where every claim in a direction paper links back to a paper-card on disk, plus an express single-pass synthesis pipeline for writing an Introduction or Background section. The multi-phase workflow can delegate phase orchestration (epic issue, sub-issues, worktrees, state file) to `project:epic-dev` for git-tracked reviews.
 
@@ -145,8 +145,8 @@ Neuroscience data standards, experiment design, and dataset validation:
 
 Complete project lifecycle toolkit combining initialization, epic/sprint workflow, and CI/CD management:
 
-- **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/`, and config files
-- **update-rules** -- non-destructive project sync of AGENTS.md, the CLAUDE.md adapter, and `.rules/` against latest templates; user-level setup delegates to `install-user-instructions`
+- **init-project** -- scaffold new projects with AGENTS.md, a Claude Code CLAUDE.md import wrapper, `.rules/`, `.context/`, `.memory/`, and config files
+- **update-rules** -- non-destructive project sync of AGENTS.md, the CLAUDE.md adapter, `.rules/`, and `.memory/` convention files against latest templates; user-level setup delegates to `install-user-instructions`
 - **install-user-instructions** -- ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure; preview and install a managed global-default block at each supported user surface without duplicating it in repositories
 - **epic-dev** -- Codex-facing entrypoint for the `/epic-dev` multi-phase feature workflow with git worktrees, GitHub issues, and phased PR delivery
 - **workflow-reference** -- branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
@@ -197,6 +197,7 @@ research-skills/
 ├── .claude-plugin/marketplace.json
 ├── .agents/plugins/marketplace.json
 ├── .github/plugin/marketplace.json
+├── .memory/                    # Tracked, cross-agent project observations
 ├── plugins/
 │   ├── project/                   # Project lifecycle (init, workflow, CI, Docker, security, docs)
 │   ├── grant/                     # Grant proposals (writing, review, figure QA)
@@ -228,7 +229,7 @@ Skills are the preferred surface for agent-callable capabilities and auto-trigge
 
 ## Cross-agent instructions
 
-Use `AGENTS.md` as the shared project instruction file. `CLAUDE.md` imports it with `@AGENTS.md`, then leaves room for Claude Code-only plugin, skill, command, or MCP notes. Use `install-user-instructions` for personal defaults across Claude Code, Codex, Copilot CLI, and Cursor; keep repository files limited to project facts and tool-specific deltas so global rules are not repeated downstream.
+Use `AGENTS.md` as the shared project instruction file. `CLAUDE.md` imports it with `@AGENTS.md`, then leaves room for Claude Code-only plugin, skill, command, or MCP notes. Use `.memory/` for durable, non-binding observations that any agent or human can review; keep `.context/decisions/` for binding ADRs and `.context/` for analysis. Use `install-user-instructions` for personal defaults across Claude Code, Codex, Copilot CLI, and Cursor; keep repository files limited to project facts and tool-specific deltas so global rules are not repeated downstream.
 
 ## Versioning
 

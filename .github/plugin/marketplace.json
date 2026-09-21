@@ -11,8 +11,8 @@
   "plugins": [
     {
       "name": "project",
-      "description": "Project lifecycle toolkit: initialization, cross-agent user-instruction setup, tiered model routing, epic/sprint workflow, PR review, onboarding, planning, debugging, engineering loop, agent fan-out, CI/CD, Docker, security, and document processing",
-      "version": "0.6.1",
+      "description": "Project lifecycle toolkit: initialization, tracked cross-agent project memory, cross-agent user-instruction setup, tiered model routing, epic/sprint workflow, PR review, onboarding, planning, debugging, engineering loop, agent fan-out, CI/CD, Docker, security, and document processing",
+      "version": "0.9.0",
       "source": "./plugins/project",
       "category": "development"
     },
@@ -25,8 +25,8 @@
     },
     {
       "name": "manuscript",
-      "description": "Academic manuscript toolkit: literature review, peer review, writing, journal-specific formatting for submission, and humanizer pass to remove AI-writing tells",
-      "version": "0.5.3",
+      "description": "Academic manuscript toolkit: literature review, peer review, writing, journal-specific formatting with semantic-line-break safety, and humanizer pass to remove AI-writing tells",
+      "version": "0.6.0",
       "source": "./plugins/manuscript",
       "category": "research"
     },

@@ -50,6 +50,9 @@ templates/
     decisions/        # Architecture Decision Records
       README.md         # ADR convention (numbering, statuses, when to write one)
       0000-template.md  # Template for new ADRs (do not edit)
+  memory/           # Durable, cross-agent project observations
+    README.md         # Fact format, staleness, boundaries, and safety rules
+    INDEX.md          # One-line discovery index
   config/           # Development configuration
     pre-commit        # Ruff pre-commit hook (Python)
     pyproject.toml    # Python project config
@@ -87,6 +90,11 @@ Copy with safety checks (never overwrite existing files):
 3. **.rules/** from `templates/claude/rules/` (all .md files)
 4. **.context/** from `templates/context/` (plan, ideas, research, scratch_history)
 5. **.context/decisions/** from `templates/context/decisions/` (ADR template and README). Created separately so existing projects that already have `.context/` still pick it up on re-run.
+6. **.memory/** from `templates/memory/` (README and INDEX). Created separately so existing projects pick up the convention without overwriting any project memory entries.
+
+`.memory/` is tracked project data, not a private agent cache. The initializer
+adds only missing template files on reruns and never overwrites an existing
+memory entry or customized README/INDEX. Read its README before writing a fact.
 
 ### Step 3: Language-specific setup
 

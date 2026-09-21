@@ -101,6 +101,13 @@ bun test         # Run tests
 - `.context/ideas.md` - Design concepts
 - `.context/scratch_history.md` - Failed attempts
 
+## Project Memory
+
+- `.memory/` is the tracked, cross-agent store for durable operational observations.
+- Keep one fact per Markdown file with `name`, `description`, `type`, `recorded`, and `revalidate_after` frontmatter; add a one-line hook to `.memory/INDEX.md`.
+- `.context/decisions/` contains binding Architecture Decision Records, `.context/` contains non-binding analysis and plans, and `.memory/` contains non-binding observations. Promote a memory to an ADR when it encodes a choice; never treat a memory as policy.
+- Correct or delete a memory when it becomes false. Never store secrets, tokens, credentials, private transcripts, customer data, personal data, or information about a named individual.
+
 ## Quick Commands
 ```bash
 # Python
