@@ -1,7 +1,7 @@
 ---
 name: manuscript-formatting
-description: "Use this skill for \"format manuscript\", \"prepare for submission\", \"journal formatting\", \"LaTeX template\", \"submission checklist\", \"format references\", \"BibTeX\", \"author guidelines\", \"page limits\", \"format for Nature\", \"format for IEEE\", or when the user wants to format a manuscript for journal submission."
-version: 0.3.0
+description: "Use this skill for \"format manuscript\", \"prepare for submission\", \"journal formatting\", \"Word\", \"DOCX\", \"reference DOCX\", \"LaTeX template\", \"submission checklist\", \"format references\", \"BibTeX\", \"author guidelines\", \"page limits\", \"format for Nature\", \"format for IEEE\", or when the user wants to format a manuscript for journal submission."
+version: 0.4.0
 ---
 
 # Manuscript Formatting and Submission Preparation
@@ -12,9 +12,62 @@ Format manuscripts to meet journal-specific requirements and prepare submission 
 
 - Formatting a manuscript for a specific journal
 - Preparing a submission package (cover letter, figures, supplementary)
-- Converting between formats (Word to LaTeX, markdown to LaTeX)
+- Converting between Word/DOCX, Markdown, and LaTeX
 - Checking compliance with author guidelines
 - Managing references and BibTeX
+
+## Word Draft Workflow
+
+Use this workflow when the reader needs an editable .docx manuscript draft.
+The bundled reference document gives a polished, readable starting point with a clear title block, restrained headings, legible body text, page numbers, figure and table captions, and compact table text.
+It is a review-draft style, not a substitute for a journal's required template.
+
+### Create or Customize the Reference DOCX
+
+Set SKILL_DIR to the directory containing this SKILL.md, or replace it with that directory's full path in the commands below.
+A ready-to-use reference file is at assets/Manuscript_Draft_Reference.docx.
+Copy it into the manuscript project and pass it to Pandoc with --reference-doc.
+
+To generate a fresh copy or change the sample title, run the bundled helper with Python 3.11 or newer and python-docx available:
+
+~~~bash
+uv run --with python-docx python "$SKILL_DIR/scripts/create_docx_template.py" --output manuscript/reference.docx --title "Manuscript Title Goes Here"
+~~~
+
+Pandoc uses the reference DOCX's styles, page setup, header, and footer; it replaces the sample body with the Markdown manuscript.
+Keep the reference file in the project so collaborators can reproduce the same Word styling.
+
+### Mark Figures and Choose Their Placement
+
+Represent each figure as a top-level fenced Div with the .paper-figure class.
+Put one standalone image first, then one or more caption paragraphs.
+The image's alt text is used as accessible alternative text; write it as a concise description of the visual information, separately from the caption.
+
+~~~markdown
+::: {.paper-figure}
+![Scatterplot of response time against device latency, with a positive trend and confidence band.](figures/latency.png){width=95%}
+Figure 1. Response time increased with device latency. The shaded band shows the 95% confidence interval.
+:::
+~~~
+
+Run the conversion with the bundled figure-placement filter.
+The default is inline, which keeps each figure at its Markdown location.
+Set figure-placement to end to gather marked figures in a Figures section immediately before References, or at the end when no References heading is present.
+
+~~~bash
+pandoc manuscript.md --output manuscript.docx --reference-doc manuscript/reference.docx --lua-filter="$SKILL_DIR/scripts/figure-placement.lua" --metadata figure-placement=inline --citeproc --bibliography=references.bib --csl=journal.csl
+~~~
+
+For end-of-document figures, change the metadata value to figure-placement=end.
+
+Keep a textual callout such as Figure 1 in the surrounding prose so readers can find the figure in either layout.
+Use figure-placement=inline for the normal in-place draft.
+The filter rejects malformed .paper-figure blocks and images without alt text instead of silently dropping content.
+
+### Review the Generated DOCX
+
+Open the result in Word or LibreOffice and inspect page breaks, long captions, table widths, equations, cross-references, and the rendered bibliography.
+Journal submission rules override this generic draft styling; apply the journal's actual template and figure-placement requirements before submission.
 
 ## Common Journal Formats
 
