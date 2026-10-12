@@ -1,6 +1,6 @@
 # Manuscript
 
-The `manuscript` plugin covers the full manuscript lifecycle: literature review, writing (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), journal-specific formatting, guarded semantic line breaks for source readability, and a final humanizer pass that strips AI-writing tells.
+The `manuscript` plugin covers the full manuscript lifecycle: literature review, writing (IMRAD structure, section templates), peer review (methodology, statistics, reproducibility), journal-specific formatting, guarded semantic line breaks for source readability, Word/DOCX draft templates with inline or end-of-document figures, and a final humanizer pass that strips AI-writing tells.
 
 ## The manuscript pipeline
 
@@ -37,7 +37,7 @@ The same shape across every card is what lets synthesis scan the corpus quickly 
 - **lit-review**: both literature-review modes described above
 - **manuscript-writing**: IMRAD structure and section templates
 - **paper-review**: the peer-review simulation described above; thin-dispatch with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template
-- **manuscript-formatting**: journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management) plus revision-response templates
+- **manuscript-formatting**: journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management), a polished Pandoc reference DOCX, and inline or end-of-document figure placement
 - **humanizer**: a final natural-writing pass that removes AI-writing tells while preserving meaning and discipline conventions
 
 ## Try it
@@ -45,6 +45,7 @@ The same shape across every card is what lets synthesis scan the corpus quickly 
 ```
 "Review this manuscript at paper.pdf as a peer reviewer"
 "Format my paper for Nature Neuroscience"
+"Create a polished Word draft with figures inline or grouped before References"
 "Start a multi-phase lit review on EEG-based BCIs with strands tools, data, science"
 "Write a single-pass literature review on motor cortex oscillations"
 ```
