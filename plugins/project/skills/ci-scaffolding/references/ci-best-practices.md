@@ -77,6 +77,41 @@ steps:
       ref: ${{ github.event.pull_request.head.sha }}  # Runs untrusted code with write access
 ```
 
+## Scoped required checks (gate job)
+
+Branch protection waits forever on a required check whose workflow was skipped by `paths`, `paths-ignore`, or `[skip ci]`.
+A job skipped by `if:` reports success instead.
+So for required checks, always run the workflow, skip expensive jobs by condition, and require only the gate:
+
+```yaml
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code: ['src/**', 'tests/**', 'pyproject.toml', 'package.json', '.github/workflows/**']
+  test:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # lint, typecheck, test
+  gate:
+    needs: [changes, test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "false" ]]
+```
+
 ## Conditional Jobs
 
 ```yaml

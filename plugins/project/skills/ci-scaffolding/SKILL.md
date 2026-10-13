@@ -16,6 +16,34 @@ Generate and configure CI/CD pipelines following project conventions. Supports P
 - Configuring coverage reporting
 - Adding release automation (tag-based)
 
+## Triggers and scope (every workflow)
+
+CI runs only when files it checks change, once per push.
+
+1. Trigger on `pull_request` plus `push` to the integration branches. Never `on: [push, pull_request]`; it runs twice for every PR push.
+2. Add `concurrency` that cancels superseded PR runs.
+3. Scope each workflow to the files it reads: `paths` for docs and deploy workflows, `paths-ignore` for code workflows. Ignore only paths no job reads; if CI builds or lints the docs, keep them in that job's scope.
+4. A workflow skipped by a path filter or `[skip ci]` leaves its required check pending and blocks merge. For a required check, use the always-running gate job in `references/ci-best-practices.md` and require only the gate.
+
+```yaml
+on:
+  pull_request:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+  push:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+```
+
+### `[skip ci]` commits
+
+- Add `[skip ci]` to the subject of a commit that changes only files no CI job reads (notes, `.context/`, `.memory/`, prose docs CI does not build).
+- GitHub reads only the head commit of a push. Never push a `[skip ci]` commit on top of untested code commits.
+- On a PR branch, use it only when `gh pr checks N --required` lists no required checks; otherwise rely on path filters.
+
 ## Pipeline Templates
 
 ### Python Project Pipeline
@@ -25,7 +53,7 @@ Standard Python CI pipeline:
 ```yaml
 # .github/workflows/test.yml
 name: Tests
-on: [push, pull_request]
+# on + concurrency: copy the block from "Triggers and scope"
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -49,7 +77,7 @@ Key conventions:
 ```yaml
 # .github/workflows/test.yml
 name: Tests
-on: [push, pull_request]
+# on + concurrency: copy the block from "Triggers and scope"
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -98,6 +126,7 @@ name: Docs
 on:
   push:
     branches: [main]
+    paths: ['docs/**', 'mkdocs.yml']
 permissions:
   contents: write
 jobs:
@@ -165,6 +194,7 @@ Create `.github/workflows/` directory and write workflow files. Never overwrite 
 ### Step 4: Verify
 
 Run `act` locally if available to validate workflows, or do a dry-run check of YAML syntax.
+Confirm every workflow has scoped triggers and `concurrency`, and that a docs-only change starts no code workflow.
 
 ## Additional Resources
 

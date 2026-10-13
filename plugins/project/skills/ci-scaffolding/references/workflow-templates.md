@@ -7,10 +7,16 @@ Complete workflow file templates with all configuration options.
 ```yaml
 name: Tests
 on:
-  push:
-    branches: [main, develop]
   pull_request:
     branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+  push:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -52,10 +58,16 @@ jobs:
 ```yaml
 name: Tests
 on:
-  push:
-    branches: [main, develop]
   pull_request:
     branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+  push:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -138,7 +150,17 @@ jobs:
 
 ```yaml
 name: Tests
-on: [push, pull_request]
+on:
+  pull_request:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+  push:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
