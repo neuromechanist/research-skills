@@ -26,7 +26,7 @@
 - Review each PR at most twice: one full review, then one review of the fix commits only if the findings or fixes were substantial. Never a third round.
 - Fix review findings with commits on the same PR branch, pushed once per round. Use a separate fix PR, targeting the PR's head branch, only for a large fix or when that branch blocks direct pushes (one fix PR per round). Never merge before the review returns.
 - Give every finding one outcome: fixed, rejected with a reason, or filed as an issue (only for code the PR did not touch). Resolve accepted findings before merging; never defer them to a follow-up PR or the next release.
-- Scope CI: trigger on pull requests and pushes to integration branches, path-filter by what each workflow checks, cancel superseded runs, and set job timeouts. Add `[skip ci]` to commits that touch only files no CI job reads and to bot version-bump commits.
+- Scope CI: trigger on pull requests and pushes to integration branches, path-filter by what each workflow checks, cancel superseded runs, and set job timeouts. Add `[skip ci]` to commits that touch only files no CI job reads and to bot version-bump or sync commits that no deploy needs. One merge deploys once per environment, from the final commit.
 - Every wait has a limit and a next action. Do not re-ask, re-review, or restart a step to get unstuck.
 
 ### Delivery discipline

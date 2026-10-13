@@ -12,7 +12,8 @@
 - **Required checks:** a skipped workflow leaves a required check pending; use an unfiltered workflow with a gate job (see the ci-scaffolding skill).
 - **`[skip ci]`:** in the subject of commits that touch only files no CI job reads (see git rules).
 - **Timeouts:** every job sets `timeout-minutes` (default 20); a hung job otherwise runs 6 hours.
-- **No live services in required checks; one workflow per concern; bot version-bump commits carry `[skip ci]`.**
+- **No live services in required checks; one workflow per concern.**
+- **Bot bump and sync commits** carry `[skip ci]` unless a deploy needs that commit; one merge deploys once per environment, from the final (bumped) commit.
 
 ## Essential Workflows
 

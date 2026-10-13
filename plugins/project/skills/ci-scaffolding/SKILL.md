@@ -27,7 +27,8 @@ CI runs only when files it checks change, once per push.
 5. Give every job `timeout-minutes` (default 20) and tests a per-test timeout; a hung job otherwise runs for 6 hours.
 6. Required checks never call live external services; put those in a scheduled or non-required job.
 7. One workflow per concern; never two workflows running the same tests.
-8. Bot bookkeeping commits (version bumps, file syncs) carry `[skip ci]`, or bump once per release instead of per merge.
+8. Bot bookkeeping commits (version bumps, file syncs) carry `[skip ci]` unless a deploy or publish needs that exact commit; then that commit runs only the deploy or publish, never the tests again.
+9. One merge deploys and publishes once per environment, from the final commit (after any bump). The pre-bump merge commit does not deploy when a bump follows.
 
 ```yaml
 on:
