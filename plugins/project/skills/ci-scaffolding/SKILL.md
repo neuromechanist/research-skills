@@ -24,6 +24,10 @@ CI runs only when files it checks change, once per push.
 2. Add `concurrency` that cancels superseded PR runs.
 3. Scope each workflow to the files it reads: `paths` for docs and deploy workflows, `paths-ignore` for code workflows. Ignore only paths no job reads; if CI builds or lints the docs, keep them in that job's scope.
 4. A workflow skipped by a path filter or `[skip ci]` leaves its required check pending and blocks merge. For a required check, use the always-running gate job in `references/ci-best-practices.md` and require only the gate.
+5. Give every job `timeout-minutes` (default 20) and tests a per-test timeout; a hung job otherwise runs for 6 hours.
+6. Required checks never call live external services; put those in a scheduled or non-required job.
+7. One workflow per concern; never two workflows running the same tests.
+8. Bot bookkeeping commits (version bumps, file syncs) carry `[skip ci]`, or bump once per release instead of per merge.
 
 ```yaml
 on:
