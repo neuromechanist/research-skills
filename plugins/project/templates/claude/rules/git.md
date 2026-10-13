@@ -38,7 +38,7 @@
    - Description with "Fixes #123"
    - Test results summary
 6. Review per `.rules/code_review.md`: at most one full review and one delta review
-7. Fix review findings with commits on the same branch (one push per round); never a new PR to main
+7. Fix review findings with commits on the same branch (one push per round). If that branch blocks direct pushes (release PRs), use one fix PR per round into it
 8. Squash merge to keep history clean
 
 ## Merge Strategy
