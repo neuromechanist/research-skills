@@ -16,3 +16,6 @@
     install surfaces.
 - If no actionable findings exist, say so clearly and name residual risks or
   checks not run.
+- Review convergence: at most one full and one delta review per PR, fixes as
+  commits on the PR branch, per
+  `plugins/project/skills/pr-review-toolkit/references/review-convergence.md`.
