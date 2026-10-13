@@ -175,6 +175,43 @@ def test_pr_review_panel_contract_is_bounded_and_has_fallback():
     assert "close completed" in protocol
 
 
+def test_pr_workflows_cap_review_rounds_and_link_unblock_rules():
+    project = PLUGINS_DIR / "project"
+    convergence = (
+        project / "skills" / "pr-review-toolkit" / "references" / "review-convergence.md"
+    ).read_text()
+    assert "at most two review rounds" in convergence
+    assert "Never re-review the whole PR" in convergence
+    assert "base is the PR branch" in convergence
+    assert (project / "skills" / "engineering-loop" / "references" / "unblock-rules.md").exists()
+
+    for path in [
+        project / "commands" / "epic-dev.md",
+        project / "skills" / "engineering-loop" / "SKILL.md",
+        project / "skills" / "epic-dev" / "SKILL.md",
+        project / "skills" / "workflow-reference" / "SKILL.md",
+    ]:
+        text = path.read_text()
+        assert "review-convergence.md" in text, f"{path.relative_to(ROOT)} lacks the review cap"
+        assert "unblock-rules.md" in text, f"{path.relative_to(ROOT)} lacks unblock rules"
+
+
+def test_ci_templates_scope_triggers_and_cancel_superseded_runs():
+    project = PLUGINS_DIR / "project"
+    for path in [
+        project / "skills" / "ci-scaffolding" / "references" / "workflow-templates.md",
+        project / "templates" / "claude" / "rules" / "ci_cd.md",
+        project / "templates" / "cursor" / "core_rules" / "ci_cd.mdc",
+        project / "templates" / "github" / "workflows" / "test.yml",
+    ]:
+        text = path.read_text()
+        assert not re.search(r"^on: \[push, pull_request\]", text, re.MULTILINE), (
+            f"{path.relative_to(ROOT)} double-triggers on push and pull_request"
+        )
+        assert "cancel-in-progress" in text, f"{path.relative_to(ROOT)} lacks concurrency"
+        assert "paths-ignore" in text, f"{path.relative_to(ROOT)} lacks path scoping"
+
+
 def test_github_body_writers_state_semantic_break_exception():
     writers = [
         PLUGINS_DIR / "project" / "commands" / "epic-dev.md",
