@@ -15,7 +15,8 @@ Before dispatching, run the read-only startup probe:
 Use the panel only when all of these are true:
 
 1. the scope is `all` (the default) or the caller explicitly requests a
-   pre-merge review;
+   pre-merge review, and this is round 1 (a round-2 `delta` review always
+   uses one reviewer; see `review-convergence.md`);
 2. `native_agent_status` is `available`;
 3. the caller has not selected `single`, `inline`, or another opt-out; and
 4. the requested work is not an advisory review of one named lens.
