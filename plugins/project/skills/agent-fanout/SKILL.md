@@ -50,7 +50,8 @@ under review. Compute the count first.
 
 ## Roles and model routing
 
-Keep the lead/orchestrator on the strongest available reasoning tier. The lead
+Keep the lead/orchestrator on the strongest available reasoning tier; in
+driver mode (below), the driver delegates the lead's hard calls to that tier. The lead
 owns requirements, architecture, irreversible decisions, supervision,
 load-bearing verification, and final synthesis. Delegate bounded plan
 elaboration to the intermediate tier only after the architecture is fixed.
@@ -95,7 +96,7 @@ Sonnet to Opus/Fable.
 
 | Role | Agent type | Default tier | Notes |
 | --- | --- | --- | --- |
-| Lead/orchestrator | main session | strongest | Preserve requirements, approve architecture, supervise, verify, and synthesize. |
+| Lead/orchestrator | main session | strongest, or a Sonnet/Luna driver in driver mode | Preserve requirements, approve architecture, supervise, verify, and synthesize; a driver delegates hard calls to the strongest tier. |
 | Explorer/scout | read-only explorer | intermediate or worker | One-shot for bounded facts; the lead re-verifies the keystone fact. |
 | Architect | plan agent | strongest | Owns macro design and open judgment calls. |
 | Phase planner | plan agent | intermediate | Expands an approved architecture into worker-executable actions; escalates unresolved design. |

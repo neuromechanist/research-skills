@@ -2,7 +2,7 @@
 
 ### Task strategy and model routing
 
-- Keep requirements, architecture, difficult judgment, observation, supervision, load-bearing verification, and final synthesis on the strongest available model.
+- Keep requirements, architecture, difficult judgment, observation, supervision, load-bearing verification, and final synthesis on the strongest available model, directly or by delegation from a Sonnet or Luna driver.
 - On Claude Code, use Fable when available or Opus for lead reasoning, and Sonnet for implementation from an approved detailed plan.
 - On OpenAI Codex, use Sol for lead reasoning, Terra for bounded phase-plan elaboration after architecture approval, and Luna for clear, repeatable implementation, focused tests, routine review, and validation.
 - When the session itself runs on Sonnet or Luna, act as a mechanical driver: delegate routine work to Sonnet (`xhigh`) or Luna (`max`), and architecture, high-risk invariants, and contested findings to Opus or Sol (`xhigh`).
