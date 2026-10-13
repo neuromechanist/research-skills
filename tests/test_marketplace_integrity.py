@@ -210,6 +210,7 @@ def test_ci_templates_scope_triggers_and_cancel_superseded_runs():
         )
         assert "cancel-in-progress" in text, f"{path.relative_to(ROOT)} lacks concurrency"
         assert "paths-ignore" in text, f"{path.relative_to(ROOT)} lacks path scoping"
+        assert "timeout-minutes" in text, f"{path.relative_to(ROOT)} lacks job timeouts"
 
 
 def test_github_body_writers_state_semantic_break_exception():
