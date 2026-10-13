@@ -210,7 +210,31 @@ def test_ci_templates_scope_triggers_and_cancel_superseded_runs():
         )
         assert "cancel-in-progress" in text, f"{path.relative_to(ROOT)} lacks concurrency"
         assert "paths-ignore" in text, f"{path.relative_to(ROOT)} lacks path scoping"
-        assert "timeout-minutes" in text, f"{path.relative_to(ROOT)} lacks job timeouts"
+
+
+def test_ci_templates_time_out_every_job():
+    yaml = pytest.importorskip("yaml")
+    project = PLUGINS_DIR / "project"
+    paths = [
+        *sorted((project / "templates" / "github" / "workflows").glob("*.yml")),
+        *sorted((project / "skills" / "ci-scaffolding").rglob("*.md")),
+        project / "templates" / "claude" / "rules" / "ci_cd.md",
+        project / "templates" / "cursor" / "core_rules" / "ci_cd.mdc",
+    ]
+    checked = 0
+    for path in paths:
+        text = path.read_text()
+        blocks = [text] if path.suffix == ".yml" else re.findall(r"```yaml\n(.*?)```", text, re.DOTALL)
+        for block in blocks:
+            doc = yaml.safe_load(block)
+            jobs = doc.get("jobs") if isinstance(doc, dict) else None
+            for name, job in (jobs or {}).items():
+                if isinstance(job, dict) and "runs-on" in job:
+                    checked += 1
+                    assert "timeout-minutes" in job, (
+                        f"{path.relative_to(ROOT)}: job {name!r} lacks timeout-minutes"
+                    )
+    assert checked > 10, f"only {checked} CI template jobs found"
 
 
 def test_github_body_writers_state_semantic_break_exception():

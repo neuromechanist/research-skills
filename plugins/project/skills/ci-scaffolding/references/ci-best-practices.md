@@ -87,6 +87,7 @@ So for required checks, always run the workflow, skip expensive jobs by conditio
 jobs:
   changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     outputs:
       code: ${{ steps.filter.outputs.code }}
     steps:
@@ -100,6 +101,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       # lint, typecheck, test
@@ -107,6 +109,7 @@ jobs:
     needs: [changes, test]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - run: |
           [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "false" ]]

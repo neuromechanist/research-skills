@@ -6,10 +6,10 @@
 **Goal:** Fast feedback, high confidence, zero surprises.
 
 ## Triggers and Scope (avoid wasted runs)
-- **Trigger:** `pull_request` plus `push` to `main`/`develop` only. Never `on: [push, pull_request]` (double runs on every PR push).
+- **Trigger:** `pull_request` (any base) plus `push` to `main`/`develop` only. Never `on: [push, pull_request]` (double runs on every PR push).
 - **Concurrency:** cancel superseded PR runs (`group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}`).
 - **Scope:** `paths-ignore` docs and notes for code workflows; `paths` for docs and deploy workflows.
-- **Required checks:** a skipped workflow leaves a required check pending; use an always-running gate job (see the ci-scaffolding skill).
+- **Required checks:** a skipped workflow leaves a required check pending; use an unfiltered workflow with a gate job (see the ci-scaffolding skill).
 - **`[skip ci]`:** in the subject of commits that touch only files no CI job reads (see git rules).
 - **Timeouts:** every job sets `timeout-minutes` (default 20); a hung job otherwise runs 6 hours.
 - **No live services in required checks; one workflow per concern; bot version-bump commits carry `[skip ci]`.**
@@ -38,7 +38,6 @@
 name: CI
 on:
   pull_request:
-    branches: [main, develop]
     paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
   push:
     branches: [main, develop]
@@ -50,6 +49,7 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - uses: astral-sh/setup-uv@v4
@@ -60,6 +60,7 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       matrix: { python-version: ['3.11', '3.12', '3.13'] }
     steps:
@@ -75,7 +76,6 @@ jobs:
 name: CI
 on:
   pull_request:
-    branches: [main, develop]
     paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
   push:
     branches: [main, develop]
@@ -87,6 +87,7 @@ concurrency:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - uses: oven-sh/setup-bun@v2
@@ -96,6 +97,7 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - uses: oven-sh/setup-bun@v2

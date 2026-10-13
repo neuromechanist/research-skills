@@ -10,7 +10,7 @@ while IFS= read -r script; do
 done < <(find plugins -path '*/bin/*' -type f | sort)
 
 uv run --with pytest --with lxml --with svgelements --with shapely \
-    --with svgpathtools --with fonttools \
+    --with svgpathtools --with fonttools --with pyyaml \
     pytest tests/ -q
 
 uv run --with pytest --with pillow --with jsonschema \

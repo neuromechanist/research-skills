@@ -3,12 +3,10 @@
 Complete workflow file templates with all configuration options.
 
 ## Python Test Workflow (Full)
-
 ```yaml
 name: Tests
 on:
   pull_request:
-    branches: [main, develop]
     paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
   push:
     branches: [main, develop]
@@ -31,6 +29,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: lint
     strategy:
       matrix:
@@ -46,22 +45,13 @@ jobs:
         if: matrix.python-version == '3.12'
         with:
           file: coverage.xml
-
-  typos:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: crate-ci/typos@master
 ```
 
 ## TypeScript Test Workflow (Full)
-
 ```yaml
 name: Tests
 on:
   pull_request:
-    branches: [main, develop]
     paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
   push:
     branches: [main, develop]
@@ -83,23 +73,16 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: lint
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install
       - run: bun test
-
-  typos:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: crate-ci/typos@master
 ```
 
 ## Release Workflow (Full)
-
 ```yaml
 name: Release
 on:
@@ -125,7 +108,6 @@ jobs:
 ```
 
 ## Documentation Workflow (Full)
-
 ```yaml
 name: Documentation
 on:
@@ -153,12 +135,10 @@ jobs:
 ```
 
 ## Go Test Workflow
-
 ```yaml
 name: Tests
 on:
   pull_request:
-    branches: [main, develop]
     paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
   push:
     branches: [main, develop]
@@ -179,11 +159,28 @@ jobs:
           go-version: '1.22'
       - run: go vet ./...
       - run: go test -race -coverprofile=coverage.out ./...
+```
 
+## Typos Workflow (unfiltered)
+
+Typos reads docs, so it runs in its own workflow without path filters.
+
+```yaml
+name: Typos
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
   typos:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: crate-ci/typos@master
+      - uses: crate-ci/typos@v1
 ```

@@ -19,6 +19,7 @@ concurrency:
 jobs:
   build-docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - name: Install uv
@@ -37,6 +38,7 @@ jobs:
   deploy-docs:
     needs: build-docs
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
