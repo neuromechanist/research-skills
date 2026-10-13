@@ -239,7 +239,7 @@ Update state: mark phase `in_progress`.
 
 - **Detection script failure**: If `project-preflight` fails or returns `ERROR`, report the exact error and stop. Do not proceed with empty configuration values.
 - **Git conflicts**: Merge or rebase the base branch, resolve, and rerun gates. Ask the user only when a resolution needs a product decision.
-- **Test failures**: Present test output, then fix and rerun by default (root-cause the failure; never delete or weaken the failing test to pass). Ask the user only if two fix attempts fail or the fix would expand the phase's scope.
+- **Test failures**: Present test output, then fix and rerun by default (root-cause the failure; never delete or weaken the failing test to pass). After two failed attempts, escalate to Opus with the log, then hand off per `unblock-rules.md`. Ask the user only if the fix would expand the phase's scope.
 - **PR check failures**: Follow the CI rows of `unblock-rules.md`: two fix attempts for failures caused by the diff, one rerun for unrelated failures, then escalate or hand off.
 - **GitHub API failures**: If `gh issue create` or `gh pr create` fails, report the exact error, show which issues/PRs were already created, and ask the user whether to retry or abort. Never proceed with empty issue/PR numbers.
 - **Missing gh sub-issue**: Install automatically: `gh extension install agbiotech/gh-sub-issue`

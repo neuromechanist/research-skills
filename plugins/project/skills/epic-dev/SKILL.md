@@ -121,7 +121,8 @@ For each phase, starting from the current state:
 
 8. Review the phase PR with `pr-review-toolkit` and follow its
    `review-convergence.md` reference: one full round, fixes committed on the
-   phase branch, a delta round only if round 1 was substantial, no third
+   phase branch (a large fix: one fix PR based on the phase branch), a delta
+   round only if round 1 was substantial, no third
    round. Send security, concurrency, authorization, data-integrity, or
    architectural findings to Sol before fixing them.
 9. Squash merge the phase PR when the convergence merge gate passes. Do not
@@ -133,7 +134,7 @@ For each phase, starting from the current state:
 
 1. Create the final PR from the epic branch to the integration branch.
 2. Run project tests or the best available integration verification from the epic worktree.
-3. Invoke `pr-review-toolkit` on the final PR.
+3. Review the final PR with one integration-scoped reviewer (`pr-review-toolkit`): cross-phase integration only, not content the phase reviews covered; same two-round limit.
 4. Present the final review summary and ask for merge approval.
 5. Merge the final PR with a regular merge (`--merge`) to preserve per-phase history; only squash if the user explicitly asks.
 6. Close the epic issue if GitHub did not close it automatically.

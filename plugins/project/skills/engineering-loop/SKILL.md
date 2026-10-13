@@ -74,7 +74,8 @@ verification. Lightweight counterpart to the epic-dev workflow.
 9. **Review (two rounds at most).** Start the `project:pr-review-toolkit`
    skill while CI runs and follow its `review-convergence.md` reference:
    one full review; every finding fixed, rejected with a reason, or filed as
-   an issue; fixes committed on the PR branch and pushed once; one delta
+   an issue; fixes committed on the PR branch and pushed once (a large fix
+   goes in one fix PR based on the PR branch); one delta
    review only if round 1 was substantial; no third round. A deleted test
    that held the only coverage of a scenario is a blocking gap, not a nit.
 10. **CI, then merge.** Wait for checks within the limits in

@@ -107,9 +107,10 @@ numerical results; parity is the spec."
 
 ```
 The [N]-agent review of PR #[P] is done: [one-line verdict]. Every finding
-below gets addressed or explicitly rejected. Fix in your worktree on the PR
-branch, re-run all gates (zero new diagnostics vs baseline), commit
-atomically, push once. Do NOT open a new PR for these fixes. Do NOT merge.
+below gets addressed or explicitly rejected. Fix in your worktree on
+[the PR branch | a fix branch whose PR targets the PR branch, per
+`review-convergence.md`], re-run all gates (zero new diagnostics vs
+baseline), commit atomically, push once. Open no other PR. Do NOT merge.
 
 1. CRITICAL: [file:line]: [bug mechanism]. Fix: [exact fix].
 2. IMPORTANT: ...

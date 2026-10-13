@@ -7,7 +7,7 @@ Every workflow that reviews a PR follows this file.
 
 | Round | Runs when | Scope | Reviewers |
 | --- | --- | --- | --- |
-| 1. Full | Always | Whole PR diff | Panel per `review-panel-protocol.md`; one reviewer for docs-only PRs or under 50 changed lines |
+| 1. Full | Always | Whole PR diff | Panel per `review-panel-protocol.md`; one reviewer for docs-only PRs, PRs under 50 changed lines, and final epic or release PRs (integration scope only) |
 | 2. Delta | Round 1 was substantial (below) | Fix commits only | One reviewer |
 | 3 | Never, unless the user asks | - | - |
 
@@ -24,7 +24,8 @@ Never merge to fix them in a follow-up PR or the next release.
 
 ## Where fixes go
 
-Round 1 was **substantial** if any is true:
+Round 1 was **substantial** if any is true
+(judge rules 2, 3, and 5 from the planned fix; if unsure, write the fixes locally off the PR head first, then choose):
 
 1. an accepted finding is Critical;
 2. the fixes change more than 150 non-test, non-doc lines;
@@ -56,12 +57,14 @@ the round-1 findings with their outcomes, and this instruction:
 "Report only Critical or Important defects that the fixes introduce or fail to resolve.
 Do not re-flag rejected findings or code outside the fix diff."
 
-Fix round-2 findings with direct commits on the PR branch, or reject or file them as issues.
+Fix round-2 findings with commits on the branch the reviewed diff lives on (the fix PR's branch, if there is one), or reject or file them as issues.
+The driver verifies each round-2 fix against its finding by running its repro or test.
 Do not review again.
 
 ## Merge gate
 
-Merge when the round-1 report is in, every finding has an outcome, no accepted Critical is open, and CI is green on the final head.
+Merge when the round-1 report (and the round-2 report, if round 2 runs) is in, every finding has an outcome, no accepted Critical is open, and CI is green on the final head.
+An accepted Critical that cannot be fixed in scope goes to the user.
 Never merge while a review is still running.
 Routine PRs (single-PR work, epic phases) merge without asking the user.
 The final epic merge and any merge with a failing required check need user approval.

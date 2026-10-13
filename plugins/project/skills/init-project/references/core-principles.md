@@ -39,7 +39,7 @@ All projects use a standardized `.context/` directory with four files that track
 
 ## No Technical Debt Carried Forward
 
-Address ALL PR review findings, not just critical ones, within at most two review rounds (one full, one delta). Fix on the same branch; do not open a new PR per review round. Only skip findings that are genuine false positives or intentionally different by design.
+Address ALL PR review findings, not just critical ones, within at most two review rounds (one full, one delta). Fix on the same branch; a separate fix PR only for a large fix or a protected head branch (see the pr-review-toolkit `review-convergence.md`). Only skip findings that are genuine false positives or intentionally different by design.
 
 **Rules:**
 - Replace, do not deprecate

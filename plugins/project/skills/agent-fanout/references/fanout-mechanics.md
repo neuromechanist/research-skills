@@ -49,7 +49,8 @@ the swarm's source of truth. Mark a task completed only when its own stated
 criterion is met (usually merged, not PR-opened).
 
 **Background shell work**: use `run_in_background` Bash for watch-then-act
-chains, e.g. wait for CI then merge then clean up in one call:
+chains, e.g. wait for CI then merge then clean up in one call (only after the
+review merge gate in `review-convergence.md` has passed):
 
 ```bash
 gh pr checks 235 --watch --fail-fast >/dev/null 2>&1 \
