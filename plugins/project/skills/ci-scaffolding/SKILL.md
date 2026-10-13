@@ -46,6 +46,7 @@ concurrency:
 
 - Add `[skip ci]` to the subject of a commit that changes only files no CI job reads (notes, `.context/`, `.memory/`, prose docs CI does not build). Exception: bot bump and sync commits per rule 8.
 - GitHub reads only the head commit of a push. Never push a `[skip ci]` commit on top of untested code commits.
+- GitHub matches the token anywhere in that message, body included. Never quote it in a commit message you want tested; write "skip-ci marker" instead.
 - On a PR branch, use it only when `gh pr checks N --required` lists no required checks; otherwise rely on the gate job's `changes` filter.
 
 ## Pipeline Templates
