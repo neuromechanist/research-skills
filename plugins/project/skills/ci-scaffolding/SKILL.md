@@ -1,7 +1,7 @@
 ---
 name: ci-scaffolding
 description: "This skill should be used when the user says \"set up CI\", \"create GitHub Actions\", \"scaffold CI pipeline\", \"add CI/CD\", \"configure continuous integration\", \"create test workflow\", \"create release workflow\", \"add pre-commit hooks\", \"set up linting pipeline\", \"configure ruff in CI\", \"configure biome in CI\", \"add typo checking\", or wants to add, update, or customize CI/CD pipelines for their project. For initial project setup including basic CI, see init-project. Use ci-scaffolding for adding or customizing CI/CD in existing projects."
-version: 0.1.0
+version: 0.1.1
 ---
 
 # CI/CD Scaffolding
@@ -27,7 +27,8 @@ CI runs only when files it checks change, once per push.
 5. Give every job `timeout-minutes` (default 20) and tests a per-test timeout; a hung job otherwise runs for 6 hours.
 6. Required checks never call live external services; put those in a scheduled or non-required job.
 7. One workflow per concern; never two workflows running the same tests.
-8. Bot bookkeeping commits (version bumps, file syncs) carry `[skip ci]`, or bump once per release instead of per merge.
+8. Prefer no post-merge bot commit: bump versions inside the PR or at release. If a bot must commit after merge (version bump, file sync), push it with `[skip ci]`, alone in its push, only to the integration branch, never to a PR head. GitHub also reads the marker from a PR's head commit, so if the integration branch later heads a release PR (for example `develop` to `main`), its required checks never report; in that setup skip inside the workflow instead: a gate job detects the bot's commit and skips its steps, so the required checks still pass. A bot push needs a PAT or App token to trigger anything; `GITHUB_TOKEN` pushes trigger no workflows. A tag on a `[skip ci]` commit also skips tag-triggered workflows, so create releases with `gh release create` or a dispatch.
+9. One merge deploys and publishes once per environment, from the final commit. When a bot bumps after merge, the same workflow deploys: a `bump` job, then a `deploy` job with `needs: bump` that checks out the bumped SHA. No separate push-triggered deploy runs for that branch.
 
 ```yaml
 on:
@@ -43,8 +44,9 @@ concurrency:
 
 ### `[skip ci]` commits
 
-- Add `[skip ci]` to the subject of a commit that changes only files no CI job reads (notes, `.context/`, `.memory/`, prose docs CI does not build).
+- Add `[skip ci]` to the subject of a commit that changes only files no CI job reads (notes, `.context/`, `.memory/`, prose docs CI does not build). Exception: bot bump and sync commits per rule 8.
 - GitHub reads only the head commit of a push. Never push a `[skip ci]` commit on top of untested code commits.
+- GitHub matches the token anywhere in that message, body included. Never quote it in a commit message you want tested; write "skip-ci marker" instead.
 - On a PR branch, use it only when `gh pr checks N --required` lists no required checks; otherwise rely on the gate job's `changes` filter.
 
 ## Pipeline Templates
