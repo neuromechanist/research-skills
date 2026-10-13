@@ -12,16 +12,16 @@ variation details, then follow this procedure as the execution contract.
 ## Operating Rules
 
 - Execute repository detection, GitHub lookups, worktree setup, tests, commits, PR creation, and cleanup directly when prerequisites are valid.
-- Ask before strategic points only: epic plan approval, per-phase implementation plan approval, critical review decisions, and final epic merge.
+- Ask before strategic points only: epic plan approval, per-phase implementation plan approval, an accepted Critical finding that cannot be fixed within the phase, and final epic merge.
+- When anything blocks progress, follow the `project:engineering-loop` skill's `unblock-rules.md` reference: every wait has a limit and a next action.
 - Use absolute paths in shell commands. Do not rely on a previous `cd`.
 - Track progress with the active planning tool when available.
 - Do not use `codex/` branch prefixes. Prefer `feature/issue-{N}-...`, `patch/...`, or `chore/...` per project rules.
 - Do not use emojis in issues, PRs, commits, or generated state.
-- Keep the lead on Sol (or the strongest available model) for epic design,
-  observation, approvals, supervision, load-bearing verification, and final
-  synthesis. Use Terra only to elaborate an approved phase architecture, and
-  Luna for detailed implementation, focused review, and validation. Escalate
-  unresolved design or high-risk invariants per `agent-fanout`.
+- Route models per `agent-fanout`. A Luna (`max`) driver orchestrates and
+  delegates epic design, unresolved architecture, and high-risk invariants to
+  Sol (`xhigh`); Luna (`max`) implements, reviews, and validates. Terra may
+  elaborate an approved phase architecture.
 - Semantic line breaks remain the default for prose source, except GitHub issue
   and pull-request bodies. In GitHub bodies, keep each paragraph on one source
   line, separate paragraphs with blank lines, and do not insert sentence- or
@@ -119,11 +119,13 @@ For each phase, starting from the current state:
    gh pr create --base {epic_branch} --title "Phase {X}: {title}" --body "{body}"
    ```
 
-8. Invoke `pr-review-toolkit` with a fresh Luna reviewer for the phase PR. Use
-   Terra or Sol for security, concurrency, authorization, data-integrity, or
-   unresolved architectural findings. The lead verifies the headline finding
-   before dispatching a fix.
-9. Squash merge the phase PR only after checks and critical review issues are resolved.
+8. Review the phase PR with `pr-review-toolkit` and follow its
+   `review-convergence.md` reference: one full round, fixes committed on the
+   phase branch, a delta round only if round 1 was substantial, no third
+   round. Send security, concurrency, authorization, data-integrity, or
+   architectural findings to Sol before fixing them.
+9. Squash merge the phase PR when the convergence merge gate passes. Do not
+   ask the user.
 10. Update state, remove the phase worktree, close/remove completed one-off
     agent threads, and continue to the next phase.
 
@@ -144,9 +146,9 @@ For each phase, starting from the current state:
 - Detection failure: stop with the exact `project-preflight` error for missing
   repository fields; preserve the separate GitHub and optional-agent
   diagnostics for repair guidance.
-- Git conflict: stop, show conflicted files, and ask the user to resolve or direct the strategy.
-- Test failure: report the failing command and failure summary; fix and rerun unless the user directs otherwise.
-- GitHub API failure: show what was already created and ask whether to retry or abort.
+- Git conflict: merge or rebase the base branch, resolve, and rerun gates. Ask the user only when a resolution needs a product decision.
+- Test or CI failure: fix and rerun (two attempts), escalate to Sol with the log, then hand off with the failing command and output.
+- GitHub API failure: retry twice; then show what was already created and ask whether to retry or abort.
 - Merge failure: do not update state or clean up worktrees. Leave the phase marked `in_progress`.
 - Dirty worktree cleanup: do not force-remove without explicit user approval.
 - Corrupt state: show the invalid fields and ask whether to repair state or start a new epic.

@@ -71,13 +71,14 @@ verification. Lightweight counterpart to the epic-dev workflow.
    against available evidence before writing it into a PR, issue, or other
    durable document; if the evidence contradicts the claim, surface the
    discrepancy instead of transcribing it.
-9. **Review.** Run the pr-review-toolkit skill (or repo review command) on
-   the PR. Address ALL findings: fix, or reject with a one-sentence reason
-   posted to the PR ("false positive" / "intentionally different by design").
-   No silent drops; a deleted test that held the only coverage of a scenario
-   is a blocking gap, not a nit.
-10. **CI, then merge.** Wait for checks (background watch:
-    `gh pr checks N --watch`); merge only when green, using the repo's merge
+9. **Review (two rounds at most).** Start the `project:pr-review-toolkit`
+   skill while CI runs and follow its `review-convergence.md` reference:
+   one full review; every finding fixed, rejected with a reason, or filed as
+   an issue; fixes committed on the PR branch and pushed once; one delta
+   review only if round 1 was substantial; no third round. A deleted test
+   that held the only coverage of a scenario is a blocking gap, not a nit.
+10. **CI, then merge.** Wait for checks within the limits in
+    `references/unblock-rules.md`; merge when green, using the repo's merge
     convention (regular merge unless the repo says squash; when a local
     skill/command convention conflicts with the user's standing preference,
     surface it once BEFORE the first merge, not after). Confirm any
@@ -93,6 +94,11 @@ verification. Lightweight counterpart to the epic-dev workflow.
     (commit/PR refs), Operational state (what is running and how to verify
     it), Resource constraints (quotas, accounts, hardware), Immediate next
     steps, and Fallback if the happy path fails.
+
+## When stuck
+
+Every wait has a limit and a next action: follow `references/unblock-rules.md`.
+Do not re-ask, re-review, or restart a step to get unstuck.
 
 ## Definition of done
 
