@@ -35,8 +35,16 @@ Round 1 was **substantial** if any is true:
 | Substantial, fix is small (only rule 1 or 4) | Commits on the PR branch | Yes, on those commits |
 | Substantial, fix is large (rule 2, 3, or 5) | A fix PR whose base is the PR branch | Yes, on the fix PR; then merge it into the PR branch |
 
-Never open a review-fix PR against the integration branch while the original PR is open.
+A review-fix PR always targets the original PR's head branch, never the integration branch directly.
 Never re-review the whole PR.
+
+## Release PRs (head is a protected branch)
+
+When the PR's head branch blocks direct pushes (for example a `develop` to `main` release PR):
+
+- Round 1 uses one integration-scoped reviewer; the feature PRs were already reviewed.
+- All fixes from a round go in ONE fix PR into the head branch, never one PR per finding.
+- Open the release PR only when it is ready to merge, and merge it promptly; every push to the head branch re-runs its CI.
 
 ## Round 2: delta only
 
@@ -50,7 +58,8 @@ Do not review again.
 
 ## Merge gate
 
-Merge when every finding has an outcome, no accepted Critical is open, and CI is green on the final head.
+Merge when the round-1 report is in, every finding has an outcome, no accepted Critical is open, and CI is green on the final head.
+Never merge while a review is still running.
 Routine PRs (single-PR work, epic phases) merge without asking the user.
 The final epic merge and any merge with a failing required check need user approval.
 
