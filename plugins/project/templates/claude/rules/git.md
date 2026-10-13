@@ -15,6 +15,7 @@
 - **`[skip ci]`:** append to the subject when the commit touches only files no CI job reads (notes, `.context/`, `.memory/`, docs CI does not build): `docs: clarify setup [skip ci]`
   - GitHub reads only the head commit of a push; never push it on top of untested code commits
   - On a PR with required checks (`gh pr checks N --required`), do not use it; a skipped required check blocks merge
+  - Exception: post-merge bot bump and sync commits on the integration branch always carry it (see `.rules/ci_cd.md`)
 
 ## Branch Strategy
 - **Feature branches:** `feature/issue-N-short-description`
