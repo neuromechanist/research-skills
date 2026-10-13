@@ -11,13 +11,14 @@ When the `pr-review-toolkit` plugin is available, use it after creating PRs to c
 - `pr-test-analyzer` - Review test coverage quality
 - `type-design-analyzer` - Analyze type design and invariants
 
-### Workflow
-**No technical debt carried forward.** Address all findings, not just critical ones.
-1. Create PR with `gh pr create`
-2. Run code review agents on the changes (all agents in parallel)
-3. Address ALL findings: critical, important, suggestions, and nice-to-haves
-4. Only skip genuine false positives or intentionally different design choices
-5. Document skipped findings with clear reasoning (false positive / intended behavior)
+### Workflow (at most two rounds, then merge)
+**No technical debt carried forward, and no review loops.** Full procedure: the `project:pr-review-toolkit` skill's `references/review-convergence.md`.
+1. Create PR with `gh pr create`; start review while CI runs
+2. Round 1: one review panel on the whole diff
+3. Give every finding one outcome: fix (including suggestions), reject with a one-line reason, or follow-up issue for code the PR did not touch
+4. Commit fixes on the PR branch and push once. A large fix (>150 non-test lines, public contract change, or new approach) goes in a fix PR whose base is the PR branch
+5. Round 2 only if round 1 was substantial (accepted Critical, large fix, or auth/crypto/data-integrity/concurrency change): one reviewer, fix diff only
+6. Fix round-2 findings directly; no third round. Merge when CI is green
 
 ## Manual Code Review Checklist
 
@@ -54,4 +55,4 @@ When leaving review comments:
 - Reference documentation or examples
 
 ---
-*No technical debt carried forward. Review early, review often.*
+*No technical debt carried forward. Two review rounds at most, then merge.*
