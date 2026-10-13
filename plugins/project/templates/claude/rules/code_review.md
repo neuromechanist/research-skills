@@ -15,7 +15,7 @@ When the `pr-review-toolkit` plugin is available, use it after creating PRs to c
 **No technical debt carried forward, and no review loops.** Full procedure: the `project:pr-review-toolkit` skill's `references/review-convergence.md`.
 1. Create PR with `gh pr create`; start review while CI runs
 2. Round 1: one review panel on the whole diff
-3. Give every finding one outcome: fix (including suggestions), reject with a one-line reason, or follow-up issue for code the PR did not touch
+3. Give every finding one outcome: fix (including suggestions), reject with a one-line reason, or follow-up issue for code the PR did not touch. Fix before merge; never in a follow-up PR or the next release
 4. Commit fixes on the PR branch and push once. A large fix (>150 non-test lines, public contract change, or new approach), or any fix when the PR branch blocks direct pushes, goes in one fix PR whose base is the PR branch
 5. Round 2 only if round 1 was substantial (accepted Critical, large fix, or auth/crypto/data-integrity/concurrency change): one reviewer, fix diff only
 6. Fix round-2 findings directly; no third round. Merge when CI is green, never before the review returns
