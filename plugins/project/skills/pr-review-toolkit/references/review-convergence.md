@@ -7,7 +7,7 @@ Every workflow that reviews a PR follows this file.
 
 | Round | Runs when | Scope | Reviewers |
 | --- | --- | --- | --- |
-| 1. Full | Always | Whole PR diff | Panel per `review-panel-protocol.md` |
+| 1. Full | Always | Whole PR diff | Panel per `review-panel-protocol.md`; one reviewer for docs-only PRs or under 50 changed lines |
 | 2. Delta | Round 1 was substantial (below) | Fix commits only | One reviewer |
 | 3 | Never, unless the user asks | - | - |
 
@@ -18,6 +18,9 @@ Give each finding exactly one outcome:
 - **fix**: accepted, including suggestions;
 - **reject**: false positive or intended design, with a one-sentence reason in the PR;
 - **issue**: about code this PR did not touch; file a follow-up issue and link it.
+
+Resolve accepted findings before merge.
+Never merge to fix them in a follow-up PR or the next release.
 
 ## Where fixes go
 
@@ -67,3 +70,4 @@ The final epic merge and any merge with a failing required check need user appro
 
 Commit fixes atomically, then push once per round, so CI runs once per round.
 Run review while CI runs; do not wait for CI before starting round 1.
+Changelog and doc updates ride in the PR they describe; never open a PR only to patch a changelog.

@@ -7,6 +7,7 @@ When a limit is hit, take the action; do not wait again, re-ask, or restart the 
 | --- | --- | --- |
 | CI running | 30 min (`gh pr checks N --watch --fail-fast` under a 30-min tool timeout) | Check `gh run list`; if runs are queued, not failing, report it and continue other work. |
 | CI job running past twice its usual time | - | It is hung: `gh run cancel <id>`, rerun once, and file an issue to add `timeout-minutes` if missing. |
+| CI never starts | 5 min | `gh pr view N --json mergeable`: a conflicting PR runs no CI; merge the base in. |
 | CI fails because of the diff | 2 fix attempts | Escalate to Opus or Sol with the failing log; if still red, hand off. |
 | CI fails without the diff (fails on base, infra, flaky) | 1 rerun (`gh run rerun <id> --failed`) | File an issue with the log, note it in the PR, continue. Merging past a failing required check needs the user. |
 | Reviewer silent | 20 min | Proceed with the reports received; run a missing high-risk lens inline. |
