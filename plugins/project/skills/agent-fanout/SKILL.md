@@ -50,7 +50,8 @@ under review. Compute the count first.
 
 ## Roles and model routing
 
-Keep the lead/orchestrator on the strongest available reasoning tier. The lead
+Keep the lead/orchestrator on the strongest available reasoning tier; in
+driver mode (below), the driver delegates the lead's hard calls to that tier. The lead
 owns requirements, architecture, irreversible decisions, supervision,
 load-bearing verification, and final synthesis. Delegate bounded plan
 elaboration to the intermediate tier only after the architecture is fixed.
@@ -75,6 +76,17 @@ the capability class in the final column.
 | GitHub Copilot CLI | strongest available model | balanced reasoning model | cost-efficient coding model | strongest / intermediate / worker |
 | Other systems | strongest available model | intermediate model | fastest model that passes the gates | strongest / intermediate / worker |
 
+**Driver mode (the usual session).** The session driver is Sonnet at `xhigh`
+(Claude) or Luna at `max` (Codex). The driver runs the workflow mechanically
+and delegates hard calls instead of making them:
+
+- routine implementation, focused review, and validation: Sonnet `xhigh` or Luna `max`;
+- architecture, unresolved design, high-risk invariants, contested findings,
+  and repeated non-mechanical failures: Opus `xhigh` (Fable when available)
+  or Sol `xhigh`.
+
+Pass the effort explicitly on every delegation.
+
 Codex Luna is appropriate only for clear, repeatable implementation from a
 detailed plan. Escalate a worker to Terra or Sol when the task exposes an
 unresolved architecture choice, repeatedly fails a gate for a non-mechanical
@@ -84,7 +96,7 @@ Sonnet to Opus/Fable.
 
 | Role | Agent type | Default tier | Notes |
 | --- | --- | --- | --- |
-| Lead/orchestrator | main session | strongest | Preserve requirements, approve architecture, supervise, verify, and synthesize. |
+| Lead/orchestrator | main session | strongest, or a Sonnet/Luna driver in driver mode | Preserve requirements, approve architecture, supervise, verify, and synthesize; a driver delegates hard calls to the strongest tier. |
 | Explorer/scout | read-only explorer | intermediate or worker | One-shot for bounded facts; the lead re-verifies the keystone fact. |
 | Architect | plan agent | strongest | Owns macro design and open judgment calls. |
 | Phase planner | plan agent | intermediate | Expands an approved architecture into worker-executable actions; escalates unresolved design. |
@@ -95,7 +107,8 @@ Sonnet to Opus/Fable.
 
 Review panels shrink as the code stabilizes: 4-5 lenses while new types and
 invariants are being invented, 2-3 once they settle, 1 integration-scoped
-reviewer for the final merge.
+reviewer for the final merge. Every PR gets at most two review rounds (one
+full, one delta); see `project:pr-review-toolkit` `review-convergence.md` reference.
 
 ## Mechanics (the plumbing)
 
@@ -146,10 +159,11 @@ elements for every delegated prompt:
 
 - **Canary first**: before launching N parallel instances of an unvalidated
   action, run one and watch it complete.
-- **Staleness threshold**: pick a number when you spawn (default 30-60 min for
-  implementers). If an agent shows no commits, file writes, or messages within
-  it, check filesystem evidence (file mtimes, expected deliverable paths). Do
-  not treat "no report yet" as "still working".
+- **Staleness threshold**: pick a number when you spawn (default 45 min for
+  implementers, 20 min for reviewers; see `project:engineering-loop`
+  `unblock-rules.md` reference). If an agent shows no commits, file writes,
+  or messages within it, check filesystem evidence (file mtimes, expected
+  deliverable paths). Do not treat "no report yet" as "still working".
 - **Escalation ladder**: (1) nudge with the exact expected deliverable, (2)
   narrow the ask ("send what you have now, quote line numbers"), (3) state the
   consequence ("if you do not reply shortly I will take over"), (4) stop the

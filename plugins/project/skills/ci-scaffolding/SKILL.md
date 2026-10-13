@@ -16,6 +16,37 @@ Generate and configure CI/CD pipelines following project conventions. Supports P
 - Configuring coverage reporting
 - Adding release automation (tag-based)
 
+## Triggers and scope (every workflow)
+
+CI runs only when files it checks change, once per push.
+
+1. Trigger on `pull_request` for any base (fix PRs and epic phase PRs need CI too) plus `push` to the integration branches. Never `on: [push, pull_request]`; it runs twice for every PR push.
+2. Add `concurrency` that cancels superseded PR runs.
+3. Scope each workflow to the files it reads: `paths` for docs and deploy workflows, `paths-ignore` for code workflows. Ignore only paths no job reads; if CI builds or lints the docs, keep them in that job's scope.
+4. A workflow skipped by a path filter or `[skip ci]` leaves its required check pending and blocks merge. For a required check, use the always-running gate job in `references/ci-best-practices.md`, give that workflow no trigger-level `paths` or `paths-ignore`, and require only the gate.
+5. Give every job `timeout-minutes` (default 20) and tests a per-test timeout; a hung job otherwise runs for 6 hours.
+6. Required checks never call live external services; put those in a scheduled or non-required job.
+7. One workflow per concern; never two workflows running the same tests.
+8. Bot bookkeeping commits (version bumps, file syncs) carry `[skip ci]`, or bump once per release instead of per merge.
+
+```yaml
+on:
+  pull_request:
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+  push:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+```
+
+### `[skip ci]` commits
+
+- Add `[skip ci]` to the subject of a commit that changes only files no CI job reads (notes, `.context/`, `.memory/`, prose docs CI does not build).
+- GitHub reads only the head commit of a push. Never push a `[skip ci]` commit on top of untested code commits.
+- On a PR branch, use it only when `gh pr checks N --required` lists no required checks; otherwise rely on the gate job's `changes` filter.
+
 ## Pipeline Templates
 
 ### Python Project Pipeline
@@ -25,10 +56,11 @@ Standard Python CI pipeline:
 ```yaml
 # .github/workflows/test.yml
 name: Tests
-on: [push, pull_request]
+# on + concurrency: copy the block from "Triggers and scope"
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -49,10 +81,11 @@ Key conventions:
 ```yaml
 # .github/workflows/test.yml
 name: Tests
-on: [push, pull_request]
+# on + concurrency: copy the block from "Triggers and scope"
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -79,6 +112,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: write
     steps:
@@ -98,11 +132,13 @@ name: Docs
 on:
   push:
     branches: [main]
+    paths: ['docs/**', 'mkdocs.yml']
 permissions:
   contents: write
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -115,7 +151,7 @@ jobs:
 Add typo checking to any project:
 
 ```yaml
-# In existing test.yml or standalone
+# In its own workflow without path filters (it reads docs)
 - uses: crate-ci/typos@master
 ```
 
@@ -165,6 +201,7 @@ Create `.github/workflows/` directory and write workflow files. Never overwrite 
 ### Step 4: Verify
 
 Run `act` locally if available to validate workflows, or do a dry-run check of YAML syntax.
+Confirm every workflow has scoped triggers and `concurrency`, and that a docs-only change starts no code workflow.
 
 ## Additional Resources
 

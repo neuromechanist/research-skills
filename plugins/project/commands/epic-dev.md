@@ -11,14 +11,15 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 ## Core Principles
 
 - **Full automation**: Execute all git, gh, and worktree commands automatically
-- **Confirm only at strategic points**: epic plan, implementation plan, critical review findings, final merge
+- **Confirm only at strategic points**: epic plan, implementation plan, an accepted Critical finding that cannot be fixed within the phase, final merge
+- **Never stall**: when blocked, follow `project:engineering-loop` `references/unblock-rules.md`; every wait has a limit and a next action
 - **Use absolute paths**: Bash calls do not persist `cd`; always use full worktree paths
 - **Track progress**: Use TodoWrite to track all phases and steps
 - **No emojis**: Never use emojis in commits, PRs, or issues
-- **Model routing**: Keep epic design, observation, approvals, and synthesis on
-  Fable when available, otherwise Opus. Delegate approved-plan implementation,
-  focused review, and validation to named Sonnet agents. Escalate unresolved
-  architecture and high-risk invariants back to the lead model.
+- **Model routing** (per `project:agent-fanout`): a Sonnet (`xhigh`) driver
+  orchestrates; named Sonnet (`xhigh`) agents implement, review, and validate;
+  epic design, unresolved architecture, and high-risk invariants go to Opus
+  (`xhigh`), or Fable when available.
 - **GitHub prose**: Semantic line breaks remain the prose-source default, but
   GitHub issue and PR bodies are the exception. Keep each paragraph on one
   source line, separate paragraphs with blank lines, and do not insert
@@ -126,7 +127,7 @@ git worktree add "$PARENT/{phase-slug}" -b feature/issue-{N}-phase{X}-{slug} {EP
 Update state: mark phase `in_progress`.
 
 ### Step 2.2: Implementation planning
-- Enter plan mode on Fable/Opus using `EnterPlanMode`
+- Enter plan mode using `EnterPlanMode`; delegate the phase architecture to Opus (`xhigh`) when the driver is Sonnet
 - The lead fixes architecture and open judgment calls. A Sonnet planner may
   elaborate an approved architecture into exact files, tests, and gates.
 - The plan should focus on this specific phase's scope and be executable by a
@@ -158,12 +159,14 @@ Update state: mark phase `in_progress`.
   )"
   ```
 - Push branch: `git -C "$PARENT/{phase-slug}" push -u origin {phase_branch}`
-- Review the phase PR: invoke the `project:pr-review-toolkit` skill (or `/pr-review-toolkit:review-pr` when the external pr-review-toolkit plugin is installed)
-- If critical issues found: present them and ask user how to proceed
-- If no critical issues: summarize findings briefly and proceed
+- Review the phase PR with the `project:pr-review-toolkit` skill (start it while CI runs) and follow its `references/review-convergence.md`:
+  - Round 1: one full review; every finding fixed, rejected with a reason, or filed as an issue
+  - Fixes: commits on the phase branch, one push; a large fix goes in a fix PR whose base is the phase branch
+  - Round 2: one delta reviewer on the fix diff, only if round 1 was substantial; no third round
+- Ask the user only if an accepted Critical finding cannot be fixed within this phase
 
 ### Step 2.5: Merge and cleanup
-- Squash merge: run from phase worktree `gh pr merge --squash --delete-branch`
+- Squash merge when the convergence merge gate passes (no user prompt): run from phase worktree `gh pr merge --squash --delete-branch`
 - Update state: mark phase `complete`, record PR number
 - Remove worktree: `git worktree remove "$PARENT/{phase-slug}"`
 - Delete local branch if still present
@@ -202,7 +205,7 @@ Update state: mark phase `in_progress`.
 
 2. Push epic branch: `git -C "$PARENT/epic-{slug}" push -u origin {epic_branch}`
 
-3. Review the full epic PR with `project:pr-review-toolkit` (or `/pr-review-toolkit:review-pr`)
+3. Review the epic PR with one integration-scoped reviewer (`project:pr-review-toolkit`): cross-phase integration only, not content the phase reviews covered; same two-round limit
 
 4. **Confirm**: Present review summary and ask user to approve final merge
 
@@ -235,12 +238,12 @@ Update state: mark phase `in_progress`.
 ## Error Handling
 
 - **Detection script failure**: If `project-preflight` fails or returns `ERROR`, report the exact error and stop. Do not proceed with empty configuration values.
-- **Git conflicts**: Stop and present the conflict. Ask user to resolve manually, then continue.
-- **Test failures**: Present test output, then fix and rerun by default (root-cause the failure; never delete or weaken the failing test to pass). Ask the user only if two fix attempts fail or the fix would expand the phase's scope.
-- **PR check failures**: Wait for CI, present results. If failing, ask user how to proceed.
+- **Git conflicts**: Merge or rebase the base branch, resolve, and rerun gates. Ask the user only when a resolution needs a product decision.
+- **Test failures**: Present test output, then fix and rerun by default (root-cause the failure; never delete or weaken the failing test to pass). After two failed attempts, escalate to Opus with the log, then hand off per `unblock-rules.md`. Ask the user only if the fix would expand the phase's scope.
+- **PR check failures**: Follow the CI rows of `unblock-rules.md`: two fix attempts for failures caused by the diff, one rerun for unrelated failures, then escalate or hand off.
 - **GitHub API failures**: If `gh issue create` or `gh pr create` fails, report the exact error, show which issues/PRs were already created, and ask the user whether to retry or abort. Never proceed with empty issue/PR numbers.
 - **Missing gh sub-issue**: Install automatically: `gh extension install agbiotech/gh-sub-issue`
-- **Merge failures**: If `gh pr merge` fails for any reason (CI, review, conflicts), do NOT proceed to worktree cleanup or state update. Report the error and wait for user resolution. The state file should remain at `in_progress` for the current phase.
+- **Merge failures**: If `gh pr merge` fails, do NOT clean up worktrees or update state; the phase stays `in_progress`. Fix the cause (CI, conflicts) per `unblock-rules.md`, retry once, then report the exact error to the user.
 - **Worktree already exists**: Detect and reuse existing worktree instead of creating new one.
 - **Worktree cleanup failures**: If `git worktree remove` fails (dirty tree, locked), warn the user and suggest `git worktree remove --force` only after confirming no uncommitted work.
 - **State file missing on resume**: Report error, ask user to start fresh or provide details.

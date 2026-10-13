@@ -31,14 +31,13 @@ unclear reasons).
 
 ## Model handoff by phase
 
-The lead model owns epic decomposition, architecture, observation,
-approval-gate decisions, verification, and synthesis. In Codex use Sol; in
-Claude use Fable when available, otherwise Opus. Once architecture is approved,
-an intermediate planner may produce the detailed phase brief (Codex Terra;
-Claude Sonnet only when no design judgment remains). A named worker implements
-that brief in the isolated worktree (Codex Luna or Claude Sonnet). Fresh worker
-reviewers validate each phase, while high-risk or architectural findings return
-to the lead. Close/remove one-off agents after their reports are incorporated.
+Follow `agent-fanout` driver mode. The session driver (Claude Sonnet at
+`xhigh`, Codex Luna at `max`) orchestrates the workflow mechanically. Epic
+decomposition, architecture, and high-risk or contested findings go to Opus
+(or Fable) or Sol at `xhigh`. Named Sonnet or Luna workers implement the
+approved brief in the isolated worktree; fresh Sonnet or Luna reviewers review
+each phase per the review-convergence rules (two rounds at most). Close/remove
+one-off agents after their reports are incorporated.
 
 ## Branch Strategy Decision Tree
 
@@ -169,7 +168,7 @@ gh pr create --base {integration_branch} --title "{epic_title}" --body "Closes #
 **Confirm (pause and ask):**
 - Epic plan: before creating issues and branches, present the full plan
 - Implementation plan: after plan mode (EnterPlanMode) produces the plan, wait for approval
-- Critical review findings: if the PR review finds critical issues, present them
+- Unfixable Critical finding: an accepted Critical finding that cannot be fixed within the phase
 - Final epic merge: before merging epic branch to integration
 
 **Auto-proceed (no confirmation):**
@@ -178,7 +177,8 @@ gh pr create --base {integration_branch} --title "{epic_title}" --body "Closes #
 - Issue and sub-issue creation (after plan confirmed)
 - State file updates
 - Running tests
-- Non-critical review findings (just summarize)
+- Review fixes, the delta review, and phase merges (per `pr-review-toolkit` `review-convergence.md` reference)
+- Recovery from CI failures, conflicts, and silent agents (per `engineering-loop` `unblock-rules.md` reference)
 - Worktree cleanup after merge
 - PR creation
 
@@ -214,7 +214,7 @@ When invoked with `--finalize`:
 ## Integration with Other Skills/Commands
 
 - **EnterPlanMode**: Invoke at the start of each phase for implementation planning (Codex and Copilot: write the plan before editing)
-- **`project:pr-review-toolkit`** (or **`/pr-review-toolkit:review-pr`** from the external plugin): Invoke before merging each phase PR and the final epic PR
+- **`project:pr-review-toolkit`**: Invoke before merging each phase PR and the final epic PR; its `review-convergence.md` reference caps review at two rounds
 - **`project:engineering-loop`**: Optionally follow within a phase for the single-PR change workflow (user decides)
 - **TodoWrite**: Track all phases and steps throughout
 

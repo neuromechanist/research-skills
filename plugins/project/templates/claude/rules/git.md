@@ -12,6 +12,9 @@
   - `refactor:` Code restructuring
   - `test:` Adding tests (real tests only)
   - `chore:` Maintenance tasks
+- **`[skip ci]`:** append to the subject when the commit touches only files no CI job reads (notes, `.context/`, `.memory/`, docs CI does not build): `docs: clarify setup [skip ci]`
+  - GitHub reads only the head commit of a push; never push it on top of untested code commits
+  - On a PR with required checks (`gh pr checks N --required`), do not use it; a skipped required check blocks merge
 
 ## Branch Strategy
 - **Feature branches:** `feature/issue-N-short-description`
@@ -34,8 +37,9 @@
    - Clear title (<70 chars, no emojis)
    - Description with "Fixes #123"
    - Test results summary
-6. Run `/review-pr` and address ALL findings
-7. Squash merge to keep history clean
+6. Review per `.rules/code_review.md`: at most one full review and one delta review
+7. Fix review findings with commits on the same branch (one push per round). If that branch blocks direct pushes (release PRs), use one fix PR per round into it
+8. Squash merge to keep history clean
 
 ## Merge Strategy
 - **Squash merge** for feature branches (clean history)

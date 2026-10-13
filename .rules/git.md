@@ -12,3 +12,5 @@
 - Before summarizing work, check `git status` and distinguish your changes from
   pre-existing dirty files.
 - Prefer non-interactive git commands.
+- Add `[skip ci]` to the subject of commits that touch only `.context/` or
+  `.memory/`; never on top of unpushed code commits.

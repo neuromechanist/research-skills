@@ -4,7 +4,7 @@
 name = "implementation-worker"
 description = "Implement a detailed approved plan, run its gates, and report deviations without redesigning the task."
 model = "gpt-5.6-luna"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "max"
 sandbox_mode = "workspace-write"
 
 developer_instructions = """

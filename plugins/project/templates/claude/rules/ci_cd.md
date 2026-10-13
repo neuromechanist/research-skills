@@ -5,10 +5,19 @@
 **Think:** Every pipeline failure is a production bug prevented.
 **Goal:** Fast feedback, high confidence, zero surprises.
 
+## Triggers and Scope (avoid wasted runs)
+- **Trigger:** `pull_request` (any base) plus `push` to `main`/`develop` only. Never `on: [push, pull_request]` (double runs on every PR push).
+- **Concurrency:** cancel superseded PR runs (`group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}`).
+- **Scope:** `paths-ignore` docs and notes for code workflows; `paths` for docs and deploy workflows.
+- **Required checks:** a skipped workflow leaves a required check pending; use an unfiltered workflow with a gate job (see the ci-scaffolding skill).
+- **`[skip ci]`:** in the subject of commits that touch only files no CI job reads (see git rules).
+- **Timeouts:** every job sets `timeout-minutes` (default 20); a hung job otherwise runs 6 hours.
+- **No live services in required checks; one workflow per concern; bot version-bump commits carry `[skip ci]`.**
+
 ## Essential Workflows
 
 ### 1. Testing (`test.yml`)
-**Triggers:** `on: [push, pull_request]` to main branches
+**Triggers:** `pull_request` and `push` to main branches, docs paths ignored
 **Jobs (in order):**
 - **Lint:** `ruff check` / `biome check` (fails fast)
 - **Type Check:** `ty` / `tsc --noEmit`
@@ -17,7 +26,7 @@
 - **Coverage:** Optional reporting to Codecov
 
 ### 2. Documentation (`docs.yml`)
-**Triggers:** `on: push: branches: [main]`
+**Triggers:** `push` to `main` with `paths: [docs/**, mkdocs.yml]`
 **Jobs:** Build with MkDocs -> Deploy to GitHub Pages
 
 ### 3. Release (`release.yml`)
@@ -27,11 +36,20 @@
 ## Python Example (UV)
 ```yaml
 name: CI
-on: [push, pull_request]
+on:
+  pull_request:
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+  push:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - uses: astral-sh/setup-uv@v4
@@ -42,6 +60,7 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       matrix: { python-version: ['3.11', '3.12', '3.13'] }
     steps:
@@ -55,11 +74,20 @@ jobs:
 ## JavaScript/TypeScript Example (Bun)
 ```yaml
 name: CI
-on: [push, pull_request]
+on:
+  pull_request:
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+  push:
+    branches: [main, develop]
+    paths-ignore: ['**.md', 'docs/**', '.context/**', '.memory/**']
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - uses: oven-sh/setup-bun@v2
@@ -69,6 +97,7 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - uses: oven-sh/setup-bun@v2

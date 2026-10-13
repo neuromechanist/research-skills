@@ -14,3 +14,6 @@
   - TOML template parsing.
   - Skill validation for new or changed skills.
   - Marketplace integrity tests.
+- Scope triggers: `pull_request` plus `push` to `main`, `concurrency` that
+  cancels superseded PR runs, and path filters only for paths no job reads.
+  Skill and reference Markdown is tested here, so do not ignore `**.md`.

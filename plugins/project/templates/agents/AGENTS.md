@@ -36,7 +36,7 @@ bun test         # Run tests
 7. **Document failures:** Log in .context/scratch_history.md immediately
 8. **Commit:** Atomic, <50 chars, no emojis
 9. **PR:** Reference context and issue
-10. **Code review:** Run `/review-pr` after creating PR (see .rules/code_review.md)
+10. **Code review:** At most one full and one delta review, fixes on the same branch, then merge (see .rules/code_review.md)
 
 ## [CRITICAL] Core Principles - Never Compromise
 
@@ -53,7 +53,7 @@ bun test         # Run tests
 **Details:** .rules/git.md
 
 ### No Technical Debt Carried Forward
-- Address ALL PR review findings
+- Address ALL PR review findings in at most two review rounds
 - Only skip genuine false positives or intended design choices
 - Replace, don't deprecate
 **Details:** .rules/code_review.md

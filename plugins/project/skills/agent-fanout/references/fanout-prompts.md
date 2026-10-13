@@ -107,9 +107,10 @@ numerical results; parity is the spec."
 
 ```
 The [N]-agent review of PR #[P] is done: [one-line verdict]. Every finding
-below gets addressed or explicitly rejected. Fix in your worktree, re-run all
-gates (zero new diagnostics vs baseline), commit atomically, push. Do NOT
-merge.
+below gets addressed or explicitly rejected. Fix in your worktree on
+[the PR branch | a fix branch whose PR targets the PR branch, per
+`review-convergence.md`], re-run all gates (zero new diagnostics vs
+baseline), commit atomically, push once. Open no other PR. Do NOT merge.
 
 1. CRITICAL: [file:line]: [bug mechanism]. Fix: [exact fix].
 2. IMPORTANT: ...
@@ -124,8 +125,10 @@ Reply with: commit hash, test counts, and anything you disagreed with and why
 accepted resolution).
 ```
 
-After the fix-up commit, request a focused delta verification of just that
-commit, not a full re-review.
+After the fix-up push, apply `project:pr-review-toolkit`
+`references/review-convergence.md`: one delta review of the fix commits only
+if round 1 was substantial, otherwise verify each finding yourself and merge.
+Never a third round.
 
 ## 5. Idle nudge (agent went idle without delivering)
 

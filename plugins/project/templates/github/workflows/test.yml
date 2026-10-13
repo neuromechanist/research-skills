@@ -1,19 +1,21 @@
 name: Tests
 
 on:
+  pull_request:
+    paths-ignore: [ '**.md', 'docs/**', '.context/**', '.memory/**' ]
   push:
     branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+    paths-ignore: [ '**.md', 'docs/**', '.context/**', '.memory/**' ]
 
-# Cancel redundant workflow runs
+# Cancel superseded PR runs; never cancel runs on the integration branches
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - name: Install uv
@@ -30,6 +32,7 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -53,6 +56,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
     - name: Install uv

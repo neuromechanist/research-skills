@@ -39,7 +39,8 @@ reviewers grouped by risk; it is not a six-agent lens swarm.
 
 - Scope: PR number, branch range, staged changes, unstaged changes, or explicit files.
 - Lens selection: one or more of `code`, `tests`, `errors`, `comments`, `types`, `simplify`, or `all`.
-- Mode: advisory review by default; `pre-merge` selects the bounded panel when available; `single` and `inline` opt out; edit mode is allowed only when the user explicitly asks to simplify/refine or implement review fixes.
+- Mode: advisory review by default; `pre-merge` selects the bounded panel when available; `delta` is the round-2 review of fix commits only (one reviewer); `single` and `inline` opt out; edit mode is allowed only when the user explicitly asks to simplify/refine or implement review fixes.
+- Round: a review that gates a merge is round 1 (full) or round 2 (delta). There is no round 3 unless the user asks.
 - Overrides: user-supplied model, effort, panel size, lens grouping, or fallback choice always wins over defaults.
 
 ## Required Workflow
@@ -47,12 +48,13 @@ reviewers grouped by risk; it is not a six-agent lens swarm.
 1. Read `references/review-procedure.md`.
 2. Read `references/review-rubrics.md`.
 3. For Codex automatic dispatch, read `references/review-panel-protocol.md` and run the preflight gate before choosing panel versus fallback.
-4. Inspect the local project rules before generic preferences: nearest `AGENTS.md`, `CLAUDE.md`, `.rules/`, and relevant framework guidance.
-5. Determine the diff scope with `git status`, `git diff`, `git diff --cached`, `gh pr view`, or `gh pr diff` as appropriate.
-6. Select applicable lenses. Use `code` for every review unless the user explicitly excludes it.
-7. If a panel ran, account for every reviewer and synthesize/deduplicate findings; independently verify load-bearing claims and close completed one-off agents.
-8. Report findings first, ordered by severity, with concrete file and line references.
-9. If no actionable findings exist, say so clearly and list any residual test gaps or verification limits.
+4. When the review gates a merge, read `references/review-convergence.md`: it decides whether round 2 runs, where fixes go, and when to merge.
+5. Inspect the local project rules before generic preferences: nearest `AGENTS.md`, `CLAUDE.md`, `.rules/`, and relevant framework guidance.
+6. Determine the diff scope with `git status`, `git diff`, `git diff --cached`, `gh pr view`, or `gh pr diff` as appropriate. For `delta`, the scope is the fix diff only.
+7. Select applicable lenses. Use `code` for every review unless the user explicitly excludes it.
+8. If a panel ran, account for every reviewer and synthesize/deduplicate findings; independently verify load-bearing claims and close completed one-off agents.
+9. Report findings first, ordered by severity, with concrete file and line references.
+10. If no actionable findings exist, say so clearly and list any residual test gaps or verification limits.
 
 ## Output Shape
 

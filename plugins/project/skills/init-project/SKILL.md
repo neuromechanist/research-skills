@@ -161,7 +161,7 @@ Read `references/core-principles.md` for the full rationale behind each principl
 1. **NO MOCKS** - Test with real data, real databases, real APIs. No mocks, stubs, or fake data.
 2. **Atomic commits** - One logical change per commit, messages <50 chars, no emojis, no AI attribution.
 3. **Documentation-driven** - Four .context/ files track plan, ideas, research, and failed attempts.
-4. **No technical debt** - Address all PR review findings. Replace, do not deprecate.
+4. **No technical debt** - Address all PR review findings in at most two review rounds. Replace, do not deprecate.
 5. **Tool consistency** - UV for Python, Bun for JS/TS, Ruff for linting, Ty for type checking.
 6. **Rule evolution** - Extract patterns used 3+ times into rules. Mine failures into prevention rules.
 

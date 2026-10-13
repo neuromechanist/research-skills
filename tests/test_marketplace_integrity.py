@@ -175,6 +175,68 @@ def test_pr_review_panel_contract_is_bounded_and_has_fallback():
     assert "close completed" in protocol
 
 
+def test_pr_workflows_cap_review_rounds_and_link_unblock_rules():
+    project = PLUGINS_DIR / "project"
+    convergence = (
+        project / "skills" / "pr-review-toolkit" / "references" / "review-convergence.md"
+    ).read_text()
+    assert "at most two review rounds" in convergence
+    assert "Never re-review the whole PR" in convergence
+    assert "base is the PR branch" in convergence
+    assert (project / "skills" / "engineering-loop" / "references" / "unblock-rules.md").exists()
+
+    for path in [
+        project / "commands" / "epic-dev.md",
+        project / "skills" / "engineering-loop" / "SKILL.md",
+        project / "skills" / "epic-dev" / "SKILL.md",
+        project / "skills" / "workflow-reference" / "SKILL.md",
+    ]:
+        text = path.read_text()
+        assert "review-convergence.md" in text, f"{path.relative_to(ROOT)} lacks the review cap"
+        assert "unblock-rules.md" in text, f"{path.relative_to(ROOT)} lacks unblock rules"
+
+
+def test_ci_templates_scope_triggers_and_cancel_superseded_runs():
+    project = PLUGINS_DIR / "project"
+    for path in [
+        project / "skills" / "ci-scaffolding" / "references" / "workflow-templates.md",
+        project / "templates" / "claude" / "rules" / "ci_cd.md",
+        project / "templates" / "cursor" / "core_rules" / "ci_cd.mdc",
+        project / "templates" / "github" / "workflows" / "test.yml",
+    ]:
+        text = path.read_text()
+        assert not re.search(r"^on: \[push, pull_request\]", text, re.MULTILINE), (
+            f"{path.relative_to(ROOT)} double-triggers on push and pull_request"
+        )
+        assert "cancel-in-progress" in text, f"{path.relative_to(ROOT)} lacks concurrency"
+        assert "paths-ignore" in text, f"{path.relative_to(ROOT)} lacks path scoping"
+
+
+def test_ci_templates_time_out_every_job():
+    yaml = pytest.importorskip("yaml")
+    project = PLUGINS_DIR / "project"
+    paths = [
+        *sorted((project / "templates" / "github" / "workflows").glob("*.yml")),
+        *sorted((project / "skills" / "ci-scaffolding").rglob("*.md")),
+        project / "templates" / "claude" / "rules" / "ci_cd.md",
+        project / "templates" / "cursor" / "core_rules" / "ci_cd.mdc",
+    ]
+    checked = 0
+    for path in paths:
+        text = path.read_text()
+        blocks = [text] if path.suffix == ".yml" else re.findall(r"```yaml\n(.*?)```", text, re.DOTALL)
+        for block in blocks:
+            doc = yaml.safe_load(block)
+            jobs = doc.get("jobs") if isinstance(doc, dict) else None
+            for name, job in (jobs or {}).items():
+                if isinstance(job, dict) and "runs-on" in job:
+                    checked += 1
+                    assert "timeout-minutes" in job, (
+                        f"{path.relative_to(ROOT)}: job {name!r} lacks timeout-minutes"
+                    )
+    assert checked > 10, f"only {checked} CI template jobs found"
+
+
 def test_github_body_writers_state_semantic_break_exception():
     writers = [
         PLUGINS_DIR / "project" / "commands" / "epic-dev.md",
