@@ -1091,11 +1091,12 @@ share a name (the skill is the Codex and Copilot entrypoint), add
 <code>user-invocable: false</code> to the skill frontmatter. Claude Code then shows only the
 command, and other tools keep reading the skill unchanged.</p>
 <h2 id="github-markdown-bodies">GitHub Markdown bodies<a class="headerlink" href="#github-markdown-bodies" title="Permanent link">&para;</a></h2>
-<p>Semantic line breaks remain the default for prose source. GitHub issue and
-pull-request bodies are the exception because physical newlines can affect
-rendering: keep each paragraph on one source line, separate paragraphs with
-blank lines, and do not insert sentence- or clause-level newlines inside a
-paragraph.</p>
+<p>Semantic line breaks remain the default for prose source. Text posted to
+GitHub (issue and pull-request bodies, comments, reviews, and discussions) is
+the exception because GitHub renders every single newline there as a line
+break: keep each paragraph and list item on one source line, separate
+paragraphs with blank lines, and do not insert sentence- or clause-level
+newlines inside a paragraph.</p>
 <h2 id="sources">Sources<a class="headerlink" href="#sources" title="Permanent link">&para;</a></h2>
 <ul>
 <li>OpenAI Codex AGENTS.md guide: https://developers.openai.com/codex/guides/agents-md</li>
