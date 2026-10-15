@@ -20,8 +20,26 @@ def _repo(tmp_path: Path) -> Path:
     return repo
 
 
+# Variables the preflight script reads to describe the host agent and its
+# credentials. A developer's own session sets them, so inheriting them makes
+# expectations such as "effort is unknown" depend on where pytest runs.
+AMBIENT_AGENT_ENV = (
+    "CODEX_MODEL",
+    "CLAUDE_MODEL",
+    "COPILOT_MODEL",
+    "CODEX_REASONING_EFFORT",
+    "CLAUDE_EFFORT",
+    "COPILOT_EFFORT",
+    "CODEX_NATIVE_SUBAGENTS",
+    "CLAUDE_NATIVE_AGENTS",
+    "COPILOT_NATIVE_AGENTS",
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+)
+
+
 def _run(repo: Path, **overrides: str) -> subprocess.CompletedProcess[str]:
-    env = os.environ.copy()
+    env = {k: v for k, v in os.environ.items() if k not in AMBIENT_AGENT_ENV}
     env.update(
         {
             "PROJECT_PREFLIGHT_NETWORK_PROBE_COMMAND": "true",
