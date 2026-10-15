@@ -1,0 +1,21 @@
+{
+  "name": "guardrails",
+  "version": "0.1.0",
+  "description": "Filesystem blast-radius guard for agentic coding. A PreToolUse hook that refuses destructive shell commands (rm, mv, shred, dd, find -delete, git clean, recursive chmod/chown) aimed at protected paths: the home directory itself, Desktop/Documents/Downloads/Library, git repository roots, credential stores (.ssh, .gnupg, .password-store, .aws), and system directories. Also refuses any command carrying rm inside a backtick or $() substitution — the exact vector by which an auto-approved subagent executed 'rm -rf ~' against a real home directory on 2026-08-08. Runs before the permission decision, so it holds even under auto-approve and --dangerously-skip-permissions. Fails closed.",
+  "author": {
+    "name": "Seyed Yahya Shirazi",
+    "email": "shirazi@ieee.org"
+  },
+  "license": "BSD-3-Clause",
+  "hooks": "./hooks/hooks.json",
+  "keywords": [
+    "security",
+    "guardrails",
+    "hooks",
+    "safety",
+    "rm-rf",
+    "destructive",
+    "auto-approve",
+    "blast-radius"
+  ]
+}
