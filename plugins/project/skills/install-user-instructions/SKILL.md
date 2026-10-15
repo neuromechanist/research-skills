@@ -84,7 +84,8 @@ strongest-tier lead judgment, intermediate approved-plan elaboration, and
 worker-tier implementation with explicit tests and gates. They also require
 closing/removing completed one-off agents.
 
-Use semantic line breaks in prose source generally. GitHub issue and
-pull-request bodies are the exception: keep each paragraph on one source line,
-separate paragraphs with blank lines, and do not insert sentence- or
-clause-level newlines inside a paragraph.
+Use semantic line breaks in prose source generally. Text posted to GitHub
+(issue and pull-request bodies, comments, reviews, and discussions) is the
+exception: keep each paragraph and list item on one source line, separate
+paragraphs with blank lines, and do not insert sentence- or clause-level
+newlines inside a paragraph.

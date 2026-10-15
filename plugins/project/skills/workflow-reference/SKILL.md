@@ -1,7 +1,7 @@
 ---
 name: workflow-reference
 description: This skill should be used when executing the epic-dev workflow, creating epic branches, managing sprint phases, working with git worktrees for phased feature development, or when the user mentions "epic dev", "epic-dev", "/epic-dev", "epic workflow", "sprint phases", "phased development", or "git worktree workflow".
-version: 0.1.1
+version: 0.1.2
 ---
 
 # Epic/Sprint Development Workflow Reference
@@ -125,10 +125,11 @@ git worktree list | grep -q "{branch-name}" && echo "EXISTS" || echo "NEW"
 
 ## GitHub Operations
 
-Semantic line breaks remain the default for prose source. GitHub issue and
-pull-request bodies are the exception: keep each paragraph on one source line,
-separate paragraphs with blank lines, and do not insert sentence- or
-clause-level newlines inside a paragraph.
+Semantic line breaks remain the default for prose source. Text posted to
+GitHub (issue and pull-request bodies, comments, reviews, and discussions) is
+the exception: keep each paragraph and list item on one source line, separate
+paragraphs with blank lines, and do not insert sentence- or clause-level
+newlines inside a paragraph.
 
 **Create epic issue:**
 ```bash

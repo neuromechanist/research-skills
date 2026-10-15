@@ -63,8 +63,9 @@ verification. Lightweight counterpart to the epic-dev workflow.
    moment they land, separately from code.
 8. **Push and open the PR.** Body: what changed, why (link "Closes #N"), and
    what was tested with commands and counts. No emojis, no AI attribution.
-   Semantic line breaks remain the default for prose source, but GitHub issue
-   and PR bodies are the exception: keep each paragraph on one source line and
+   Semantic line breaks remain the default for prose source, but text posted
+   to GitHub (issue and PR bodies, comments, reviews, and discussions) is the
+   exception: keep each paragraph and list item on one source line and
    separate paragraphs with blank lines; do not insert sentence- or
    clause-level newlines inside a paragraph.
    Verify any user-supplied factual claim (dates, numbers, attributions)

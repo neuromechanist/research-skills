@@ -68,9 +68,9 @@ Tests: [named cases to add]. Gates: [format cmd], [lint cmd], [typecheck cmd]
 
 Commits: atomic, subject under 50 chars, no emojis, no AI attribution.
 Push, open a PR against [base] with `gh pr create` ("Closes #N", what/why/how
-tested). GitHub-body exception: keep each paragraph on one source line with
-blank lines between paragraphs; do not apply sentence/clause semantic line
-breaks inside a paragraph. Do NOT merge.
+tested). GitHub-text exception (PR bodies and comments): keep each paragraph
+and list item on one source line with blank lines between paragraphs; do not
+apply sentence/clause semantic line breaks inside a paragraph. Do NOT merge.
 
 Report: PR URL, what you implemented, exact test commands and counts, and any
 deviations from this brief with reasons. Send as final message text.
