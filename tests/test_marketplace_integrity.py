@@ -138,6 +138,26 @@ def test_marketplace_toplevel_version_matches():
     )
 
 
+def test_same_name_command_and_skill_do_not_double_list_in_claude_code():
+    """Claude Code lists a command and a skill with the same name as two menu rows.
+
+    The command wins at run time, so the skill (the Codex and Copilot entrypoint)
+    must be hidden from the Claude Code menu with `user-invocable: false`.
+    """
+    collisions = []
+    for commands_dir in sorted(PLUGINS_DIR.glob("*/commands")):
+        for command in sorted(commands_dir.glob("*.md")):
+            skill = commands_dir.parent / "skills" / command.stem / "SKILL.md"
+            if skill.exists():
+                collisions.append(skill)
+    assert collisions, "expected at least one command/skill name collision to guard"
+    for skill in collisions:
+        assert "user-invocable: false" in _frontmatter_lines(skill), (
+            f"{skill.relative_to(ROOT)} shares a name with a command; "
+            "add `user-invocable: false` to its frontmatter"
+        )
+
+
 def test_project_model_routing_contract_is_cross_agent():
     fanout = (PLUGINS_DIR / "project" / "skills" / "agent-fanout" / "SKILL.md").read_text()
     for model in ("Fable", "Opus", "Sonnet", "Sol", "Terra", "Luna"):
