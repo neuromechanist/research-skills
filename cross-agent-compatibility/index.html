@@ -779,6 +779,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#commands-and-skills-with-the-same-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands and skills with the same name
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#github-markdown-bodies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -928,6 +939,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#commands-and-skills-with-the-same-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands and skills with the same name
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#github-markdown-bodies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1061,6 +1083,13 @@ or high-risk invariant escalates back to the lead model.</p>
 reports are incorporated. Retain an agent only for a named recurring role with
 a concrete next task. This avoids stale agent fleets and makes the active
 workflow observable.</p>
+<h2 id="commands-and-skills-with-the-same-name">Commands and skills with the same name<a class="headerlink" href="#commands-and-skills-with-the-same-name" title="Permanent link">&para;</a></h2>
+<p>Claude Code lists a plugin command and a skill with the same name as two rows in
+the <code>/</code> menu. The command wins whether it is run from the menu or loaded through
+the Skill tool, so the skill row is dead weight there. When a command and a skill
+share a name (the skill is the Codex and Copilot entrypoint), add
+<code>user-invocable: false</code> to the skill frontmatter. Claude Code then shows only the
+command, and other tools keep reading the skill unchanged.</p>
 <h2 id="github-markdown-bodies">GitHub Markdown bodies<a class="headerlink" href="#github-markdown-bodies" title="Permanent link">&para;</a></h2>
 <p>Semantic line breaks remain the default for prose source. GitHub issue and
 pull-request bodies are the exception because physical newlines can affect
