@@ -98,6 +98,15 @@ reports are incorporated. Retain an agent only for a named recurring role with
 a concrete next task. This avoids stale agent fleets and makes the active
 workflow observable.
 
+## Commands and skills with the same name
+
+Claude Code lists a plugin command and a skill with the same name as two rows in
+the `/` menu. The command wins whether it is run from the menu or loaded through
+the Skill tool, so the skill row is dead weight there. When a command and a skill
+share a name (the skill is the Codex and Copilot entrypoint), add
+`user-invocable: false` to the skill frontmatter. Claude Code then shows only the
+command, and other tools keep reading the skill unchanged.
+
 ## GitHub Markdown bodies
 
 Semantic line breaks remain the default for prose source. GitHub issue and

@@ -1,7 +1,8 @@
 ---
 name: update-rules
 description: "This skill should be used when the user asks to \"update rules\", \"sync rules\", \"update AGENTS.md\", \"update CLAUDE.md\", \"refresh rules\", \"update project config\", \"sync templates\", \"update vibe rules\", \"check for rule updates\", \"update user rules\", \"update global config\", \"refresh AGENTS.md\", \"refresh CLAUDE.md\", \"sync .rules directory\", \"what's new in templates\", or wants to update existing agent/rules configuration from the latest templates without overwriting customizations."
-version: 0.1.0
+version: 0.1.1
+user-invocable: false
 ---
 
 # Update Rules and Configuration

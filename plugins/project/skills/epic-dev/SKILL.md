@@ -1,6 +1,7 @@
 ---
 name: epic-dev
 description: Execute the project epic development workflow for Codex. Use when the user asks for "epic dev", "epic-dev", "/epic-dev", "run the epic workflow", "create an epic", "resume the epic", "--resume", "--next-phase", "--finalize", phased feature delivery, sprint phases, GitHub sub-issues, or git worktrees for multi-phase implementation.
+user-invocable: false
 ---
 
 # Epic Development Workflow

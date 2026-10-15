@@ -1,7 +1,8 @@
 ---
 name: init-project
 description: "Use this skill for \"initialize project\", \"set up project\", \"scaffold project\", \"create AGENTS.md\", \"create CLAUDE.md\", \"set up rules\", \"create context directory\", \"vibe rules\", \"project templates\", \"init new project\", \"set up development structure\", \"create .rules\", \"create .context\", \"create ADR\", \"architecture decision records\", \"set up GitHub labels\", \"default issue labels\", \"project scaffolding\", \"set up pre-commit hooks\", or when the user wants to initialize a new project with cross-agent development templates, structured documentation, and an optional default GitHub label set."
-version: 0.2.0
+version: 0.2.1
+user-invocable: false
 ---
 
 # Project Initialization with Vibe Rules Templates
