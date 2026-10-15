@@ -77,10 +77,11 @@ Refs: #A, #B.
 An implementer (human or agent) executes from the issue alone; that is the
 test of whether it is written well enough.
 
-For GitHub issue bodies, keep each paragraph on one source line and separate
-paragraphs with blank lines. Do not apply sentence- or clause-level semantic
-line breaks inside a GitHub paragraph. Semantic line breaks remain the default
-for other prose source.
+For GitHub issue bodies and any other text posted to GitHub (comments,
+reviews, discussions), keep each paragraph and list item on one source line and
+separate paragraphs with blank lines. Do not apply sentence- or clause-level
+semantic line breaks inside a GitHub paragraph. Semantic line breaks remain the
+default for other prose source.
 
 ## Non-negotiable planning rules
 

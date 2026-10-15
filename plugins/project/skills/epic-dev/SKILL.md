@@ -23,9 +23,10 @@ variation details, then follow this procedure as the execution contract.
   delegates epic design, unresolved architecture, and high-risk invariants to
   Sol (`xhigh`); Luna (`max`) implements, reviews, and validates. Terra may
   elaborate an approved phase architecture.
-- Semantic line breaks remain the default for prose source, except GitHub issue
-  and pull-request bodies. In GitHub bodies, keep each paragraph on one source
-  line, separate paragraphs with blank lines, and do not insert sentence- or
+- Semantic line breaks remain the default for prose source, except text posted
+  to GitHub (issue and pull-request bodies, comments, reviews, and
+  discussions). There, keep each paragraph and list item on one source line,
+  separate paragraphs with blank lines, and do not insert sentence- or
   clause-level newlines inside a paragraph.
 
 ## Phase 0: Repository Detection

@@ -200,4 +200,7 @@ def test_template_encodes_routing_cleanup_and_github_exception():
     assert all(name in text for name in ("Sol", "Terra", "Luna"))
     assert "close or remove the agent" in text
     assert "Use semantic line breaks" in text
-    assert "GitHub issue and pull-request bodies are the exception" in text
+    assert (
+        "Text posted to GitHub (issue and pull-request bodies, comments, reviews, "
+        "and discussions) is the exception" in text
+    )

@@ -21,7 +21,8 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
   epic design, unresolved architecture, and high-risk invariants go to Opus
   (`xhigh`), or Fable when available.
 - **GitHub prose**: Semantic line breaks remain the prose-source default, but
-  GitHub issue and PR bodies are the exception. Keep each paragraph on one
+  text posted to GitHub (issue and PR bodies, comments, reviews, and
+  discussions) is the exception. Keep each paragraph and list item on one
   source line, separate paragraphs with blank lines, and do not insert
   sentence- or clause-level newlines within a paragraph.
 - **Agent cleanup**: After incorporating a final report, close/remove the

@@ -150,10 +150,11 @@ elements for every delegated prompt:
    task is and is NOT ("this is a technical disclosure, NOT a journal
    manuscript; do not score on journal criteria; instead assess ..."), so
    the agent does not fall back to its default domain.
-10. **GitHub body formatting**: semantic line breaks remain the default for
-    prose source, except in GitHub issue and pull-request bodies. Keep each
-    GitHub paragraph on one source line, separate paragraphs with blank lines,
-    and do not insert sentence- or clause-level newlines inside a paragraph.
+10. **GitHub text formatting**: semantic line breaks remain the default for
+    prose source, except in text posted to GitHub (issue and pull-request
+    bodies, comments, reviews, and discussions). Keep each GitHub paragraph and
+    list item on one source line, separate paragraphs with blank lines, and do
+    not insert sentence- or clause-level newlines inside a paragraph.
 
 ## Supervision protocol
 

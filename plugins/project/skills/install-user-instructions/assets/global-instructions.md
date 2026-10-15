@@ -16,10 +16,10 @@
 - Keep repository facts, build commands, architecture, and team conventions in the repository's AGENTS.md.
 - Keep tool-specific project files limited to tool-specific deltas. For Claude Code, import AGENTS.md from CLAUDE.md instead of copying the shared rules.
 
-### Prose source and GitHub bodies
+### Prose source and GitHub text
 
 - Use semantic line breaks in Markdown, LaTeX, and other prose source: break at sentence boundaries and, when useful, at clause punctuation. Preserve blank lines for paragraph boundaries.
-- GitHub issue and pull-request bodies are the exception. Keep each paragraph on one source line, separate paragraphs with blank lines, and do not insert sentence- or clause-level newlines inside a paragraph.
+- Text posted to GitHub (issue and pull-request bodies, comments, reviews, and discussions) is the exception, because GitHub renders every single newline there as a line break. Keep each paragraph and list item on one source line, separate paragraphs with blank lines, and do not insert sentence- or clause-level newlines inside a paragraph.
 
 ### Pull requests and CI
 

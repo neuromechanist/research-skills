@@ -109,11 +109,12 @@ command, and other tools keep reading the skill unchanged.
 
 ## GitHub Markdown bodies
 
-Semantic line breaks remain the default for prose source. GitHub issue and
-pull-request bodies are the exception because physical newlines can affect
-rendering: keep each paragraph on one source line, separate paragraphs with
-blank lines, and do not insert sentence- or clause-level newlines inside a
-paragraph.
+Semantic line breaks remain the default for prose source. Text posted to
+GitHub (issue and pull-request bodies, comments, reviews, and discussions) is
+the exception because GitHub renders every single newline there as a line
+break: keep each paragraph and list item on one source line, separate
+paragraphs with blank lines, and do not insert sentence- or clause-level
+newlines inside a paragraph.
 
 ## Sources
 
