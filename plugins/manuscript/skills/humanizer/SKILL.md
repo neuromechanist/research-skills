@@ -16,7 +16,7 @@ This skill is adapted from the upstream `humanizer` skill at https://github.com/
 
 - The YAML frontmatter (rewritten in marketplace `description` style with academic-trigger phrases).
 - The "Research writing context" section (including the "When to soften or skip a pattern", "Reconciling with research-skills conventions", and "When to invoke this skill in the writing workflow" subsections).
-- The per-pattern "Research writing note" callouts on 11 of the 29 patterns.
+- The per-pattern "Research writing note" callouts on 15 of the 29 patterns.
 - The "Research and grant prose patterns" section (patterns 30 to 43 and the quick scan), drawn from revising AI-assisted grant drafts that had already passed patterns 1 to 29.
 - The "Cross-references in the research-skills marketplace" section near the end.
 
@@ -532,9 +532,10 @@ In academic prose, "soul" is constrained but not absent. Choose specific example
 
 These patterns come from revising AI-assisted grant and paper drafts that had already passed patterns 1 to 29 (no promotional words, em dashes, or filler).
 The tells that remain are in sentence shape.
-Each shape is normal in human writing once or twice a page; the tell is density, when most sentences on a page share the same shape.
+Each shape is normal in human writing once or twice a page; what gives a draft away is density, when most sentences on a page share the same shape.
 Count them with the quick scan below and rewrite until no shape repeats more than once or twice per 500 words.
-Every After below keeps the facts of its Before; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds.
+Every After below keeps the facts of its Before.
+Purpose clauses, restatements, and freshness markers may go; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds.
 
 ### 30. Purpose Tails ("so" Payoffs)
 
@@ -552,7 +553,7 @@ Related: pattern 3 (-ing tails such as "ensuring") and pattern 9 (tailing negati
 
 **Research writing note:** Keep a purpose clause where a reviewer would otherwise ask "why?", and lead with it ("To separate X from Y, ..."), as in the first sentence above.
 Drop it where the purpose is obvious to the field, as in the other two.
-"So that" and "which means" are ordinary connectors; the tell is their density.
+"So that" and "which means" are ordinary connectors and become a problem only in bulk.
 
 
 ### 31. Talking Data
@@ -566,7 +567,7 @@ It sounds friendly and explanatory, and it hides the quantity that was measured.
 > What the annotations say matters more than how much they say. The curve tells laboratories where to stop, and the permutation test decides each result.
 
 **After:**
-> The content of the annotations predicts more than their length. Laboratories can stop annotating at the level where the curve saturates. A permutation test determines each result.
+> The content of the annotations predicts more than their length. Laboratories can stop annotating at the level where the curve saturates. Each result is judged against a permutation null.
 
 
 ### 32. Mirrored Aphorisms
@@ -611,14 +612,15 @@ Answering a real objection once, with evidence, is good argument; doing it every
 Related: pattern 24 (excessive hedging).
 
 **Before:**
-> Sample size is not the only limit on these datasets, but it has mature tools. A pretrained model predicts as well, but its features cannot be read. Richer annotation costs more, but it pays off.
+> Sample size is not the only limit on these datasets, but it has mature tools, and the stimulus description has none. A pretrained model predicts as well, but its features cannot be read. Richer annotation costs more, but it pays off.
 
 **After:**
 > Sample size has mature tools. The description of the stimulus has none.
 
 The other two objections move to the paragraphs that report the model comparison and the cost of annotation, and are answered there, once.
 
-**Research writing note:** "Although" and "but" are ordinary connectors, and a grant must answer the objections its reviewers raised. The tell is a concession in every paragraph.
+**Research writing note:** "Although" and "but" are ordinary connectors, and a grant must answer the objections its reviewers raised.
+What to remove is a concession in every paragraph.
 
 
 ### 35. Repeated Inline Glosses
@@ -663,10 +665,10 @@ Where a rule is real, state it once, in the methods or rigor section; elsewhere 
 > We never pool signals across cohorts. The three tests are never combined, and models never see the test images. We compare the modalities only through the tags.
 
 **After (rigor section, once):**
-> Signals from different cohorts are not pooled, the three tests are reported separately, and test images are held out of training.
+> Signals from different cohorts are not pooled, the three tests are not combined, and test images are held out of training.
 
 **After (methods):**
-> We compare the modalities through the tags.
+> We compare the modalities only through the tags.
 
 **Research writing note:** "Only" and "never" often state a real constraint ("only the registered analysis is confirmatory"); keep those, once.
 
@@ -683,7 +685,7 @@ Related: pattern 29 (fragmented headers).
 **After:**
 > **What if richer is not better?** A flat annotation-response curve marks the level where laboratories can stop annotating.
 
-**Research writing note:** In a response to reviewers, a direct "Yes." or "No." followed by the evidence is conventional and good; the tell is the scripted "Then".
+**Research writing note:** In a response to reviewers, a direct "Yes." or "No." followed by the evidence is conventional and good; only the scripted "Then" should go.
 
 
 ### 39. Kicker Sentences
@@ -754,7 +756,7 @@ Overlaps pattern 8.
 > The innovation rests on two methods, and a gain reads as unique variance when the calibration allows it.
 
 **After:**
-> The innovation is in two methods. A gain is reported as unique variance when the calibration allows it.
+> The innovation is in two methods. A gain is interpreted as unique variance when the calibration allows it.
 
 **Research writing note:** These verbs are literal in anatomy and statistics ("the lesion lies at", "the assumption holds"); leave those.
 
@@ -765,17 +767,17 @@ The counts run on flattened text, so a pattern split by a semantic line break is
 Review every hit by hand: most are fine one at a time, and the count per 500 words is what matters.
 
 ```bash
-flat()  { grep -v '^[[:space:]]*%' "$1" | tr '\n' ' '; }
+flat()  { grep -v '^[[:space:]]*%' "$1" | tr -s '[:space:]' ' '; }
 count() { flat "$1" | grep -oiE "$2" | wc -l; }
 count FILE ', so [a-z]+ |, which means|; this ensures|matters because'          # 30 purpose tails
 count FILE '\b(says?|tells?|carr(y|ies)|names?|decides?)\b'                     # 31 talking data
-count FILE ': [a-z]'                                                            # 36 colons (reveals and lists)
+flat FILE | grep -oE ': [a-z]' | wc -l                                          # 36 colons (reveals and lists; case-sensitive)
 count FILE '\b(never|only|always)\b'                                            # 37 absolute guards
-count FILE ' and [^,;:]{1,70} and '                                             # 40 stacked coordination
+count FILE ' and [^,;:.]{1,70} and '                                            # 40 stacked coordination
 count FILE '\b(beats?|bar|wins?|outperforms?)\b'                                # 41 contest metaphors
 count FILE '\b(now|today|currently|increasingly|no longer|for the first time)\b' # 42 freshness markers
-count FILE 'rests on|reads as|counts as|sits between|lies at'                   # 43 abstract verbs
-wc -w < FILE                                                                    # words, for hits per 500 words
+count FILE 'rests on|reads as|counts as|sits between|lies at'                   # 43 abstract verbs (holds, speaks to, points to: often literal, check by eye)
+flat FILE | wc -w                                                               # words, for hits per 500 words
 ```
 
 To find a hit, run the same expression with `grep -niE` on the file; a hit that spans a line break shows only in the count.
