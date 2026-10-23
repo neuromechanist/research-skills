@@ -44,6 +44,7 @@ Academic and grant writing have genre conventions that occasionally override gen
 - **Significance language in grants.** Grant Significance and Specific Aims sections legitimately argue that work matters. Pattern 1 (significance inflation) targets meaningless filler ("pivotal moment", "evolving landscape"), not specific, evidence-backed importance claims ("affects 1.2M patients annually"). Strip the filler, keep the substance.
 - **Title case in journal headings.** Pattern 17 prefers sentence case for headings. Defer to the journal's submission guidelines: IEEE, APA, ACS, and many others mandate title case. Apply pattern 17 only where house style is sentence case or unspecified.
 - **Curly quotes (pattern 19).** Many publishers' copyeditors convert straight quotes to curly automatically. For LaTeX submissions, use straight quotes (`` `` ... '' ``) since LaTeX renders them correctly. For Word/Markdown drafts, follow the journal's manuscript prep guide.
+- **Sentence-shape patterns 30 to 43.** Several overlap with legitimate science: real constraints stated with "only", required limitations, "Yes." or "No." in a response to reviewers, a closing sentence that ties a paragraph to an aim, and literal uses of "holds" or "lies at". Their research writing notes say what to keep.
 - **Boldface in clinical and technical writing.** Pattern 15 targets *mechanical* bolding of every defined term. Selective bold for variable names, gene symbols (`*TP53*`), or critical warnings is fine.
 
 ### Reconciling with research-skills conventions
@@ -529,87 +530,108 @@ In academic prose, "soul" is constrained but not absent. Choose specific example
 
 ## RESEARCH AND GRANT PROSE PATTERNS
 
-These patterns come from revising AI-assisted grant and paper drafts that had already passed patterns 1 to 29: no promotional words, no em dashes, no filler.
+These patterns come from revising AI-assisted grant and paper drafts that had already passed patterns 1 to 29 (no promotional words, em dashes, or filler).
 The tells that remain are in sentence shape.
 Each shape is normal in human writing once or twice a page; the tell is density, when most sentences on a page share the same shape.
-Count them per page (see "Quick scan" below) and rewrite until no shape repeats more than once or twice.
+Count them with the quick scan below and rewrite until no shape repeats more than once or twice per 500 words.
+Every After below keeps the facts of its Before; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds.
 
 ### 30. Purpose Tails ("so" Payoffs)
 
 **Words to watch:** ", so a", ", so only", ", so the", ", so that", ", which means", "; this ensures", "; the X matters because"
 
-**Problem:** The sentence states a method or a fact, then appends a clause that restates its purpose in simpler words, as if the reader might miss it. When most methods sentences end this way, the text keeps explaining itself.
+**Problem:** The sentence states a method or a fact, then appends a clause that restates its purpose in simpler words, as if the reader might miss it.
+When most methods sentences end this way, the text keeps explaining itself.
+Related: pattern 3 (-ing tails such as "ensuring") and pattern 9 (tailing negations).
 
 **Before:**
 > The null shuffles which tags each image has but keeps how many it has, so a gain must come from what the tags say. Folds hold out whole subjects, so the results generalize across people. The code is on GitHub, so others can reuse it.
 
 **After:**
-> To separate the content of the tags from their number, the null shuffles which tags each image has and keeps how many. Folds hold out whole subjects, and the code is on GitHub.
+> To separate the content of the tags from their number, the null shuffles which tags each image has and keeps how many. Folds hold out whole subjects. The code is on GitHub.
 
-**Research writing note:** Keep a purpose clause where a reviewer would otherwise ask "why?", and lead with it ("To separate X from Y, ...") instead of trailing it.
+**Research writing note:** Keep a purpose clause where a reviewer would otherwise ask "why?", and lead with it ("To separate X from Y, ..."), as in the first sentence above.
+Drop it where the purpose is obvious to the field, as in the other two.
+"So that" and "which means" are ordinary connectors; the tell is their density.
 
 
 ### 31. Talking Data
 
-**Words to watch:** data, results, tags, curves, models, or tests that "say", "tell", "show us", "know", "carry", "name", "decide", "beat"; "what the X says"
+**Words to watch:** data, results, tags, curves, models, or tests that "say", "tell", "show us", "know", "carry", "name", or "decide"; "what the X says"
 
-**Problem:** Evidence and objects are cast as speakers and agents. It sounds friendly and explanatory, and it hides the quantity that was measured.
+**Problem:** Evidence and objects are cast as speakers and agents.
+It sounds friendly and explanatory, and it hides the quantity that was measured.
 
 **Before:**
 > What the annotations say matters more than how much they say. The curve tells laboratories where to stop, and the permutation test decides each result.
 
 **After:**
-> The content of the annotations predicts more than their length. Beyond the level where the curve saturates, more annotation adds no prediction. A result requires p < 0.05 in the permutation test.
+> The content of the annotations predicts more than their length. Laboratories can stop annotating at the level where the curve saturates. A permutation test determines each result.
 
 
 ### 32. Mirrored Aphorisms
 
-**Problem:** Two clauses with matching syntax land a neat contrast or symmetry: "fMRI shows where, EEG shows when"; "the participant is the same, and here so is the moment"; "readable but coarse, rich but opaque". One, placed where the idea matters most, can be memorable. Several read as composed by formula and turn the argument into slogans.
+**Problem:** Two clauses with matching syntax land a neat contrast or symmetry: "fMRI shows where, EEG shows when"; "the participant is the same, and here so is the moment"; "readable but coarse, rich but opaque".
+One, placed where the idea matters most, can be memorable.
+Several read as composed by formula and turn the argument into slogans.
+Related: pattern 9 (negative parallelisms) and pattern 10 (rule of three).
 
 **Before:**
 > Labels are readable but coarse; model features are rich but opaque. fMRI shows which features a region weights, and EEG shows when.
 
 **After:**
-> Category labels miss most of what is in an image. Model features capture more, but they have no names and change with the model. We use fMRI for the spatial pattern of feature weights and EEG for its time course.
+> Labels are readable but coarse, and model features are rich but opaque. We map the feature weights of each region with fMRI and time them with EEG.
+
+The After keeps one contrast, the one the paragraph is about, and states the second idea plainly.
 
 
 ### 33. Self-Certifying Candor
 
 **Words to watch:** "and we say so", "we report this honestly", "to be transparent", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to"
 
-**Problem:** The text announces its own honesty or rigor instead of showing it. Reviewers read it as defensive, and it is a common residue of prompting a model to "be honest about limitations".
+**Problem:** The text announces its own honesty or rigor instead of showing it.
+Reviewers read it as defensive, and it is a common residue of prompting a model to "be honest about limitations".
+Related: pattern 27 (persuasive authority tropes).
 
 **Before:**
-> The tool is preliminary, weak on actions, and we say so. We do not trust it; we treat it as an instrument, not an oracle.
+> The tool is preliminary, weak on actions, and we say so. We do not trust it; we treat it as an instrument, not an oracle. Aim 3 validates each tag against trained annotators.
 
 **After:**
-> The tool is preliminary and needs further development for actions and an assessment of its biases. Aim 3 validates each tag against trained annotators.
+> The tool is preliminary and weak on actions. Aim 3 validates each tag against trained annotators.
+
+**Research writing note:** Keep every limitation, scope statement, and caveat that rigor sections and reporting guidelines require; remove only the self-congratulation around them.
 
 
 ### 34. Pre-emptive Objection Packaging
 
 **Words to watch:** "X also limits ..., but ...", "X is not the only ...", "admittedly", "while X predicts as well, ...", "although X, Y"
 
-**Problem:** Paragraph after paragraph concedes an imagined objection and rebuts it in the same sentence. Answering a real objection once, with evidence, is good argument; doing it everywhere reads like a defensive essay.
+**Problem:** Paragraph after paragraph concedes an imagined objection and rebuts it in the same sentence.
+Answering a real objection once, with evidence, is good argument; doing it everywhere reads like a defensive essay.
+Related: pattern 24 (excessive hedging).
 
 **Before:**
 > Sample size is not the only limit on these datasets, but it has mature tools. A pretrained model predicts as well, but its features cannot be read. Richer annotation costs more, but it pays off.
 
 **After:**
-> Sample size, noise, and variability have mature tools, such as fMRIPrep and ICLabel; the description of the stimulus has none.
+> Sample size has mature tools. The description of the stimulus has none.
 
-Answer the pretrained-model objection once, in the paragraph that reports that comparison, and state the cost of annotation where it is measured.
+The other two objections move to the paragraphs that report the model comparison and the cost of annotation, and are answered there, once.
+
+**Research writing note:** "Although" and "but" are ordinary connectors, and a grant must answer the objections its reviewers raised. The tell is a concession in every paragraph.
 
 
 ### 35. Repeated Inline Glosses
 
-**Problem:** A technical term carries an appositive definition every time it appears ("annotation tuning, the weight a region gives each tag, ..."). Writers define a term once and then trust the reader.
+**Problem:** A technical term carries an appositive definition every time it appears ("annotation tuning, the weight a region gives each tag, ...").
+Writers define a term once and then trust the reader.
+Related: pattern 11 (keep the same term once it is defined).
 
 **Before:**
 > Annotation tuning, the weight a region gives each tag, agreed at two sites. We will test whether annotation tuning, the weight a region gives each tag, peaks at matched locations.
 
 **After:**
-> Annotation tuning (the weight a region gives each tag) agreed at two sites. We will test whether tuning peaks at matched locations.
+> Annotation tuning (the weight a region gives each tag) agreed at two sites. We will test whether annotation tuning peaks at matched locations.
 
 **Research writing note:** In a grant, define a term once in each separately read document (Specific Aims, Introduction, Research Strategy), not again within one.
 
@@ -618,7 +640,10 @@ Answer the pretrained-model objection once, in the paragraph that reports that c
 
 **Words to watch:** "The answer is simple:", "The premise is now narrower:", "X is preliminary:", "The key is this:", and any sentence whose colon introduces the actual claim
 
-**Problem:** A setup clause, a colon, then the point. Once a page is fine; more creates a drumbeat of reveals.
+**Problem:** A setup clause, a colon, then the point.
+Once or twice a page is fine; more creates a drumbeat of reveals.
+A colon that introduces a list or a definition is not a reveal.
+Related: pattern 16 (inline headers) and pattern 28 (signposting).
 
 **Before:**
 > The premise is now narrower: the field has a standard but lacks the tools to use it.
@@ -631,70 +656,129 @@ Answer the pretrained-model objection once, in the paragraph that reports that c
 
 **Words to watch:** "never", "only", "always", "every", "no ... at all", "at no point"
 
-**Problem:** Absolutes repeated as reassurance ("never pooled", "never combined", "only through", "never uses"). Where a rule is real, state it once, in the methods or rigor section; elsewhere describe what is done.
+**Problem:** Absolutes repeated as reassurance.
+Where a rule is real, state it once, in the methods or rigor section; elsewhere describe what is done.
+
+**Before:**
+> We never pool signals across cohorts. The three tests are never combined, and models never see the test images. We compare the modalities only through the tags.
+
+**After (rigor section, once):**
+> Signals from different cohorts are not pooled, the three tests are reported separately, and test images are held out of training.
+
+**After (methods):**
+> We compare the modalities through the tags.
+
+**Research writing note:** "Only" and "never" often state a real constraint ("only the registered analysis is confirmatory"); keep those, once.
 
 
 ### 38. Answering the Heading
 
-**Problem:** In responses to reviewers and other question-headed text, the answer starts with "Then", "Yes", "No", "Exactly", or restates the question, so the exchange reads as scripted.
+**Problem:** In responses to reviewers and other question-headed text, the answer starts with "Then", "Exactly", or a restated question.
+The exchange then reads as scripted.
+Related: pattern 29 (fragmented headers).
 
 **Before:**
 > **What if richer is not better?** Then the curve flattens, and that tells laboratories where to stop.
 
 **After:**
-> **What if richer is not better?** A flat annotation-response curve marks the level beyond which annotation adds no prediction, and Aim 2 reports that level as the guideline.
+> **What if richer is not better?** A flat annotation-response curve marks the level where laboratories can stop annotating.
+
+**Research writing note:** In a response to reviewers, a direct "Yes." or "No." followed by the evidence is conventional and good; the tell is the scripted "Then".
 
 
 ### 39. Kicker Sentences
 
-**Problem:** A short last sentence restates the paragraph as a takeaway ("The gain comes from the tags the classic contrast leaves out."; "If prediction stops growing, laboratories can stop there."). It is pattern 25 at paragraph scale. Delete it; the evidence sentence before it is the ending.
+**Problem:** A short last sentence restates the paragraph as a takeaway.
+Delete it; the evidence sentence before it is the ending.
+Related to pattern 25 (generic positive conclusions), at paragraph scale.
+
+**Before:**
+> The category contrast predicted 0.12 of the variance and the annotations 0.62. The gain comes from the tags the classic contrast leaves out.
+
+**After:**
+> The category contrast predicted 0.12 of the variance and the annotations 0.62.
+
+**Research writing note:** A closing sentence that links a paragraph to an aim, or states the gap the paragraph exposes, is expected in grants; delete only a pure restatement.
 
 
 ### 40. Stacked Coordination
 
-**Problem:** Two "and"s in one phrase with no comma ("in A and B (...) and in C"), or long sentences assembled from qualifications glued with "and". Use the series comma and one "and", split long sentences, and move qualifications into parentheses or their own sentence. When the items are results, list the strongest first.
+**Problem:** Two "and"s in one phrase with no comma ("in A and B (...) and in C"), or long sentences assembled from qualifications glued with "and".
+Use the series comma and one "and", split long sentences, and give each qualification its own sentence.
+When the items are results, list the strongest first and keep each result's label with it.
 
 **Before:**
-> They improved prediction in 4 of 5 lobes and all 6 regions (a test run after a first look) and in 7 of 11 parcels (registered before).
+> They improved prediction in 4 of 5 lobes and all 6 regions (a test registered after a first look at those data) and in 7 of 11 parcels (registered before any parcel value was seen).
 
 **After:**
-> They improved prediction in all 6 regions, 7 of 11 parcels, and 4 of 5 lobes, in a test registered after a first look at the region and lobe data, but before any parcel value was seen.
+> They improved prediction in all 6 regions, 4 of 5 lobes, and 7 of 11 parcels. The region and lobe test was registered after a first look at those data. The parcel test was registered before any parcel value was seen.
 
 
 ### 41. Contest Metaphors for Statistics
 
 **Words to watch:** "beat the null", "clear the bar", "set the bar", "the bar is low", "wins", "outperforms" (when nothing competes)
 
-**Problem:** Statistical comparisons framed as contests. Write "exceeds", "is larger than", "predicts little".
+**Problem:** Statistical comparisons framed as contests.
+
+**Before:**
+> The tags beat the null in six regions, clearing a low bar set by the low-level features.
+
+**After:**
+> The tags exceeded the null in six regions. The low-level features alone predicted little.
 
 
 ### 42. Freshness Markers
 
 **Words to watch:** "now", "today", "currently", "increasingly", "no longer", "for the first time"
 
-**Problem:** Sprinkled to make claims feel timely ("Datasets now record", "Every test now has", "The standard now reaches"). Keep one only where the text contrasts with a stated earlier time, as in a resubmission's list of changes.
+**Problem:** Sprinkled to make claims feel timely.
+Related: pattern 1 (significance inflation).
+
+**Before:**
+> Shared datasets now record the brain in three modalities, and every test now includes a matched null.
+
+**After:**
+> Shared datasets record the brain in three modalities, and every test includes a matched null.
+
+**Research writing note:** Keep a marker where the text contrasts with a stated earlier time, as in a resubmission's list of changes ("The A1 now includes ..."), or where it is literal ("currently recruiting").
 
 
 ### 43. Abstract Verbs of Standing
 
 **Words to watch:** "rests on", "reads as", "counts as", "sits between", "lies at", "holds", "speaks to", "points to"
 
-**Problem:** Relations stated with positional verbs instead of is, has, uses, or a concrete verb ("Innovation rests on two methods"; "the gain reads as unique variance"). Overlaps pattern 8.
+**Problem:** Relations stated with positional verbs instead of is, has, uses, or a concrete verb.
+Overlaps pattern 8.
+
+**Before:**
+> The innovation rests on two methods, and a gain reads as unique variance when the calibration allows it.
+
+**After:**
+> The innovation is in two methods. A gain is reported as unique variance when the calibration allows it.
+
+**Research writing note:** These verbs are literal in anatomy and statistics ("the lesion lies at", "the assumption holds"); leave those.
 
 
 ### Quick scan
 
-Run these on the source and review every hit by hand; most hits are fine one at a time, and the count per page is what matters.
+The counts run on flattened text, so a pattern split by a semantic line break is still found, and LaTeX comment lines are dropped.
+Review every hit by hand: most are fine one at a time, and the count per 500 words is what matters.
 
 ```bash
-grep -nE ', so (a|an|the|only|that|each|every|it|they|we) ' FILE        # 30 purpose tails
-grep -nwE 'says?|tells?|carr(y|ies)|names?|decides?|beats?' FILE       # 31 talking data, 41 contest metaphors
-grep -nE '\b(never|only|always)\b' FILE                                # 37 absolute guards
-grep -nE '\b(now|today|currently|no longer|for the first time)\b' FILE # 42 freshness markers
-grep -nE ' and [^,;:()]{1,70} and ' FILE                               # 40 stacked coordination
-grep -nE 'rests on|reads as|counts as|sits between|lies at' FILE       # 43 abstract verbs
-grep -cE ': [a-z]' FILE                                                # 36 colon reveals (count)
+flat()  { grep -v '^[[:space:]]*%' "$1" | tr '\n' ' '; }
+count() { flat "$1" | grep -oiE "$2" | wc -l; }
+count FILE ', so [a-z]+ |, which means|; this ensures|matters because'          # 30 purpose tails
+count FILE '\b(says?|tells?|carr(y|ies)|names?|decides?)\b'                     # 31 talking data
+count FILE ': [a-z]'                                                            # 36 colons (reveals and lists)
+count FILE '\b(never|only|always)\b'                                            # 37 absolute guards
+count FILE ' and [^,;:]{1,70} and '                                             # 40 stacked coordination
+count FILE '\b(beats?|bar|wins?|outperforms?)\b'                                # 41 contest metaphors
+count FILE '\b(now|today|currently|increasingly|no longer|for the first time)\b' # 42 freshness markers
+count FILE 'rests on|reads as|counts as|sits between|lies at'                   # 43 abstract verbs
+wc -w < FILE                                                                    # words, for hits per 500 words
 ```
+
+To find a hit, run the same expression with `grep -niE` on the file; a hit that spans a line break shows only in the count.
 
 ---
 
@@ -702,7 +786,8 @@ grep -cE ': [a-z]' FILE                                                # 36 colo
 
 1. Read the input text carefully.
 2. If the text is academic prose, note which section it belongs to (Methods, Results, Discussion, grant Specific Aims, grant Significance, grant Approach, response to reviewers, lit-review synthesis). Apply the "Research writing context" calibrations for that genre.
-3. Identify all instances of the patterns above. For research and grant prose, also run the quick scan for patterns 30 to 43 and count the hits per page.
+3. Identify all instances of the patterns above.
+   For research and grant prose, also run the quick scan for patterns 30 to 43 and note the hits per 500 words.
 4. Rewrite each problematic section.
 5. Ensure the revised text:
    - Sounds natural when read aloud
@@ -725,6 +810,7 @@ Provide:
 2. "What makes the below so obviously AI generated?" (brief bullets)
 3. Final rewrite
 4. A brief summary of changes made (optional, if helpful)
+5. For research and grant prose, the quick-scan counts per 500 words before and after the rewrite
 
 ## Cross-references in the research-skills marketplace
 
@@ -734,8 +820,8 @@ Invoke each installed skill by its fully qualified `<plugin>:<skill>` name throu
 - `manuscript:paper-review` for peer-review feedback. Humanizer is often the right fix for a "writing quality" comment from a reviewer.
 - `manuscript:manuscript-formatting` for journal-specific formatting. Run humanizer first; formatting applies house style afterward (title case, citation style, etc.).
 - `manuscript:lit-review` for literature-review prose. The synthesized passages from lit-review are particularly prone to "evolving landscape" and "growing body of work" filler.
-- `grant:grant-writing` for NIH/NSF proposals. Run humanizer on Specific Aims, Significance, Innovation, and Approach narrative. Pay extra attention to patterns 1 (significance inflation), 4 (promotional language), and 24 (excessive hedging); defer to the funding mechanism's formatting for patterns 17 (title case) and 19 (curly quotes).
-- `grant:grant-review` for proposal critique. Patterns most relevant to grant prose: 1 (significance inflation), 4 (promotional language), 7 (AI vocabulary), 8 (copula avoidance), 14 (em-dash overuse), 24 (excessive hedging), 25 (generic positive conclusions). These often surface as "writing quality" or "lack of specificity" reviewer comments.
+- `grant:grant-writing` for NIH/NSF proposals. Run humanizer on Specific Aims, Significance, Innovation, and Approach narrative. Pay extra attention to patterns 1 (significance inflation), 4 (promotional language), and 24 (excessive hedging), and to the sentence-shape patterns 30 to 43 with their quick scan; defer to the funding mechanism's formatting for patterns 17 (title case) and 19 (curly quotes).
+- `grant:grant-review` for proposal critique. Patterns most relevant to grant prose: 1 (significance inflation), 4 (promotional language), 7 (AI vocabulary), 8 (copula avoidance), 14 (em-dash overuse), 24 (excessive hedging), 25 (generic positive conclusions), and the sentence-shape patterns 30 to 43. These often surface as "writing quality" or "lack of specificity" reviewer comments.
 
 ## Full Example
 

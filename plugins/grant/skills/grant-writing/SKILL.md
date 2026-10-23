@@ -145,6 +145,7 @@ After drafting, invoke the fully qualified `manuscript:humanizer` skill through 
 - Pattern 4 (promotional language): "groundbreaking", "transformative", "paradigm-shifting" read as red flags in Innovation sections. Let the methods carry the claim.
 - Pattern 24 (excessive hedging): tighten stacked hedges, but keep appropriate uncertainty in Approach risks/alternatives.
 - Patterns 17 and 19 (title case, curly quotes): for NIH/NSF, defer to mechanism formatting in Step 6.
+- Patterns 30 to 43 (sentence-shape tells such as ", so a gain must come from ...", talking data, and colon reveals): run the skill's quick scan and keep each pattern under one or two hits per 500 words.
 
 ### Step 6: Format for submission
 
