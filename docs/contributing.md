@@ -16,6 +16,8 @@
 
 - The marketplace version lives in `.claude-plugin/marketplace.json` and `.github/plugin/marketplace.json` (the Codex `.agents/plugins/marketplace.json` carries no top-level version).
 - GitHub release tags mirror the marketplace top-level version: marketplace `<version>` gets tag `v<version>`, not a separately incrementing release sequence.
+- Releases are automatic. When a merge to `main` changes `.claude-plugin/marketplace.json` and `v<version>` does not exist yet, `.github/workflows/release.yml` creates the tag and GitHub release (with generated notes). A version that is not higher than the latest tag fails the run. Do not tag by hand.
+- Bump `CITATION.cff` (`version`, `date-released`) in the same PR as the marketplace bump; `tests/test_marketplace_integrity.py` fails when it drifts.
 - The repository is archived to Zenodo on every GitHub release, minting a versioned DOI under a stable concept DOI. When the marketplace version bumps for a release, `CITATION.cff`'s `version` and `date-released` fields get bumped alongside it, and `.zenodo.json` stays in sync.
 - The concept DOI (in `CITATION.cff`'s `doi:` field and the README badge) is stable across versions and does not change.
 
