@@ -6,7 +6,7 @@ name: Release
 on:
   push:
     branches: [main]
-    paths: ['.claude-plugin/marketplace.json']
+    paths: ['.claude-plugin/marketplace.json', '.github/workflows/release.yml']
   workflow_dispatch:
 
 permissions:
