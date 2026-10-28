@@ -1,42 +1,70 @@
 name: Release
 
+# Cut a GitHub release whenever the marketplace version on main has no tag yet.
+# The tag is created by the release itself; a tag pushed with GITHUB_TOKEN would
+# not trigger a second workflow.
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    paths: ['.claude-plugin/marketplace.json', '.github/workflows/release.yml']
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-    - name: Determine release info
+    - name: Read marketplace version
       id: info
       run: |
-        TAG="${GITHUB_REF#refs/tags/}"
-        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+        VERSION=$(python3 -c "import json; print(json.load(open('.claude-plugin/marketplace.json'))['version'])")
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+        if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+          echo "Tag v$VERSION already exists; nothing to release."
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
 
-        # Extract plugin versions from marketplace.json
-        BODY="## Plugins\n\n"
-        BODY+="| Plugin | Version |\n|--------|--------|\n"
-        BODY+=$(python3 -c "
+    - name: Refuse a version that does not exceed the latest tag
+      if: steps.info.outputs.exists == 'false'
+      run: |
+        LATEST=$(git tag --list 'v[0-9]*' | sed 's/^v//' | sort -V | tail -n 1)
+        NEW="${{ steps.info.outputs.version }}"
+        if [ -n "$LATEST" ] && [ "$(printf '%s\n%s\n' "$LATEST" "$NEW" | sort -V | tail -n 1)" != "$NEW" ]; then
+          echo "::error::Marketplace version $NEW is not higher than latest tag v$LATEST"
+          exit 1
+        fi
+
+    - name: Create GitHub release
+      if: steps.info.outputs.exists == 'false'
+      env:
+        GH_TOKEN: ${{ github.token }}
+        TAG: ${{ steps.info.outputs.tag }}
+      run: |
+        python3 - <<'PY' > notes.md
         import json
-        with open('.claude-plugin/marketplace.json') as f:
-            data = json.load(f)
+        data = json.load(open('.claude-plugin/marketplace.json'))
+        print('## Plugins\n')
+        print('| Plugin | Version |')
+        print('|--------|---------|')
         for p in data['plugins']:
-            print(f'| {p[\"name\"]} | {p[\"version\"]} |')
-        ")
-        echo "body<<RELEASE_EOF" >> "$GITHUB_OUTPUT"
-        echo -e "$BODY" >> "$GITHUB_OUTPUT"
-        echo "RELEASE_EOF" >> "$GITHUB_OUTPUT"
-
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ steps.info.outputs.tag }}
-        body: ${{ steps.info.outputs.body }}
-        generate_release_notes: true
+            print(f"| {p['name']} | {p['version']} |")
+        PY
+        gh release create "$TAG" \
+          --target "$GITHUB_SHA" \
+          --title "Research Skills $TAG" \
+          --notes-file notes.md \
+          --generate-notes

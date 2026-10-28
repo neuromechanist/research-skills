@@ -138,6 +138,16 @@ def test_marketplace_toplevel_version_matches():
     )
 
 
+def test_citation_version_matches_marketplace():
+    """The release workflow tags the marketplace version, and Zenodo archives that release."""
+    top = _load(ROOT / ".claude-plugin/marketplace.json")["version"]
+    match = re.search(r"^version:\s*(\S+)\s*$", (ROOT / "CITATION.cff").read_text(), re.MULTILINE)
+    assert match, "CITATION.cff: missing version"
+    assert match.group(1) == top, (
+        f"CITATION.cff version {match.group(1)} != marketplace version {top}"
+    )
+
+
 def test_same_name_command_and_skill_do_not_double_list_in_claude_code():
     """Claude Code lists a command and a skill with the same name as two menu rows.
 
