@@ -64,7 +64,6 @@ Structure:
 ## Writing Principles
 
 ### Clarity
-- One idea per sentence
 - Active voice with the authors as the actor and the named noun instead of a pronoun ("We measured..." not "Measurements were taken..."; see Habits to avoid while drafting); follow the journal where it prefers passive Methods
 - Define abbreviations on first use
 - Avoid jargon unless writing for a specialist audience
@@ -82,18 +81,19 @@ Structure:
 - Consistent terminology (don't alternate between synonyms for key concepts)
 
 ### Habits to avoid while drafting
+<!-- Keep in sync with grant/skills/grant-writing/SKILL.md, "Habits to avoid while drafting" (the grant list has the single-investigator sentence instead of the journal-passive one). -->
 
 These habits make research prose read as machine-written, and reviewers and editors notice them.
 Avoid them while drafting; the humanizer pass (patterns 30 to 45) then catches what slips through.
-The quoted phrases are examples of each habit, not the full list: a sentence that does the same job in other words breaks the same rule.
+The quoted phrases are examples of each habit, not the full list; a sentence that does the same job in other words breaks the same rule.
 
 - **Show, do not announce.** State the limitation or the result and let it stand. Do not certify your own honesty or rigor ("and we say so", "we say it first", "to be transparent", "we are careful to").
-- **Say it once.** Each sentence adds a fact. Drop tails that restate the purpose (", so a gain must come from what the tags say"), closing sentences that repeat the paragraph, and a second gloss of a defined term. Lead with a purpose ("To separate X from Y, ...") only where a reader would ask why.
-- **People act, and data do not speak.** Write "We registered the test before seeing any fMRI value", not "The test was registered" or "Hypothesis 1B tests ..."; results predict, differ, or agree, and do not "say", "tell", or "decide". Follow the journal where it prefers passive Methods.
-- **Name the noun.** When the referent is a sentence back or two nouns could fit, repeat the noun ("CLIP's prediction", not "its prediction"); "this" needs its noun ("this test"), and the noun must appear just before.
+- **Say it once.** Each sentence adds a fact. Drop tails that restate the purpose (", so a gain must come from what the tags say"), closing sentences that only repeat the paragraph (a sentence that links to an aim or states the gap stays), and a second gloss of a defined term (define it again only in each separately read document). Lead with a purpose ("To separate X from Y, ...") only where a reader would ask why.
+- **Name who acts.** Write "We registered the test before seeing any fMRI value", not "The test was registered" or "Hypothesis 1B tests ..."; results predict, differ, or agree, and do not "say", "tell", or "decide". An aim can still be the topic of a sentence ("Aim 2 has two hypotheses"). Follow the journal where it prefers passive Methods.
+- **Name the noun.** When the referent is a sentence back or two nouns could fit, repeat the noun ("CLIP's prediction", not "its prediction"); "this" needs a noun that names something in the sentence just before ("this test"). A pronoun is fine when its referent is the subject of the same clause.
 - **Literal claims, not slogans.** No mirrored contrasts ("fMRI shows where, EEG shows when"), contest metaphors ("beat the null"), colon reveals ("The answer is simple: ..."), or verbs of standing ("rests on", "reads as").
-- **Answer an objection once, where it arises.** Do not concede and rebut in every paragraph ("X is not the only limit, but ...").
-- **Plain time and scope.** Use "now" or "currently" only to contrast with a stated earlier version, and state a real constraint ("only", "never") once.
+- **Answer an objection where it arises.** Do not concede and rebut in every paragraph ("X is not the only limit, but ...").
+- **Plain time and scope.** Use "now" or "currently" only to contrast with a stated earlier version or where literal ("currently recruiting"), and state a real constraint ("only", "never") once.
 - **One idea per sentence.** Split chains of "and"; list results strongest first, each with its label.
 
 ### Citations

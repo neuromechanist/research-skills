@@ -543,9 +543,9 @@ The quoted phrases are examples, and a sentence that does the same job in other 
 Four ideas cover them:
 
 - **Show, do not announce.** The text states the result or the limitation and lets it stand; it does not certify its own honesty, rigor, or timeliness (patterns 33, 42).
-- **Say it once.** Each sentence adds a fact; tails, kickers, and repeated glosses restate one already given (patterns 30, 35, 39).
-- **Literal over clever.** Claims use plain verbs and plain comparisons, not slogans, contests, reveals, or verbs of standing (patterns 31, 32, 36, 41, 43).
-- **The reader never guesses.** Who acted, and what each word points to, is on the page (patterns 44, 45); one objection is answered once, where it arises (pattern 34).
+- **Say it once.** Each sentence adds a fact; tails, kickers, repeated glosses, and repeated absolutes restate one already given (patterns 30, 35, 37, 39).
+- **Literal over clever.** Claims use plain verbs and plain comparisons, not slogans, contests, reveals, scripted answers, or verbs of standing (patterns 31, 32, 36, 38, 41, 43).
+- **The reader never guesses.** Who acted, what each word points to, and which qualification belongs to which result are on the page (patterns 40, 44, 45); an objection is answered where it arises (pattern 34).
 
 ### 30. Purpose Tails ("so" Payoffs)
 
@@ -790,6 +790,7 @@ Related: pattern 13 (passive voice) and pattern 31 (talking data).
 A part of the document can stay the subject when it is the topic rather than an actor ("Aim 2 has two hypotheses", "Figure 3 shows the three tests"); rewrite the ones that perform a person's act, such as registering, choosing, excluding, testing, or rebuilding.
 Keep every timing and registration detail: "we registered X before seeing Y" must say exactly what "X was registered before Y was seen" said.
 Confirm who acted before writing "we"; if another group recorded, registered, or chose something, name that group.
+On single-investigator mechanisms (K, F, DP2), "I" is the actor for the applicant's own work.
 
 
 ### 45. Unanchored Pronouns
