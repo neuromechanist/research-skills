@@ -1,7 +1,7 @@
 ---
 name: grant-writing
 description: This skill should be used when the user asks to "write a grant proposal", "draft specific aims", "write a research strategy", "create an NIH proposal", "create an NSF proposal", "write a significance section", "write an innovation section", "write an approach section", "draft a DP2 essay", "write an R01", "write an R21", "write a K99", "write an R03", "write a K08", "write a K23", "write an F31", "write an F32", "write a CAREER proposal", "write an SBIR", "write an STTR", "write an R43, R44, R41, or R42", "write a Phase I or Phase II application", "write a Fast-Track application", "write a commercialization plan", "write SBIR milestones", "write preliminary data", "write rigor and reproducibility", "draft potential problems and alternatives", "write a budget justification", "respond to reviewer comments", "write a resubmission introduction", "strengthen my specific aims", or mentions grant writing, proposal drafting, specific aims, research strategy, small business grants, or any NIH/NSF mechanism.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Grant Writing Skill
@@ -130,7 +130,8 @@ For fellowship and career development mechanisms (F31, F32, K08, K23, K99):
 
 Consult `references/writing-style-guide.md` and `references/tone-guide.md` for established voice conventions. Key principles:
 
-- Direct, active voice ("We will demonstrate" not "It will be demonstrated")
+- Direct, active voice with the team as the actor ("We rebuilt Aim 3", "We registered the test before seeing any fMRI value"; not "Aim 3 is rebuilt", "The test was registered", or "Hypothesis 1B tests ...")
+- Name the referent: replace "it", "its", "they", or "this" with the noun whenever the referent sits in an earlier sentence or two nouns could fit ("CLIP's prediction", not "its prediction")
 - Strategic bolding: overarching goal, aim titles, one key innovation per aim, memorable phrases
 - *Italic* hypothesis labels
 - No em-dashes (PI style preference, not a universal standard); use commas, semicolons, or parentheses
@@ -146,6 +147,7 @@ After drafting, invoke the fully qualified `manuscript:humanizer` skill through 
 - Pattern 24 (excessive hedging): tighten stacked hedges, but keep appropriate uncertainty in Approach risks/alternatives.
 - Patterns 17 and 19 (title case, curly quotes): for NIH/NSF, defer to mechanism formatting in Step 6.
 - Patterns 30 to 43 (sentence-shape tells such as ", so a gain must come from ...", talking data, and colon reveals): run the skill's quick scan and keep each pattern under one or two hits per 500 words.
+- Patterns 44 and 45 (hidden actors and unanchored pronouns): the quick scan counts passive verbs, aims or hypotheses as actors, sentence-initial pronouns, and "it"/"its"; review the hits outside Methods-style text and rewrite with "we" and the named noun.
 
 ### Step 6: Format for submission
 

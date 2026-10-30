@@ -1,7 +1,7 @@
 ---
 name: manuscript-writing
 description: "Use this skill for \"write a paper\", \"draft manuscript\", \"write introduction\", \"write methods section\", \"write results\", \"write discussion\", \"write abstract\", \"structure a paper\", \"academic writing\", \"write for journal\", or when the user wants to draft or revise sections of an academic manuscript."
-version: 0.2.1
+version: 0.2.2
 ---
 
 # Academic Manuscript Writing
@@ -65,7 +65,8 @@ Structure:
 
 ### Clarity
 - One idea per sentence
-- Active voice preferred ("We measured..." not "Measurements were taken...")
+- Active voice preferred ("We measured..." not "Measurements were taken..."), with the authors, not the study or the analysis, doing the work ("We tested", not "The analysis tests"); follow the journal where it prefers passive Methods
+- Name the referent: replace "it", "its", "they", or "this" with the noun when the referent sits in an earlier sentence or two nouns could fit
 - Define abbreviations on first use
 - Avoid jargon unless writing for a specialist audience
 
@@ -105,4 +106,4 @@ After drafting, check:
 
 - Reference: [references/section-templates.md](references/section-templates.md) - Templates for each manuscript section
 - Reference: [references/revision-response.md](references/revision-response.md) - How to write point-by-point responses to reviewers
-- Sister skill: `manuscript:humanizer` (invoke through the host's skill-invocation mechanism) - Removes 43 categories of AI-writing tells, including sentence-shape tells in research prose, while respecting academic conventions (e.g., passive voice in Methods, hedging in Discussion). Run after drafting and before peer review.
+- Sister skill: `manuscript:humanizer` (invoke through the host's skill-invocation mechanism) - Removes 45 categories of AI-writing tells, including sentence-shape tells, hidden actors, and unanchored pronouns in research prose, while respecting academic conventions (e.g., passive voice in Methods, hedging in Discussion). Run after drafting and before peer review.

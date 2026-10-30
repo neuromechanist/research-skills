@@ -136,4 +136,4 @@ When the proposal text triggers reviewer comments about "writing quality", "lack
 - `nsf-review-criteria.md` - Complete NSF review criteria and panel process
 - `review-best-practices.md` - Best practices, common reviewer comments, and calibration guidance
 - `review-output-templates.md` - NIH and NSF review output format templates
-- Sister skill `manuscript:humanizer` - 43 AI-writing patterns, including the research and grant sentence-shape patterns 30 to 43, to flag when assessing grant prose quality
+- Sister skill `manuscript:humanizer` - 45 AI-writing patterns, including the research and grant prose patterns 30 to 45, to flag when assessing grant prose quality

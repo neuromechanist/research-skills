@@ -2,7 +2,7 @@
 
 ## Core Principles
 
-1. **Direct, active voice** - "We will demonstrate" not "It will be demonstrated"
+1. **Direct, active voice** - "We will demonstrate" not "It will be demonstrated"; the team, not an aim or a hypothesis, does the work ("We test X in Hypothesis 1B", not "Hypothesis 1B tests X")
 2. **Professional objectivity over validation** - Technical accuracy and truthfulness over confirming beliefs
 3. **Strategic bolding** - Bold key statements reviewers should remember; not liberal use
 4. **No em-dashes (PI style preference)** - Use commas, semicolons, or parentheses instead. This is a PI stylistic convention, not a universal grant writing standard.
@@ -14,7 +14,8 @@
 The most frequent defect in drafts is the long chained sentence. Fix these patterns on every pass:
 
 - **Break 2-3 line sentences.** Chained independent clauses ("..., and ..., and ..., so ...") become separate sentences. Enumerations of parallel items may keep their "and"s; chained *claims* may not.
-- **Name the referent.** Replace "it/its/this/that" whenever the referent is not the immediately preceding noun; repeat the noun ("LSL", "the platform", "secureLSL") rather than making the reader track a pronoun across clauses.
+- **Name the referent.** Replace "it/its/they/this/that" whenever the referent is not the immediately preceding noun, or when two nouns could fit; repeat the noun ("LSL", "the platform", "secureLSL") rather than making the reader track a pronoun across clauses. A demonstrative needs its noun just before it: "this level" works only if the previous sentence names the level.
+- **Make the team the actor.** Rewrite passives and document parts that do a person's work: "The test was registered before any fMRI value was seen" becomes "We registered the test before seeing any fMRI value"; "Aim 3 is rebuilt" becomes "We rebuilt Aim 3". Keep every timing and registration detail when rewriting.
 - **No sentence-initial And/But/Nor** and no rhetorical inversions ("Nor is this...", "a platform that cannot X cannot Y"). State the literal claim plainly.
 - **Introduce before use.** Any name, group, or term a panelist outside the subfield would not know gets a plain-words identifier on first mention ("the Morningside Group, an international body of neuroscientists and ethicists").
 - **Avoid gratuitous self-undermining.** State the positive claim the evidence supports instead of leading with "we make no claim about..." or "we cannot know...". Preserve substantive limitations, uncertainty, risks, and alternatives when they affect interpretation or the decision.
