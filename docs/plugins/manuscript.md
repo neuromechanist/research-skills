@@ -38,7 +38,7 @@ The same shape across every card is what lets synthesis scan the corpus quickly 
 - **manuscript-writing**: IMRAD structure and section templates
 - **paper-review**: the peer-review simulation described above; thin-dispatch with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template
 - **manuscript-formatting**: journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management), a polished Pandoc reference DOCX, and inline or end-of-document figure placement
-- **humanizer**: a final natural-writing pass that removes AI-writing tells while preserving meaning and discipline conventions, including 14 sentence-shape patterns common in AI-assisted grant and paper prose and a quick scan that counts them
+- **humanizer**: a final natural-writing pass that removes AI-writing tells while preserving meaning and discipline conventions, including 16 research- and grant-prose patterns common in AI-assisted drafts (sentence-shape tells, hidden actors, and unanchored pronouns) and a quick scan that counts them
 
 ## Try it
 
