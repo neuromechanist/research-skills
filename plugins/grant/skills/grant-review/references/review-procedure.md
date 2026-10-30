@@ -126,7 +126,7 @@ Adopt the viewpoint of a **senior researcher** on a study section or review pane
 
 For common reviewer comments and their meanings, consult `review-best-practices.md`.
 
-When the proposal text triggers reviewer comments about "writing quality", "lack of specificity", "promotional language", or "buzzwords", point the applicant to `manuscript:humanizer`. Patterns most relevant to grant prose: 1 (significance inflation), 4 (promotional language), 7 (AI vocabulary), 8 (copula avoidance), 14 (em-dash overuse), 24 (excessive hedging), 25 (generic positive conclusions), and the sentence-shape patterns 30 to 43 (purpose tails, talking data, colon reveals, and others; run the skill's quick scan). If the `manuscript` plugin is not installed, skip that pointer and flag the prose issues directly in the review rather than failing silently.
+When the proposal text triggers reviewer comments about "writing quality", "lack of specificity", "promotional language", or "buzzwords", point the applicant to `manuscript:humanizer`. Patterns most relevant to grant prose: 1 (significance inflation), 4 (promotional language), 7 (AI vocabulary), 8 (copula avoidance), 14 (em-dash overuse), 24 (excessive hedging), 25 (generic positive conclusions), and the research and grant prose patterns 30 to 45 (purpose tails, talking data, colon reveals, and others; run the skill's quick scan). If the `manuscript` plugin is not installed, skip that pointer and flag the prose issues directly in the review rather than failing silently.
 
 ## Reference index
 

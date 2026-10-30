@@ -130,7 +130,7 @@ For fellowship and career development mechanisms (F31, F32, K08, K23, K99):
 
 Consult `references/writing-style-guide.md` and `references/tone-guide.md` for established voice conventions. Key principles:
 
-- Direct, active voice with the team as the actor ("We rebuilt Aim 3", "We registered the test before seeing any fMRI value"; not "Aim 3 is rebuilt", "The test was registered", or "Hypothesis 1B tests ...")
+- Direct, active voice with the team as the actor, or "I" on single-investigator mechanisms ("We rebuilt Aim 3", "We registered the test before seeing any fMRI value"; not "Aim 3 is rebuilt", "The test was registered", or "Hypothesis 1B tests ...")
 - Name the referent: replace "it", "its", "they", or "this" with the noun whenever the referent sits in an earlier sentence or two nouns could fit ("CLIP's prediction", not "its prediction")
 - Strategic bolding: overarching goal, aim titles, one key innovation per aim, memorable phrases
 - *Italic* hypothesis labels

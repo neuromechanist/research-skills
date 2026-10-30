@@ -780,26 +780,26 @@ Related: pattern 13 (passive voice) and pattern 31 (talking data).
 **Research writing note:** Passives in Methods that match journal style stay (pattern 13).
 A part of the document can stay the subject when it is the topic rather than an actor ("Aim 2 has two hypotheses", "Figure 3 shows the three tests"); rewrite the ones that perform a person's act, such as registering, choosing, excluding, testing, or rebuilding.
 Keep every timing and registration detail: "we registered X before seeing Y" must say exactly what "X was registered before Y was seen" said.
+Confirm who acted before writing "we"; if another group recorded, registered, or chose something, name that group.
 
 
 ### 45. Unanchored Pronouns
 
 **Words to watch:** a sentence that opens with "It", "Its", "They", "This", or "These" and points back across a sentence; "it" or "its" twice in one sentence; "this level", "this test", or "this approach" when that noun did not appear just before
 
-**Problem:** The draft chains sentences with pronouns, so the reader has to hold the referent in mind or search back for it.
-When two nouns could fit, the sentence turns ambiguous, and in research prose the ambiguity often lands on the claim itself: whose prediction, which test, what was registered.
-Name the noun.
-Repeating a technical noun costs the reader less than a pronoun and keeps the terms consistent (pattern 11).
+**Problem:** The draft chains sentences with pronouns; the reader must hold the referent in mind or search back for the noun.
+When two nouns could fit, the sentence turns ambiguous, and in research prose the ambiguity often falls on the claim, such as whose prediction a model recovered or which test was registered.
+Repeating the technical noun costs the reader less than a pronoun and keeps the terms consistent (pattern 11).
 
 **Before:**
-> HEDit is preliminary. It agrees with human annotators best on objects, and its median agreement per tag was 0.48. A pretrained image model, CLIP, predicts somewhat more, but 35 tags recover most of its prediction and add prediction beyond it. A flat curve marks where more annotation adds no prediction. We will build tools that find this level.
+> We compared HEDit with one human annotator. It agreed best on objects, and against the COCO labels, it was 0.79 to 0.95. CLIP predicts somewhat more than the tags, but the tags recover most of its prediction and add prediction beyond it. A flat curve marks where more annotation adds no prediction. We will build tools that find this level.
 
 **After:**
-> HEDit is preliminary and agrees with human annotators best on objects; HEDit's median agreement per tag was 0.48. A pretrained image model, CLIP, predicts somewhat more, but 35 tags recover most of CLIP's prediction and add prediction beyond CLIP. A flat curve marks the level where more annotation adds no prediction. We will build tools that find this level.
+> We compared HEDit with one human annotator. HEDit agreed with the annotator best on objects, and against the COCO labels, HEDit's agreement was 0.79 to 0.95. CLIP predicts somewhat more than the tags, but the tags recover most of CLIP's prediction and add prediction beyond CLIP. A flat curve marks the level where more annotation adds no prediction. We will build tools that find this level.
 
 **Research writing note:** Do not replace every pronoun.
 "HEDit inherits the biases of its models" is clear, because the referent is the subject of the same clause and no other noun competes.
-Rewrite when the referent sits in an earlier sentence, when two nouns could fit, or when "this" or "these" has no matching noun just before it; the fix may be to add the noun to the earlier sentence, as in the last pair above.
+Rewrite when the referent sits in an earlier sentence, when two nouns could fit (HEDit or the annotator above), when the pronoun stands for a noun the text never wrote (the agreement above), or when "this" or "these" has no matching noun just before it; the fix may be to add the noun to the earlier sentence, as in the last pair above.
 In documents read in pieces, such as Specific Aims or one section of an Approach, name the subject again at the start of each paragraph.
 
 
@@ -819,17 +819,17 @@ count FILE ' and [^,;:.]{1,70} and '                                            
 count FILE '\b(beats?|bar|wins?|outperforms?)\b'                                # 41 contest metaphors
 count FILE '\b(now|today|currently|increasingly|no longer|for the first time)\b' # 42 freshness markers
 count FILE 'rests on|reads as|counts as|sits between|lies at'                   # 43 abstract verbs (holds, speaks to, points to: often literal, check by eye)
-count FILE '\b(is|are|was|were|be|been|being) ([a-z]+ly )?[a-z]+(ed|en|wn)\b'   # 44 passive verbs (Methods passives are often fine)
+count FILE '\b(is|are|was|were|be|been|being) ((not|also|then|[a-z]+ly) )?([a-z]+(ed|en|wn)|(re|un|over|mis|up)?(built|found|made|held|set|kept|run|sent|left|lost|put|done|led|met|paid|read|split|cut|spent|told|brought|taught|thought|bought|won))\b'  # 44 passive verbs (also counts -en words such as open, even, often, between; Methods passives are often fine)
 count FILE '\b(aim|hypothesis|goal) [0-9]+[a-z]? (tests?|asks?|measures?|compares?|fits?|uses?|validates?|develops?|repeats?)\b'  # 44 document parts as actors
-flat FILE | grep -oE '(^|[.;?!] )(It|Its|They|Their|This|These) ' | wc -l      # 45 sentence-initial pronouns (case-sensitive)
+flat FILE | grep -oE '(^|[.;?!] )([^ ]*[{(*"])?(It|Its|They|Their|This|These) ' | wc -l  # 45 sentence-initial pronouns, also after **, (, ", or \textbf{ (case-sensitive; also counts "This test" and "It is clear")
 count FILE '\b(it|its)\b'                                                       # 45 it and its (density; most single hits are fine)
 flat FILE | wc -w                                                               # words, for hits per 500 words
 ```
 
 To find a hit, run the same expression with `grep -niE` on the file; a hit that spans a line break shows only in the count.
 
-Patterns 44 and 45 measure density, not a shape to drive to zero.
-In one NIH Research Strategy of about 10,000 words, a revision for these two patterns took passive verbs from 5.4 to 1.7 per 500 words, aims and hypotheses as actors from 0.9 to 0.5, sentence-initial pronouns from 0.4 to 0.05, and "it" or "its" from 6.4 to 2.7.
+Patterns 44 and 45 measure density, not a shape to drive to zero, and the once-or-twice-per-500-words rule above does not apply to them.
+As a reference rather than a pass mark: in one NIH Research Strategy of about 10,000 words, a revision for these two patterns took passive verbs from 5.9 to 1.9 per 500 words, aims and hypotheses as actors from 0.9 to 0.5, sentence-initial pronouns from 0.4 to 0.05, and "it" or "its" from 6.4 to 2.7.
 
 ---
 
