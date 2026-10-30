@@ -819,7 +819,7 @@ count FILE ' and [^,;:.]{1,70} and '                                            
 count FILE '\b(beats?|bar|wins?|outperforms?)\b'                                # 41 contest metaphors
 count FILE '\b(now|today|currently|increasingly|no longer|for the first time)\b' # 42 freshness markers
 count FILE 'rests on|reads as|counts as|sits between|lies at'                   # 43 abstract verbs (holds, speaks to, points to: often literal, check by eye)
-count FILE '\b(is|are|was|were|be|been|being) ((not|also|then|[a-z]+ly) )?([a-z]+(ed|en|wn)|(re|un|over|mis|up)?(built|found|made|held|set|kept|run|sent|left|lost|put|done|led|met|paid|read|split|cut|spent|told|brought|taught|thought|bought|won))\b'  # 44 passive verbs (also counts -en words such as open, even, often, between; Methods passives are often fine)
+count FILE '\b(is|are|was|were|be|been|being) ((not|also|then|[a-z]+ly) )?([a-z]+(ed|en|wn)|(re|un|over|up)?(built|found|made|held|set|kept|run|sent|left|lost|put|done|led|met|paid|read|split|cut|spent|told|brought|taught|thought|bought|won))\b'  # 44 passive verbs (also counts -en words such as open, even, often, between; Methods passives are often fine)
 count FILE '\b(aim|hypothesis|goal) [0-9]+[a-z]? (tests?|asks?|measures?|compares?|fits?|uses?|validates?|develops?|repeats?)\b'  # 44 document parts as actors
 flat FILE | grep -oE '(^|[.;?!] )([^ ]*[{(*"])?(It|Its|They|Their|This|These) ' | wc -l  # 45 sentence-initial pronouns, also after **, (, ", or \textbf{ (case-sensitive; also counts "This test" and "It is clear")
 count FILE '\b(it|its)\b'                                                       # 45 it and its (density; most single hits are fine)
