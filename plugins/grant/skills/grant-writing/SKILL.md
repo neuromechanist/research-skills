@@ -130,8 +130,7 @@ For fellowship and career development mechanisms (F31, F32, K08, K23, K99):
 
 Consult `references/writing-style-guide.md` and `references/tone-guide.md` for established voice conventions. Key principles:
 
-- Direct, active voice with the team as the actor, or "I" on single-investigator mechanisms ("We rebuilt Aim 3", "We registered the test before seeing any fMRI value"; not "Aim 3 is rebuilt", "The test was registered", or "Hypothesis 1B tests ...")
-- Name the referent: replace "it", "its", "they", or "this" with the noun whenever the referent sits in an earlier sentence or two nouns could fit ("CLIP's prediction", not "its prediction")
+- Direct, active voice with a named actor and a named noun ("We rebuilt Aim 3", not "Aim 3 is rebuilt"; see the habits below)
 - Strategic bolding: overarching goal, aim titles, one key innovation per aim, memorable phrases
 - *Italic* hypothesis labels
 - No em-dashes (PI style preference, not a universal standard); use commas, semicolons, or parentheses
@@ -139,6 +138,19 @@ Consult `references/writing-style-guide.md` and `references/tone-guide.md` for e
 - Quantify when possible (N=24, 6-month, etc.)
 - Bold claims backed by technical precision
 - First person for vision ("I propose"), "we" for team work
+
+**Habits to avoid while drafting.** These habits make research prose read as machine-written, and reviewers notice them.
+Avoid them while drafting; the humanizer pass (patterns 30 to 45) then catches what slips through.
+The quoted phrases are examples of each habit, not the full list: a sentence that does the same job in other words breaks the same rule.
+
+- **Show, do not announce.** State the limitation or the result and let it stand. Do not certify your own honesty or rigor ("and we say so", "we say it first", "to be transparent", "we are careful to").
+- **Say it once.** Each sentence adds a fact. Drop tails that restate the purpose (", so a gain must come from what the tags say"), closing sentences that repeat the paragraph, and a second gloss of a defined term. Lead with a purpose ("To separate X from Y, ...") only where a reviewer would ask why.
+- **People act, and data do not speak.** Write "We registered the test before seeing any fMRI value", not "The test was registered" or "Hypothesis 1B tests ..."; results predict, differ, or agree, and do not "say", "tell", or "decide". Use "I" for the applicant's own acts on single-investigator mechanisms.
+- **Name the noun.** When the referent is a sentence back or two nouns could fit, repeat the noun ("CLIP's prediction", not "its prediction"); "this" needs its noun ("this test"), and the noun must appear just before.
+- **Literal claims, not slogans.** No mirrored contrasts ("fMRI shows where, EEG shows when"), contest metaphors ("beat the null"), colon reveals ("The answer is simple: ..."), or verbs of standing ("rests on", "reads as").
+- **Answer an objection once, where it arises.** Do not concede and rebut in every paragraph ("X is not the only limit, but ...").
+- **Plain time and scope.** Use "now" or "currently" only to contrast with a stated earlier version, and state a real constraint ("only", "never") once.
+- **One idea per sentence.** Split chains of "and"; list results strongest first, each with its label.
 
 After drafting, invoke the fully qualified `manuscript:humanizer` skill through the host's skill-invocation mechanism as a final natural-writing pass. Pay particular attention to:
 

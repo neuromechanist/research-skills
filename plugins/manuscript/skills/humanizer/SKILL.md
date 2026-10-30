@@ -538,6 +538,15 @@ Patterns 44 and 45 are about who acts and what each pronoun refers to; their cou
 Every After below keeps the facts of its Before.
 Purpose clauses, restatements, and freshness markers may go; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds.
 
+What the patterns share matters more than their wording.
+The quoted phrases are examples, and a sentence that does the same job in other words is the same pattern.
+Four ideas cover them:
+
+- **Show, do not announce.** The text states the result or the limitation and lets it stand; it does not certify its own honesty, rigor, or timeliness (patterns 33, 42).
+- **Say it once.** Each sentence adds a fact; tails, kickers, and repeated glosses restate one already given (patterns 30, 35, 39).
+- **Literal over clever.** Claims use plain verbs and plain comparisons, not slogans, contests, reveals, or verbs of standing (patterns 31, 32, 36, 41, 43).
+- **The reader never guesses.** Who acted, and what each word points to, is on the page (patterns 44, 45); one objection is answered once, where it arises (pattern 34).
+
 ### 30. Purpose Tails ("so" Payoffs)
 
 **Words to watch:** ", so a", ", so only", ", so the", ", so that", ", which means", "; this ensures", "; the X matters because"
@@ -589,7 +598,7 @@ The After keeps one contrast, the one the paragraph is about, and states the sec
 
 ### 33. Self-Certifying Candor
 
-**Words to watch:** "and we say so", "we report this honestly", "to be transparent", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to"
+**Words to watch:** "and we say so", "we say it first", "we say this up front", "we flag this openly", "we report this honestly", "to be transparent", "in fairness", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to"
 
 **Problem:** The text announces its own honesty or rigor instead of showing it.
 Reviewers read it as defensive, and it is a common residue of prompting a model to "be honest about limitations".
