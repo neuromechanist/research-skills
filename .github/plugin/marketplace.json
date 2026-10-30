@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, neuroinformatics, and cloud GPU provisioning for model training",
-    "version": "0.16.10"
+    "version": "0.16.11"
   },
   "plugins": [
     {
@@ -19,14 +19,14 @@
     {
       "name": "grant",
       "description": "Grant proposal toolkit: NIH/NSF and SBIR/STTR writing with mechanism-specific templates, merit and readability review, and figure quality assurance",
-      "version": "0.5.1",
+      "version": "0.5.2",
       "source": "./plugins/grant",
       "category": "research"
     },
     {
       "name": "manuscript",
       "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, journal-specific formatting with semantic-line-break safety, polished Word/DOCX reference templates with inline or end-of-document figures, and humanizer pass to remove AI-writing tells",
-      "version": "0.8.0",
+      "version": "0.9.0",
       "source": "./plugins/manuscript",
       "category": "research"
     },

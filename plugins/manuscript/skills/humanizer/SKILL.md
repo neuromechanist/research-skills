@@ -1,7 +1,7 @@
 ---
 name: humanizer
-description: "Use this skill for \"humanize this text\", \"remove AI tells\", \"make this less AI-sounding\", \"strip AI patterns\", \"de-AI my writing\", \"reduce AI-isms\", \"final natural-writing pass\", \"check for AI vocabulary\", \"em dash overuse\", \"rule of three overuse\", \"AI vocabulary\", \"signs of AI writing\", \"AI tells in grant prose\", or when polishing prose (papers, grants, lit reviews, abstracts, cover letters, responses to reviewers) to remove signs of AI-generated text while preserving meaning and discipline-appropriate conventions."
-version: 0.2.0
+description: "Use this skill for \"humanize this text\", \"remove AI tells\", \"make this less AI-sounding\", \"strip AI patterns\", \"de-AI my writing\", \"reduce AI-isms\", \"final natural-writing pass\", \"check for AI vocabulary\", \"em dash overuse\", \"rule of three overuse\", \"AI vocabulary\", \"signs of AI writing\", \"AI tells in grant prose\", \"too much passive voice\", \"ambiguous pronouns\", or when polishing prose (papers, grants, lit reviews, abstracts, cover letters, responses to reviewers) to remove signs of AI-generated text while preserving meaning and discipline-appropriate conventions."
+version: 0.3.0
 ---
 
 # Humanizer: Remove AI Writing Patterns
@@ -17,7 +17,7 @@ This skill is adapted from the upstream `humanizer` skill at https://github.com/
 - The YAML frontmatter (rewritten in marketplace `description` style with academic-trigger phrases).
 - The "Research writing context" section (including the "When to soften or skip a pattern", "Reconciling with research-skills conventions", and "When to invoke this skill in the writing workflow" subsections).
 - The per-pattern "Research writing note" callouts on 15 of the 29 patterns.
-- The "Research and grant prose patterns" section (patterns 30 to 43 and the quick scan), drawn from revising AI-assisted grant drafts that had already passed patterns 1 to 29.
+- The "Research and grant prose patterns" section (patterns 30 to 45 and the quick scan), drawn from revising AI-assisted grant drafts that had already passed patterns 1 to 29; patterns 44 and 45 come from a PI's line edits of such a draft.
 - The "Cross-references in the research-skills marketplace" section near the end.
 
 The MIT license is preserved in the `LICENSE` file in this skill directory; the additions above are released under MIT as well to keep upstream compatibility. National Institutes of Health (NIH), National Science Foundation (NSF), Institute of Electrical and Electronics Engineers (IEEE), American Psychological Association (APA), and American Chemical Society (ACS) referenced later in this file follow standard agency/society abbreviations.
@@ -39,12 +39,12 @@ Academic and grant writing have genre conventions that occasionally override gen
 
 ### When to soften or skip a pattern
 
-- **Passive voice in Methods.** Many biomedical, clinical, and life-sciences journals still prefer passive voice in Methods ("Samples were collected"). Active voice is preferred in research-skills overall, but do not force-rewrite Methods passages that match journal style. Pattern 13 still applies to Introduction, Results interpretation, Discussion, grant Approach narrative.
+- **Passive voice in Methods.** Many biomedical, clinical, and life-sciences journals still prefer passive voice in Methods ("Samples were collected"). Active voice is preferred in research-skills overall, but do not force-rewrite Methods passages that match journal style. Patterns 13 and 44 still apply to Introduction, Results interpretation, Discussion, grant Approach narrative.
 - **Hedging in Limitations and Discussion.** Pattern 24 (excessive hedging) is real, but Discussion sections legitimately use "may", "suggests", "is consistent with". Trim *stacked* hedges ("could potentially possibly") to single hedges ("may"). Do not strip hedges to bare assertions you cannot defend.
 - **Significance language in grants.** Grant Significance and Specific Aims sections legitimately argue that work matters. Pattern 1 (significance inflation) targets meaningless filler ("pivotal moment", "evolving landscape"), not specific, evidence-backed importance claims ("affects 1.2M patients annually"). Strip the filler, keep the substance.
 - **Title case in journal headings.** Pattern 17 prefers sentence case for headings. Defer to the journal's submission guidelines: IEEE, APA, ACS, and many others mandate title case. Apply pattern 17 only where house style is sentence case or unspecified.
 - **Curly quotes (pattern 19).** Many publishers' copyeditors convert straight quotes to curly automatically. For LaTeX submissions, use straight quotes (`` `` ... '' ``) since LaTeX renders them correctly. For Word/Markdown drafts, follow the journal's manuscript prep guide.
-- **Sentence-shape patterns 30 to 43.** Several overlap with legitimate science: real constraints stated with "only", required limitations, "Yes." or "No." in a response to reviewers, a closing sentence that ties a paragraph to an aim, and literal uses of "holds" or "lies at". Their research writing notes say what to keep.
+- **Research and grant prose patterns 30 to 45.** Several overlap with legitimate science: real constraints stated with "only", required limitations, "Yes." or "No." in a response to reviewers, a closing sentence that ties a paragraph to an aim, and literal uses of "holds" or "lies at". Their research writing notes say what to keep.
 - **Boldface in clinical and technical writing.** Pattern 15 targets *mechanical* bolding of every defined term. Selective bold for variable names, gene symbols (`*TP53*`), or critical warnings is fine.
 
 ### Reconciling with research-skills conventions
@@ -303,7 +303,7 @@ In academic prose, "soul" is constrained but not absent. Choose specific example
 **After:**
 > You do not need a configuration file. The system preserves the results automatically.
 
-**Research writing note:** Methods sections in many journals use passive intentionally ("Samples were collected and processed within 4 h"). Apply this pattern to Introduction, Results interpretation, Discussion, and grant Approach narrative. In Methods, only fix passives that genuinely obscure who did what.
+**Research writing note:** Methods sections in many journals use passive intentionally ("Samples were collected and processed within 4 h"). Apply this pattern to Introduction, Results interpretation, Discussion, and grant Approach narrative. In Methods, only fix passives that genuinely obscure who did what. Pattern 44 covers the research-prose form, including aims and hypotheses written as the actor.
 
 
 ## STYLE PATTERNS
@@ -534,8 +534,18 @@ These patterns come from revising AI-assisted grant and paper drafts that had al
 The tells that remain are in sentence shape.
 Each shape is normal in human writing once or twice a page; what gives a draft away is density, when most sentences on a page share the same shape.
 Count them with the quick scan below and rewrite until no shape repeats more than once or twice per 500 words.
+Patterns 44 and 45 are about who acts and what each pronoun refers to; their counts measure density, and single hits are often fine.
 Every After below keeps the facts of its Before.
 Purpose clauses, restatements, and freshness markers may go; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds.
+
+What the patterns share matters more than their wording.
+The quoted phrases are examples, and a sentence that does the same job in other words is the same pattern.
+Four ideas cover them:
+
+- **Show, do not announce.** The text states the result or the limitation and lets it stand; it does not certify its own honesty, rigor, or timeliness (patterns 33, 42).
+- **Say it once.** Each sentence adds a fact; tails, kickers, repeated glosses, and repeated absolutes restate one already given (patterns 30, 35, 37, 39).
+- **Literal over clever.** Claims use plain verbs and plain comparisons, not slogans, contests, reveals, scripted answers, or verbs of standing (patterns 31, 32, 36, 38, 41, 43).
+- **The reader never guesses.** Who acted, what each word points to, and which qualification belongs to which result are on the page (patterns 40, 44, 45); an objection is answered where it arises (pattern 34).
 
 ### 30. Purpose Tails ("so" Payoffs)
 
@@ -588,7 +598,7 @@ The After keeps one contrast, the one the paragraph is about, and states the sec
 
 ### 33. Self-Certifying Candor
 
-**Words to watch:** "and we say so", "we report this honestly", "to be transparent", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to"
+**Words to watch:** "and we say so", "we say it first", "we say this up front", "we flag this openly", "we report this honestly", "to be transparent", "in fairness", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to"
 
 **Problem:** The text announces its own honesty or rigor instead of showing it.
 Reviewers read it as defensive, and it is a common residue of prompting a model to "be honest about limitations".
@@ -761,6 +771,48 @@ Overlaps pattern 8.
 **Research writing note:** These verbs are literal in anatomy and statistics ("the lesion lies at", "the assumption holds"); leave those.
 
 
+### 44. Hidden Actors
+
+**Words to watch:** "is/are/was/were" plus a past participle in narrative prose ("was registered", "is rebuilt", "were chosen"); an aim, hypothesis, goal, or analysis as the one doing a person's work ("Aim 3 tests", "Hypothesis 1B tests", "the analysis asks")
+
+**Problem:** The sentence hides who did the work, behind a passive verb or behind a part of the document.
+Readers must infer the actor, and statements about what the team did and when (registering a test, choosing units after seeing data, excluding participants) read as evasive.
+Grant and paper readers expect "we" for the team's actions.
+Related: pattern 13 (passive voice) and pattern 31 (talking data).
+
+**Before:**
+> Aim 3 is rebuilt on recordings that share the participant and the stimulus. The test was registered after a first look at the EEG data, before any fMRI value was seen. Hypothesis 1B tests location specificity directly.
+
+**After:**
+> We rebuilt Aim 3 on recordings that share the participant and the stimulus. We registered the test after a first look at the EEG data, before seeing any fMRI value. We test location specificity directly in Hypothesis 1B.
+
+**Research writing note:** Passives in Methods that match journal style stay (pattern 13).
+A part of the document can stay the subject when it is the topic rather than an actor ("Aim 2 has two hypotheses", "Figure 3 shows the three tests"); rewrite the ones that perform a person's act, such as registering, choosing, excluding, testing, or rebuilding.
+Keep every timing and registration detail: "we registered X before seeing Y" must say exactly what "X was registered before Y was seen" said.
+Confirm who acted before writing "we"; if another group recorded, registered, or chose something, name that group.
+On single-investigator mechanisms (K, F, DP2), "I" is the actor for the applicant's own work.
+
+
+### 45. Unanchored Pronouns
+
+**Words to watch:** a sentence that opens with "It", "Its", "They", "This", or "These" and points back across a sentence; "it" or "its" twice in one sentence; "this level", "this test", or "this approach" when that noun did not appear just before
+
+**Problem:** The draft chains sentences with pronouns; the reader must hold the referent in mind or search back for the noun.
+When two nouns could fit, the sentence turns ambiguous, and in research prose the ambiguity often falls on the claim, such as whose prediction a model recovered or which test was registered.
+Repeating the technical noun costs the reader less than a pronoun and keeps the terms consistent (pattern 11).
+
+**Before:**
+> We compared HEDit with one human annotator. It agreed best on objects, and against the COCO labels, it was 0.79 to 0.95. CLIP predicts somewhat more than the tags, but the tags recover most of its prediction and add prediction beyond it. A flat curve marks where more annotation adds no prediction. We will build tools that find this level.
+
+**After:**
+> We compared HEDit with one human annotator. HEDit agreed with the annotator best on objects, and against the COCO labels, HEDit's agreement was 0.79 to 0.95. CLIP predicts somewhat more than the tags, but the tags recover most of CLIP's prediction and add prediction beyond CLIP. A flat curve marks the level where more annotation adds no prediction. We will build tools that find this level.
+
+**Research writing note:** Do not replace every pronoun.
+"HEDit inherits the biases of its models" is clear, because the referent is the subject of the same clause and no other noun competes.
+Rewrite when the referent sits in an earlier sentence, when two nouns could fit (HEDit or the annotator above), when the pronoun stands for a noun the text never wrote (the agreement above), or when "this" or "these" has no matching noun just before it; the fix may be to add the noun to the earlier sentence, as in the last pair above.
+In documents read in pieces, such as Specific Aims or one section of an Approach, name the subject again at the start of each paragraph.
+
+
 ### Quick scan
 
 The counts run on flattened text, so a pattern split by a semantic line break is still found, and LaTeX comment lines are dropped.
@@ -777,10 +829,17 @@ count FILE ' and [^,;:.]{1,70} and '                                            
 count FILE '\b(beats?|bar|wins?|outperforms?)\b'                                # 41 contest metaphors
 count FILE '\b(now|today|currently|increasingly|no longer|for the first time)\b' # 42 freshness markers
 count FILE 'rests on|reads as|counts as|sits between|lies at'                   # 43 abstract verbs (holds, speaks to, points to: often literal, check by eye)
+count FILE '\b(is|are|was|were|be|been|being) ((not|also|then|[a-z]+ly) )?([a-z]+(ed|en|wn)|(re|un|over|up)?(built|found|made|held|set|kept|run|sent|left|lost|put|done|led|met|paid|read|split|cut|spent|told|brought|taught|thought|bought|won))\b'  # 44 passive verbs (also counts -en words such as open, even, often, between; Methods passives are often fine)
+count FILE '\b(aim|hypothesis|goal) [0-9]+[a-z]? (tests?|asks?|measures?|compares?|fits?|uses?|validates?|develops?|repeats?)\b'  # 44 document parts as actors
+flat FILE | grep -oE '(^|[.;?!] )([^ ]*[{(*"])?(It|Its|They|Their|This|These) ' | wc -l  # 45 sentence-initial pronouns, also after **, (, ", or \textbf{ (case-sensitive; also counts "This test" and "It is clear")
+count FILE '\b(it|its)\b'                                                       # 45 it and its (density; most single hits are fine)
 flat FILE | wc -w                                                               # words, for hits per 500 words
 ```
 
 To find a hit, run the same expression with `grep -niE` on the file; a hit that spans a line break shows only in the count.
+
+Patterns 44 and 45 measure density, not a shape to drive to zero, and the once-or-twice-per-500-words rule above does not apply to them.
+As a reference rather than a pass mark: in one NIH Research Strategy of about 10,000 words, a revision for these two patterns took passive verbs from 5.9 to 1.9 per 500 words, aims and hypotheses as actors from 0.9 to 0.5, sentence-initial pronouns from 0.4 to 0.05, and "it" or "its" from 6.4 to 2.7.
 
 ---
 
@@ -789,7 +848,7 @@ To find a hit, run the same expression with `grep -niE` on the file; a hit that 
 1. Read the input text carefully.
 2. If the text is academic prose, note which section it belongs to (Methods, Results, Discussion, grant Specific Aims, grant Significance, grant Approach, response to reviewers, lit-review synthesis). Apply the "Research writing context" calibrations for that genre.
 3. Identify all instances of the patterns above.
-   For research and grant prose, also run the quick scan for patterns 30 to 43 and note the hits per 500 words.
+   For research and grant prose, also run the quick scan for patterns 30 to 45 and note the hits per 500 words.
 4. Rewrite each problematic section.
 5. Ensure the revised text:
    - Sounds natural when read aloud
@@ -822,8 +881,8 @@ Invoke each installed skill by its fully qualified `<plugin>:<skill>` name throu
 - `manuscript:paper-review` for peer-review feedback. Humanizer is often the right fix for a "writing quality" comment from a reviewer.
 - `manuscript:manuscript-formatting` for journal-specific formatting. Run humanizer first; formatting applies house style afterward (title case, citation style, etc.).
 - `manuscript:lit-review` for literature-review prose. The synthesized passages from lit-review are particularly prone to "evolving landscape" and "growing body of work" filler.
-- `grant:grant-writing` for NIH/NSF proposals. Run humanizer on Specific Aims, Significance, Innovation, and Approach narrative. Pay extra attention to patterns 1 (significance inflation), 4 (promotional language), and 24 (excessive hedging), and to the sentence-shape patterns 30 to 43 with their quick scan; defer to the funding mechanism's formatting for patterns 17 (title case) and 19 (curly quotes).
-- `grant:grant-review` for proposal critique. Patterns most relevant to grant prose: 1 (significance inflation), 4 (promotional language), 7 (AI vocabulary), 8 (copula avoidance), 14 (em-dash overuse), 24 (excessive hedging), 25 (generic positive conclusions), and the sentence-shape patterns 30 to 43. These often surface as "writing quality" or "lack of specificity" reviewer comments.
+- `grant:grant-writing` for NIH/NSF proposals. Run humanizer on Specific Aims, Significance, Innovation, and Approach narrative. Pay extra attention to patterns 1 (significance inflation), 4 (promotional language), and 24 (excessive hedging), and to the research and grant prose patterns 30 to 45 with their quick scan; defer to the funding mechanism's formatting for patterns 17 (title case) and 19 (curly quotes).
+- `grant:grant-review` for proposal critique. Patterns most relevant to grant prose: 1 (significance inflation), 4 (promotional language), 7 (AI vocabulary), 8 (copula avoidance), 14 (em-dash overuse), 24 (excessive hedging), 25 (generic positive conclusions), and the research and grant prose patterns 30 to 45. These often surface as "writing quality" or "lack of specificity" reviewer comments.
 
 ## Full Example
 

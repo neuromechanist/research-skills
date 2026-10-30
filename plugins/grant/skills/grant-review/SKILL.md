@@ -1,7 +1,7 @@
 ---
 name: grant-review
 description: This skill should be used when the user asks to "review a grant", "review my proposal", "score this grant", "evaluate my specific aims", "critique my research strategy", "review as an NIH reviewer", "review as an NSF panelist", "give me reviewer feedback", "check my grant proposal", "review my R01", "review my K99", "review my SBIR", "review my STTR", "review my Phase I application", "review my Phase II application", "review my commercialization plan", "evaluate my CAREER proposal", "run a mock study section", "run a grant readability review", "check my clear sentences", "review my resubmission", "review this PDF", "check my proposal PDF", "analyze my grant layout", or mentions grant review, proposal critique, NIH scoring, NSF panel review, small business grant review, study section feedback, or proposal PDF review.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Grant Proposal Review

@@ -1,7 +1,7 @@
 ---
 name: grant-writing
 description: This skill should be used when the user asks to "write a grant proposal", "draft specific aims", "write a research strategy", "create an NIH proposal", "create an NSF proposal", "write a significance section", "write an innovation section", "write an approach section", "draft a DP2 essay", "write an R01", "write an R21", "write a K99", "write an R03", "write a K08", "write a K23", "write an F31", "write an F32", "write a CAREER proposal", "write an SBIR", "write an STTR", "write an R43, R44, R41, or R42", "write a Phase I or Phase II application", "write a Fast-Track application", "write a commercialization plan", "write SBIR milestones", "write preliminary data", "write rigor and reproducibility", "draft potential problems and alternatives", "write a budget justification", "respond to reviewer comments", "write a resubmission introduction", "strengthen my specific aims", or mentions grant writing, proposal drafting, specific aims, research strategy, small business grants, or any NIH/NSF mechanism.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Grant Writing Skill
@@ -130,14 +130,28 @@ For fellowship and career development mechanisms (F31, F32, K08, K23, K99):
 
 Consult `references/writing-style-guide.md` and `references/tone-guide.md` for established voice conventions. Key principles:
 
-- Direct, active voice ("We will demonstrate" not "It will be demonstrated")
+- Direct, active voice with a named actor and a named noun ("We rebuilt Aim 3", not "Aim 3 is rebuilt"; see the habits below)
 - Strategic bolding: overarching goal, aim titles, one key innovation per aim, memorable phrases
 - *Italic* hypothesis labels
 - No em-dashes (PI style preference, not a universal standard); use commas, semicolons, or parentheses
 - Define abbreviations on first use (once per document)
 - Quantify when possible (N=24, 6-month, etc.)
 - Bold claims backed by technical precision
-- First person for vision ("I propose"), "we" for team work
+- First person: "I" for the applicant's vision ("I propose") and own acts on single-investigator mechanisms, "we" for team work
+
+<!-- Keep in sync with manuscript-writing/SKILL.md, "Habits to avoid while drafting" (the manuscript list has the journal-passive sentence instead of the single-investigator one). -->
+**Habits to avoid while drafting.** These habits make research prose read as machine-written, and reviewers notice them.
+Avoid them while drafting; the humanizer pass (patterns 30 to 45) then catches what slips through.
+The quoted phrases are examples of each habit, not the full list; a sentence that does the same job in other words breaks the same rule.
+
+- **Show, do not announce.** State the limitation or the result and let it stand. Do not certify your own honesty or rigor ("and we say so", "we say it first", "to be transparent", "we are careful to").
+- **Say it once.** Each sentence adds a fact. Drop tails that restate the purpose (", so a gain must come from what the tags say"), closing sentences that only repeat the paragraph (a sentence that links to an aim or states the gap stays), and a second gloss of a defined term (define it again only in each separately read document). Lead with a purpose ("To separate X from Y, ...") only where a reviewer would ask why.
+- **Name who acts.** Write "We registered the test before seeing any fMRI value", not "The test was registered" or "Hypothesis 1B tests ..."; results predict, differ, or agree, and do not "say", "tell", or "decide". An aim can still be the topic of a sentence ("Aim 2 has two hypotheses"). Use "I" for the applicant's own acts on single-investigator mechanisms.
+- **Name the noun.** When the referent is a sentence back or two nouns could fit, repeat the noun ("CLIP's prediction", not "its prediction"); "this" needs a noun that names something in the sentence just before ("this test"). A pronoun is fine when its referent is the subject of the same clause.
+- **Literal claims, not slogans.** No mirrored contrasts ("fMRI shows where, EEG shows when"), contest metaphors ("beat the null"), colon reveals ("The answer is simple: ..."), or verbs of standing ("rests on", "reads as").
+- **Answer an objection where it arises.** Do not concede and rebut in every paragraph ("X is not the only limit, but ...").
+- **Plain time and scope.** Use "now" or "currently" only to contrast with a stated earlier version or where literal ("currently recruiting"), and state a real constraint ("only", "never") once.
+- **One idea per sentence.** Split chains of "and"; list results strongest first, each with its label.
 
 After drafting, invoke the fully qualified `manuscript:humanizer` skill through the host's skill-invocation mechanism as a final natural-writing pass. Pay particular attention to:
 
@@ -146,6 +160,7 @@ After drafting, invoke the fully qualified `manuscript:humanizer` skill through 
 - Pattern 24 (excessive hedging): tighten stacked hedges, but keep appropriate uncertainty in Approach risks/alternatives.
 - Patterns 17 and 19 (title case, curly quotes): for NIH/NSF, defer to mechanism formatting in Step 6.
 - Patterns 30 to 43 (sentence-shape tells such as ", so a gain must come from ...", talking data, and colon reveals): run the skill's quick scan and keep each pattern under one or two hits per 500 words.
+- Patterns 44 and 45 (hidden actors and unanchored pronouns): the quick scan counts passive verbs, aims or hypotheses as actors, sentence-initial pronouns, and "it"/"its"; review the hits outside Methods-style text and rewrite with "we" and the named noun.
 
 ### Step 6: Format for submission
 
