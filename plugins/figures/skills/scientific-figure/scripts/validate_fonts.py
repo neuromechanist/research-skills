@@ -6,7 +6,11 @@ viewBox so the reported size is the physical point size. That scale is ~1.0 for 
 viewBox (matplotlib's default export) and ~72/25.4 for an mm-based viewBox (the convention used by
 scientific-figure, svg-figure, and svg-primitives), so a bare font-size of 5 in an `89mm` /
 `viewBox 89` schematic is correctly reported as ~14 pt rather than 5 pt. An explicit unit on the
-font-size (pt/px/mm/cm/in) is treated as an absolute size; a bare number is treated as user units.
+font-size (pt/mm/cm/in) is treated as an absolute size; a bare number is treated as user units.
+`px` in a font-size is also a user unit: in SVG, `px` is a user unit, not a CSS pixel, so
+matplotlib's `font-size: 6.5px` in a point-based viewBox is 6.5 pt, not 6.5 * 72/96 pt. (`px` in
+the root `width` attribute is a different case, where it is a CSS pixel, and is still converted
+via `_UNIT_TO_PT` in `_root_unit_to_pt`.)
 
 Usage:
 
@@ -125,7 +129,12 @@ def _font_size_pt(text_el: etree._Element) -> tuple[float, bool] | None:
         return None
     n = float(value)
     unit = (unit or "").lower()
-    if unit == "":  # bare number: user units (mm in an mm-viewBox, pt in a pt-viewBox)
+    if unit == "" or unit == "px":
+        # Bare number: user units (mm in an mm-viewBox, pt in a pt-viewBox).
+        # px in a font-size is likewise a user unit in SVG, not a CSS pixel:
+        # matplotlib writes font-size in px into a point-based viewBox, where
+        # 6.5px is 6.5 pt. Treating it as 6.5 * 72/96 pt falsely fails text
+        # that meets the journal minimum.
         return n, True
     if unit in _UNIT_TO_PT:
         return n * _UNIT_TO_PT[unit], False
