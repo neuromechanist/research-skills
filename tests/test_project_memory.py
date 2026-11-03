@@ -6,15 +6,15 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BIN_DIR = ROOT / "plugins" / "project" / "scripts"
-INIT = BIN_DIR / "project-init-templates"
-DIFF = BIN_DIR / "project-diff-rules"
+SCRIPTS_DIR = ROOT / "plugins" / "project" / "scripts"
+INIT = SCRIPTS_DIR / "project-init-templates"
+DIFF = SCRIPTS_DIR / "project-diff-rules"
 MEMORY_TEMPLATE = ROOT / "plugins" / "project" / "templates" / "memory"
 
 
 def _env() -> dict[str, str]:
     env = os.environ.copy()
-    # The helpers must resolve sibling binaries themselves; a native plugin
+    # The helpers must resolve sibling scripts themselves; a native plugin
     # manifest does not put the plugin scripts directory on PATH.
     env["PATH"] = os.pathsep.join(("/usr/bin", "/bin"))
     return env

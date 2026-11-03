@@ -16,6 +16,7 @@ Run: ``uv run --with pytest pytest tests/ -q``
 """
 
 import json
+import os
 import re
 import shutil
 import stat
@@ -529,3 +530,25 @@ def test_no_plugin_has_top_level_bin_directory():
     # bin/ directory (claude.com/docs/plugins/platform-support).
     offenders = sorted(p.name for p in PLUGINS_DIR.iterdir() if (p / "bin").exists())
     assert offenders == []
+
+
+def test_project_script_references_resolve_to_executables():
+    # Commands and skills call helpers by absolute path, never from PATH, so
+    # every referenced scripts/project-* file must exist and be executable.
+    project = PLUGINS_DIR / "project"
+    scripts_dir = project / "scripts"
+    referenced: set[str] = set()
+    stale: list[str] = []
+    for md in sorted(project.rglob("*.md")):
+        if "templates" in md.relative_to(project).parts:
+            continue
+        text = md.read_text()
+        referenced.update(re.findall(r"/scripts/(project-[a-z-]+)", text))
+        if re.search(r"/bin/project-", text):
+            stale.append(str(md.relative_to(project)))
+    assert referenced, "expected command and skill references to scripts/project-*"
+    for name in sorted(referenced):
+        script = scripts_dir / name
+        assert script.is_file(), f"referenced script missing: {name}"
+        assert os.access(script, os.X_OK), f"referenced script not executable: {name}"
+    assert stale == []
