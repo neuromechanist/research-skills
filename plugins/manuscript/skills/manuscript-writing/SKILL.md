@@ -81,13 +81,13 @@ Structure:
 - Consistent terminology (don't alternate between synonyms for key concepts)
 
 ### Habits to avoid while drafting
-<!-- Keep in sync with grant/skills/grant-writing/SKILL.md, "Habits to avoid while drafting" (the grant list has the single-investigator sentence instead of the journal-passive one). -->
+<!-- Keep in sync with grant/skills/grant-writing/SKILL.md, "Habits to avoid while drafting" (the grant list has the single-investigator sentence instead of the journal-passive one, and its "Show, do not announce" bullet names Specific Aims and Significance and keeps Potential Problems and Alternatives instead of the Limitations section). -->
 
 These habits make research prose read as machine-written, and reviewers and editors notice them.
 Avoid them while drafting; the humanizer pass (patterns 30 to 45) then catches what slips through.
 The quoted phrases are examples of each habit, not the full list; a sentence that does the same job in other words breaks the same rule.
 
-- **Show, do not announce.** State the limitation or the result and let it stand. Do not certify your own honesty or rigor ("and we say so", "we say it first", "to be clear", "to be transparent", "we are careful to"). Be truthful, not exhaustive: keep the caveats that change how a result is read, put the rest in the Limitations section, and do not volunteer limitations for their own sake elsewhere.
+- **Show, do not announce.** State the limitation or the result and let it stand. Do not certify your own honesty or rigor ("and we say so", "we say it first", "to be clear", "to be transparent", "we are careful to"). Be truthful, not exhaustive: keep in place the caveats that change how a result is read and every required disclosure, gather the remaining real limitations in the Limitations section, and cut disclosures that add nothing a reader needs to interpret a result or make a decision.
 - **Say it once.** Each sentence adds a fact. Drop tails that restate the purpose (", so a gain must come from what the tags say"), closing sentences that only repeat the paragraph (a sentence that links to an aim or states the gap stays), and a second gloss of a defined term (define it again only in each separately read document). Lead with a purpose ("To separate X from Y, ...") only where a reader would ask why.
 - **Name who acts.** Write "We registered the test before seeing any fMRI value", not "The test was registered" or "Hypothesis 1B tests ..."; results predict, differ, or agree, and do not "say", "tell", or "decide". An aim can still be the topic of a sentence ("Aim 2 has two hypotheses"). Follow the journal where it prefers passive Methods.
 - **Name the noun.** When the referent is a sentence back or two nouns could fit, repeat the noun ("CLIP's prediction", not "its prediction"); "this" needs a noun that names something in the sentence just before ("this test"). A pronoun is fine when its referent is the subject of the same clause.

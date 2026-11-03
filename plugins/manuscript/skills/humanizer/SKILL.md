@@ -44,7 +44,7 @@ Academic and grant writing have genre conventions that occasionally override gen
 - **Significance language in grants.** Grant Significance and Specific Aims sections legitimately argue that work matters. Pattern 1 (significance inflation) targets meaningless filler ("pivotal moment", "evolving landscape"), not specific, evidence-backed importance claims ("affects 1.2M patients annually"). Strip the filler, keep the substance.
 - **Title case in journal headings.** Pattern 17 prefers sentence case for headings. Defer to the journal's submission guidelines: IEEE, APA, ACS, and many others mandate title case. Apply pattern 17 only where house style is sentence case or unspecified.
 - **Curly quotes (pattern 19).** Many publishers' copyeditors convert straight quotes to curly automatically. For LaTeX submissions, use straight quotes (`` `` ... '' ``) since LaTeX renders them correctly. For Word/Markdown drafts, follow the journal's manuscript prep guide.
-- **Research and grant prose patterns 30 to 45.** Several overlap with legitimate science: real constraints stated with "only", required limitations, "Yes." or "No." in a response to reviewers, a closing sentence that ties a paragraph to an aim, and literal uses of "holds" or "lies at". Their research writing notes say what to keep.
+- **Research and grant prose patterns 30 to 45.** Several overlap with legitimate science: real constraints stated with "only", required limitations (pattern 33's note lists what always stays), "Yes." or "No." in a response to reviewers, a closing sentence that ties a paragraph to an aim, and literal uses of "holds" or "lies at". Their research writing notes say what to keep.
 - **Boldface in clinical and technical writing.** Pattern 15 targets *mechanical* bolding of every defined term. Selective bold for variable names, gene symbols (`*TP53*`), or critical warnings is fine.
 
 ### Reconciling with research-skills conventions
@@ -536,7 +536,7 @@ Each shape is normal in human writing once or twice a page; what gives a draft a
 Count them with the quick scan below and rewrite until no shape repeats more than once or twice per 500 words.
 Patterns 44 and 45 are about who acts and what each pronoun refers to; their counts measure density, and single hits are often fine.
 Every After below keeps the facts of its Before.
-Purpose clauses, restatements, and freshness markers may go; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds, except that pattern 33 removes disclosures volunteered only for their own sake.
+Purpose clauses, restatements, and freshness markers may go; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds, except that pattern 33 removes disclosures that add nothing a reader needs to interpret a result or make a decision, never a caveat that changes how a result is read.
 
 What the patterns share matters more than their wording.
 The quoted phrases are examples, and a sentence that does the same job in other words is the same pattern.
@@ -598,13 +598,14 @@ The After keeps one contrast, the one the paragraph is about, and states the sec
 
 ### 33. Self-Certifying Candor and Gratuitous Disclosure
 
-**Words to watch:** "and we say so", "we say it first", "we say this up front", "we state plainly", "to be clear", "to be honest", "honestly", "candidly", "frankly", "we flag this openly", "we report this honestly", "to be transparent", "in fairness", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to", "it is X, not Y" as a self-correction
+**Words to watch:** "and we say so", "we say it first", "we say this up front", "we state plainly", "to be clear", "to be honest", "honestly", "candidly", "frankly", "we flag this openly", "we report this honestly", "to be transparent", "in fairness", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to"
 
 **Problem:** The text announces its own honesty or rigor instead of showing it.
 Reviewers read it as defensive, and it is a common residue of prompting a model to "be honest about limitations".
 The same prompting leaves a second habit: limitations volunteered for their own sake.
-A sentence whose only job is to admit what the work has not done, which other options were dropped, or what a number does not cover undercuts the argument without informing a decision.
+A sentence that admits what the work did not set out to do, or that some other approach exists, often adds nothing a reader needs to interpret a result or make a decision.
 Related: pattern 24 (excessive hedging), pattern 27 (persuasive authority tropes), and pattern 34 (pre-emptive objection packaging).
+If the caveat answers a real objection, move it to where the objection arises and answer it once (pattern 34); cut it only when it informs no one.
 
 **Before:**
 > The tool is preliminary, weak on actions, and we say so. We do not trust it; we treat it as an instrument, not an oracle. Aim 3 validates each tag against trained annotators.
@@ -613,16 +614,20 @@ Related: pattern 24 (excessive hedging), pattern 27 (persuasive authority tropes
 > The tool is preliminary and weak on actions. Aim 3 validates each tag against trained annotators.
 
 **Before (gratuitous disclosure in Specific Aims):**
-> To be clear, we use three of the benchmark's six experiments; the other three did not clear our controls. Our captions are also far less varied than CLIP's text, and the annotation tool's underlying models may have seen the labels in training.
+> We compare three architectures in two cohorts. To be clear, we did not test every possible architecture, the results may not generalize to every population, and other approaches to this question exist.
 
 **After:**
-> We evaluate on three event pairs of the benchmark. Captions grow richer as Aim 2 adds stimulus content.
+> We compare three architectures in two cohorts.
+
+The scope is already on the page, so the disclaimers add nothing a reader needs.
+A caveat that would change how the comparison is read stays: an exclusion that depended on the outcome, a possible leak of test labels into training, or a confound the design cannot remove.
 
 **Research writing note:** Be truthful, not exhaustive.
-A proposal or a paper makes a case, and open questions are often what the work sets out to answer; frame them that way.
-Never state or imply anything false.
-Keep every limitation, scope statement, and caveat that rigor sections, reporting guidelines, a Limitations section, a Potential Problems section, or a reviewer's question require, and any caveat that changes how a result should be read.
-Elsewhere, and above all in persuasive sections (Specific Aims, Significance, abstracts, cover letters, funding requests), cut a disclosure whose only effect is to weaken the case, and remove the self-congratulation around the caveats that stay.
+A proposal or a paper makes a case, and open questions are often what the work sets out to answer; frame them that way when that is true, and never state or imply anything false.
+Never cut a disclosure that an institution, journal, or funder requires: conflicts of interest, overlap with other support, prior or duplicate publication, deviations from a registered plan, data exclusions, and ethics statements.
+Keep every limitation, scope statement, and caveat that rigor sections, reporting guidelines, a Limitations section, a Potential Problems and Alternatives section, or a reviewer's question require, and any caveat that changes how a result should be read.
+Elsewhere, and above all in persuasive sections (Specific Aims, Significance, abstracts, cover letters, funding requests), cut a disclosure that adds nothing a reader needs to interpret a result or make a decision, and remove the self-congratulation around the caveats that stay.
+Pattern 24 still applies to what remains: keep the single hedge a claim needs.
 
 
 ### 34. Pre-emptive Objection Packaging
@@ -834,7 +839,7 @@ Review every hit by hand: most are fine one at a time, and the count per 500 wor
 flat()  { grep -v '^[[:space:]]*%' "$1" | tr -s '[:space:]' ' '; }
 count() { flat "$1" | grep -oiE "$2" | wc -l; }
 count FILE ', so [a-z]+ |, which means|; this ensures|matters because'          # 30 purpose tails
-count FILE 'we say (so|it|this)|to be (clear|honest|transparent)|\b(honestly|candidly|frankly)\b|state plainly|up front|in fairness'  # 33 candor markers
+count FILE 'we say (so|it|this)|to be (clear|honest|transparent)\b|\b(honestly|candidly|frankly)\b|stat(e|es|ed) (it |this )?plainly|in fairness|we do not hide|we are careful to|not an oracle'  # 33 candor markers only; gratuitous disclosures have no marker, so read for them
 count FILE '\b(says?|tells?|carr(y|ies)|names?|decides?)\b'                     # 31 talking data
 flat FILE | grep -oE ': [a-z]' | wc -l                                          # 36 colons (reveals and lists; case-sensitive)
 count FILE '\b(never|only|always)\b'                                            # 37 absolute guards
