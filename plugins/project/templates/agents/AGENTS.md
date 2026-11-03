@@ -93,7 +93,7 @@ bun test         # Run tests
 - `.rules/{{framework}}.md` - Framework patterns
 
 ### Code Intelligence
-- `.rules/lsp.md` - Language Server Protocol (LSP) servers through official Claude Code plugins; ask before installing
+- `.rules/lsp.md` - Language Server Protocol (LSP) code intelligence per agent (Claude Code plugins, Copilot CLI configuration, text-based fallback for Codex); ask before installing
 
 ## Context Files
 - `.context/plan.md` - Current tasks and phases
