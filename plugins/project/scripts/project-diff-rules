@@ -40,6 +40,20 @@ TEMPLATES_DIR="$("$SCRIPT_DIR/project-templates-path")" || {
 }
 LEVEL="${1:-}"
 
+# Print each H2 header of a file as PREFIX=<line>:<header>; a read error is fatal.
+emit_h2() {
+    local prefix="$1" file="$2" headers="" status=0
+    headers="$(grep -n '^## ' "$file")" || status=$?
+    if [ "$status" -gt 1 ]; then
+        echo "ERROR: Failed to read section headers from $file" >&2
+        exit 1
+    fi
+    [ -n "$headers" ] || return 0
+    while IFS= read -r line; do
+        echo "$prefix=$line"
+    done <<< "$headers"
+}
+
 # Template rules that were removed, mapped to their replacement rule.
 retired_rule_replacement() {
     case "$1" in
@@ -168,20 +182,14 @@ case "$LEVEL" in
         # so an unmigrated CLAUDE.md cannot be silently mistaken for an AGENTS.md.
         if [ -f "$TARGET_DIR/AGENTS.md" ]; then
             echo "PROJECT_SECTION_SOURCE=agents"
-            while IFS= read -r line; do
-                echo "PROJECT_SECTION=$line"
-            done < <(grep -n '^## ' "$TARGET_DIR/AGENTS.md" || true)
+            emit_h2 PROJECT_SECTION "$TARGET_DIR/AGENTS.md"
         elif [ -f "$TARGET_DIR/CLAUDE.md" ]; then
             echo "PROJECT_SECTION_SOURCE=claude"
-            while IFS= read -r line; do
-                echo "PROJECT_SECTION=$line"
-            done < <(grep -n '^## ' "$TARGET_DIR/CLAUDE.md" || true)
+            emit_h2 PROJECT_SECTION "$TARGET_DIR/CLAUDE.md"
         fi
 
         # --- Template AGENTS.md section headers ---
-        while IFS= read -r line; do
-            echo "TEMPLATE_SECTION=$line"
-        done < <(grep -n '^## ' "$TEMPLATES_DIR/agents/AGENTS.md" || true)
+        emit_h2 TEMPLATE_SECTION "$TEMPLATES_DIR/agents/AGENTS.md"
         ;;
 
     user)
@@ -196,14 +204,10 @@ case "$LEVEL" in
         echo "USER_CLAUDE_PATH=$USER_CLAUDE"
 
         # --- User CLAUDE.md section headers ---
-        while IFS= read -r line; do
-            echo "USER_SECTION=$line"
-        done < <(grep -n '^## ' "$USER_CLAUDE" || true)
+        emit_h2 USER_SECTION "$USER_CLAUDE"
 
         # --- Template AGENTS.md section headers ---
-        while IFS= read -r line; do
-            echo "TEMPLATE_SECTION=$line"
-        done < <(grep -n '^## ' "$TEMPLATES_DIR/agents/AGENTS.md" || true)
+        emit_h2 TEMPLATE_SECTION "$TEMPLATES_DIR/agents/AGENTS.md"
 
         # --- Template rules list (for best-practice suggestions) ---
         for template_rule in "$TEMPLATES_DIR/claude/rules/"*.md; do
