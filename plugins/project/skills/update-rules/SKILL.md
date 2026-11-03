@@ -63,9 +63,10 @@ as Claude-only.
 
 ### Step 1: Run Comparison Script
 
-Run the bundled `scripts/project-diff-rules <level>` helper by absolute path from
-the project plugin installation; plugin helpers are not on `PATH`. The script outputs KEY=VALUE pairs categorizing each rule file and
-listing section headers from both sources.
+Run the bundled `<project-plugin-root>/scripts/project-diff-rules <level>` helper by absolute path,
+where `<project-plugin-root>` is the project plugin installation that contains this skill;
+plugin helpers are not on `PATH`.
+The script outputs KEY=VALUE pairs categorizing each rule file and listing section headers from both sources.
 
 ### Step 2: Read and Analyze
 
@@ -103,11 +104,13 @@ Show preview of what will change for each item. Ask user to confirm which change
 
 Run the bundled `<project-plugin-root>/scripts/project-diff-rules <level>` helper
 again to confirm all approved changes were applied.
+No `RULE_RETIRED` line should remain except for files the user chose to keep.
 
 ## Non-Destructive Guarantees
 
 - NEVER overwrite a file without showing the diff first
 - NEVER remove user-added content (custom rules, custom sections, custom guidelines)
+- Delete a `RETIRED` rule file only after showing it and getting explicit approval; it is a former template file, not user-added content
 - NEVER replace project-specific values (project name, tech stack, architecture) with template placeholders
 - ALWAYS use Edit for existing files when merging selective changes. Write is acceptable only for new rule files or when the user explicitly approves replacing a file with the template version.
 - For changed .rules/ files, present three options: (a) accept template version, (b) merge specific changes, (c) skip
