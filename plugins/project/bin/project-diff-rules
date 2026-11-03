@@ -15,6 +15,7 @@
 #   RULE_CURRENT=<filename>     -- rule matches template exactly
 #   RULE_CHANGED=<filename>     -- rule differs from template
 #   RULE_CUSTOM=<filename>      -- user rule not in templates
+#   RULE_RETIRED=<old>:<new>    -- retired template rule; <new> replaces it
 #   MEMORY_FILE_MISSING=<filename> -- template memory file not found
 #   MEMORY_FILE_CURRENT=<filename> -- memory template matches exactly
 #   MEMORY_FILE_CHANGED=<filename> -- memory template differs
@@ -38,6 +39,14 @@ TEMPLATES_DIR="$("$SCRIPT_DIR/project-templates-path")" || {
     exit 1
 }
 LEVEL="${1:-}"
+
+# Template rules that were removed, mapped to their replacement rule.
+retired_rule_replacement() {
+    case "$1" in
+        serena_mcp.md) echo "lsp.md" ;;
+        *) return 1 ;;
+    esac
+}
 
 if [ -z "$LEVEL" ]; then
     echo "ERROR: No level specified. Use 'user' or 'project'." >&2
@@ -121,7 +130,12 @@ case "$LEVEL" in
             for existing_rule in "$TARGET_DIR/.rules/"*.md; do
                 [ -f "$existing_rule" ] || continue
                 rule_name="$(basename "$existing_rule")"
-                if [ ! -f "$TEMPLATES_DIR/claude/rules/$rule_name" ]; then
+                if [ -f "$TEMPLATES_DIR/claude/rules/$rule_name" ]; then
+                    continue
+                fi
+                if replacement="$(retired_rule_replacement "$rule_name")"; then
+                    echo "RULE_RETIRED=$rule_name:$replacement"
+                else
                     echo "RULE_CUSTOM=$rule_name"
                 fi
             done

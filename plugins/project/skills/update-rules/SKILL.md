@@ -32,6 +32,7 @@ Update the current project's configuration:
    - `CHANGED` -- exists but differs from template. Show unified diff, suggest merge.
    - `CURRENT` -- matches template. Report as up to date.
    - `CUSTOM` -- user-added rule not in templates. Preserve completely, report.
+   - `RETIRED` -- a former template rule that a newer rule replaces (`RULE_RETIRED=<old>:<new>`, for example `serena_mcp.md:lsp.md`). Offer to delete the old file, add the replacement if missing, and update the `.rules/` list in AGENTS.md. Show the old file first; keep it if the user declines.
 
 2. **`.memory/` convention sync** -- Check the template `memory/README.md` and
    `memory/INDEX.md` against the project's `.memory/` directory:

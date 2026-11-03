@@ -125,3 +125,29 @@ def test_memory_template_documents_boundary_format_and_safety():
         assert forbidden in readme
     assert "one line" in index
     assert "Entry" in index
+
+
+def test_diff_reports_retired_serena_rule_with_lsp_replacement(tmp_path: Path):
+    project = tmp_path / "project"
+    rules = project / ".rules"
+    rules.mkdir(parents=True)
+    (rules / "serena_mcp.md").write_text("# Serena MCP for Code Intelligence\n")
+    (rules / "team_style.md").write_text("# Team style\n")
+
+    result = _run_diff(project)
+    assert result.returncode == 0, result.stderr
+    assert "RULE_RETIRED=serena_mcp.md:lsp.md" in result.stdout
+    assert "RULE_CUSTOM=serena_mcp.md" not in result.stdout
+    assert "RULE_CUSTOM=team_style.md" in result.stdout
+    assert "RULE_MISSING=lsp.md" in result.stdout
+    assert (rules / "serena_mcp.md").exists()
+
+
+def test_init_scaffolds_lsp_rule_and_no_serena_rule(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+
+    result = _run_init(project)
+    assert result.returncode == 0, result.stderr
+    assert (project / ".rules" / "lsp.md").exists()
+    assert not (project / ".rules" / "serena_mcp.md").exists()
