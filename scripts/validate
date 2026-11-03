@@ -7,7 +7,7 @@ cd "$REPO_ROOT"
 
 while IFS= read -r script; do
     bash -n "$script"
-done < <(find plugins -path '*/bin/*' -type f | sort)
+done < <(find plugins/project/scripts -type f | sort)
 
 uv run --with pytest --with lxml --with svgelements --with shapely \
     --with svgpathtools --with fonttools --with pyyaml \

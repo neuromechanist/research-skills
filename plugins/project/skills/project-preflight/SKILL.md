@@ -11,13 +11,12 @@ terminal, GitHub, or native-agent state. It never spawns agents, changes files,
 or prints credentials.
 
 Resolve the executable from the project plugin installation that contains this
-skill, using its sibling `bin/project-preflight` path. When working from a
-checkout, that path is `plugins/project/bin/project-preflight`. Invoke the
-executable by its absolute path rather than assuming that the plugin's `bin/`
-directory is on `PATH`:
+skill, using its sibling `scripts/project-preflight` path. When working from a
+checkout, that path is `plugins/project/scripts/project-preflight`. Invoke the
+executable by its absolute path; plugin helpers are not on `PATH`:
 
 ```bash
-<project-plugin-root>/bin/project-preflight --format json
+<project-plugin-root>/scripts/project-preflight --format json
 ```
 
 Use the JSON fields to distinguish repository-detection failures from optional

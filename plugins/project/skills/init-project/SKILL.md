@@ -141,7 +141,7 @@ Only if the user requests it or uses Cursor:
 If (and only if) the project has been pushed to GitHub and the user opts in, install a default issue label set:
 
 ```bash
-project-init-labels .
+<project-plugin-root>/scripts/project-init-labels .
 ```
 
 The script is idempotent (uses `gh label create --force`) and installs:

@@ -19,8 +19,8 @@ The same epic → sub-issue → worktree shape generalizes beyond code changes. 
 `workflow-reference` documents the branch, state-file, worktree, and GitHub command conventions this pattern relies on.
 
 Before an epic or PR workflow, invoke the bundled
-`<project-plugin-root>/bin/project-preflight --format json` executable by
-absolute path; do not assume the plugin's `bin/` directory is on `PATH`. It
+`<project-plugin-root>/scripts/project-preflight --format json` executable by
+absolute path; plugin helpers are not on `PATH`. It
 reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI
 command/network/auth/token status, child-shell credential inheritance, and
 native-agent capability. It is read-only, never spawns agents, and keeps

@@ -7,7 +7,7 @@
   updates to existing capabilities are plugin patch bumps.
 - Adding a new plugin is a marketplace minor bump (`0.x.0`).
 - Adding or updating a skill within an existing plugin is a marketplace patch bump (`0.x.y`).
-- `plugins/project/bin/project-bump-version` keeps Claude, Codex, Copilot, and
+- `plugins/project/scripts/project-bump-version` keeps Claude, Codex, Copilot, and
   marketplace declarations synchronized for ordinary version bumps. A skill
   added within an existing plugin uses the helper's cascading marketplace
   patch bump.

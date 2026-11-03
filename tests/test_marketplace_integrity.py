@@ -336,9 +336,9 @@ def test_copilot_worker_templates_use_cli_tool_names():
 
 
 def test_version_bump_aborts_before_writing_when_plugin_manifests_drift(tmp_path: Path):
-    script = tmp_path / "plugins" / "project" / "bin" / "project-bump-version"
+    script = tmp_path / "plugins" / "project" / "scripts" / "project-bump-version"
     script.parent.mkdir(parents=True)
-    shutil.copy2(PLUGINS_DIR / "project" / "bin" / "project-bump-version", script)
+    shutil.copy2(PLUGINS_DIR / "project" / "scripts" / "project-bump-version", script)
 
     manifests = {
         "plugins/project/.claude-plugin/plugin.json": {
@@ -522,3 +522,10 @@ def test_shared_skill_docs_use_portable_cross_skill_references():
         f"{violations}"
     )
     assert not unknown, f"unknown qualified skill references: {unknown}"
+
+
+def test_no_plugin_has_top_level_bin_directory():
+    # claude.ai chat and Cowork refuse to install a plugin with a top-level
+    # bin/ directory (claude.com/docs/plugins/platform-support).
+    offenders = sorted(p.name for p in PLUGINS_DIR.iterdir() if (p / "bin").exists())
+    assert offenders == []

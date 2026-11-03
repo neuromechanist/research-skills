@@ -23,7 +23,7 @@ Determine the level from `$ARGUMENTS`:
 If `$ARGUMENTS` is empty or not one of `user`/`project`, ask the user which level to update.
 
 ### 2. Run Comparison
-!"${CLAUDE_PLUGIN_ROOT}/bin/project-diff-rules" $ARGUMENTS
+!"${CLAUDE_PLUGIN_ROOT}/scripts/project-diff-rules" $ARGUMENTS
 
 Run this comparison only for `project`. For `user`, do not run the legacy
 Claude-only comparison script; transfer control to
@@ -95,6 +95,6 @@ For each approved change:
 - **New list items:** use Edit to append to existing lists
 
 ### 6. Verify
-!"${CLAUDE_PLUGIN_ROOT}/bin/project-diff-rules" $ARGUMENTS
+!"${CLAUDE_PLUGIN_ROOT}/scripts/project-diff-rules" $ARGUMENTS
 
 Confirm that approved changes were applied. Report final status.

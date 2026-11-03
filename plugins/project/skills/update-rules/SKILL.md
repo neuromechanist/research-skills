@@ -63,9 +63,8 @@ as Claude-only.
 
 ### Step 1: Run Comparison Script
 
-Run the bundled `bin/project-diff-rules <level>` helper by absolute path from the
-project plugin installation; do not assume the plugin's `bin/` directory is on
-`PATH`. The script outputs KEY=VALUE pairs categorizing each rule file and
+Run the bundled `scripts/project-diff-rules <level>` helper by absolute path from
+the project plugin installation; plugin helpers are not on `PATH`. The script outputs KEY=VALUE pairs categorizing each rule file and
 listing section headers from both sources.
 
 ### Step 2: Read and Analyze
@@ -102,7 +101,7 @@ Show preview of what will change for each item. Ask user to confirm which change
 
 ### Step 5: Verify
 
-Run the bundled `<project-plugin-root>/bin/project-diff-rules <level>` helper
+Run the bundled `<project-plugin-root>/scripts/project-diff-rules <level>` helper
 again to confirm all approved changes were applied.
 
 ## Non-Destructive Guarantees
