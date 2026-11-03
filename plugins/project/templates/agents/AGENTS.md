@@ -92,8 +92,8 @@ bun test         # Run tests
 - `.rules/ci_cd.md` - GitHub Actions setup
 - `.rules/{{framework}}.md` - Framework patterns
 
-### MCP Tools (When Available)
-- `.rules/serena_mcp.md` - Code intelligence with Serena MCP
+### Code Intelligence
+- `.rules/lsp.md` - Language servers through official LSP plugins; ask before installing
 
 ## Context Files
 - `.context/plan.md` - Current tasks and phases

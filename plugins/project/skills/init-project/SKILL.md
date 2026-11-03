@@ -42,7 +42,7 @@ templates/
       documentation.md # MkDocs standards
       ci_cd.md        # GitHub Actions setup
       self_improve.md  # Rule evolution
-      serena_mcp.md    # Code intelligence tools
+      lsp.md           # Code intelligence via official LSP plugins
   context/          # Documentation scaffolding
     plan.md           # Task tracking with phases
     ideas.md          # Design concepts
