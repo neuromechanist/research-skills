@@ -614,7 +614,7 @@ If the caveat answers a real objection, move it to where the objection arises an
 > The tool is preliminary and weak on actions. Aim 3 validates each tag against trained annotators.
 
 **Before (gratuitous disclosure in Specific Aims):**
-> We compare three architectures in two cohorts. To be clear, we did not test every possible architecture, the results may not generalize to every population, and other approaches to this question exist.
+> We compare three architectures in two cohorts. To be clear, we did not test every possible architecture, and other approaches to this question exist.
 
 **After:**
 > We compare three architectures in two cohorts.
@@ -839,7 +839,7 @@ Review every hit by hand: most are fine one at a time, and the count per 500 wor
 flat()  { grep -v '^[[:space:]]*%' "$1" | tr -s '[:space:]' ' '; }
 count() { flat "$1" | grep -oiE "$2" | wc -l; }
 count FILE ', so [a-z]+ |, which means|; this ensures|matters because'          # 30 purpose tails
-count FILE 'we say (so|it|this)|to be (clear|honest|transparent)\b|\b(honestly|candidly|frankly)\b|stat(e|es|ed) (it |this )?plainly|in fairness|we do not hide|we are careful to|not an oracle'  # 33 candor markers only; gratuitous disclosures have no marker, so read for them
+count FILE 'we say (so|it|this)\b|to be (clear|honest|transparent)\b|\b(honestly|candidly|frankly)\b|stat(e|es|ed) (it |this )?plainly|plainly stat(e|es|ed)|in fairness|we do not hide|we are careful to|not an oracle'  # 33 candor markers only; gratuitous disclosures have no marker, so read for them
 count FILE '\b(says?|tells?|carr(y|ies)|names?|decides?)\b'                     # 31 talking data
 flat FILE | grep -oE ': [a-z]' | wc -l                                          # 36 colons (reveals and lists; case-sensitive)
 count FILE '\b(never|only|always)\b'                                            # 37 absolute guards
