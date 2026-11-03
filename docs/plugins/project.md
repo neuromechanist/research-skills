@@ -21,10 +21,9 @@ The same epic → sub-issue → worktree shape generalizes beyond code changes. 
 Before an epic or PR workflow, invoke the bundled
 `<project-plugin-root>/scripts/project-preflight --format json` executable by absolute path;
 plugin helpers are not on `PATH`.
-It reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI
-command/network/auth/token status, child-shell credential inheritance, and
-native-agent capability. It is read-only, never spawns agents, and keeps
-optional capability failures separate from repository detection failures.
+`<project-plugin-root>` is the plugin directory that holds `skills/`, `scripts/`, and `templates/`.
+It reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI command/network/auth/token status, child-shell credential inheritance, and native-agent capability.
+It is read-only, never spawns agents, and keeps optional capability failures separate from repository detection failures.
 
 ## Skills
 

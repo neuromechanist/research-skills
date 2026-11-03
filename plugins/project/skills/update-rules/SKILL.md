@@ -63,9 +63,12 @@ as Claude-only.
 
 ### Step 1: Run Comparison Script
 
-Run the bundled `<project-plugin-root>/scripts/project-diff-rules <level>` helper by absolute path,
-where `<project-plugin-root>` is the project plugin installation that contains this skill;
-plugin helpers are not on `PATH`.
+Run the bundled `<project-plugin-root>/scripts/project-diff-rules <level>` helper by absolute path.
+`<project-plugin-root>` is the project plugin directory that holds `skills/`, `scripts/`, and `templates/`:
+the parent of the `skills/` directory that contains this skill, which is `../..` from this `SKILL.md`'s folder.
+Confirm it with `test -x <project-plugin-root>/scripts/project-preflight`;
+if that fails, report the path you resolved and stop.
+Plugin helpers are not on `PATH`, so call them by absolute path.
 The script outputs KEY=VALUE pairs categorizing each rule file and listing section headers from both sources.
 
 ### Step 2: Read and Analyze
@@ -86,6 +89,7 @@ platform reference after the user chooses them.
 Present a numbered list of proposed changes. Each change marked as:
 - `[ADD]` -- New content to add
 - `[UPDATE]` -- Existing content to modify
+- `[REMOVE]` -- Retired rule file to delete (only for `RULE_RETIRED`)
 - `[INFO]` -- No change needed, already current
 
 Show preview of what will change for each item. Ask user to confirm which changes to apply. Never apply changes without confirmation.
@@ -99,6 +103,7 @@ Show preview of what will change for each item. Ask user to confirm which change
   README/INDEX; merge a changed template only after explicit approval.
 - For AGENTS.md sections: use Edit to insert or update specific sections.
 - For CLAUDE.md: use Edit to keep the adapter import (`@AGENTS.md`) and preserve Claude-only additions.
+- For retired rules: delete the old `.rules/` file only after the user approved its `[REMOVE]` item.
 
 ### Step 5: Verify
 
@@ -110,7 +115,7 @@ No `RULE_RETIRED` line should remain except for files the user chose to keep.
 
 - NEVER overwrite a file without showing the diff first
 - NEVER remove user-added content (custom rules, custom sections, custom guidelines)
-- Delete a `RETIRED` rule file only after showing it and getting explicit approval; it is a former template file, not user-added content
+- Delete a `RULE_RETIRED` rule file only after showing it and getting explicit approval; it is a former template file, not user-added content
 - NEVER replace project-specific values (project name, tech stack, architecture) with template placeholders
 - ALWAYS use Edit for existing files when merging selective changes. Write is acceptable only for new rule files or when the user explicitly approves replacing a file with the template version.
 - For changed .rules/ files, present three options: (a) accept template version, (b) merge specific changes, (c) skip
