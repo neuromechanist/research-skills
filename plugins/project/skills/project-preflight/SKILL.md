@@ -10,10 +10,10 @@ Run the bundled read-only preflight probe before relying on repository, shell,
 terminal, GitHub, or native-agent state. It never spawns agents, changes files,
 or prints credentials.
 
-Resolve the executable from the project plugin installation that contains this
-skill, using its sibling `scripts/project-preflight` path. When working from a
-checkout, that path is `plugins/project/scripts/project-preflight`. Invoke the
-executable by its absolute path; plugin helpers are not on `PATH`:
+Resolve the executable from the project plugin installation that contains this skill
+(`<project-plugin-root>`, two directories above this `SKILL.md`), using its `scripts/project-preflight` path.
+When working from a checkout, that path is `plugins/project/scripts/project-preflight`.
+Invoke the executable by its absolute path; plugin helpers are not on `PATH`:
 
 ```bash
 <project-plugin-root>/scripts/project-preflight --format json

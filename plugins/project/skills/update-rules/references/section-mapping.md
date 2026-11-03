@@ -66,4 +66,4 @@ These rules are primarily relevant to project-level updates:
 - `python.md` -- language-specific (only if Python project)
 - `ci_cd.md` -- CI/CD pipeline configuration
 - `documentation.md` -- MkDocs setup
-- `lsp.md` -- code intelligence through official LSP plugins (ask before installing)
+- `lsp.md` -- code intelligence through official language-server plugins (ask before installing)

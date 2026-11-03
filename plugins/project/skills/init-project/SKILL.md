@@ -42,7 +42,7 @@ templates/
       documentation.md # MkDocs standards
       ci_cd.md        # GitHub Actions setup
       self_improve.md  # Rule evolution
-      lsp.md           # Code intelligence via official LSP plugins
+      lsp.md           # Code intelligence via official language-server plugins
   context/          # Documentation scaffolding
     plan.md           # Task tracking with phases
     ideas.md          # Design concepts
@@ -143,6 +143,9 @@ If (and only if) the project has been pushed to GitHub and the user opts in, ins
 ```bash
 <project-plugin-root>/scripts/project-init-labels .
 ```
+
+`<project-plugin-root>` is the project plugin installation that contains this skill (two directories above this `SKILL.md`);
+plugin helpers are not on `PATH`, so call the script by absolute path.
 
 The script is idempotent (uses `gh label create --force`) and installs:
 - **Type:** `feature`, `bug`, `chore`, `docs`, `refactor`

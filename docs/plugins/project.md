@@ -19,9 +19,9 @@ The same epic → sub-issue → worktree shape generalizes beyond code changes. 
 `workflow-reference` documents the branch, state-file, worktree, and GitHub command conventions this pattern relies on.
 
 Before an epic or PR workflow, invoke the bundled
-`<project-plugin-root>/scripts/project-preflight --format json` executable by
-absolute path; plugin helpers are not on `PATH`. It
-reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI
+`<project-plugin-root>/scripts/project-preflight --format json` executable by absolute path;
+plugin helpers are not on `PATH`.
+It reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI
 command/network/auth/token status, child-shell credential inheritance, and
 native-agent capability. It is read-only, never spawns agents, and keeps
 optional capability failures separate from repository detection failures.
@@ -30,7 +30,7 @@ optional capability failures separate from repository detection failures.
 
 - **init-project**: scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, `.memory/`, and config files. `.memory/` contains one Markdown observation per file plus an index; reruns add only missing convention files.
 - **project-preflight**: read-only startup detection of repository, shell, terminal, GitHub, and native-agent surfaces with `KEY=VALUE` or JSON output
-- **update-rules**: non-destructive project sync of `AGENTS.md`, the `CLAUDE.md` adapter, `.rules/`, and `.memory/` convention files; user-level setup delegates to `install-user-instructions`
+- **update-rules**: non-destructive project sync of `AGENTS.md`, the `CLAUDE.md` adapter, `.rules/`, and `.memory/` convention files; reports a former template rule as `RULE_RETIRED` (for example the Serena `serena_mcp.md`, replaced by the language-server rule `lsp.md`) and deletes it only on approval; user-level setup delegates to `install-user-instructions`
 - **install-user-instructions**: ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure, then preview and install shared personal defaults at each documented user surface without copying them into downstream repositories
 - **epic-dev**: the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery
 - **workflow-reference**: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
