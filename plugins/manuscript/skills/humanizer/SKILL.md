@@ -536,13 +536,13 @@ Each shape is normal in human writing once or twice a page; what gives a draft a
 Count them with the quick scan below and rewrite until no shape repeats more than once or twice per 500 words.
 Patterns 44 and 45 are about who acts and what each pronoun refers to; their counts measure density, and single hits are often fine.
 Every After below keeps the facts of its Before.
-Purpose clauses, restatements, and freshness markers may go; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds.
+Purpose clauses, restatements, and freshness markers may go; a rewrite that adds, drops, or softens a fact, a caveat, or a registration label is wrong, however natural it sounds, except that pattern 33 removes disclosures volunteered only for their own sake.
 
 What the patterns share matters more than their wording.
 The quoted phrases are examples, and a sentence that does the same job in other words is the same pattern.
 Four ideas cover them:
 
-- **Show, do not announce.** The text states the result or the limitation and lets it stand; it does not certify its own honesty, rigor, or timeliness (patterns 33, 42).
+- **Show, do not announce.** The text states the result or the limitation and lets it stand; it does not certify its own honesty, rigor, or timeliness, and it does not volunteer limitations for their own sake (patterns 33, 42).
 - **Say it once.** Each sentence adds a fact; tails, kickers, repeated glosses, and repeated absolutes restate one already given (patterns 30, 35, 37, 39).
 - **Literal over clever.** Claims use plain verbs and plain comparisons, not slogans, contests, reveals, scripted answers, or verbs of standing (patterns 31, 32, 36, 38, 41, 43).
 - **The reader never guesses.** Who acted, what each word points to, and which qualification belongs to which result are on the page (patterns 40, 44, 45); an objection is answered where it arises (pattern 34).
@@ -596,13 +596,15 @@ Related: pattern 9 (negative parallelisms) and pattern 10 (rule of three).
 The After keeps one contrast, the one the paragraph is about, and states the second idea plainly.
 
 
-### 33. Self-Certifying Candor
+### 33. Self-Certifying Candor and Gratuitous Disclosure
 
-**Words to watch:** "and we say so", "we say it first", "we say this up front", "we flag this openly", "we report this honestly", "to be transparent", "in fairness", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to"
+**Words to watch:** "and we say so", "we say it first", "we say this up front", "we state plainly", "to be clear", "to be honest", "honestly", "candidly", "frankly", "we flag this openly", "we report this honestly", "to be transparent", "in fairness", "we do not hide", "we claim X only for Y", "we do not trust X", "not an oracle", "we are careful to", "it is X, not Y" as a self-correction
 
 **Problem:** The text announces its own honesty or rigor instead of showing it.
 Reviewers read it as defensive, and it is a common residue of prompting a model to "be honest about limitations".
-Related: pattern 27 (persuasive authority tropes).
+The same prompting leaves a second habit: limitations volunteered for their own sake.
+A sentence whose only job is to admit what the work has not done, which other options were dropped, or what a number does not cover undercuts the argument without informing a decision.
+Related: pattern 24 (excessive hedging), pattern 27 (persuasive authority tropes), and pattern 34 (pre-emptive objection packaging).
 
 **Before:**
 > The tool is preliminary, weak on actions, and we say so. We do not trust it; we treat it as an instrument, not an oracle. Aim 3 validates each tag against trained annotators.
@@ -610,7 +612,17 @@ Related: pattern 27 (persuasive authority tropes).
 **After:**
 > The tool is preliminary and weak on actions. Aim 3 validates each tag against trained annotators.
 
-**Research writing note:** Keep every limitation, scope statement, and caveat that rigor sections and reporting guidelines require; remove only the self-congratulation around them.
+**Before (gratuitous disclosure in Specific Aims):**
+> To be clear, we use three of the benchmark's six experiments; the other three did not clear our controls. Our captions are also far less varied than CLIP's text, and the annotation tool's underlying models may have seen the labels in training.
+
+**After:**
+> We evaluate on three event pairs of the benchmark. Captions grow richer as Aim 2 adds stimulus content.
+
+**Research writing note:** Be truthful, not exhaustive.
+A proposal or a paper makes a case, and open questions are often what the work sets out to answer; frame them that way.
+Never state or imply anything false.
+Keep every limitation, scope statement, and caveat that rigor sections, reporting guidelines, a Limitations section, a Potential Problems section, or a reviewer's question require, and any caveat that changes how a result should be read.
+Elsewhere, and above all in persuasive sections (Specific Aims, Significance, abstracts, cover letters, funding requests), cut a disclosure whose only effect is to weaken the case, and remove the self-congratulation around the caveats that stay.
 
 
 ### 34. Pre-emptive Objection Packaging
@@ -822,6 +834,7 @@ Review every hit by hand: most are fine one at a time, and the count per 500 wor
 flat()  { grep -v '^[[:space:]]*%' "$1" | tr -s '[:space:]' ' '; }
 count() { flat "$1" | grep -oiE "$2" | wc -l; }
 count FILE ', so [a-z]+ |, which means|; this ensures|matters because'          # 30 purpose tails
+count FILE 'we say (so|it|this)|to be (clear|honest|transparent)|\b(honestly|candidly|frankly)\b|state plainly|up front|in fairness'  # 33 candor markers
 count FILE '\b(says?|tells?|carr(y|ies)|names?|decides?)\b'                     # 31 talking data
 flat FILE | grep -oE ': [a-z]' | wc -l                                          # 36 colons (reveals and lists; case-sensitive)
 count FILE '\b(never|only|always)\b'                                            # 37 absolute guards
