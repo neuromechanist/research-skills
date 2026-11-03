@@ -533,22 +533,42 @@ def test_no_plugin_has_top_level_bin_directory():
 
 
 def test_project_script_references_resolve_to_executables():
-    # Commands and skills call helpers by absolute path, never from PATH, so
-    # every referenced scripts/project-* file must exist and be executable.
+    # Commands, skills, agent templates, and docs call helpers by absolute
+    # path, never from PATH, so every referenced scripts/project-* file must
+    # exist and be executable, and no old bin/ path may remain.
     project = PLUGINS_DIR / "project"
     scripts_dir = project / "scripts"
+    sources = [
+        p
+        for p in sorted(project.rglob("*"))
+        if p.suffix in {".md", ".toml"}
+        and "templates" not in p.relative_to(project).parts[:1]
+    ]
+    sources += sorted((ROOT / "docs").rglob("*.md"))
     referenced: set[str] = set()
     stale: list[str] = []
-    for md in sorted(project.rglob("*.md")):
-        if "templates" in md.relative_to(project).parts:
-            continue
-        text = md.read_text()
-        referenced.update(re.findall(r"/scripts/(project-[a-z-]+)", text))
-        if re.search(r"/bin/project-", text):
-            stale.append(str(md.relative_to(project)))
-    assert referenced, "expected command and skill references to scripts/project-*"
+    for source in sources:
+        text = source.read_text()
+        for name in re.findall(r"(?:^|[/\s`(])scripts/(project-[A-Za-z0-9_.-]+)", text, re.M):
+            referenced.add(name.rstrip("."))
+        if re.search(r"(?:^|[/\s`(])bin/project-", text, re.M):
+            stale.append(str(source.relative_to(ROOT)))
+    assert referenced, "expected references to scripts/project-*"
     for name in sorted(referenced):
         script = scripts_dir / name
         assert script.is_file(), f"referenced script missing: {name}"
         assert os.access(script, os.X_OK), f"referenced script not executable: {name}"
     assert stale == []
+
+
+def test_project_plugin_root_placeholder_is_defined_where_used():
+    # Codex and Copilot give skills no plugin-root variable, so each file that
+    # uses <project-plugin-root> must say how to resolve it.
+    skills = PLUGINS_DIR / "project" / "skills"
+    undefined = [
+        str(p.relative_to(skills))
+        for p in sorted(skills.rglob("*.md"))
+        if "<project-plugin-root>" in p.read_text()
+        and "parent of the `skills/` directory" not in p.read_text()
+    ]
+    assert undefined == []

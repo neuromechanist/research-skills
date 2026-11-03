@@ -4,6 +4,8 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = ROOT / "plugins" / "project" / "scripts"
@@ -141,3 +143,19 @@ def test_diff_reports_retired_serena_rule_with_lsp_replacement(tmp_path: Path):
     assert "RULE_CUSTOM=team_style.md" in result.stdout
     assert "RULE_MISSING=lsp.md" in result.stdout
     assert (rules / "serena_mcp.md").exists()
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="root can read mode-000 files")
+def test_diff_fails_on_unreadable_agents_md(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    agents = project / "AGENTS.md"
+    agents.write_text("# Project\n## Section\n")
+    agents.chmod(0)
+    try:
+        result = _run_diff(project)
+    finally:
+        agents.chmod(0o644)
+    assert result.returncode == 1
+    assert "Failed to read section headers" in result.stderr
+    assert "STATUS=complete" not in result.stdout
