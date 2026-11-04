@@ -32,6 +32,7 @@ Update the current project's configuration:
    - `CHANGED` -- exists but differs from template. Show unified diff, suggest merge.
    - `CURRENT` -- matches template. Report as up to date.
    - `CUSTOM` -- user-added rule not in templates. Preserve completely, report.
+   - `RETIRED` -- a former template rule that a newer rule replaces (`RULE_RETIRED=<old>:<new>`, for example `serena_mcp.md:lsp.md`). Offer to delete the old file, add the replacement if missing, and update the `.rules/` list in AGENTS.md. Show the old file first; keep it if the user declines.
 
 2. **`.memory/` convention sync** -- Check the template `memory/README.md` and
    `memory/INDEX.md` against the project's `.memory/` directory:
@@ -62,10 +63,13 @@ as Claude-only.
 
 ### Step 1: Run Comparison Script
 
-Run the bundled `bin/project-diff-rules <level>` helper by absolute path from the
-project plugin installation; do not assume the plugin's `bin/` directory is on
-`PATH`. The script outputs KEY=VALUE pairs categorizing each rule file and
-listing section headers from both sources.
+Run the bundled `<project-plugin-root>/scripts/project-diff-rules <level>` helper by absolute path.
+`<project-plugin-root>` is the project plugin directory that holds `skills/`, `scripts/`, and `templates/`:
+the parent of the `skills/` directory that contains this skill, which is `../..` from this `SKILL.md`'s folder.
+Confirm it with `test -x <project-plugin-root>/scripts/project-preflight`;
+if that fails, report the path you resolved and stop.
+Plugin helpers are not on `PATH`, so call them by absolute path.
+The script outputs KEY=VALUE pairs categorizing each rule file and listing section headers from both sources.
 
 ### Step 2: Read and Analyze
 
@@ -85,6 +89,7 @@ platform reference after the user chooses them.
 Present a numbered list of proposed changes. Each change marked as:
 - `[ADD]` -- New content to add
 - `[UPDATE]` -- Existing content to modify
+- `[REMOVE]` -- Retired rule file to delete (only for `RULE_RETIRED`)
 - `[INFO]` -- No change needed, already current
 
 Show preview of what will change for each item. Ask user to confirm which changes to apply. Never apply changes without confirmation.
@@ -98,16 +103,19 @@ Show preview of what will change for each item. Ask user to confirm which change
   README/INDEX; merge a changed template only after explicit approval.
 - For AGENTS.md sections: use Edit to insert or update specific sections.
 - For CLAUDE.md: use Edit to keep the adapter import (`@AGENTS.md`) and preserve Claude-only additions.
+- For retired rules: delete the old `.rules/` file only after the user approved its `[REMOVE]` item.
 
 ### Step 5: Verify
 
-Run the bundled `<project-plugin-root>/bin/project-diff-rules <level>` helper
+Run the bundled `<project-plugin-root>/scripts/project-diff-rules <level>` helper
 again to confirm all approved changes were applied.
+No `RULE_RETIRED` line should remain except for files the user chose to keep.
 
 ## Non-Destructive Guarantees
 
 - NEVER overwrite a file without showing the diff first
 - NEVER remove user-added content (custom rules, custom sections, custom guidelines)
+- Delete a `RULE_RETIRED` rule file only after showing it and getting explicit approval; it is a former template file, not user-added content
 - NEVER replace project-specific values (project name, tech stack, architecture) with template placeholders
 - ALWAYS use Edit for existing files when merging selective changes. Write is acceptable only for new rule files or when the user explicitly approves replacing a file with the template version.
 - For changed .rules/ files, present three options: (a) accept template version, (b) merge specific changes, (c) skip

@@ -5,9 +5,22 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
+# Project plugin helpers plus every bundled .sh script; fail if none are found.
+if [ ! -d plugins/project/scripts ]; then
+    echo "ERROR: plugins/project/scripts is missing" >&2
+    exit 1
+fi
+shell_scripts=()
 while IFS= read -r script; do
+    shell_scripts+=("$script")
+done < <(find plugins/project/scripts -type f; find plugins -name '*.sh' -type f)
+if [ "${#shell_scripts[@]}" -eq 0 ]; then
+    echo "ERROR: no shell scripts found to syntax-check" >&2
+    exit 1
+fi
+for script in "${shell_scripts[@]}"; do
     bash -n "$script"
-done < <(find plugins -path '*/bin/*' -type f | sort)
+done
 
 uv run --with pytest --with lxml --with svgelements --with shapely \
     --with svgpathtools --with fonttools --with pyyaml \

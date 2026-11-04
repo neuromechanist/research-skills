@@ -15,6 +15,7 @@
 #   RULE_CURRENT=<filename>     -- rule matches template exactly
 #   RULE_CHANGED=<filename>     -- rule differs from template
 #   RULE_CUSTOM=<filename>      -- user rule not in templates
+#   RULE_RETIRED=<old>:<new>    -- retired template rule; <new> replaces it
 #   MEMORY_FILE_MISSING=<filename> -- template memory file not found
 #   MEMORY_FILE_CURRENT=<filename> -- memory template matches exactly
 #   MEMORY_FILE_CHANGED=<filename> -- memory template differs
@@ -38,6 +39,28 @@ TEMPLATES_DIR="$("$SCRIPT_DIR/project-templates-path")" || {
     exit 1
 }
 LEVEL="${1:-}"
+
+# Print each H2 header of a file as PREFIX=<line>:<header>; a read error is fatal.
+emit_h2() {
+    local prefix="$1" file="$2" headers="" status=0
+    headers="$(grep -n '^## ' "$file")" || status=$?
+    if [ "$status" -gt 1 ]; then
+        echo "ERROR: Failed to read section headers from $file" >&2
+        exit 1
+    fi
+    [ -n "$headers" ] || return 0
+    while IFS= read -r line; do
+        echo "$prefix=$line"
+    done <<< "$headers"
+}
+
+# Template rules that were removed, mapped to their replacement rule.
+retired_rule_replacement() {
+    case "$1" in
+        serena_mcp.md) echo "lsp.md" ;;
+        *) return 1 ;;
+    esac
+}
 
 if [ -z "$LEVEL" ]; then
     echo "ERROR: No level specified. Use 'user' or 'project'." >&2
@@ -121,7 +144,12 @@ case "$LEVEL" in
             for existing_rule in "$TARGET_DIR/.rules/"*.md; do
                 [ -f "$existing_rule" ] || continue
                 rule_name="$(basename "$existing_rule")"
-                if [ ! -f "$TEMPLATES_DIR/claude/rules/$rule_name" ]; then
+                if [ -f "$TEMPLATES_DIR/claude/rules/$rule_name" ]; then
+                    continue
+                fi
+                if replacement="$(retired_rule_replacement "$rule_name")"; then
+                    echo "RULE_RETIRED=$rule_name:$replacement"
+                else
                     echo "RULE_CUSTOM=$rule_name"
                 fi
             done
@@ -154,20 +182,14 @@ case "$LEVEL" in
         # so an unmigrated CLAUDE.md cannot be silently mistaken for an AGENTS.md.
         if [ -f "$TARGET_DIR/AGENTS.md" ]; then
             echo "PROJECT_SECTION_SOURCE=agents"
-            while IFS= read -r line; do
-                echo "PROJECT_SECTION=$line"
-            done < <(grep -n '^## ' "$TARGET_DIR/AGENTS.md" || true)
+            emit_h2 PROJECT_SECTION "$TARGET_DIR/AGENTS.md"
         elif [ -f "$TARGET_DIR/CLAUDE.md" ]; then
             echo "PROJECT_SECTION_SOURCE=claude"
-            while IFS= read -r line; do
-                echo "PROJECT_SECTION=$line"
-            done < <(grep -n '^## ' "$TARGET_DIR/CLAUDE.md" || true)
+            emit_h2 PROJECT_SECTION "$TARGET_DIR/CLAUDE.md"
         fi
 
         # --- Template AGENTS.md section headers ---
-        while IFS= read -r line; do
-            echo "TEMPLATE_SECTION=$line"
-        done < <(grep -n '^## ' "$TEMPLATES_DIR/agents/AGENTS.md" || true)
+        emit_h2 TEMPLATE_SECTION "$TEMPLATES_DIR/agents/AGENTS.md"
         ;;
 
     user)
@@ -182,14 +204,10 @@ case "$LEVEL" in
         echo "USER_CLAUDE_PATH=$USER_CLAUDE"
 
         # --- User CLAUDE.md section headers ---
-        while IFS= read -r line; do
-            echo "USER_SECTION=$line"
-        done < <(grep -n '^## ' "$USER_CLAUDE" || true)
+        emit_h2 USER_SECTION "$USER_CLAUDE"
 
         # --- Template AGENTS.md section headers ---
-        while IFS= read -r line; do
-            echo "TEMPLATE_SECTION=$line"
-        done < <(grep -n '^## ' "$TEMPLATES_DIR/agents/AGENTS.md" || true)
+        emit_h2 TEMPLATE_SECTION "$TEMPLATES_DIR/agents/AGENTS.md"
 
         # --- Template rules list (for best-practice suggestions) ---
         for template_rule in "$TEMPLATES_DIR/claude/rules/"*.md; do

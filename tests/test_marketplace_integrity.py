@@ -16,6 +16,7 @@ Run: ``uv run --with pytest pytest tests/ -q``
 """
 
 import json
+import os
 import re
 import shutil
 import stat
@@ -336,9 +337,9 @@ def test_copilot_worker_templates_use_cli_tool_names():
 
 
 def test_version_bump_aborts_before_writing_when_plugin_manifests_drift(tmp_path: Path):
-    script = tmp_path / "plugins" / "project" / "bin" / "project-bump-version"
+    script = tmp_path / "plugins" / "project" / "scripts" / "project-bump-version"
     script.parent.mkdir(parents=True)
-    shutil.copy2(PLUGINS_DIR / "project" / "bin" / "project-bump-version", script)
+    shutil.copy2(PLUGINS_DIR / "project" / "scripts" / "project-bump-version", script)
 
     manifests = {
         "plugins/project/.claude-plugin/plugin.json": {
@@ -522,3 +523,52 @@ def test_shared_skill_docs_use_portable_cross_skill_references():
         f"{violations}"
     )
     assert not unknown, f"unknown qualified skill references: {unknown}"
+
+
+def test_no_plugin_has_top_level_bin_directory():
+    # claude.ai chat and Cowork refuse to install a plugin with a top-level
+    # bin/ directory (claude.com/docs/plugins/platform-support).
+    offenders = sorted(p.name for p in PLUGINS_DIR.iterdir() if (p / "bin").exists())
+    assert offenders == []
+
+
+def test_project_script_references_resolve_to_executables():
+    # Commands, skills, agent templates, and docs call helpers by absolute
+    # path, never from PATH, so every referenced scripts/project-* file must
+    # exist and be executable, and no old bin/ path may remain.
+    project = PLUGINS_DIR / "project"
+    scripts_dir = project / "scripts"
+    sources = [
+        p
+        for p in sorted(project.rglob("*"))
+        if p.suffix in {".md", ".toml"}
+        and "templates" not in p.relative_to(project).parts[:1]
+    ]
+    sources += sorted((ROOT / "docs").rglob("*.md"))
+    referenced: set[str] = set()
+    stale: list[str] = []
+    for source in sources:
+        text = source.read_text()
+        for name in re.findall(r"(?:^|[/\s`(])scripts/(project-[A-Za-z0-9_.-]+)", text, re.M):
+            referenced.add(name.rstrip("."))
+        if re.search(r"(?:^|[/\s`(])bin/project-", text, re.M):
+            stale.append(str(source.relative_to(ROOT)))
+    assert referenced, "expected references to scripts/project-*"
+    for name in sorted(referenced):
+        script = scripts_dir / name
+        assert script.is_file(), f"referenced script missing: {name}"
+        assert os.access(script, os.X_OK), f"referenced script not executable: {name}"
+    assert stale == []
+
+
+def test_project_plugin_root_placeholder_is_defined_where_used():
+    # Codex and Copilot give skills no plugin-root variable, so each file that
+    # uses <project-plugin-root> must say how to resolve it.
+    skills = PLUGINS_DIR / "project" / "skills"
+    undefined = [
+        str(p.relative_to(skills))
+        for p in sorted(skills.rglob("*.md"))
+        if "<project-plugin-root>" in p.read_text()
+        and "parent of the `skills/` directory" not in p.read_text()
+    ]
+    assert undefined == []
