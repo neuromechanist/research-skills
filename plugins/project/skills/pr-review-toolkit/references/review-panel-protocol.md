@@ -6,10 +6,12 @@ still loads `review-procedure.md` and `review-rubrics.md`.
 
 ## Dispatch gate
 
-Before dispatching, run the read-only startup probe:
+Before dispatching, run the read-only startup probe.
+`<project-plugin-root>` is the parent of the `skills/` directory that contains this skill;
+confirm it with `test -x <project-plugin-root>/scripts/project-preflight`.
 
 ```bash
-<project-plugin-root>/bin/project-preflight --format json
+<project-plugin-root>/scripts/project-preflight --format json
 ```
 
 Use the panel only when all of these are true:

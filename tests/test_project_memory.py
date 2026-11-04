@@ -4,18 +4,20 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
-BIN_DIR = ROOT / "plugins" / "project" / "bin"
-INIT = BIN_DIR / "project-init-templates"
-DIFF = BIN_DIR / "project-diff-rules"
+SCRIPTS_DIR = ROOT / "plugins" / "project" / "scripts"
+INIT = SCRIPTS_DIR / "project-init-templates"
+DIFF = SCRIPTS_DIR / "project-diff-rules"
 MEMORY_TEMPLATE = ROOT / "plugins" / "project" / "templates" / "memory"
 
 
 def _env() -> dict[str, str]:
     env = os.environ.copy()
-    # The helpers must resolve sibling binaries themselves; a native plugin
-    # manifest does not guarantee that the plugin bin directory is on PATH.
+    # The helpers must resolve sibling scripts themselves; a native plugin
+    # manifest does not put the plugin scripts directory on PATH.
     env["PATH"] = os.pathsep.join(("/usr/bin", "/bin"))
     return env
 
@@ -125,3 +127,35 @@ def test_memory_template_documents_boundary_format_and_safety():
         assert forbidden in readme
     assert "one line" in index
     assert "Entry" in index
+
+
+def test_diff_reports_retired_serena_rule_with_lsp_replacement(tmp_path: Path):
+    project = tmp_path / "project"
+    rules = project / ".rules"
+    rules.mkdir(parents=True)
+    (rules / "serena_mcp.md").write_text("# Serena MCP for Code Intelligence\n")
+    (rules / "team_style.md").write_text("# Team style\n")
+
+    result = _run_diff(project)
+    assert result.returncode == 0, result.stderr
+    assert "RULE_RETIRED=serena_mcp.md:lsp.md" in result.stdout
+    assert "RULE_CUSTOM=serena_mcp.md" not in result.stdout
+    assert "RULE_CUSTOM=team_style.md" in result.stdout
+    assert "RULE_MISSING=lsp.md" in result.stdout
+    assert (rules / "serena_mcp.md").exists()
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="root can read mode-000 files")
+def test_diff_fails_on_unreadable_agents_md(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    agents = project / "AGENTS.md"
+    agents.write_text("# Project\n## Section\n")
+    agents.chmod(0)
+    try:
+        result = _run_diff(project)
+    finally:
+        agents.chmod(0o644)
+    assert result.returncode == 1
+    assert "Failed to read section headers" in result.stderr
+    assert "STATUS=complete" not in result.stdout

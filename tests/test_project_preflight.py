@@ -10,7 +10,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PREFLIGHT = ROOT / "plugins" / "project" / "bin" / "project-preflight"
+PREFLIGHT = ROOT / "plugins" / "project" / "scripts" / "project-preflight"
 
 
 def _repo(tmp_path: Path) -> Path:

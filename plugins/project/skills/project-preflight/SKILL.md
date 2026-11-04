@@ -10,14 +10,16 @@ Run the bundled read-only preflight probe before relying on repository, shell,
 terminal, GitHub, or native-agent state. It never spawns agents, changes files,
 or prints credentials.
 
-Resolve the executable from the project plugin installation that contains this
-skill, using its sibling `bin/project-preflight` path. When working from a
-checkout, that path is `plugins/project/bin/project-preflight`. Invoke the
-executable by its absolute path rather than assuming that the plugin's `bin/`
-directory is on `PATH`:
+`<project-plugin-root>` is the project plugin directory that holds `skills/`, `scripts/`, and `templates/`:
+the parent of the `skills/` directory that contains this skill, which is `../..` from this `SKILL.md`'s folder.
+Confirm it with `test -x <project-plugin-root>/scripts/project-preflight`;
+if that fails, report the path you resolved and stop.
+Plugin helpers are not on `PATH`, so call them by absolute path.
+When working from a checkout, the root is `plugins/project`.
+Run:
 
 ```bash
-<project-plugin-root>/bin/project-preflight --format json
+<project-plugin-root>/scripts/project-preflight --format json
 ```
 
 Use the JSON fields to distinguish repository-detection failures from optional

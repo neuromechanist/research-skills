@@ -92,8 +92,8 @@ bun test         # Run tests
 - `.rules/ci_cd.md` - GitHub Actions setup
 - `.rules/{{framework}}.md` - Framework patterns
 
-### MCP Tools (When Available)
-- `.rules/serena_mcp.md` - Code intelligence with Serena MCP
+### Code Intelligence
+- `.rules/lsp.md` - Language Server Protocol (LSP) code intelligence per agent (Claude Code plugins, Copilot CLI configuration, text-based fallback for Codex); ask before installing
 
 ## Context Files
 - `.context/plan.md` - Current tasks and phases
