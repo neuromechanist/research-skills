@@ -23,7 +23,7 @@ Determine the level from `$ARGUMENTS`:
 If `$ARGUMENTS` is empty or not one of `user`/`project`, ask the user which level to update.
 
 ### 2. Run Comparison
-!"${CLAUDE_PLUGIN_ROOT}/bin/project-diff-rules" $ARGUMENTS
+!"${CLAUDE_PLUGIN_ROOT}/scripts/project-diff-rules" $ARGUMENTS
 
 Run this comparison only for `project`. For `user`, do not run the legacy
 Claude-only comparison script; transfer control to
@@ -51,6 +51,11 @@ If the above command failed or the output does not contain `STATUS=complete` as 
 **Custom rules (RULE_CUSTOM):**
 - Report as user-created (preserved, no action needed)
 
+**Retired rules (RULE_RETIRED=<old>:<new>):**
+- The old file is a former template rule that `<new>` replaces (for example `serena_mcp.md:lsp.md`)
+- Show the old file, then offer to delete it, add `<new>` if it is also reported as `RULE_MISSING`, and update the `.rules/` list in AGENTS.md
+- Keep the old file if the user declines
+
 **Project memory comparison:**
 - `MEMORY_FILE_MISSING` -> offer to add the missing template README or INDEX
 - `MEMORY_FILE_CHANGED` -> show a unified diff and offer accept, merge, or skip
@@ -75,6 +80,7 @@ audit. Do not duplicate that workflow here.
 Show a numbered list of proposed changes:
 - `[ADD]` - New content to add (new rules, new sections, new list items)
 - `[UPDATE]` - Existing content to modify (improved wording, new steps)
+- `[REMOVE]` - Retired rule file to delete (only for `RULE_RETIRED`)
 - `[INFO]` - Already current, no change needed
 
 For each `[ADD]` or `[UPDATE]`, show a preview of the change.
@@ -93,8 +99,11 @@ For each approved change:
 - **AGENTS.md sections:** use Edit to insert or update specific sections
 - **CLAUDE.md adapter:** ensure it starts with `@AGENTS.md`, then preserves or appends only Claude-specific guidance
 - **New list items:** use Edit to append to existing lists
+- **Retired rules:** delete the old `.rules/` file only after the user approved its `[REMOVE]` item
 
 ### 6. Verify
-!"${CLAUDE_PLUGIN_ROOT}/bin/project-diff-rules" $ARGUMENTS
+!"${CLAUDE_PLUGIN_ROOT}/scripts/project-diff-rules" $ARGUMENTS
 
-Confirm that approved changes were applied. Report final status.
+Confirm that approved changes were applied.
+No `RULE_RETIRED` line should remain except for files the user chose to keep.
+Report final status.

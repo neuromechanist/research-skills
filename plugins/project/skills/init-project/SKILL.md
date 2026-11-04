@@ -42,7 +42,7 @@ templates/
       documentation.md # MkDocs standards
       ci_cd.md        # GitHub Actions setup
       self_improve.md  # Rule evolution
-      serena_mcp.md    # Code intelligence tools
+      lsp.md           # Code intelligence via official language-server plugins
   context/          # Documentation scaffolding
     plan.md           # Task tracking with phases
     ideas.md          # Design concepts
@@ -138,10 +138,15 @@ Only if the user requests it or uses Cursor:
 
 ### Step 6: GitHub labels (optional, post-push)
 
-If (and only if) the project has been pushed to GitHub and the user opts in, install a default issue label set:
+If (and only if) the project has been pushed to GitHub and the user opts in, install a default issue label set.
+`<project-plugin-root>` is the project plugin directory that holds `skills/`, `scripts/`, and `templates/`:
+the parent of the `skills/` directory that contains this skill, which is `../..` from this `SKILL.md`'s folder.
+Confirm it with `test -x <project-plugin-root>/scripts/project-preflight`;
+if that fails, report the path you resolved and stop.
+Plugin helpers are not on `PATH`, so call them by absolute path.
 
 ```bash
-project-init-labels .
+<project-plugin-root>/scripts/project-init-labels .
 ```
 
 The script is idempotent (uses `gh label create --force`) and installs:

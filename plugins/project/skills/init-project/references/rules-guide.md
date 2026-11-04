@@ -25,8 +25,8 @@ The `.rules/` directory contains detailed development standards as individual ma
 ### self_improve.md
 **Include for long-running projects.** Learning and rule evolution process. Extract patterns used 3+ times into rules. Mine failures from scratch_history.md. Mine successes from research.md.
 
-### serena_mcp.md
-**Include when Serena MCP is available.** Efficient code exploration with symbolic tools. `get_symbols_overview` -> `find_symbol` -> read bodies. Prefer symbolic editing over line-based edits.
+### lsp.md
+**Include for projects with source code.** Use a Language Server Protocol (LSP) server for symbol-level facts (definitions, references, types, diagnostics). In Claude Code, use Anthropic's official `*-lsp` plugins from `claude-plugins-official` (for example `pyright-lsp`, `typescript-lsp`); ask the user before installing a plugin or server binary, and fall back to `rg` plus the language checker when declined. Replaces the retired `serena_mcp.md`; no third-party code-intelligence Model Context Protocol (MCP) server is a project dependency.
 
 ## Customization Guidelines
 
