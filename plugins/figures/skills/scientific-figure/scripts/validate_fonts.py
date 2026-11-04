@@ -7,10 +7,11 @@ viewBox (matplotlib's default export) and ~72/25.4 for an mm-based viewBox (the 
 scientific-figure, svg-figure, and svg-primitives), so a bare font-size of 5 in an `89mm` /
 `viewBox 89` schematic is correctly reported as ~14 pt rather than 5 pt. An explicit unit on the
 font-size (pt/mm/cm/in) is treated as an absolute size; a bare number is treated as user units.
-`px` in a font-size is also a user unit: in SVG, `px` is a user unit, not a CSS pixel, so
-matplotlib's `font-size: 6.5px` in a point-based viewBox is 6.5 pt, not 6.5 * 72/96 pt. (`px` in
-the root `width` attribute is a different case, where it is a CSS pixel, and is still converted
-via `_UNIT_TO_PT` in `_root_unit_to_pt`.)
+`px` in a font-size is also a user unit (SVG defines 1px as 1 user unit), so matplotlib's
+`font-size: 6.5px` in a point-based viewBox is 6.5 pt, not 6.5 * 72/96 pt. That reading needs a
+root with a physical width and a viewBox; without one, a user unit is a CSS pixel and `px` stays
+72/96 pt. (`px` in the root `width` attribute is always a CSS pixel and is converted via
+`_UNIT_TO_PT` in `_root_scale`.)
 
 Usage:
 
@@ -80,38 +81,45 @@ _UNIT_TO_PT: dict[str, float] = {
 }
 
 
-def _root_unit_to_pt(root: etree._Element) -> float:
+def _root_scale(root: etree._Element) -> float | None:
     """Physical points per SVG user unit at the document root, from its width and viewBox.
 
     width="89mm" with viewBox width 89 -> 1 user unit is 1 mm -> 72/25.4 pt per unit.
     width="460.8pt" with viewBox width 460.8 -> 1 user unit is 1 pt -> 1.0 pt per unit.
-    Returns 1.0 (the prior behavior) when the width has no physical unit or there is no
-    viewBox, so unit-less SVGs are unaffected.
+    Returns None when the root has no physical scale: no width, no viewBox, or a width
+    without a length unit (unit-less or "%").
     """
     width = root.get("width")
     vb = root.get("viewBox")
     if not width or not vb:
-        return 1.0
+        return None
     try:
         vb_w = float(re.split(r"[\s,]+", vb.strip())[2])  # viewBox: min-x min-y width height
     except (IndexError, ValueError):
-        return 1.0
+        return None
     m = re.match(r"\s*(-?[0-9.]+)\s*([a-z%]*)\s*$", width, re.IGNORECASE)
     if not m or vb_w == 0:
-        return 1.0
+        return None
     val, unit = float(m.group(1)), m.group(2).lower()
-    if unit not in _UNIT_TO_PT:  # unit-less or "%": keep the legacy 1:1 (number == pt) reading
-        return 1.0
+    if unit not in _UNIT_TO_PT:
+        return None
     return (val * _UNIT_TO_PT[unit]) / vb_w
 
 
-def _font_size_pt(text_el: etree._Element) -> tuple[float, bool] | None:
-    """Return (size, in_user_units) for a <text>/<tspan>, or None when no font-size is present.
+def _root_unit_to_pt(root: etree._Element) -> float:
+    """`_root_scale`, falling back to 1.0 (the legacy number == pt reading for bare font-sizes)
+    when the root has no physical scale, so unit-less SVGs are unaffected."""
+    scale = _root_scale(root)
+    return 1.0 if scale is None else scale
 
-    When `in_user_units` is True the size is in SVG user units and the caller multiplies it by the
-    root user-unit -> pt scale (see `_root_unit_to_pt`); when False the size is already an absolute
-    point value (the font-size carried an explicit pt/px/mm/cm/in/pc/em/% unit). A transform scale
-    applies in both cases.
+
+def _font_size_pt(text_el: etree._Element) -> tuple[float, str] | None:
+    """Return (size, kind) for a <text>/<tspan>, or None when no font-size is present.
+
+    `kind` is "user" for a bare number, "px" for a px size (also user units, see the module
+    docstring), or "abs" when the size is already an absolute point value (an explicit
+    pt/mm/cm/in/pc/em/% unit). The caller converts "user" and "px" sizes to points with the
+    root scale. A transform scale applies in every case.
     """
     raw = text_el.get("font-size")
     unit: str | None = None
@@ -129,21 +137,21 @@ def _font_size_pt(text_el: etree._Element) -> tuple[float, bool] | None:
         return None
     n = float(value)
     unit = (unit or "").lower()
-    if unit == "" or unit == "px":
-        # Bare number: user units (mm in an mm-viewBox, pt in a pt-viewBox).
-        # px in a font-size is likewise a user unit in SVG, not a CSS pixel:
-        # matplotlib writes font-size in px into a point-based viewBox, where
-        # 6.5px is 6.5 pt. Treating it as 6.5 * 72/96 pt falsely fails text
-        # that meets the journal minimum.
-        return n, True
+    if unit == "":  # bare number: user units (mm in an mm-viewBox, pt in a pt-viewBox)
+        return n, "user"
+    if unit == "px":
+        # px is a user unit in SVG, not a CSS pixel: matplotlib writes font-size in px into a
+        # point-based viewBox, where 6.5px is 6.5 pt. Reading it as 6.5 * 72/96 pt falsely
+        # fails text that meets the journal minimum.
+        return n, "px"
     if unit in _UNIT_TO_PT:
-        return n * _UNIT_TO_PT[unit], False
+        return n * _UNIT_TO_PT[unit], "abs"
     if unit == "em":
         # Heuristic: assume 12 pt parent em. Avoid em in source plots (matplotlib does
         # not emit em); this branch exists so hand-authored SVGs do not crash the walker.
-        return n * 12.0, False
+        return n * 12.0, "abs"
     if unit == "%":
-        return n / 100.0 * 12.0, False
+        return n / 100.0 * 12.0, "abs"
     # The regex above only captures the units handled here; reaching this point means the
     # regex and the handler list drifted out of sync, which must be fixed loudly rather
     # than by silently treating an absolute unit as user-relative.
@@ -191,7 +199,10 @@ def validate(svg_path: Path, journal: str) -> dict:
     issues: list[dict] = []
     checked = 0
     skipped = 0
-    root_unit_to_pt = _root_unit_to_pt(root)
+    root_scale = _root_scale(root)
+    root_unit_to_pt = 1.0 if root_scale is None else root_scale
+    # Without a physical root scale a user unit is a CSS pixel, so px stays 72/96 pt.
+    px_to_pt = _UNIT_TO_PT["px"] if root_scale is None else root_scale
     # When the root width carries no length unit but a viewBox is present, the scale fell
     # back to 1.0 (bare font-sizes read as points). Flag it so a caller does not mistake the
     # guess for the genuine pt-viewBox case (where the unit is explicit).
@@ -216,10 +227,10 @@ def validate(svg_path: Path, journal: str) -> dict:
             skipped += 1
             continue
         checked += 1
-        base, in_user_units = parsed
-        # A bare font-size number is in user units; convert it to physical points via the
-        # root user-unit -> pt scale. An explicit-unit size is already absolute points.
-        specified = base * (root_unit_to_pt if in_user_units else 1.0)
+        base, kind = parsed
+        # Bare and px font-sizes are in user units; convert them to physical points via the
+        # root scale. Any other explicit-unit size is already absolute points.
+        specified = base * {"user": root_unit_to_pt, "px": px_to_pt, "abs": 1.0}[kind]
         # abs() so that mirrored panels (scale(-1, 1)) do not produce false negatives.
         effective = specified * min(abs(sx), abs(sy))
         if effective < minimum_pt:

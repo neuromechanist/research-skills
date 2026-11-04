@@ -82,3 +82,25 @@ def test_real_schematic_svg_passes_nature():
     assert r["issue_count"] == 0
     assert r["checked_count"] == 5
     assert r["root_unit_to_pt"] == pytest.approx(72.0 / 25.4, rel=1e-3)
+
+
+@pytest.mark.parametrize(
+    "root_attrs,size,expected_pt",
+    [
+        ('width="200pt" viewBox="0 0 200 100"', "5px", 5.0),  # pt viewBox: px == pt
+        ('width="100mm" viewBox="0 0 100 50"', "1.5px", 1.5 * 72.0 / 25.4),  # mm viewBox
+        ('width="400" viewBox="0 0 400 200"', "5px", 3.75),  # no physical scale: CSS px
+        ("", "5px", 3.75),
+    ],
+)
+def test_px_font_size_reported_pt(tmp_path, root_attrs, size, expected_pt):
+    """The reported size, not just the pass/fail count: px follows the root scale when the
+    root has one and is a CSS pixel (0.75 pt) when it does not (issue #113)."""
+    p = tmp_path / "px.svg"
+    p.write_text(
+        f'<svg xmlns="http://www.w3.org/2000/svg" {root_attrs}>'
+        f'<text x="1" y="2" font-size="{size}">t</text></svg>'
+    )
+    r = validate(p, "cell")  # Cell's 6pt minimum makes every case an issue
+    assert r["issue_count"] == 1
+    assert r["issues"][0]["specified_pt"] == pytest.approx(expected_pt, abs=1e-3)
