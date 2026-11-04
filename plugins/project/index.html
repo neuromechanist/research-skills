@@ -892,17 +892,16 @@
 <p><img alt="Strand fan-out: one epic issue decomposed into four strand sub-issues, each with its own collection folder and acceptance criteria" src="../../assets/diagrams/strand-fanout.svg" /></p>
 <p><code>workflow-reference</code> documents the branch, state-file, worktree, and GitHub command conventions this pattern relies on.</p>
 <p>Before an epic or PR workflow, invoke the bundled
-<code>&lt;project-plugin-root&gt;/bin/project-preflight --format json</code> executable by
-absolute path; do not assume the plugin's <code>bin/</code> directory is on <code>PATH</code>. It
-reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI
-command/network/auth/token status, child-shell credential inheritance, and
-native-agent capability. It is read-only, never spawns agents, and keeps
-optional capability failures separate from repository detection failures.</p>
+<code>&lt;project-plugin-root&gt;/scripts/project-preflight --format json</code> executable by absolute path;
+plugin helpers are not on <code>PATH</code>.
+<code>&lt;project-plugin-root&gt;</code> is the plugin directory that holds <code>skills/</code>, <code>scripts/</code>, and <code>templates/</code>.
+It reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI command/network/auth/token status, child-shell credential inheritance, and native-agent capability.
+It is read-only, never spawns agents, and keeps optional capability failures separate from repository detection failures.</p>
 <h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>init-project</strong>: scaffold new projects with <code>AGENTS.md</code>, a Claude Code <code>CLAUDE.md</code> import wrapper, <code>.rules/</code>, <code>.context/</code>, <code>.memory/</code>, and config files. <code>.memory/</code> contains one Markdown observation per file plus an index; reruns add only missing convention files.</li>
 <li><strong>project-preflight</strong>: read-only startup detection of repository, shell, terminal, GitHub, and native-agent surfaces with <code>KEY=VALUE</code> or JSON output</li>
-<li><strong>update-rules</strong>: non-destructive project sync of <code>AGENTS.md</code>, the <code>CLAUDE.md</code> adapter, <code>.rules/</code>, and <code>.memory/</code> convention files; user-level setup delegates to <code>install-user-instructions</code></li>
+<li><strong>update-rules</strong>: non-destructive project sync of <code>AGENTS.md</code>, the <code>CLAUDE.md</code> adapter, <code>.rules/</code>, and <code>.memory/</code> convention files; reports a former template rule as <code>RULE_RETIRED</code> (for example the Serena <code>serena_mcp.md</code>, replaced by the language-server rule <code>lsp.md</code>) and deletes it only on approval; user-level setup delegates to <code>install-user-instructions</code></li>
 <li><strong>install-user-instructions</strong>: ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure, then preview and install shared personal defaults at each documented user surface without copying them into downstream repositories</li>
 <li><strong>epic-dev</strong>: the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery</li>
 <li><strong>workflow-reference</strong>: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows</li>
