@@ -31,10 +31,10 @@ The validator enforces the **body** minimum across all `<text>` elements (panel 
    - `scale(s)` and `scale(sx, sy)` are parsed directly.
    - `matrix(a b c d e f)` is decomposed; the x-axis scale is `sqrt(a^2 + b^2)` and y-axis is `sqrt(c^2 + d^2)`.
    - Translations and rotations do not affect font size.
-3. **For each `<text>` and `<tspan>` element**, extract the specified font size from the `font-size` attribute or the `style="font-size: ..."` property and convert it to physical points. A bare number is in user units and is scaled by the document's user-unit-to-point factor: 1.0 for a point-based viewBox (matplotlib's default, where bare numbers are effectively pt) and `72/25.4` for an mm-based viewBox (hand-authored and svg-primitives schematics, where a bare number is mm). An explicit unit is absolute and is not scaled by the viewBox. Recognized units:
+3. **For each `<text>` and `<tspan>` element**, extract the specified font size from the `font-size` attribute or the `style="font-size: ..."` property and convert it to physical points. A bare number is in user units and is scaled by the document's user-unit-to-point factor: 1.0 for a point-based viewBox (matplotlib's default, where bare numbers are effectively pt) and `72/25.4` for an mm-based viewBox (hand-authored and svg-primitives schematics, where a bare number is mm). An explicit unit other than `px` is absolute and is not scaled by the viewBox. Recognized units:
    - bare number (user units, scaled by the root width/viewBox factor)
    - `pt` (absolute points)
-   - `px` (absolute; 1 pt = 96/72 px)
+   - `px` (a user unit, as SVG defines it, so it is scaled like a bare number; 6.5 px in a point-based viewBox is 6.5 pt. Only when the root has no physical width and viewBox is `px` a CSS pixel, 0.75 pt)
    - `mm`, `cm`, `in`, `pc` (absolute physical lengths, converted to points)
    - `em` (heuristic only, treated as 12 pt parent; avoid em in source plots)
    - `%` (heuristic only, treated as `value/100 * 12 pt`; avoid percent in source plots)
@@ -97,4 +97,4 @@ The remedies are mutually exclusive in priority order: try source-font fix first
 
 The composed SVG declares its physical size in mm (e.g., `width="183mm"`). When a renderer (Inkscape, cairosvg, a browser) lays out the SVG, font-size values are interpreted as user units inside the SVG's viewBox. For matplotlib-generated SVGs the `font-size` attribute is in pt by default, so a direct pt interpretation matches the actual rendered size on a page printed at the journal's specified mm width. `validate_fonts.py` makes this exact for every input by folding the root width/viewBox scale into the size it reports: a matplotlib panel has a point-based viewBox (scale 1.0, so bare numbers are already pt), while a hand-authored or svg-primitives schematic with `width="89mm" viewBox="0 0 89 60"` has an mm-based viewBox, so a bare font-size is in mm and is converted to physical pt (`font-size="1.764"` is 5 pt). An explicit `font-size="6pt"` is 6 pt regardless of the viewBox.
 
-If you author SVGs by hand and use `font-size="12px"`, the validator converts to pt before comparison (12 px → 9 pt).
+A `font-size="12px"` is 12 user units, so it is 12 pt in a point-based viewBox and 12 mm in an mm-based one. Only an SVG without a physical root width and viewBox reads it as CSS pixels (12 px → 9 pt).
