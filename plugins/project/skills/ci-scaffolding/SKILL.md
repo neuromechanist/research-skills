@@ -1,7 +1,7 @@
 ---
 name: ci-scaffolding
-description: "This skill should be used when the user says \"set up CI\", \"create GitHub Actions\", \"scaffold CI pipeline\", \"add CI/CD\", \"configure continuous integration\", \"create test workflow\", \"create release workflow\", \"add pre-commit hooks\", \"set up linting pipeline\", \"configure ruff in CI\", \"configure biome in CI\", \"add typo checking\", or wants to add, update, or customize CI/CD pipelines for their project. For initial project setup including basic CI, see init-project. Use ci-scaffolding for adding or customizing CI/CD in existing projects."
-version: 0.1.1
+description: "This skill should be used when the user says \"set up CI\", \"create GitHub Actions\", \"scaffold CI pipeline\", \"add CI/CD\", \"configure continuous integration\", \"create test workflow\", \"create release workflow\", \"add pre-commit hooks\", \"set up linting pipeline\", \"configure ruff in CI\", \"configure biome in CI\", \"add typo checking\", \"CI is slow\", \"speed up CI\", \"shard tests\", \"make CI faster\", or wants to add, update, or customize CI/CD pipelines for their project. For initial project setup including basic CI, see init-project. Use ci-scaffolding for adding or customizing CI/CD in existing projects."
+version: 0.1.2
 ---
 
 # CI/CD Scaffolding
@@ -15,6 +15,7 @@ Generate and configure CI/CD pipelines following project conventions. Supports P
 - Setting up pre-commit hooks for linting
 - Configuring coverage reporting
 - Adding release automation (tag-based)
+- Diagnosing slow CI: measure per-job time, shard the critical path, fix setup (see `references/ci-speed.md`)
 
 ## Triggers and scope (every workflow)
 
@@ -209,3 +210,4 @@ Confirm every workflow has scoped triggers and `concurrency`, and that a docs-on
 
 - Reference: [references/workflow-templates.md](references/workflow-templates.md) - Full workflow file templates with all options
 - Reference: [references/ci-best-practices.md](references/ci-best-practices.md) - Caching, matrix builds, secrets management
+- Reference: [references/ci-speed.md](references/ci-speed.md) - Measuring a slow pipeline, time-balanced sharding with gate jobs, setup fixes, parallel jobs, skip logic
