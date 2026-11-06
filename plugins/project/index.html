@@ -911,7 +911,7 @@ It is read-only, never spawns agents, and keeps optional capability failures sep
 <li><strong>engineering-loop</strong>: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons</li>
 <li><strong>debugging</strong>: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)</li>
 <li><strong>agent-fanout</strong>: orchestrating subagents and teammates within a session with explicit model tiers: Claude Fable/Opus lead and Sonnet workers; Codex Sol lead, Terra approved-plan elaboration, and Luna workers. It adds full-lifecycle briefs, mechanical gates, lead verification, mandatory cleanup of completed one-off agents, and a hard cap of 40 agents per run. This is in-session delegation, distinct from the git-tracked epic/worktree workflow above.</li>
-<li><strong>ci-scaffolding</strong>: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)</li>
+<li><strong>ci-scaffolding</strong>: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test); <code>references/ci-speed.md</code> covers measuring and speeding up a slow pipeline (time-balanced sharding behind gate jobs, setup fixes, parallel jobs)</li>
 <li><strong>docker-packaging</strong>: multi-stage Dockerfiles with uv/bun, health checks, and security hardening</li>
 <li><strong>security-audit</strong>: credential scanning, dependency audit, OWASP checklist, configuration hardening</li>
 <li><strong>document-processing</strong>: PDF/image OCR, text extraction, markdown conversion</li>
