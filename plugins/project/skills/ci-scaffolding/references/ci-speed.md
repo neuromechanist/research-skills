@@ -42,7 +42,7 @@ bounded by the longest single file.
 Balance by measured per-file time, not by file count:
 five files held half the time of a 94-file suite.
 
-Bun has this built in:
+Bun has this built in (it needs a recent Bun; checked on 1.4.3):
 
 ```bash
 bun test --shard="$i/$N" --timings timings.json --update-timings "${files[@]}"
@@ -53,14 +53,25 @@ bun test --shard="$i/$N" --timings timings.json --update-timings "${files[@]}"
 so each shard can upload its file as an artifact and a refresh merges them.
 Seed the first file from the log of a green run.
 A file missing from the timings still runs, only balanced less well.
-For other runners, split with a timings-aware tool (for example `pytest-split`, `jest --shard`).
+For other runners, split with a timings-aware tool such as `pytest-split`.
+Jest's `--shard` splits by file order, not by recorded durations,
+so time-balancing it takes a custom test sequencer.
+
+Inside one job, `bun test --parallel=<workers>` runs files in worker processes;
+with `--timings` it starts the slowest files first.
+Raise workers only as far as the runner's cores allow (see section 3),
+because a worker count equal to the core count can make tests that spawn child processes
+or wait on short timeouts fail under load.
 
 Keep the gate honest:
 
 - Give the matrix its own name and add a gate job that keeps the old check name,
   so branch protection and anything that reads the job name still work.
-  The gate runs with `if: always()` and fails unless the matrix result is `success`;
-  a skipped dependency would otherwise read as green.
+  The gate runs with `if: always()`, so a failed or cancelled leg still reaches it.
+  When the matrix always runs, the gate requires `success`.
+  When the matrix is conditional on a `changes` job, accept `skipped` only if that job's output
+  says to skip, and still fail on `failure` or `cancelled`
+  (see `ci-best-practices.md`); otherwise every docs-only pull request goes red.
 - Make each shard refuse to pass when it ran nothing.
   `bun test` exits 0 on `Ran 0 tests across 0 files`.
   Read the run's own header and summary, and compare planned against ran.
@@ -70,24 +81,33 @@ Keep the gate honest:
 More shards are not always better:
 each shard repeats checkout, install and tool setup,
 and shards that share a backend or a database can interfere.
-Concurrent pull-request runs already share staging, so a suite that survives them survives shards;
+If a suite already tolerates concurrent pull-request runs against a shared backend,
+it tolerates shards too;
 a suite with exclusive state needs its own database per shard.
 
 ## 3. Fix Setup, the Part Nobody Looks At
 
 - **System packages.** A bare `apt-get update && apt-get install` can stall for minutes on a
   slow mirror (one shard lost 9 minutes, another job an hour).
-  Cache the `.deb` files with `actions/cache`, install from the cache with `dpkg -i`,
-  and on a miss use a short `timeout` per attempt with retries and a long last attempt.
+  Cache the `.deb` files with `actions/cache`
+  (the dependency packages too, and install them all in one `dpkg -i` call),
+  and on a miss use a short `timeout` per attempt with retries and a long last attempt,
+  kept inside the job's own time limit.
   Put it in one composite action so every job gets the fix.
-- **Dependency caches.** A PR cache is readable by its own branch and the refs it was cut from.
-  If nothing seeds a cache from the default branch, most PRs start cold and nobody notices.
+- **Dependency caches.** A pull-request run restores caches from its own ref,
+  its base branch and the default branch;
+  a cache saved in a pull request is not shared with other pull requests.
+  If nothing seeds a cache on the default branch, most PRs start cold and nobody notices.
   Check the cache hit rate across the last 100 runs.
-- **Checkout.** Prefer a blobless clone (`filter: blob:none`) over a shallow one when anything
-  reads history; a shallow clone breaks those tools.
+- **Checkout.** When anything reads history, prefer a blobless clone
+  (`fetch-depth: 0` together with `filter: blob:none` in `actions/checkout`) over a shallow one.
+  With the default `fetch-depth: 1` the filter alone is still a shallow clone,
+  and a shallow clone breaks history-reading tools.
 - **Parallelism versus cores.** Match test concurrency to the runner's cores;
   running 8 tasks on 4 vCPUs was as slow as 4 and flaky.
-  Larger runners often beat more shards, because each shard spends most CPU loading modules.
+  In one pipeline measured, larger runners beat more shards,
+  because each shard spent most of its CPU loading modules;
+  larger runners cost more, so see the cost section.
 
 ## 4. Run Independent Work in Parallel
 
@@ -105,13 +125,15 @@ Test the skip logic itself:
 hide a change from the filter on purpose and confirm the run fails,
 because a filter that skips everything reports green.
 Required checks must still report on every pull request,
-so skip inside the job, not at the workflow trigger, when a check is required.
+so skip at job level with `if:` and require the gate job (see `ci-best-practices.md`),
+not with trigger-level `paths`.
 
 ## 6. Make Checks Fast, and Strict, Where the Agent Works
 
 - Rust-based linters and type checkers (Oxlint, Biome, a faster `tsc`) cut minutes to seconds.
   Check the actual lint and typecheck times in the log before switching;
-  when they are already under 30 seconds, as with Biome here, there is nothing to win.
+  when they are already under 30 seconds, as with Biome in the pipeline this was measured on,
+  there is nothing to win.
 - Agents do not tire of strict rules, so enable more of them.
 - Run format, lint and typecheck on changed files in a pre-commit or pre-push hook.
   A hook runs every time; a line in `AGENTS.md` is skipped in long sessions.
