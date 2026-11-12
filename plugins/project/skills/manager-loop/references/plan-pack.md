@@ -29,7 +29,8 @@ Section 0 of the plan, "How the manager uses this plan", holds:
 2. The tick, or a pointer to the runbook.
 3. Precedence: the owner's later instructions override the plan and are logged with `decide`; the repository's `AGENTS.md` overrides the plan except where the plan names an explicit exception.
 4. Merge authority: which PRs the manager may merge after the merge gate (usually every step PR into the integration branch), and which it never merges (releases, deploying repositories, anything outward).
-5. The question classes that may take a default at their deadline (often none).
+5. The question classes that may take a default at their deadline (none unless listed).
+6. Routing: any frontier trigger the plan lists (for example "frontier tier when the lead tier cannot decide, or after three loops"); with none listed, the frontier tier is used only when the owner asks.
 
 ### Start prompt template
 
@@ -112,7 +113,7 @@ The owner approves the wave and daily limits with the plan; that approval is wha
 
 Checkpoints are scheduled lead reviews (for example after each wave, weekly, or when a trigger fires).
 The lead reads only what the checkpoint row lists, completes the outline cards that are due, updates risks, and produces one docs PR with a note of at most one page.
-The manager runs the anticipation pass and the parity question at each checkpoint (see the skill).
+The manager runs the anticipation pass at each checkpoint; the parity question waits for a mismatch (see the skill).
 
 Each risk is pre-registered with an observation, a date by which it is read, what happens if it reads bad, and who decides.
 A decision date is not a deadline for the work; it is the day on which nobody may keep hoping.

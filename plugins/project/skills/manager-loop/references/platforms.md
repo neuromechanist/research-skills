@@ -7,13 +7,16 @@ The same card, the same gates, and the same report schema apply on every platfor
 ## Parity is live
 
 The Parity table maps tiers to a model and effort per platform; the Slots table says how many workers each platform may run, which tiers it takes, and what it can do.
+The board template ships both as defaults, and the owner's approval of the plan accepts them, so setup does not ask about them.
 A real example of an owner's mapping when Codex budget grew: "Luna max for Sonnet work (high), Terra xhigh for Sonnet xhigh, Sol xhigh for Opus", with a Codex slot of at most four Luna plus two Terra (or one Terra and one Sol) at a time.
-The frontier tier maps the same way: Fable to Astra (`gpt-6-astra`), with Sol (`gpt-6.1-sol`) at the Opus level.
+The lead tier (Opus; Codex Sol, `gpt-6.1-sol`) is the default for every lead role, including project initiation and planning.
+The frontier tier (Fable; Codex Astra, `gpt-6-astra`) is used only when the owner explicitly asks, for long-horizon jobs or planning the owner names, or when the approved plan's routing lists a frontier trigger.
 
 Models get renamed, new products ship, and quotas move, so:
 
-- The owner edits Parity and Slots (or answers a question that the manager records with `decide`). The manager never edits them.
-- The manager asks the parity question at setup, at every checkpoint, and on any mismatch: a model id a platform refuses, a platform that exists but has no Parity column, a slot whose quota is near its end, or a capability a card needs that no slot has.
+- The owner edits Parity and Slots (or answers a question that the manager records with `decide <text> --by owner`); the manager never edits them.
+- The manager asks the parity question only on a mismatch: a model id a platform refuses, a platform that exists but has no Parity column, a slot whose quota is near its end, or a capability a card needs that no slot has.
+  It never asks routinely at setup or at a checkpoint.
 - Ask it as a structured question: "Update the parity to <proposal> (Recommended) / Add <platform> as a slot with Max <n> / Keep the current parity".
 - Adding a platform means adding a Parity column and a Slots row; `check` warns when a slot names a platform with no column.
 

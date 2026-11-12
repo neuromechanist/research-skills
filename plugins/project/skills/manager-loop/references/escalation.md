@@ -15,12 +15,16 @@ Each route has mechanical triggers, so a literal manager knows when to use it.
 | A PR that relaxes a gate's assertion | lead; never merge it on the manager's authority |
 | An owner answer that contradicts a card's assumption | lead: correct the card before dispatch |
 | A projected budget overrun (remaining work x measured median / free slots > time left) | owner: apply the plan's next drop rule only if pre-authorized, otherwise ask |
-| The lead tier cannot decide, or the same item looped three times, or a long-horizon question (strategy, priorities across the whole plan) | advisor (frontier tier) |
+| The owner asks for the frontier tier or names a long-horizon question for it, or a frontier trigger the approved plan lists fires (for example the lead tier cannot decide, or the same item looped three times) | advisor (frontier tier) |
+| The lead tier cannot decide and the plan lists no frontier trigger | owner question |
 | A decision only the owner can make (scope, dates, money, outward actions, a merge the host refused, parity or budget changes) | owner question |
 
 ## The advisor
 
-The lead tier first (Opus; Codex Sol), the frontier tier (Fable; Codex Astra) only by the ladder above, as the board's Parity table maps them. `spend <board> "Advisor consults"` before each one.
+The lead tier is the default advisor.
+The frontier tier is used only on the conditions in the two frontier rows above.
+The board's Parity table maps each tier to a model per platform.
+`spend <board> "Advisor consults"` before each consult.
 
 ### Brief (one file, under 600 words)
 

@@ -4,6 +4,7 @@
 manager-loop board. State only; history goes to the -log file beside it, specs to the plan and cards.
 Write through the helper (manager_board.py set, tick, ask, propose, spend) and run `check` after any hand edit.
 The owner owns Parity, Slots, and Budget limits: the manager proposes changes there, never makes them.
+These are the defaults; the owner's approval of the plan accepts them.
 Step states: outline (not dispatchable), todo, active, review, blocked, owner (waits on the owner), done, dropped.
 -->
 
@@ -26,10 +27,10 @@ Step states: outline (not dispatchable), todo, active, review, blocked, owner (w
 
 | Tier | Claude | Codex | Copilot | Notes |
 |---|---|---|---|---|
-| worker | Sonnet high | gpt-6-luna max | balanced coding model | routine cards from a detailed plan; owner confirms at plan start |
+| worker | Sonnet high | gpt-6-luna max | balanced coding model | routine cards from a detailed plan |
 | worker-hard | Sonnet xhigh | gpt-6.1-terra xhigh | balanced reasoning model | protocol, concurrency, security, contract work |
-| lead | Opus xhigh | gpt-6.1-sol xhigh | strong reasoning model | subtle implementation, design-level fixes, first-level advice |
-| frontier | Fable | gpt-6-astra xhigh | strongest model | the plan, long-horizon advice, or when the lead tier cannot decide |
+| lead | Opus xhigh | gpt-6.1-sol xhigh | strong reasoning model | default for planning, design, first-level advice |
+| frontier | Fable | gpt-6-astra xhigh | strongest model | only when the owner asks, for long-horizon planning, or a frontier trigger the plan lists |
 | reviewer | Sonnet high | gpt-6-luna max | balanced coding model | a different model family from the implementer when possible |
 
 ## Slots
@@ -46,7 +47,7 @@ Step states: outline (not dispatchable), todo, active, review, blocked, owner (w
 |---|---|---|---|---|
 | Agents today | 40 | 0 | daily | implementers, reviewers, advisors spawned; the plan approval covers this limit |
 | Agents this wave | 15 | 0 | wave | items x (1 + review panel + 1 delta + fix rounds) + 1 advisor |
-| Advisor consults | 3 | 0 | never | lead tier first (Opus, Sol); frontier tier (Fable, Astra) only as the ladder says |
+| Advisor consults | 3 | 0 | never | lead tier; frontier only when the owner or the plan says |
 
 ## Waves
 

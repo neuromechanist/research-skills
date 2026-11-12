@@ -5,7 +5,7 @@ description: "Use this skill when the user asks to \"run the plan hands-off\", \
 
 # Manager Loop
 
-A frontier model writes the plan; a mechanical manager runs it, tick by tick, for hours or days.
+A lead-tier model writes the plan; a mechanical manager runs it, tick by tick, for hours or days.
 The manager dispatches self-contained cards, verifies each step's goal by observing evidence, runs reviews, merges, keeps the board, and asks the owner only through structured questions.
 Judgment goes up a ladder (lead, advisor, owner); it never happens in the manager.
 
@@ -25,13 +25,15 @@ If it does not, stop and plan first.
 
 | Role | Default tier | Does | Never |
 | --- | --- | --- | --- |
-| Owner | person | approves the plan, budgets, parity, and merge authority; answers questions; outward actions | |
-| Lead | frontier tier (Fable; Codex Astra), else lead tier (Opus; Codex Sol) | writes the plan pack and cards, completes outline cards at checkpoints, decides design and contested findings | dispatch, merge |
-| Manager | Sonnet high or xhigh; Codex Luna max | runs the tick: dispatch, verify, review, merge, board, questions, proposals | design, product code, change the plan, a card, or a gate |
-| Advisor | lead tier first (Opus; Codex Sol); frontier tier (Fable; Codex Astra) for long horizon or when the lead tier cannot decide | one read-only consult per escalation, from a brief | edit anything |
+| Owner | person | approves the plan, and with it the defaults for Parity, Slots, budgets, and merge authority; answers questions; takes outward actions | |
+| Lead | lead tier; frontier tier only when the owner asks, for long-horizon planning the owner names, or a frontier trigger the approved plan lists | writes the plan pack and cards, completes outline cards at checkpoints, decides design and contested findings | dispatch, merge |
+| Manager | worker or worker-hard tier | runs the tick: dispatch, verify, review, merge, board, questions, proposals | design, product code, change the plan, a card, or a gate |
+| Advisor | lead tier; frontier tier on the same conditions as for the lead | one read-only consult per escalation, from a brief | edit anything |
 | Implementer | by the card's tier and the parity table | one card, one branch, one PR | merge, change scope |
 | Reviewer | `project:pr-review-toolkit`, a different model family from the implementer when possible | | edit |
 
+Tier names map to models in the board's Parity table; this skill names no model.
+The lead tier is the default for every lead role, including project initiation and planning.
 The lead and the manager may be one agent only when the owner says so; that agent then records every judgment call with `decide`.
 
 ## Setup (once, before the first tick)
@@ -41,7 +43,10 @@ The lead and the manager may be one agent only when the owner says so; that agen
    `manager_board.py card cards/*.md` must pass for every card in the first slot lists.
 3. **Board.** `manager_board.py init .context/<plan>/board.md --title ... --plan ... --repo ... --branch ...`, then add the steps and waves.
    The script lives in this skill's `scripts/` directory; call it by absolute path with `python3` (standard library only).
-4. **Owner approval, in one structured question batch** (see "Owner questions"): the parity table, the slots and their limits, the budget limits (this approval is the user approval `agent-fanout`'s cap asks for, per wave and per day), the merge authority, which question classes may take a default at their deadline, and the notification channel.
+4. **Defaults and owner approval.**
+   The defaults are the board template's Parity, Slots, and Budget, the plan's merge authority, and "no question takes a default answer".
+   The owner's approval of the plan accepts them, including the budget limits that `project:agent-fanout`'s cap asks the user to approve, per wave and per day.
+   Ask only about what has no default (for example the notification channel when the host has none), in one batch of structured questions (see "Owner questions").
 5. **Start.** Per host, as `references/platforms.md` says. On Claude Code: `/loop` with no interval and the runbook's start prompt.
    Optional: `manager_board.py serve <board>` in a detached shell for the owner's live view.
 
@@ -106,7 +111,9 @@ Compute budgets (GPU hours, cloud dollars) carry the plan's overrun trigger and 
 The Parity table maps each tier to a model and effort on every platform; its columns are the platforms the owner uses.
 Cards name a tier, not a model; `status` shows which model the chosen slot runs.
 Parity is live: models are renamed and new products appear.
-The owner owns Parity, Slots, and budget limits; the manager never edits them and instead asks, at setup, at every checkpoint, and when it sees a mismatch (a refused model id, a platform present but missing from the table, a quota near its end): "update the parity, add this platform as a slot, or keep it?"
+The board template's Parity, Slots, and Budget are the defaults, and the owner's approval of the plan accepts them.
+The owner owns them and edits them when things change; the manager never edits them.
+The manager asks the parity question only on a mismatch (a refused model id, a platform missing from Parity, a quota near its end, a capability no slot has), never routinely at a checkpoint: "update the parity, add this platform as a slot, or keep it?"
 Allocate by capability first (GUI, browser, computer use, hardware), then cost and quota.
 Computer use and visible GUI runs stay with the manager's host and need the owner's announced consent every time.
 Dispatch commands, model checks, and handover rules per platform: `references/platforms.md`.
@@ -121,8 +128,9 @@ Never answer for the owner and never treat silence as an answer; a default appli
 
 ## Escalation
 
-Escalate to the advisor (lead tier first: Opus, or Sol on Codex) on: a step at twice its timebox, two failed approaches, a security or data-integrity invariant, a contested review finding, a red gate on the integration branch, the same gate step flaky twice in seven days, a PR that relaxes a gate, an owner answer that contradicts a card, or a projected budget overrun.
-Escalate to the frontier tier (Fable, or Astra on Codex) only for a long-horizon question, when the lead tier cannot decide, or when the same item looped three times.
+Escalate to the advisor (lead tier) on: a step at twice its timebox, two failed approaches, a security, data-integrity, concurrency, or authorization invariant, a contested review finding, or a red gate on the integration branch.
+The flaky gate, a PR that relaxes a gate, an owner answer that contradicts a card, and a projected overrun go to the lead or the owner as `references/escalation.md` says.
+Use the frontier tier only when the owner explicitly asks, for a long-horizon job or planning the owner names, or when the approved plan's routing lists a frontier trigger (for example "frontier tier when the lead tier cannot decide, or after three loops").
 Use the brief and output format in `references/escalation.md`; `spend` the advisor budget; record the ruling with `decide` and on the PR.
 The lead turns a ruling into card changes; the manager never edits a card itself.
 
@@ -134,9 +142,9 @@ Each tick, after the mechanical work, check these and act only as stated:
 2. A question whose "ask on" date is within two days: ask it now, with a recommendation.
 3. A skill or review lens the plan names that has not run on a merged step: run it.
 4. The same defect kind twice: ask the lead for a diagnosis card.
-5. A platform, model, or quota change seen in a dispatch: ask the parity question.
+5. A mismatch seen in a dispatch (a refused model id, a platform missing from Parity, a quota near its end, a capability no slot has): ask the parity question.
 
-At checkpoints only: an advisor anticipation pass (how will the owner, reviewers, and users react to the current state, and what will they ask next), a budget and capacity projection, and the batched questions.
+At checkpoints only: an advisor anticipation pass (how will the owner, reviewers, and users react to the current state, and what will they ask next), a budget and capacity projection, and the batched questions; the parity question waits for a mismatch.
 Proposals never dispatch until the lead or owner accepts them; one notification per event class per day; never repeat a proposal unless the facts changed.
 
 ## The board
