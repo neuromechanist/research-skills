@@ -130,7 +130,7 @@ The skill teaches Claude the JSON schema and authoring workflow; the builder rep
 Neuroscience data standards, experiment design, and dataset validation:
 
 - **BIDS conversion** -- convert EEG, EMG, and other modalities to Brain Imaging Data Structure (BIDS) format with proper file naming, JSON sidecars, and metadata
-- **Experiment design** -- scaffold PsychoPy experiments with stimulus presentation, LSL marker integration, and BIDS-compatible output
+- **Experiment design** -- scaffold PsychoPy experiments with stimulus presentation, Lab Streaming Layer (LSL) marker integration, and BIDS-compatible output
 - **BIDS validator agent** -- autonomously validate datasets, diagnose errors, and apply fixes. Claude has the bundled agent shell, Codex has an agent template, and Copilot exposes the `.agent.md` template through the native plugin manifest.
 
 ```
@@ -222,7 +222,7 @@ research-skills/
 - For PDF conversion: poppler (`brew install poppler` on macOS)
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder), run through its `apb` command-line tool with `bunx github:neuromechanist/agentic-presentation-builder#<tag>` (no clone needed; the skill can keep a managed cache clone for repeated validation)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
-- For experiment design: PsychoPy to run the generated experiments, and `pylsl` (`uv add pylsl`) for Lab Streaming Layer (LSL) markers
+- For experiment design: PsychoPy to run the generated experiments, and `pylsl` (`uv add pylsl`) for LSL markers
 - For manager-loop: `python3` (standard library only) for the board helper `manager_board.py`, and an authenticated `gh` for pull request checks and merges; the board's write lock needs a Portable Operating System Interface (POSIX) system (macOS, Linux, or Windows Subsystem for Linux)
 - For cloud GPU pods: Docker with `buildx` and a container registry login, a RunPod API key, and a dedicated `ssh` key pair whose public half is passed to each pod
 - For OCR: Mistral API key (optional, tesseract as offline fallback)
