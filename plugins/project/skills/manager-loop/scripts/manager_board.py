@@ -226,25 +226,74 @@ def section_key(title: str) -> str:
     return re.sub(r"\s+", " ", title.strip().lower())
 
 
+FENCE_OPEN = re.compile(r"^\s*(?:(`{3,})[^`]*|(~{3,}).*)$")
+
+
+def inert_lines(lines: list[str]) -> list[bool]:
+    """Mark lines inside a fenced code block or an HTML comment.
+
+    Inert lines are never headings and never start or continue a table.
+    One classifier serves every parser here, so they agree on what is prose.
+    """
+    mask: list[bool] = []
+    fence = ""
+    in_comment = False
+    for line in lines:
+        if in_comment:
+            mask.append(True)
+            in_comment = "-->" not in line
+            continue
+        if fence:
+            mask.append(True)
+            body = line.strip()
+            if body and set(body) == {fence[0]} and len(body) >= len(fence):
+                fence = ""
+            continue
+        opened = FENCE_OPEN.match(line)
+        if opened:
+            fence = opened.group(1) or opened.group(2)
+            mask.append(True)
+            continue
+        if line.lstrip().startswith("<!--"):
+            mask.append(True)
+            in_comment = "-->" not in line.lstrip()[4:]
+            continue
+        mask.append(False)
+    return mask
+
+
 def parse_table(
-    lines: list[str], start: int, end: int, where: str, errors: list[str]
+    lines: list[str],
+    start: int,
+    end: int,
+    where: str,
+    errors: list[str],
+    inert: list[bool],
 ) -> Table | None:
+    def is_row(index: int) -> bool:
+        return not inert[index] and lines[index].lstrip().startswith("|")
+
     i = start
-    while i < end and not lines[i].lstrip().startswith("|"):
+    while i < end and not is_row(i):
         i += 1
     if i >= end:
         return None
     header_line = i
     header = split_cells(lines[i])
-    if i + 1 >= end or not SEPARATOR.match(lines[i + 1]):
+    if i + 1 >= end or inert[i + 1] or not SEPARATOR.match(lines[i + 1]):
         errors.append(
             f"{where}: line {i + 2}: table header is not followed by a |---| separator"
         )
         return None
+    names: set[str] = set()
+    for col in header:
+        if col.strip().lower() in names:
+            errors.append(f"{where}: duplicate column {col!r}")
+        names.add(col.strip().lower())
     rows: list[dict[str, str]] = []
     row_lines: list[int] = []
     j = i + 2
-    while j < end and lines[j].lstrip().startswith("|"):
+    while j < end and is_row(j):
         cells = split_cells(lines[j])
         if len(cells) != len(header):
             errors.append(
@@ -267,14 +316,11 @@ def parse_table(
 def parse_board(text: str, known: dict[str, list[str]] | None = None) -> Board:
     known = SCHEMA if known is None else known
     lines = text.splitlines()
+    inert = inert_lines(lines)
     title = ""
     headings: list[tuple[int, str]] = []
-    in_fence = False
     for idx, line in enumerate(lines):
-        if line.lstrip().startswith("```"):
-            in_fence = not in_fence
-            continue
-        if in_fence:
+        if inert[idx]:
             continue
         if not title and line.startswith("# "):
             title = line[2:].strip()
@@ -285,7 +331,9 @@ def parse_board(text: str, known: dict[str, list[str]] | None = None) -> Board:
         end = headings[n + 1][0] if n + 1 < len(headings) else len(lines)
         key = section_key(heading)
         section = Section(key=key, title=heading, start=idx, end=end)
-        section.table = parse_table(lines, idx + 1, end, f"## {heading}", board.errors)
+        section.table = parse_table(
+            lines, idx + 1, end, f"## {heading}", board.errors, inert
+        )
         section.text = "\n".join(lines[idx + 1 : end]).strip()
         if key in known:
             if key in board.sections:
@@ -361,19 +409,27 @@ def parse_time(value: str | None) -> datetime | None:
     return moment
 
 
+DURATION_TOKEN = re.compile(r"(\d+(?:\.\d+)?)\s*([smhd])")
+DURATION_FULL = re.compile(r"(?:\d+(?:\.\d+)?\s*[smhd]\s*)+")
+DURATION_SECONDS = {"s": 1, "m": 60, "h": 3600, "d": 86400}
+
+
 def parse_duration(value: str) -> timedelta:
-    total = 0
-    matched = False
-    for amount, unit in re.findall(r"(\d+(?:\.\d+)?)\s*([smhd])", value.lower()):
-        matched = True
-        total += float(amount) * {"s": 1, "m": 60, "h": 3600, "d": 86400}[unit]
-    if not matched:
-        if value.strip().isdigit():
-            return timedelta(minutes=int(value.strip()))
+    """Read ``30m``, ``1h30m``, ``2d``, or a bare number of minutes; nothing else."""
+    text = value.strip().lower()
+    if re.fullmatch(r"\d+", text):
+        return timedelta(minutes=int(text))
+    if not DURATION_FULL.fullmatch(text):
         raise BoardError(
             f"cannot read duration {value!r}; use forms like 30m, 2h, 1h30m, 2d"
+            " (a bare number is minutes)"
         )
-    return timedelta(seconds=total)
+    return timedelta(
+        seconds=sum(
+            float(amount) * DURATION_SECONDS[unit]
+            for amount, unit in DURATION_TOKEN.findall(text)
+        )
+    )
 
 
 def try_duration(value: str | None) -> timedelta | None:
@@ -400,11 +456,19 @@ def platforms(board: Board) -> list[str]:
 # Validation and derived state
 
 
+def id_column(board: Board, key: str) -> str:
+    """The column that names a row: the table's first header, whatever it is called."""
+    table = board.table(key)
+    return table.header[0] if table and table.header else SCHEMA[key][0]
+
+
+def row_id(board: Board, key: str, row: dict[str, str]) -> str:
+    return plain_id(row.get(id_column(board, key), ""))
+
+
 def step_index(board: Board) -> dict[str, dict[str, str]]:
     return {
-        plain_id(row.get("ID", "")): row
-        for row in board.rows("steps")
-        if plain_id(row.get("ID", ""))
+        sid: row for row in board.rows("steps") if (sid := row_id(board, "steps", row))
     }
 
 
@@ -437,11 +501,12 @@ def find_cycle(graph: dict[str, list[str]]) -> list[str] | None:
 
 
 def check_states(
-    board: Board, key: str, id_col: str, allowed: tuple[str, ...], errors: list[str]
+    board: Board, key: str, allowed: tuple[str, ...], errors: list[str]
 ) -> None:
     seen: set[str] = set()
+    id_col = id_column(board, key)
     for row in board.rows(key):
-        rid = plain_id(row.get(id_col, ""))
+        rid = row_id(board, key, row)
         if rid in seen:
             errors.append(f"## {TITLES[key]}: duplicate {id_col} {rid}")
         seen.add(rid)
@@ -467,27 +532,26 @@ def validate(board: Board) -> tuple[list[str], list[str]]:
     for key, section in board.sections.items():
         if not section.table:
             continue
-        for row, line_no in zip(
-            section.table.rows, section.table.row_lines, strict=True
-        ):
+        first = section.table.header[0]
+        for row in section.table.rows:
+            rid = plain_id(row.get(first, ""))
             for col, value in row.items():
                 if len(value) > MAX_CELL_CHARS:
                     errors.append(
-                        f"## {TITLES.get(key, key)}: line {line_no + 1}: {col!r} has {len(value)} characters"
+                        f"## {TITLES.get(key, key)}: row {rid!r}: {col!r} has {len(value)} characters"
                         f" (limit {MAX_CELL_CHARS}); put detail in the card or the log"
                     )
 
     steps_table = board.table("steps")
-    for col in ("ID", "State"):
-        if steps_table and steps_table.column(col) is None:
-            errors.append(f"## Steps: missing column {col!r}")
+    if steps_table and steps_table.column("State") is None:
+        errors.append("## Steps: missing column 'State'")
     seen: set[str] = set()
     graph: dict[str, list[str]] = {}
     slots = {plain_id(r.get("Slot", "")) for r in board.rows("slots")}
     waves = {plain_id(r.get("Wave", "")) for r in board.rows("waves")}
     tiers = {plain_id(r.get("Tier", "")) for r in board.rows("parity")}
     for row in board.rows("steps"):
-        sid = plain_id(row.get("ID", ""))
+        sid = row_id(board, "steps", row)
         if not sid:
             errors.append("## Steps: a row has an empty ID")
             continue
@@ -547,11 +611,11 @@ def validate(board: Board) -> tuple[list[str], list[str]]:
             if tiers and plain_id(tier) not in tiers:
                 warnings.append(f"## Slots: {name}: tier {tier!r} is not in ## Parity")
 
-    check_states(board, "waves", "Wave", WAVE_STATES, errors)
-    check_states(board, "questions", "ID", QUESTION_STATES, errors)
-    check_states(board, "proposals", "ID", PROPOSAL_STATES, errors)
+    check_states(board, "waves", WAVE_STATES, errors)
+    check_states(board, "questions", QUESTION_STATES, errors)
+    check_states(board, "proposals", PROPOSAL_STATES, errors)
     for row in board.rows("questions"):
-        qid = plain_id(row.get("ID", ""))
+        qid = row_id(board, "questions", row)
         if (
             not is_empty(row.get("Needed by"))
             and parse_time(row.get("Needed by")) is None
@@ -743,7 +807,7 @@ def analyze(
         questions.append(
             {
                 **row,
-                "id": plain_id(row.get("ID", "")),
+                "id": row_id(board, "questions", row),
                 "state": state,
                 "options": split_options(row.get("Options")),
                 "overdue": bool(state == "open" and needed and needed < now),
@@ -784,14 +848,13 @@ def analyze(
                     "text": s.get("Next", "") or s.get("Title", ""),
                 }
             )
-    for p in board.rows("proposals"):
+    proposals = [
+        {**p, "id": row_id(board, "proposals", p)} for p in board.rows("proposals")
+    ]
+    for p in proposals:
         if p.get("State", "").strip().lower() == "open":
             needs_you.append(
-                {
-                    "kind": "proposal",
-                    "id": plain_id(p.get("ID", "")),
-                    "text": p.get("Proposal", ""),
-                }
+                {"kind": "proposal", "id": p["id"], "text": p.get("Proposal", "")}
             )
 
     decisions = history.rows("decisions")[-HISTORY_TAIL:] if history else []
@@ -816,7 +879,7 @@ def analyze(
         "unplaced": unplaced,
         "idle_slots": idle,
         "questions": questions,
-        "proposals": board.rows("proposals"),
+        "proposals": proposals,
         "agents": board.rows("agents"),
         "needs_you": needs_you,
         "decisions": decisions,
@@ -1015,7 +1078,7 @@ def record_answer(path: Path, qid: str, answer: str, by: str) -> None:
             (
                 r
                 for r in board.rows("questions")
-                if plain_id(r.get("ID", "")) == plain_id(qid)
+                if row_id(board, "questions", r) == plain_id(qid)
             ),
             None,
         )
@@ -1040,10 +1103,13 @@ def record_answer(path: Path, qid: str, answer: str, by: str) -> None:
 
 def render_html(data: dict, mode: str, token: str = "") -> str:
     template = TEMPLATE_HTML.read_text()
+    # Escape every "<" (so no "</script>" or "<!--" survives) and the two line
+    # separators JavaScript treats as newlines; the result is still valid JSON.
     payload = (
         json.dumps(data, ensure_ascii=False)
-        .replace("</", "<\\/")
-        .replace("<!--", "<\\!--")
+        .replace("<", "\\u003c")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
     )
     return (
         template.replace("__BOARD_TITLE__", html.escape(data.get("title") or "Board"))
@@ -1177,8 +1243,10 @@ def check_card(text: str) -> list[str]:
     headings: dict[str, str] = {}
     current = None
     buffer: list[str] = []
-    for line in text.splitlines():
-        match = re.match(r"^#{2,3}\s+(.+?)\s*$", line)
+    lines = text.splitlines()
+    inert = inert_lines(lines)
+    for line, skip in zip(lines, inert, strict=True):
+        match = None if skip else re.match(r"^#{2,3}\s+(.+?)\s*$", line)
         if match:
             if current:
                 headings[current] = "\n".join(buffer).strip()
@@ -1204,13 +1272,9 @@ def check_card(text: str) -> list[str]:
             problems.append(
                 f"'## {name.title()}' names no literal command (wrap commands in backticks)"
             )
-    in_fence = False
-    for n, line in enumerate(text.splitlines(), 1):
-        if line.lstrip().startswith("```"):
-            in_fence = not in_fence
-            continue
+    for n, (line, skip) in enumerate(zip(lines, inert, strict=True), 1):
         prose = re.sub(r"`[^`]*`", "", line)
-        if not in_fence and (
+        if not skip and (
             CARD_PLACEHOLDER.search(prose) or ANGLE_PLACEHOLDER.search(prose)
         ):
             problems.append(f"line {n}: unresolved placeholder: {line.strip()[:80]}")
@@ -1375,12 +1439,13 @@ def cmd_set(args) -> int:
     def change(text: str) -> str:
         stamped = dict(values)
         if key == "steps" and stamped.get("State", "").lower() == "active":
-            table = parse_board(text).table("steps")
+            parsed = parse_board(text)
+            table = parsed.table("steps")
             current = next(
                 (
                     r
                     for r in (table.rows if table else [])
-                    if plain_id(r.get("ID", "")) == plain_id(args.key)
+                    if row_id(parsed, "steps", r) == plain_id(args.key)
                 ),
                 {},
             )
@@ -1423,7 +1488,7 @@ def cmd_tick(args) -> int:
         values = {"Last tick": stamp(moment)}
         if args.manager:
             values["Manager id"] = args.manager
-        if args.next:
+        if args.next is not None:
             values["Next tick"] = stamp(moment + parse_duration(args.next))
         if args.state:
             values["State"] = args.state
@@ -1562,7 +1627,7 @@ def cmd_propose(args) -> int:
         numbers = [
             int(m.group(1))
             for r in rows
-            if (m := re.fullmatch(r"P(\d+)", plain_id(r.get("ID", ""))))
+            if (m := re.fullmatch(r"P(\d+)", row_id(board, "proposals", r)))
         ]
         pid = f"P{max(numbers, default=0) + 1}"
         created.append(pid)
@@ -1587,25 +1652,25 @@ def cmd_archive(args) -> int:
     def change(text: str) -> str:
         board = parse_board(text)
         q_ids = {
-            plain_id(r["ID"])
+            row_id(board, "questions", r)
             for r in board.rows("questions")
             if r.get("State", "").lower() in ("closed", "defaulted")
         }
         p_ids = {
-            plain_id(r["ID"])
+            row_id(board, "proposals", r)
             for r in board.rows("proposals")
             if r.get("State", "").lower() in ("accepted", "rejected", "withdrawn")
         }
         for r in board.rows("questions"):
-            if plain_id(r["ID"]) in q_ids:
+            rid = row_id(board, "questions", r)
+            if rid in q_ids:
                 moved.append(
-                    f"question {plain_id(r['ID'])} {r.get('State')}: {r.get('Question')} -> {r.get('Answer')}"
+                    f"question {rid} {r.get('State')}: {r.get('Question')} -> {r.get('Answer')}"
                 )
         for r in board.rows("proposals"):
-            if plain_id(r["ID"]) in p_ids:
-                moved.append(
-                    f"proposal {plain_id(r['ID'])} {r.get('State')}: {r.get('Proposal')}"
-                )
+            rid = row_id(board, "proposals", r)
+            if rid in p_ids:
+                moved.append(f"proposal {rid} {r.get('State')}: {r.get('Proposal')}")
         return remove_rows(remove_rows(text, "questions", q_ids), "proposals", p_ids)
 
     mutate(path, change)

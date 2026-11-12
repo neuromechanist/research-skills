@@ -4,7 +4,9 @@ Every test runs the real script as a subprocess against a real board file; the
 server test starts the real HTTP server on a free localhost port.
 """
 
+import importlib.util
 import json
+import re
 import socket
 import subprocess
 import sys
@@ -382,14 +384,126 @@ def test_card_check(tmp_path: Path):
     assert "status is outline" in run("card", str(card), check=False).stdout
 
 
-def test_render_escapes_script_breakout(board: Path, tmp_path: Path):
-    add_step(board, "S1", "State=todo", "Next=</script><script>alert(1)</script>")
+def embedded_data(page: str) -> dict:
+    match = re.search(
+        r'<script id="board-data" type="application/json">(.*?)</script>',
+        page,
+        re.DOTALL,
+    )
+    assert match, "no board-data block"
+    return json.loads(match.group(1))
+
+
+def test_card_check_ignores_fenced_and_commented_lines(tmp_path: Path):
+    card = tmp_path / "E2.md"
+    card.write_text(
+        "# Card E2: Store v3\n\nStatus: ready\n\n<!-- TODO <fill in later> -->\n\n"
+        "## Goal\nStore keeps 30 conversations.\n\n~~~\nTODO <title>\n## Scope\n~~~\n\n"
+        "## Scope\n`frontend/store.js`\n\n## Acceptance\n`bun test` passes.\n\n"
+        "## Gates\n`bun run biome check`\n\n## Stop conditions\nA design question.\n\n"
+        "## Report\nPR and gates.\n",
+        encoding="utf-8",
+    )
+    assert "ready to dispatch" in run("card", str(card)).stdout
+
+
+def test_render_embeds_json_that_cannot_break_out(board: Path, tmp_path: Path):
+    breakout = "</script><script>alert(1)</script>"
+    add_step(board, "S1", "State=todo", f"Next={breakout}", "Title=a <!-- note")
     out = tmp_path / "snap.html"
     run("render", str(board), "-o", str(out))
-    page = out.read_text()
+    page = out.read_text(encoding="utf-8")
     assert page.count("</script>") == 2  # the data block and the app script only
-    assert "<\\/script><script>alert(1)<\\/script>" in page
+    assert "<!-- note" not in page.split('id="board-data"', 1)[1].split("</script>")[0]
+    steps = {s["id"]: s for s in embedded_data(page)["steps"]}
+    assert steps["S1"]["Next"] == breakout
+    assert steps["S1"]["Title"] == "a <!-- note"
     assert 'content="snapshot"' in page
+
+
+def load_module():
+    spec = importlib.util.spec_from_file_location("manager_board_under_test", SCRIPT)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_render_escapes_javascript_line_separators():
+    module = load_module()
+    page = module.render_html(
+        {"title": "t", "cell": "a\u2028b\u2029c <!--"}, "snapshot"
+    )
+    assert "\u2028" not in page and "\u2029" not in page
+    assert embedded_data(page)["cell"] == "a\u2028b\u2029c <!--"
+
+
+def test_fences_and_comments_are_inert(board: Path):
+    add_step(board, "S1", "State=todo")
+    block = (
+        "\n## Notes\n\n```text\n## Steps\n| a | b |\n```\n\n"
+        "~~~\n## Questions\n| x | y |\n~~~\n\n"
+        "<!--\n## Proposals\n| c | d |\n-->\n"
+    )
+    board.write_text(board.read_text(encoding="utf-8") + block, encoding="utf-8")
+    assert "board OK" in run("check", str(board)).stdout
+    assert [s["id"] for s in status(board)["steps"]] == ["S1"]
+    add_step(board, "S2", "State=todo")
+    assert board.read_text(encoding="utf-8").count("| S2 |") == 1
+
+
+def test_duplicate_column_is_an_error(board: Path):
+    text = board.read_text(encoding="utf-8").replace(
+        "| ID | Time | Proposal | Why | State |", "| ID | Time | Time | Why | State |"
+    )
+    board.write_text(text, encoding="utf-8")
+    result = run("check", str(board), check=False)
+    assert result.returncode == 1
+    assert "duplicate column 'Time'" in result.stdout
+
+
+def test_first_header_names_the_row(board: Path):
+    text = board.read_text(encoding="utf-8")
+    text = text.replace("| ID | Step | Question |", "| Ref | Step | Question |")
+    text = text.replace("| ID | Time | Proposal |", "| Ref | Time | Proposal |")
+    board.write_text(text, encoding="utf-8")
+    run("tick", str(board), "--manager", "m1", "--next", "30m")
+    run(
+        "ask",
+        str(board),
+        "Q1",
+        "--question",
+        "Ship?",
+        "--options",
+        "Yes (Recommended) / No",
+    )
+    run("answer", str(board), "Q1", "Yes")
+    run("set", str(board), "questions", "Q1", "State=closed")
+    run("propose", str(board), "Try it", "--why", "cheap")
+    run("set", str(board), "proposals", "P1", "State=accepted")
+    data = status(board)
+    assert data["questions"][0]["id"] == "Q1" and data["proposals"][0]["id"] == "P1"
+    assert "archived 2 rows" in run("archive", str(board)).stdout
+    log = (board.parent / "board-log.md").read_text(encoding="utf-8")
+    assert "archived question Q1 closed" in log and "archived proposal P1" in log
+
+
+@pytest.mark.parametrize("bad", ["2 months", "3 sprints", "5m30", "soon", ""])
+def test_durations_must_match_in_full(board: Path, bad: str):
+    before = board.read_text(encoding="utf-8")
+    result = run("tick", str(board), "--manager", "m1", "--next", bad, check=False)
+    assert result.returncode == 2 and "cannot read duration" in result.stderr
+    assert board.read_text(encoding="utf-8") == before
+
+
+@pytest.mark.parametrize(
+    ("good", "minutes"), [("1h30m", 90), ("2d", 2880), ("45", 45), ("1h 15m", 75)]
+)
+def test_durations_accept_tokens_and_bare_minutes(board: Path, good: str, minutes: int):
+    run("tick", str(board), "--manager", "m1", "--next", good)
+    beat = status(board)["heartbeat"]
+    gap = datetime.fromisoformat(beat["next"]) - datetime.fromisoformat(beat["last"])
+    assert gap == timedelta(minutes=minutes)
 
 
 def free_port() -> int:
