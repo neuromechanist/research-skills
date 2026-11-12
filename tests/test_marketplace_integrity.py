@@ -192,16 +192,23 @@ def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
     assert "opt-in" in fanout
 
     retired = re.compile(r"gpt-5[.]6|Fable when[ ]available")
+    # Scan tracked files only: ignored local outputs (for example examples/out/) are not shipped.
+    tracked = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "-z", "--", "AGENTS.md", "README.md", "docs", "plugins"],
+        capture_output=True,
+        check=True,
+    ).stdout.decode()
     scanned = [
-        ROOT / "AGENTS.md",
-        ROOT / "README.md",
-        *sorted((ROOT / "docs").rglob("*.md")),
-        *sorted(
-            p
-            for p in PLUGINS_DIR.rglob("*")
-            if p.is_file() and p.suffix in {".md", ".py", ".json", ".toml", ".sh"}
-        ),
+        ROOT / name
+        for name in tracked.split("\0")
+        if name
+        and (
+            name in {"AGENTS.md", "README.md"}
+            or (name.startswith("docs/") and name.endswith(".md"))
+            or (name.startswith("plugins/") and Path(name).suffix in {".md", ".py", ".json", ".toml", ".sh"})
+        )
     ]
+    assert scanned, "git ls-files returned no files to scan"
     stale = [str(p.relative_to(ROOT)) for p in scanned if retired.search(p.read_text())]
     assert not stale, f"retired model ids or default-to-Fable wording remain in: {stale}"
 
