@@ -55,7 +55,7 @@ The lead and the manager may be one agent only when the owner says so; that agen
 
 Run in order; each tick is complete on its own because the board carries all state.
 
-1. Run `date`, then `manager_board.py tick <board> --manager <id>`; the first tick of a session adds `--state running`.
+1. Run `date`, then `manager_board.py tick <board> --manager <id>`; the first tick of a session adds `--state running --next 30m`, a provisional wake that step 9 replaces.
    The manager id is stable per manager, `<host>-<model>` (for example `mba-claude-sonnet`), never per session, so restarts and headless ticks of the same manager keep the lease.
    If the tick is refused because another manager holds the lease, schedule one wake at the lease expiry the refusal prints and do nothing else.
 2. **First tick of a session only:** reconcile the board with the world.
@@ -122,7 +122,7 @@ Details and examples: `references/plan-pack.md`.
 
 The board's Budget table holds limits the owner approved; Slots hold concurrency.
 `spend` refuses to pass a limit: at a limit, stop dispatching and ask.
-Daily rows reset on the first tick of a day; wave rows reset automatically when a wave opens, and the reset is logged.
+Daily rows reset on the first tick of a day; wave rows reset automatically when a wave goes from `planned` to `active`, and the reset is logged; resuming a wave from `hold` keeps its count.
 Compute budgets (GPU hours, cloud dollars) carry the plan's overrun trigger and its ordered drop rules; never drop anything on the plan's never-drop list.
 
 ## Parity and platforms

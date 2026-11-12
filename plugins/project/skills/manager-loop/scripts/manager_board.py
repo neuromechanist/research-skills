@@ -123,6 +123,8 @@ MAX_CELL_CHARS = 240
 MAX_ANSWER_CHARS = 200
 LATE_GRACE = timedelta(minutes=10)
 RELEASING_STATES = ("paused", "stopped", "done")  # a manager in these holds no lease
+MANAGER_STATES = ("running", *RELEASING_STATES)
+DEFAULT_WAKE = timedelta(minutes=30)
 MAX_BODY = 16_000  # bytes accepted by POST /answer
 REQUEST_TIMEOUT = 10  # seconds a client may stall the server
 # The page is self-contained: inline script and style, same-origin fetches, no framing.
@@ -1162,7 +1164,6 @@ def mutate(
         if before.errors:
             raise BoardError("fix the file before writing: " + "; ".join(before.errors))
         known = {normalize_error(e) for e in validate(before)[0]}
-        log = history_text(path) if events is not None else None
         new = change(text)
         fresh = [
             e for e in validate(parse_board(new))[0] if normalize_error(e) not in known
@@ -1171,7 +1172,9 @@ def mutate(
             raise BoardError(
                 "the change would leave the board invalid: " + "; ".join(fresh)
             )
-        if log is not None and events:
+        # Only a change that logs needs the log; a broken log still stops it before any write.
+        log = history_text(path) if events else None
+        if log is not None:
             when = stamp()
             rows = [("log", {"Time": when, "Event": event}) for event in events]
             write_atomic(history_path(path), add_history(log, rows))
@@ -1633,10 +1636,10 @@ def cmd_set(args) -> int:
         opening = (
             key == "waves"
             and stamped.get("State", "").strip().lower() == "active"
-            and current.get("State", "").strip().lower() != "active"
+            and current.get("State", "").strip().lower() in ("", "planned")
         )
         text = apply_row(text, key, args.key, stamped, create=args.new)
-        if opening:  # a wave opening zeroes the budgets that reset per wave
+        if opening:  # planned to active zeroes the per-wave budgets; a resume from hold or done keeps them
             for item in parse_board(text).rows("budget"):
                 used = first_number(item.get("Used"))
                 if item.get("Resets", "").strip().lower() == "wave" and used:
@@ -1682,6 +1685,13 @@ def cmd_tick(args) -> int:
         if args.manager:
             values["Manager id"] = args.manager
         wake = parse_duration(args.next) if args.next is not None else None
+        state = (args.state or info.get("State", "")).strip().lower()
+        if (
+            wake is None
+            and state == "running"
+            and parse_time(info.get("Next tick")) is None
+        ):
+            wake = DEFAULT_WAKE  # provisional; the tick's last step sets the real wake
         if wake is not None:
             values["Next tick"] = stamp(moment + wake)
         if args.state:
@@ -1987,10 +1997,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("board")
     p.add_argument(
-        "--manager", help="this manager's id (host, model, session); holds the lease"
+        "--manager",
+        help="stable per manager, <host>-<model>, never per session; holds the lease",
     )
     p.add_argument("--next", help="time to the next wake, e.g. 30m or 1h")
-    p.add_argument("--state", help="manager state: running, paused, stopped, done")
+    p.add_argument("--state", choices=MANAGER_STATES, help="manager state")
     p.add_argument("--note", help="also append this line to the log")
     p.add_argument(
         "--take-over",

@@ -34,7 +34,8 @@ A step is ready when it is `todo`, every step in Depends is `done`, and its wave
 
 ### Waves and budgets
 
-Setting a wave's State to `active` (`set Waves <id> State=active`) resets every Budget row whose Resets is `wave` to 0 and logs the reset, so the new wave starts with its full wave budget.
+Opening a wave, setting its State from `planned` to `active` (`set Waves <id> State=active`), resets every Budget row whose Resets is `wave` to 0 and logs the reset, so the new wave starts with its full wave budget.
+Resuming a wave from `hold` or `done` keeps its count.
 A step spends the wave budget only when it belongs to a wave.
 
 ### Values
@@ -63,7 +64,8 @@ It prints the model the slot runs for that tier (from Parity), the steps that ca
 The id is stable per manager, `<host>-<model>` (for example `mba-claude-sonnet`), never per session, so a restart or a headless tick of the same manager keeps the lease.
 A second manager calling `tick` with a different id before that wake (plus ten minutes) is refused, which prevents double dispatch and double merge when a scheduled tick overlaps a live session.
 The refusal prints the lease expiry; the refused manager schedules one wake at that time and does nothing else.
-The first tick of a session passes `--state running`.
+The first tick of a session passes `--state running --next 30m`; a running tick without `--next` and with no pending wake gets a provisional 30-minute wake, so it always holds the lease.
+`--state` accepts only `running`, `paused`, `stopped`, and `done`.
 `tick --state paused`, `stopped`, or `done` clears Next tick and releases the lease, and `status` reports the manager as late only while State is `running`.
 Handing over to a different manager: the old one runs `tick --state paused` first.
 `--take-over` is only for a manager confirmed stopped; log why (`--note`).

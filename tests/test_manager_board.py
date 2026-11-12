@@ -567,7 +567,7 @@ def test_malformed_log_stops_archive_before_the_board_changes(
 def test_malformed_log_stops_tick_and_propose(board: Path, broken_log: Path):
     before = board.read_text(encoding="utf-8")
     for args in (
-        ("tick", str(board), "--manager", "m1", "--next", "30m"),
+        ("tick", str(board), "--manager", "m1", "--next", "30m", "--note", "logged"),
         ("propose", str(board), "Try it", "--why", "cheap"),
         ("log", str(board), "an event"),
     ):
@@ -575,6 +575,37 @@ def test_malformed_log_stops_tick_and_propose(board: Path, broken_log: Path):
         assert result.returncode == 2 and "board-log.md" in result.stderr, args
     assert board.read_text(encoding="utf-8") == before
     assert run("check", str(board), check=False).returncode == 1
+    # A tick that logs nothing does not need the log, so the heartbeat survives a broken log.
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    assert (
+        run("archive", str(board)).returncode == 0
+    )  # nothing to archive, nothing to log
+
+
+def test_first_running_tick_takes_the_lease(board: Path):
+    run("tick", str(board), "--manager", "mba-claude-sonnet", "--state", "running")
+    assert status(board)["heartbeat"]["next"], (
+        "a running tick without --next still sets a wake"
+    )
+    rival = run(
+        "tick",
+        str(board),
+        "--manager",
+        "mcm-codex-luna",
+        "--state",
+        "running",
+        check=False,
+    )
+    assert rival.returncode == 2 and "another manager is live" in rival.stderr
+
+
+def test_state_typos_and_session_ids_are_refused_or_discouraged(board: Path):
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    before = board.read_text(encoding="utf-8")
+    typo = run("tick", str(board), "--manager", "m1", "--state", "pause", check=False)
+    assert typo.returncode == 2 and "invalid choice" in typo.stderr
+    assert board.read_text(encoding="utf-8") == before
+    assert "never per session" in " ".join(run("tick", "-h").stdout.split())
 
 
 def test_existing_errors_do_not_block_unrelated_writes(board: Path):
@@ -657,6 +688,10 @@ def test_wave_opening_resets_wave_budgets(board: Path):
         "set", str(board), "waves", "W1", "Goal=still one", "State=active"
     )  # not a new opening
     assert used(board, "Agents this wave") == 3
+    for paused in ("hold", "done"):  # a resume keeps the approved per-wave count
+        run("set", str(board), "waves", "W1", f"State={paused}")
+        run("set", str(board), "waves", "W1", "State=active")
+        assert used(board, "Agents this wave") == 3
 
 
 def test_init_force_rewrites_the_board_but_keeps_the_log(board: Path):
