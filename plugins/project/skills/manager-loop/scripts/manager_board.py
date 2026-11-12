@@ -17,6 +17,7 @@ import argparse
 import contextlib
 import html
 import json
+import math
 import os
 import re
 import secrets
@@ -87,8 +88,6 @@ HISTORY_SCHEMA: dict[str, list[str]] = {
     "decisions": ["Time", "Decision", "By", "Reason"],
     "log": ["Time", "Event"],
 }
-SECTION_ORDER = list(SCHEMA)
-HISTORY_ORDER = list(HISTORY_SCHEMA)
 TITLES = {
     "now": "Now",
     "parity": "Parity",
@@ -415,6 +414,37 @@ def first_number(value: str | None) -> float | None:
     return float(match.group(0)) if match else None
 
 
+def format_number(value: float) -> str:
+    """A number for a table cell: integers whole, others without an exponent."""
+    if not math.isfinite(value):
+        return str(value)
+    if value == int(value):
+        return str(int(value))
+    return f"{value:.6f}".rstrip("0").rstrip(".")
+
+
+def spend_amount(text: str) -> float:
+    """argparse type for ``spend``: a finite number of at least zero."""
+    try:
+        amount = float(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{text!r} is not a number") from None
+    if not math.isfinite(amount) or amount < 0:
+        raise argparse.ArgumentTypeError(
+            f"{text!r} must be a finite number of at least 0"
+        )
+    return amount
+
+
+def parity_model(parity: dict[str, dict[str, str]], tier: str, platform: str) -> str:
+    """The model a tier names for a platform: the parity cell in that platform's column."""
+    row = parity.get(tier)
+    if not row:
+        return ""
+    column = next((c for c in row if c.lower() == platform.lower()), None)
+    return row.get(column, "") if column else ""
+
+
 def local_now() -> datetime:
     return datetime.now().astimezone()
 
@@ -669,7 +699,7 @@ def validate(board: Board) -> tuple[list[str], list[str]]:
         limit, used = first_number(row.get("Limit")), first_number(row.get("Used"))
         if limit is not None and used is not None and used > limit:
             warnings.append(
-                f"## Budget: {item}: used {used:g} is over the limit {limit:g}"
+                f"## Budget: {item}: used {format_number(used)} is over the limit {format_number(limit)}"
             )
         resets = row.get("Resets", "never").strip().lower() or "never"
         if "Resets" in row and resets not in RESETS:
@@ -737,12 +767,7 @@ def analyze(
                 timebox = "over"
         tier = plain_id(row.get("Tier", ""))
         slot = slot_by_name.get(plain_id(row.get("Slot", "")))
-        model = ""
-        if slot and tier in parity:
-            column = next(
-                (c for c in parity[tier] if c.lower() == slot["platform"].lower()), None
-            )
-            model = parity[tier].get(column, "") if column else ""
+        model = parity_model(parity, tier, slot["platform"]) if slot else ""
         out_steps.append(
             {
                 **row,
@@ -786,17 +811,7 @@ def analyze(
         target = next((s for s in fitting if free[s["name"]] > 0), None)
         if target:
             free[target["name"]] -= 1
-            model = ""
-            if tier in parity:
-                column = next(
-                    (
-                        c
-                        for c in parity[tier]
-                        if c.lower() == target["platform"].lower()
-                    ),
-                    None,
-                )
-                model = parity[tier].get(column, "") if column else ""
+            model = parity_model(parity, tier, target["platform"])
             dispatch.append(
                 {"step": step["id"], "slot": target["name"], "model": model}
             )
@@ -1575,7 +1590,9 @@ def cmd_status(args) -> int:
             )
     for item in data["budget"]:
         if item["ratio"] is not None and item["ratio"] >= 0.8:
-            print(f"budget {item.get('Item', '')}: {item['used']:g}/{item['limit']:g}")
+            print(
+                f"budget {item.get('Item', '')}: {format_number(item['used'])}/{format_number(item['limit'])}"
+            )
     for step in data["steps"]:
         if step["lane"] == "attention":
             print(f"{step['state']}: {step['id']} {step.get('Next', '')}".rstrip())
@@ -1717,15 +1734,15 @@ def cmd_spend(args) -> int:
         total = used + args.amount
         if limit is not None and total > limit and not args.over:
             raise BoardError(
-                f"## Budget: {args.item} would be {total:g} of {limit:g}. Stop and ask the owner;"
+                f"## Budget: {args.item} would be {format_number(total)} of {format_number(limit)}. Stop and ask the owner;"
                 " pass --over only with the owner's approval"
             )
         return apply_row(
-            text, "budget", args.item, {"Used": f"{total:g}"}, create=False
+            text, "budget", args.item, {"Used": format_number(total)}, create=False
         )
 
     mutate(Path(args.board), change)
-    print(f"spent {args.amount:g} on {args.item}")
+    print(f"spent {format_number(args.amount)} on {args.item}")
     return 0
 
 
@@ -1877,6 +1894,9 @@ def cmd_archive(args) -> int:
 def cmd_card(args) -> int:
     failed = 0
     for name in args.cards:
+        if Path(name).name.lower() == "readme.md":  # the folder's preamble, not a card
+            print(f"{name}: skipped (preamble)")
+            continue
         problems = check_card(read_utf8(Path(name)))
         for problem in problems:
             print(f"ERROR {name}: {problem}")
@@ -1909,7 +1929,7 @@ def cmd_serve(args) -> int:
         raise BoardError(
             f"cannot listen on {args.host}:{args.port}: {exc.strerror or exc}"
         ) from exc
-    host, port = server.server_address[:2]
+    host, port = str(server.server_address[0]), server.server_address[1]
     shown = "localhost" if host == "127.0.0.1" else f"[{host}]" if ":" in host else host
     print(f"board: http://{shown}:{port}/  (Ctrl-C to stop)", flush=True)
     with contextlib.suppress(KeyboardInterrupt):
@@ -1981,7 +2001,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = add("spend", cmd_spend, "add to a budget's Used; refuses to pass its Limit")
     p.add_argument("board")
     p.add_argument("item")
-    p.add_argument("amount", nargs="?", type=float, default=1.0)
+    p.add_argument("amount", nargs="?", type=spend_amount, default=1.0)
     p.add_argument(
         "--over", action="store_true", help="the owner approved going over the limit"
     )

@@ -693,6 +693,67 @@ def test_files_are_utf8_whatever_the_locale(board: Path):
     assert board.read_text(encoding="utf-8").startswith("# Démo 日本")
 
 
+def test_large_and_fractional_totals_are_written_without_exponents(board: Path):
+    run("set", str(board), "budget", "Agents today", "Limit=5000000", "Used=999999")
+    run("spend", str(board), "Agents today", "1")
+    run("spend", str(board), "Agents today", "5")
+    assert used(board, "Agents today") == 1000005
+    text = board.read_text(encoding="utf-8")
+    assert "| Agents today | 5000000 | 1000005 |" in text
+    assert "e+" not in text
+
+    run("set", str(board), "budget", "Advisor consults", "Limit=10", "Used=0")
+    run("spend", str(board), "Advisor consults", "0.1")
+    run("spend", str(board), "Advisor consults", "0.2")
+    assert "| Advisor consults | 10 | 0.3 |" in board.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("amount", ["nan", "inf", "-inf", "-1", "-0.5", "lots"])
+def test_spend_refuses_non_finite_and_negative_amounts(board: Path, amount: str):
+    before = board.read_text(encoding="utf-8")
+    result = run("spend", str(board), "Agents today", amount, check=False)
+    assert result.returncode != 0
+    assert board.read_text(encoding="utf-8") == before
+
+
+def test_card_skips_the_readme_preamble(tmp_path: Path):
+    readme = tmp_path / "README.md"
+    readme.write_text("# Cards\n\nTODO <describe the folder>\n", encoding="utf-8")
+    result = run("card", str(readme))
+    assert "skipped (preamble)" in result.stdout
+
+
+def test_report_schema_describes_the_worker_report():
+    schema = json.loads(
+        (SKILL / "assets" / "report.schema.json").read_text(encoding="utf-8")
+    )
+    assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
+    assert schema["type"] == "object" and schema["additionalProperties"] is False
+    required = [
+        "pr",
+        "head_sha",
+        "gates",
+        "evidence",
+        "revert_checks",
+        "deviations",
+        "questions",
+        "patch_notes",
+    ]
+    assert schema["required"] == required
+    assert sorted(schema["properties"]) == sorted(required)
+    props = schema["properties"]
+    assert props["pr"]["type"] == "integer" and props["head_sha"]["type"] == "string"
+    gate = props["gates"]["items"]
+    assert gate["required"] == ["command", "result_line"]
+    assert gate["additionalProperties"] is False
+    for key in ("evidence", "revert_checks", "deviations", "questions", "patch_notes"):
+        assert props[key] == {
+            **props[key],
+            "type": "array",
+            "items": {"type": "string"},
+        }
+
+
 def test_card_check_ignores_fenced_and_commented_lines(tmp_path: Path):
     card = tmp_path / "E2.md"
     card.write_text(
