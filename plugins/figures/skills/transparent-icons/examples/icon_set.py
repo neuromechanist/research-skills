@@ -50,7 +50,7 @@ THEME = {
     "negative_tokens": ["text", "labels", "watermark", "gradient", "3D", "shadow"],
     "composition": {"aspect": "1:1", "padding_pct": 12, "perspective": "orthographic"},
     "model_preferences": {
-        "codex_model": "gpt-5.6-luna",
+        "codex_model": "gpt-6-luna",
         "codex_effort": "xhigh",
         "image_quality": "high",
     },

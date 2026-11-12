@@ -2,11 +2,11 @@
 
 ### Task strategy and model routing
 
-- Keep requirements, architecture, difficult judgment, observation, supervision, load-bearing verification, and final synthesis on the strongest available model, directly or by delegation from a Sonnet or Luna driver.
-- On Claude Code, use Fable when available or Opus for lead reasoning, and Sonnet for implementation from an approved detailed plan.
-- On OpenAI Codex, use Sol for lead reasoning, Terra for bounded phase-plan elaboration after architecture approval, and Luna for clear, repeatable implementation, focused tests, routine review, and validation.
+- Keep requirements, architecture, difficult judgment, observation, supervision, load-bearing verification, and final synthesis on the lead-tier model (Opus or Sol), directly or by delegation from a Sonnet or Luna driver.
+- On Claude Code, use Opus for lead reasoning, including planning, and Sonnet for implementation from an approved detailed plan; use Fable only when the user asks or for long-horizon planning.
+- On OpenAI Codex, use Sol for lead reasoning, Terra for bounded phase-plan elaboration after architecture approval, and Luna for clear, repeatable implementation, focused tests, routine review, and validation; use Astra only when the user asks or for long-horizon planning.
 - When the session itself runs on Sonnet or Luna, act as a mechanical driver: delegate routine work to Sonnet (`xhigh`) or Luna (`max`), and architecture, high-risk invariants, and contested findings to Opus or Sol (`xhigh`).
-- On Copilot, Cursor, or another system, preserve the same capability classes: strongest lead, intermediate elaborator, and cost-efficient worker.
+- On Copilot, Cursor, or another system, preserve the same capability classes: lead, intermediate elaborator, and cost-efficient worker.
 - Give workers exact file scope, decided policies, acceptance criteria, named tests, and mechanical gates. Escalate unresolved architecture, repeated non-mechanical failures, data integrity, encryption, concurrency, authorization, and other high-risk invariants to the lead model.
 - After incorporating an agent's final report, close or remove the agent unless it has a named recurring role and a concrete next task. Do not retain completed agents merely because they might be reused later.
 

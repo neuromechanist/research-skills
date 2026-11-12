@@ -19,7 +19,8 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 - **Model routing** (per `project:agent-fanout`): a Sonnet (`xhigh`) driver
   orchestrates; named Sonnet (`xhigh`) agents implement, review, and validate;
   epic design, unresolved architecture, and high-risk invariants go to Opus
-  (`xhigh`), or Fable when available.
+  (`xhigh`); Fable only when the user asks or for long-horizon planning the
+  user names.
 - **GitHub prose**: Semantic line breaks remain the prose-source default, but
   text posted to GitHub (issue and PR bodies, comments, reviews, and
   discussions) is the exception. Keep each paragraph and list item on one
@@ -137,7 +138,7 @@ Update state: mark phase `in_progress`.
 ### Step 2.3: Implementation
 - Delegate the approved plan to a named Sonnet implementer working only in the
   phase worktree at `$PARENT/{phase-slug}/`
-- Follow the approved plan; unresolved design returns to the Fable/Opus lead
+- Follow the approved plan; unresolved design returns to the Opus lead
 - Write tests (unit + integration)
 - Run tests and verify they pass
 - Make atomic commits with concise messages

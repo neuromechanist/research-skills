@@ -84,12 +84,15 @@ implementation-worker Copilot profiles. They use capability-class language
 instead of hard-coded model names because available Copilot model identifiers
 vary by environment.
 
-## Claude Code model routing
+## Model routing
 
-Claude Code uses Fable when available, otherwise Opus or `best`, for macro
-design, observation, supervision, and synthesis. Sonnet implements approved,
-detailed plans and performs routine focused review. Any unresolved architecture
-or high-risk invariant escalates back to the lead model.
+Every lead role defaults to the lead tier: Claude Opus and Codex Sol (`gpt-6.1-sol`).
+That covers project initiation, architecture, planning, observation, supervision, and synthesis.
+The frontier tier, Claude Fable and Codex Astra (`gpt-6-astra`), is opt-in: use it only when the user explicitly asks for it, or for long-horizon jobs or planning the user names.
+Sonnet on Claude and Luna (`gpt-6-luna`) on Codex implement approved, detailed plans and perform routine focused review.
+Codex Terra (`gpt-6.1-terra`) elaborates an approved architecture into a worker-executable phase plan.
+Any unresolved architecture or high-risk invariant escalates back to the lead tier.
+Copilot CLI and other systems keep the same capability classes (lead, intermediate, worker) with whatever models the environment exposes.
 
 ## Agent lifecycle
 
@@ -97,6 +100,21 @@ All supported systems should close/remove completed one-off agents after their
 reports are incorporated. Retain an agent only for a named recurring role with
 a concrete next task. This avoids stale agent fleets and makes the active
 workflow observable.
+
+## Manager loops across hosts
+
+The `project:manager-loop` skill runs one board on every host, but each host wakes the manager and asks the owner questions differently.
+`plugins/project/skills/manager-loop/references/platforms.md` holds the full table; these are the verified host facts.
+
+- Codex `request_user_input` works only in the root thread and is unavailable in `codex exec`.
+  It takes one to three short questions with two or three choices each.
+  It appears only when it is listed for the session, in Plan collaboration mode or through the off-by-default `default_mode_request_user_input` feature; otherwise Codex asks in plain text.
+- `codex queue --thread <id> --message <text> --resume` queues a message into an existing Codex session, so a scheduler can send "run one manager tick" into an interactive manager.
+- Under `-s workspace-write`, a Codex worker in a linked git worktree cannot commit or reach the network.
+  Pass `-c 'sandbox_workspace_write.writable_roots=["<main repo>/.git/worktrees/<name>"]'` and `-c sandbox_workspace_write.network_access=true` at launch to allow both.
+- On Claude Code, ScheduleWakeup ends each self-paced `/loop` tick, `stop: true` ends the loop, and delays run from 60 to 3600 seconds.
+- Copilot CLI's `ask_user` question form can be disabled with `--no-ask-user`.
+  This comes from GitHub's changelog; verify it on the installed version.
 
 ## Commands and skills with the same name
 
