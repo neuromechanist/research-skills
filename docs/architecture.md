@@ -34,6 +34,8 @@ Both are triggered by the agent runtime, but they differ in where the work happe
 
 Reach for an agent when the work is isolated, repeatable, or runs in parallel (fan-out reviews, QA passes, background validation). A skill keeps the procedure with you when the work benefits from staying in the main conversation.
 
+When a plan outlives one session, `project:agent-fanout` covers delegation inside a session, and [`project:manager-loop`](plugins/project.md#manager-loops) covers hands-off execution across many ticks: a lead-tier model writes the plan, a mechanical manager dispatches worker agents and verifies their results, and a Markdown board carries the state.
+
 ## Skill vs. MCP
 
 ![Skill vs MCP: a skill teaches the agent with tools it already has; an MCP server wires in new tools to external systems](assets/diagrams/mcp-wire.svg)

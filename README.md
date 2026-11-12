@@ -171,6 +171,7 @@ Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **r
 /epic-dev "build a community dashboard"
 /release-prep --minor
 "Set up CI for this Python project with ruff and pytest"
+"Run the approved plan hands-off with a manager loop and show me the board"
 "Process scanned-document.pdf and convert to markdown"
 ```
 
@@ -221,6 +222,7 @@ research-skills/
 - For PDF conversion: poppler (`brew install poppler` on macOS)
 - For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
+- For manager-loop: `python3` (standard library only) for the board helper `manager_board.py`, and an authenticated `gh` for pull request checks and merges; the board's write lock needs a Portable Operating System Interface (POSIX) system (macOS, Linux, or Windows Subsystem for Linux)
 - For cloud GPU pods: Docker with `buildx` and a container registry login, a RunPod API key, and a dedicated `ssh` key pair whose public half is passed to each pod
 - For OCR: Mistral API key (optional, tesseract as offline fallback)
 
