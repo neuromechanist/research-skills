@@ -1,10 +1,10 @@
-# Card <ID>: <title>
+# Card <id>: <title>
 
 Status: ready
 Tier: worker
 Timebox: <size and duration, e.g. M, 1 day; escalate at 2 days or two failed approaches>
 Needs: <capabilities, e.g. browser; or none>
-Depends: <step IDs, or none>
+Depends: <step ids, or none>
 Branch: feature/issue-<n>-<slug>
 Worktree: <absolute path>
 Plan: <plan path and section>
@@ -15,11 +15,14 @@ Plan: <plan path and section>
 
 ## Context
 
-<What to read first, with paths. Facts the worker cannot derive. Live facts are added by the manager at dispatch.>
+<What to read first, with paths.>
+<Facts the worker cannot derive.>
+<Live facts are added by the manager at dispatch.>
 
 ## Scope
 
-<Files and directories this card may change. Everything else is out of scope.>
+<Files and directories this card may change.>
+<Everything else is out of scope.>
 
 ## Decided design
 
@@ -40,4 +43,4 @@ The implementer may choose: <the only freedoms left>.
 
 ## Report
 
-Your final message is the report, at most 25 lines: PR number and head SHA; gates run with their quoted last lines; evidence paths; a revert check per fix; deviations from this card; questions for the lead; patch notes for other owners.
+Your final message is the report, at most 25 lines: pull request (PR) number and head commit hash; gates run with their quoted last lines; evidence paths; a revert check per fix; deviations from this card; questions for the lead; patch notes for other owners.

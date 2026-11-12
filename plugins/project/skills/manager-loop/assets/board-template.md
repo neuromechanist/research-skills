@@ -1,11 +1,12 @@
 # __TITLE__
 
 <!--
-manager-loop board. State only; history goes to the -log file beside it, specs to the plan and cards.
+manager-loop board: state only, history goes to the -log file beside it, specs to the plan and cards.
 Write through the helper (manager_board.py set, tick, ask, propose, spend) and run `check` after any hand edit.
 The owner owns Parity, Slots, and Budget limits: the manager proposes changes there, never makes them.
 These are the defaults; the owner's approval of the plan accepts them.
 Step states: outline (not dispatchable), todo, active, review, blocked, owner (waits on the owner), done, dropped.
+In Steps and Questions, the first column holds each row's identifier (ID); in Steps, PR holds the pull request (PR) number.
 -->
 
 ## Now
@@ -37,7 +38,7 @@ Step states: outline (not dispatchable), todo, active, review, blocked, owner (w
 
 | Slot | Platform | Tiers | Max | Can | Notes |
 |---|---|---|---|---|---|
-| claude-sonnet | Claude | worker, worker-hard | 3 | gui, browser | GUI or computer use only with the owner's announced consent |
+| claude-sonnet | Claude | worker, worker-hard | 3 | gui, browser | graphical user interface (GUI) or computer use only with the owner's announced consent |
 | claude-opus | Claude | lead | 1 | gui, browser | |
 | codex | Codex | worker, worker-hard, lead | 0 | | owner opens this slot; never computer use or visible runs |
 

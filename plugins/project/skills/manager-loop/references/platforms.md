@@ -24,7 +24,7 @@ Models get renamed, new products ship, and quotas move, so:
 
 Free-form tokens; keep a short shared vocabulary in the plan, for example `gui`, `browser`, `computer-use`, `gpu`, `gpu:<host>`, `macos`, `network`.
 A step is placed only on a slot that can do everything it needs.
-Computer use and visible GUI runs act on the owner's machine: they stay with the manager's own host, need the owner's announced consent each time, and are never delegated to another platform.
+Computer use and visible graphical user interface (GUI) runs act on the owner's machine: they stay with the manager's own host, need the owner's announced consent each time, and are never delegated to another platform.
 
 ## Where the manager runs
 
@@ -33,7 +33,7 @@ Computer use and visible GUI runs act on the owner's machine: they stay with the
 | Claude Code (recommended) | the start prompt prefixed with `/loop ` and no interval; the manager ends each tick by scheduling its next wake | a structured question tool; a notification to reach the owner away from the terminal | workers run in the background so a completion wakes the manager early; mechanics below |
 | Codex, interactive | the owner keeps one session open; a scheduler sends "Run one manager tick" into it with `codex queue --thread <session> --message ... --resume`, where the installed version has `codex queue` | `request_user_input` when the session lists it, else plain text; see "Codex mechanics" | verify one manual tick before scheduling; the lease stops a queued tick from overlapping a running one |
 | Codex, headless | a scheduler (cron, launchd, a systemd timer) runs `codex exec -m <model id> -s workspace-write -c sandbox_workspace_write.network_access=true -C <repo> "<start prompt>"` once per tick; add the `writable_roots` setting from "Codex worker" when the manager runs in a linked worktree, or use `-s danger-full-access` | none in `codex exec`: questions go to the board and a notification | a headless manager needs network access (`gh`, pushes) and write access to the repository (the board, commits); workers must be detached and write report files, because nothing wakes a headless manager early |
-| Copilot CLI | interactive session ticked by the owner, or a non-interactive prompt run per tick from a scheduler; verify the flags with `copilot --help` on the installed version | `ask_user` when enabled (disabled by `--no-ask-user`); verify the same way | same rules as headless Codex when non-interactive; not yet verified on a live install |
+| Copilot command-line interface (CLI) | interactive session ticked by the owner, or a non-interactive prompt run per tick from a scheduler; verify the flags with `copilot --help` on the installed version | `ask_user` when enabled (disabled by `--no-ask-user`); verify the same way | same rules as headless Codex when non-interactive; not yet verified on a live install |
 | A cloud scheduled agent | one tick per run against a board kept on a pushed branch | board and notification only | the lease and the board's commits must go through the branch; use only when the owner wants the manager off their machines |
 
 Whatever the host, record every question on the board first; the host's question tool is the fast path, not the record.
@@ -53,10 +53,10 @@ Whatever the host, record every question on the board first; the host's question
 
 - Questions: `request_user_input` works only on the root thread of an interactive session, never in `codex exec`.
   It takes one to three short questions with two or three choices each.
-  It is offered only when the tool is listed for the session: in Plan collaboration mode, or with the `default_mode_request_user_input` feature, which is "under development" and off by default in 0.167.0.
+  It is offered only when the tool is listed for the session: in Plan collaboration mode, or with the `default_mode_request_user_input` feature, which is "under development" and off by default in Codex 0.167.0.
   Otherwise Codex asks in plain text in the session; the board record stays.
 - Model ids (read from `~/.codex/models_cache.json`; re-check on the installed version): `gpt-6-astra` (frontier, Fable level), `gpt-6.1-sol` (lead, Opus level), `gpt-6.1-terra` (worker-hard), `gpt-6-luna` (worker and reviewer).
-- Headless ticks: nothing wakes the manager early, so workers are detached and write report files, and a refused tick schedules one wake at the lease expiry and ends.
+- Headless ticks: nothing wakes the manager early, so workers are detached and write report files; a refused tick ends the run, and the scheduler's next run retries.
 
 ### Copilot CLI mechanics
 
@@ -69,7 +69,7 @@ Whatever the host, record every question on the board first; the host's question
 ### Claude Code subagent (local)
 
 Agent tool with the card's tier mapped through Parity (`model`, and effort where the host exposes it), a role name (`impl-E1-2`), `run_in_background: true`, and an isolated worktree.
-Fix rounds go to the same agent with SendMessage when it is alive; otherwise a fresh agent gets the continuation line, the PR number, and the decided findings.
+Fix rounds go to the same agent with SendMessage when it is alive; otherwise a fresh agent gets the continuation line, the pull request (PR) number, and the decided findings.
 Close the agent when its step merges.
 
 ### Codex worker
@@ -116,11 +116,12 @@ Start them from a branch or an issue that carries the card, through whatever dis
 The manager verifies the PR exactly as for a local worker.
 They never get computer use or secrets, and the manager does not assume it can message them mid-run.
 
-### Remote hosts (GPU workstations, clusters, pods)
+### Remote hosts (workstations, clusters, pods)
 
 An operator worker runs the registered commands mechanically and interprets nothing.
 Jobs are detached with stage markers, heartbeat files, and a terminal marker (see `project:engineering-loop`'s `background-jobs.md`); one block runs on one host from one pinned commit.
-Check that a GPU is free of foreign processes before launching. For RunPod use `ml-training:runpod`.
+Check that a graphics processing unit (GPU) is free of foreign processes before launching.
+For RunPod use `ml-training:runpod`.
 
 ## Handing a card from one platform to another
 
@@ -132,7 +133,15 @@ The fixes stay on the original platform unless one of these holds:
 4. the same defect kind comes back after it was sent back once (a test that cannot fail, a stop condition passed, a computed value given as measured, a PR body replaced);
 5. the fix needs evidence or decisions the card, the PR, and the findings do not carry (the lead decides).
 
-Then: stop the first worker before the second starts, so two writers never share a worktree; the new worker uses the same worktree, branch, and PR ("The pull request is #N; do not open another. Extend its body, never replace it."); it gets every earlier round's report and the decided findings.
+Then: stop the first worker before the second starts, so two writers never share a worktree.
+The new worker uses the same worktree, branch, and PR, and its brief says:
+
+```text
+The pull request is #N; do not open another.
+Extend its body, never replace it.
+```
+
+It gets every earlier round's report and the decided findings.
 The review round count does not restart.
 Log each handover with the condition that triggered it.
 

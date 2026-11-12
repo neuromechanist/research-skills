@@ -1,6 +1,6 @@
 ---
 name: manager-loop
-description: "Use this skill when the user asks to \"run the plan hands-off\", \"act as the project manager\", \"act as the research manager\", \"manage this plan in a loop\", \"start a manager loop\", \"run one tick\", \"drive the epic with a manager agent\", \"run agent waves\", \"dispatch cards to Claude and Codex\", \"set up parity between Claude and Codex\", \"show me the board\", \"serve the board\", or for any multi-day plan that a manager agent executes by dispatching workers, verifying each step's goal, reviewing, merging, and escalating to an advisor or the owner. Covers the plan pack, the tick, waves versus slots, budgets, cross-platform parity, structured owner questions, and the Markdown board with its live HTML view."
+description: "Use this skill when the user asks to \"run the plan hands-off\", \"act as the project manager\", \"act as the research manager\", \"manage this plan in a loop\", \"start a manager loop\", \"run one tick\", \"drive the epic with a manager agent\", \"run agent waves\", \"dispatch cards to Claude and Codex\", \"set up parity between Claude and Codex\", \"show me the board\", \"serve the board\", or for any multi-day plan that a manager agent executes by dispatching workers, verifying each step's goal, reviewing, merging, and escalating to an advisor or the owner. Covers the plan pack, the tick, waves versus slots, budgets, cross-platform parity, structured owner questions, and the Markdown board with its live web view."
 ---
 
 # Manager Loop
@@ -14,7 +14,7 @@ Invoke sibling skills through the host's own skill mechanism.
 
 | Work | Use |
 | --- | --- |
-| One change, one PR | `project:engineering-loop` |
+| One change, one pull request (PR) | `project:engineering-loop` |
 | A phased feature where the owner approves each phase | `project:epic-dev` |
 | Parallel agents inside one session | `project:agent-fanout` |
 | A plan of many steps and PRs, run hands-off by a manager that ticks | This skill; it uses the three above for each step |
@@ -33,7 +33,7 @@ If it does not, stop and plan first.
 | Implementer | by the card's tier and the parity table | one card, one branch, one PR | merge, change scope |
 | Reviewer | `project:pr-review-toolkit`, a different model family from the implementer when possible | | edit |
 
-Tier names map to models in the board's Parity table; this skill names no model.
+Tier names map to models in the board's Parity table.
 The lead tier is the default for every lead role, including project initiation and planning.
 The lead and the manager may be one agent only when the owner says so; that agent then records every judgment call with `decide`.
 
@@ -55,19 +55,23 @@ The lead and the manager may be one agent only when the owner says so; that agen
 
 Run in order; each tick is complete on its own because the board carries all state.
 
-1. `date`. Then `manager_board.py tick <board> --manager <id>`; the first tick of a session adds `--state running`.
+1. Run `date`, then `manager_board.py tick <board> --manager <id>`; the first tick of a session adds `--state running`.
    The manager id is stable per manager, `<host>-<model>` (for example `mba-claude-sonnet`), never per session, so restarts and headless ticks of the same manager keep the lease.
    If the tick is refused because another manager holds the lease, schedule one wake at the lease expiry the refusal prints and do nothing else.
 2. **First tick of a session only:** reconcile the board with the world.
    For each step in `active` or `review`, read its PR and worktree; the PR and the worktree are right, the board is corrected and the correction logged.
-   A step with no live worker is dispatched again with the line "This card was started earlier. Continue from the worktree: run `git status` and `git log --oneline -10` first."
+   A step with no live worker is dispatched again with this line first:
+   ```text
+   This card was started earlier.
+   Continue from the worktree: run `git status` and `git log --oneline -10` first.
+   ```
 3. `manager_board.py status <board>`: the needs-you list, the dispatch plan, timeboxes, questions, budget.
 4. **Collect events:** worker reports, open PRs and their checks, owner answers (board and session), dates due.
 5. **Handle events in this order:** owner answers, worker reports, reviews, failed checks or gates, merge conflicts, timeboxes and silent workers, dates and questions due, a checkpoint due.
-   Limits and next actions come from `project:engineering-loop`'s `references/unblock-rules.md`; apply them literally.
+   Limits and next actions come from `project:engineering-loop`'s `unblock-rules.md`; apply them literally.
    - An answered question: act on it, record it with `decide <text> --by owner`, set the question `closed`.
    - A report: verify by observation (below), then start the review while continuous integration (CI) runs; do not wait for CI.
-   - A review: give every finding an outcome per `project:pr-review-toolkit`'s `references/review-convergence.md`; at most two rounds.
+   - A review: give every finding an outcome per `project:pr-review-toolkit`'s `review-convergence.md`; at most two rounds.
    - A check failing because of the diff: two fix attempts, then escalate to the advisor with the failing log.
    - CI failing without the diff (it fails on the base, on infrastructure, or flakily): one rerun (`gh run rerun <id> --failed`), then file an issue with the log and continue.
    - A merge conflict: the branch's worker merges the base into the branch and reruns the gates; never a rebase, never a force-push.
@@ -86,7 +90,8 @@ Run in order; each tick is complete on its own because the board carries all sta
 
 ## Verify by observation
 
-A worker's "done" is not evidence. Check, in order, and stop at the first failure:
+A worker's "done" is not evidence.
+Check, in order, and stop at the first failure:
 
 1. The PR's head and base equal the report (`gh pr view N --json headRefOid,baseRefName`).
 2. The diff stays inside the card's Scope (`gh pr diff N --name-only`).
@@ -103,9 +108,10 @@ Send back, inside the current round: a value stated as measured that was compute
 Slots are the default: a step starts when its dependencies are merged and a fitting slot is free.
 Apply in order:
 
-1. A step that shares a file with an in-flight step, needs a serialized resource (one GPU, one VM, one simulator), or has an unmerged dependency runs by slots, never in a wave.
+1. A step that shares a file with an in-flight step, needs a serialized resource (one graphics processing unit (GPU), one virtual machine (VM), one simulator), or has an unmerged dependency runs by slots, never in a wave.
 2. When review or lead attention is the bottleneck (reviews waited longer than one tick), use slots.
-3. Otherwise a wave runs only if the plan names it, with its members, budget, exit gate, and an owner checkpoint. The manager never forms a wave itself.
+3. Otherwise a wave runs only if the plan names it, with its members, budget, exit gate, and an owner checkpoint.
+   The manager never forms a wave itself.
 
 On the board, a step whose wave is not `active` is not ready; the manager sets the next wave `active` only after the current wave's exit gate passes and the checkpoint is recorded.
 Wave budget = members x (1 implementer + round-1 panel size + 1 delta reviewer + expected fix dispatches) + 1 advisor.
@@ -127,7 +133,7 @@ Parity is live: models are renamed and new products appear.
 The board template's Parity, Slots, and Budget are the defaults, and the owner's approval of the plan accepts them.
 The owner owns them and edits them when things change; the manager never edits them.
 The manager asks the parity question only on a mismatch (a refused model id, a platform missing from Parity, a quota near its end, a capability no slot has), never routinely at a checkpoint: "update the parity, add this platform as a slot, or keep it?"
-Allocate by capability first (GUI, browser, computer use, hardware), then cost and quota.
+Allocate by capability first (graphical user interface (GUI), browser, computer use, hardware), then cost and quota.
 Computer use and visible GUI runs stay with the manager's host and need the owner's announced consent every time.
 Dispatch commands, model checks, handover rules, and every host-specific mechanic (the self-paced loop, questions, notifications, waits) are in `references/platforms.md`.
 
@@ -138,12 +144,12 @@ Then, if the owner is in an interactive session, ask it with the host's structur
 If the host offers no such tool in this session, ask in plain text in the session; the board record stays either way.
 If the owner is away, send one notification through the host and keep working on independent steps.
 The owner may answer in the session or on the live board page; both land in the board's Questions table.
-Never answer for the owner and never treat silence as an answer; a default applies at its deadline only for a question class the owner pre-authorized, and the manager logs that it applied it.
+Never answer for the owner and never treat silence as an answer; a default applies at its deadline only for a question class the plan lists as pre-authorized, and the manager logs that it applied it.
 
 ## Escalation
 
 Escalate to the advisor (lead tier) on: a step at twice its timebox, two failed approaches, a security, data-integrity, concurrency, or authorization invariant, a contested review finding, or a red gate on the integration branch.
-The flaky gate, a PR that relaxes a gate, an owner answer that contradicts a card, and a projected overrun go to the lead or the owner as `references/escalation.md` says.
+The same gate step flaky twice in seven days, a PR that relaxes a gate, an owner answer that contradicts a card, and a projected overrun go to the lead or the owner as `references/escalation.md` says.
 Use the frontier tier only when the owner explicitly asks, for a long-horizon job or planning the owner names, or when the approved plan's routing lists a frontier trigger (for example "frontier tier when the lead tier cannot decide, or after three loops").
 Use the brief and output format in `references/escalation.md`; `spend` the advisor budget; record the ruling with `decide` and on the PR.
 The lead turns a ruling into card changes; the manager never edits a card itself.

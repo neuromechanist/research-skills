@@ -1,7 +1,7 @@
 # The Plan Pack
 
 What the lead writes before the first tick, so that a mechanical manager can run the plan without reconstructing intent.
-Distilled from three long-running loops: a research rebuttal (six days, a Sonnet manager and a persistent Opus science lead), an application track (84 cards, about 75 merged PRs in three days, Claude and Codex slots), and a web product (waves of at most three implementers driven by a project manager).
+Distilled from three long-running loops: a research rebuttal (six days, a Sonnet manager and a persistent Opus science lead), an application track (84 cards, about 75 merged pull requests (PRs) in three days, Claude and Codex slots), and a web product (waves of at most three implementers driven by a project manager).
 
 ## Layout
 
@@ -20,7 +20,7 @@ Distilled from three long-running loops: a research rebuttal (six days, a Sonnet
 
 ## The plan
 
-Every step has: an ID, a one-sentence goal, a literal acceptance gate (commands and thresholds, set before any result is seen), dependencies, the files it owns, the host it runs on, and a tier (not a model).
+Every step has: an identifier (ID), a one-sentence goal, a literal acceptance gate (commands and thresholds, set before any result is seen), dependencies, the files it owns, the host it runs on, and a tier (not a model).
 A step the lead cannot specify yet is an `outline`; it is completed at a named checkpoint and is never dispatched before.
 
 Section 0 of the plan, "How the manager uses this plan", holds:
@@ -60,7 +60,7 @@ Short sections the manager can follow literally:
 
 A card is dispatched verbatim, with only live facts added (the integration tip, a baseline path and checksum, open PRs) copied from the board at dispatch time, never from an earlier prompt.
 Start from `assets/card-template.md`.
-`manager_board.py card cards/<ID>.md` refuses a card that is an outline, misses a required section, has an empty section, names no literal command in Acceptance or Gates, or holds a placeholder such as TBD.
+`manager_board.py card cards/<ID>.md` refuses a card that is an outline, misses a required section, has an empty section, names no literal command in Acceptance or Gates, or holds a placeholder such as "to be determined" (TBD).
 It skips files named `README.md`, so the shared preamble is never checked as a card.
 
 Required sections: Goal, Scope, Acceptance, Gates, Stop conditions, Report.
@@ -70,17 +70,17 @@ Recommended: Context (what to read first), Decided design ("Settled: ...; the im
 
 Every card is sent after the same preamble:
 
-- One card, one branch, one PR, in the worktree named on the card. Absolute paths.
-- Only the manager merges. Push once per review round. Never force-push or rebase a pushed branch.
+- One card, one branch, one PR, in the worktree named on the card; use absolute paths.
+- Only the manager merges; push once per review round; never force-push or rebase a pushed branch.
 - Stay inside Scope; anything else goes in the report as a patch note for its owner.
 - Run every gate yourself and quote its output; a computed value is never reported as measured.
 - Stop and report on any stop condition, or when the card seems wrong.
-- No computer use, no visible GUI runs, no secrets.
+- No computer use, no visible graphical user interface (GUI) runs, no secrets.
 - The final message is the report, in the card's schema.
 
 ### The report schema (at most 25 lines)
 
-PR number and head SHA; gates run, with their quoted last lines; evidence paths; revert checks per fix; deviations from the card; questions for the lead; patch notes for other owners.
+PR number and head commit hash; gates run, with their quoted last lines; evidence paths; revert checks per fix; deviations from the card; questions for the lead; patch notes for other owners.
 The skill ships `assets/report.schema.json` for it; a host that can constrain a worker's final message to a schema uses that file (see `platforms.md`).
 
 ## Slots and collisions (the default)

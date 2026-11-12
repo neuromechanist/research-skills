@@ -2,14 +2,16 @@
 
 `board.md` is the loop's state and its single source of truth.
 `board-log.md`, beside it, is the history (Decisions and Log), append-only.
-Everything else (the HTML view, the status summary, the dispatch plan) is computed from the Markdown on demand; nothing derived is stored.
+Everything else (the HyperText Markup Language (HTML) view, the status summary, the dispatch plan) is computed from the Markdown on demand; nothing derived is stored.
 
 Two failure modes shaped this format.
-Status files that also held history grew past 150 KB, with cells of several thousand characters, and in-place edits started to fail silently.
+Status files that also held history grew past 150 kilobytes, with cells of several thousand characters, and in-place edits started to fail silently.
 A board that every tick reads in full spends the manager's context on the past.
 So the board holds state only, within hard limits, and history goes to the log.
 
 ## Sections
+
+The Steps and Questions tables identify rows by an identifier (ID); the Steps table's PR column holds a pull request (PR) number.
 
 | Section | Owner | Columns | Notes |
 | --- | --- | --- | --- |
@@ -69,14 +71,14 @@ Handing over to a different manager: the old one runs `tick --state paused` firs
 ## Writing
 
 The helper is the normal writer: every write takes a lock, re-reads the file, applies one change, validates the result, and replaces the file atomically; an invalid result is refused and the file is left as it was.
-The lock is on the board's directory, so it holds across sandboxes; it is POSIX-only (macOS, Linux, Windows Subsystem for Linux).
+The lock is on the board's directory, so it holds across sandboxes; it is limited to systems that follow the Portable Operating System Interface (POSIX): macOS, Linux, and Windows Subsystem for Linux.
 The owner may hand-edit Parity, Slots, and Budget limits; anyone who hand-edits runs `check` afterward.
 Workers never write the board; they report to the manager.
 
 ## Commits
 
 Commit the board and its log locally each tick (`docs: board, <what changed>`).
-Push them only at checkpoints and milestones, on a docs branch or the integration branch as the plan says, with `[skip ci]` when no CI job reads them.
+Push them only at checkpoints and milestones, on a docs branch or the integration branch as the plan says, with `[skip ci]` when no continuous integration (CI) job reads them.
 Never commit the HTML snapshot; it is regenerated.
 
 ## The live page
@@ -85,11 +87,12 @@ Never commit the HTML snapshot; it is regenerated.
 nohup python3 <skill>/scripts/manager_board.py serve <board.md> --port 8765 > /tmp/board-serve.log 2>&1 & disown
 ```
 
-- Binds `127.0.0.1` by default; requests with any other Host header are refused, so other web pages cannot read it through DNS rebinding.
+- Binds `127.0.0.1` by default; requests with any other Host header are refused, so other web pages cannot read it through Domain Name System (DNS) rebinding.
 - The page re-reads the board every 5 seconds and redraws only when something changed.
 - Answer buttons post to `/answer` with a per-run token embedded in the page; an answer is recorded only for an open question, at most 200 characters, through the same locked write as the helper.
-- It serves the board, its JSON, and `.md` files inside the board's folder (cards, the plan pack), read-only; nothing else.
-- To view it from another machine, use an SSH tunnel (`ssh -L 8765:127.0.0.1:8765 <host>`), not `--host 0.0.0.0`.
+- It serves the board, its JavaScript Object Notation (JSON) form, and `.md` files inside the board's folder (cards, the plan pack), read-only; nothing else.
+- To view it from another machine, use a Secure Shell (SSH) tunnel (`ssh -L 8765:127.0.0.1:8765 <host>`), not `--host 0.0.0.0`.
 - `render` writes a static snapshot (`board.html`) for sharing a moment in time; its answer buttons are disabled.
 
-The board can carry paths, hashes, and answers. Do not publish it or the snapshot unless the owner asks.
+The board can carry paths, hashes, and answers.
+Do not publish it or the snapshot unless the owner asks.
