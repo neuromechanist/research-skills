@@ -35,6 +35,8 @@ Exit codes: 0 success, 1 generation failure (any icon in a batch), 2 usage error
 from __future__ import annotations
 
 import argparse
+import base64
+import binascii
 import io
 import json
 import os
@@ -58,6 +60,9 @@ ATLAS_API_BASE = "https://api.atlascloud.ai/api/v1"
 ATLAS_DEFAULT_MODEL = "black-forest-labs/flux-schnell"
 ATLAS_TERMINAL_SUCCESS = {"completed", "succeeded", "success"}
 ATLAS_TERMINAL_FAILURE = {"failed", "canceled", "cancelled"}
+
+UBERLLM_API_BASE = "https://api.uberllm.dev/v1"
+UBERLLM_DEFAULT_MODEL = "fal-ai/flux/schnell"
 
 
 def load_templates(path: Path = TEMPLATES_PATH) -> dict[str, Any]:
@@ -236,15 +241,15 @@ def _atlas_output_url(prediction: dict[str, Any]) -> str | None:
     return None
 
 
-def _ensure_png(image_data: bytes) -> bytes:
-    """Normalize Atlas output to PNG so the CLI output contract stays stable."""
+def _ensure_png(image_data: bytes, source: str = "Atlas Cloud") -> bytes:
+    """Normalize provider output to PNG so the CLI output contract stays stable."""
     if image_data.startswith(b"\x89PNG\r\n\x1a\n"):
         return image_data
     try:
         from PIL import Image
     except ImportError as exc:
         raise RuntimeError(
-            "The Atlas backend requires Pillow to normalize model output to PNG. "
+            f"The {source} backend requires Pillow to normalize model output to PNG. "
             "Re-run with --with pillow."
         ) from exc
     try:
@@ -252,7 +257,7 @@ def _ensure_png(image_data: bytes) -> bytes:
         output = io.BytesIO()
         image.save(output, format="PNG")
     except OSError as exc:
-        raise RuntimeError("Atlas Cloud returned invalid image data") from exc
+        raise RuntimeError(f"{source} returned invalid image data") from exc
     return output.getvalue()
 
 
@@ -333,6 +338,65 @@ def generate_icon_atlas(
     return _ensure_png(image_data)
 
 
+def generate_icon_uberllm(
+    prompt: str,
+    *,
+    model: str = UBERLLM_DEFAULT_MODEL,
+    size: int = 1024,
+    timeout_s: int = 300,
+) -> bytes:
+    """Generate one icon through UberLLM's OpenAI-compatible image API.
+
+    The image comes back base64-encoded in the same response, so there is no
+    prediction to poll and no second download. The POST is billable and is
+    never retried.
+    """
+    api_key = os.environ.get("UBERLLM_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("UberLLM backend requires UBERLLM_API_KEY")
+
+    request = Request(
+        f"{UBERLLM_API_BASE}/images/generations",
+        data=json.dumps(
+            {
+                "model": model,
+                "prompt": prompt,
+                "size": f"{size}x{size}",
+                "n": 1,
+                "response_format": "b64_json",
+            }
+        ).encode("utf-8"),
+        method="POST",
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "research-skills-transparent-icons",
+        },
+    )
+    try:
+        with urlopen(request, timeout=timeout_s) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")[:500]
+        raise RuntimeError(f"UberLLM HTTP {exc.code}: {detail}") from exc
+    except (URLError, TimeoutError) as exc:
+        raise RuntimeError(f"UberLLM request failed: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("UberLLM returned invalid JSON") from exc
+
+    data = payload.get("data") if isinstance(payload, dict) else None
+    first = data[0] if isinstance(data, list) and data else None
+    encoded = first.get("b64_json") if isinstance(first, dict) else None
+    if not isinstance(encoded, str) or not encoded:
+        raise RuntimeError("UberLLM response did not include an image")
+    try:
+        image_data = base64.b64decode(encoded, validate=True)
+    except binascii.Error as exc:
+        raise RuntimeError("UberLLM returned invalid image data") from exc
+    return _ensure_png(image_data, source="UberLLM")
+
+
 def finalize_transparency(png_path: Path, method: str) -> None:
     """Apply transparency post-processing to png_path in place."""
     data = png_path.read_bytes()
@@ -362,6 +426,7 @@ def generate_one(
     verbose: bool,
     print_prompt: bool,
     atlas_model: str,
+    uberllm_model: str,
 ) -> float:
     """Generate one icon and apply transparency post-processing. Returns elapsed seconds."""
     prompt = prompting.build_icon_prompt(subject, theme=theme, size=size, chroma=True)
@@ -377,6 +442,15 @@ def generate_one(
             )
         )
         resolved_backend = "atlas"
+    elif backend == "uberllm":
+        width, _height = (int(value) for value in size.split("x", 1))
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_bytes(
+            generate_icon_uberllm(
+                prompt, model=uberllm_model, size=width, timeout_s=timeout_s
+            )
+        )
+        resolved_backend = "uberllm"
     else:
         model_prefs = (theme or {}).get("model_preferences") or {}
         req = image_backend.GenerationRequest(
@@ -439,12 +513,19 @@ def build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--backend", choices=["auto", "codex", "api", "fake", "atlas"], default="auto"
+        "--backend",
+        choices=["auto", "codex", "api", "fake", "atlas", "uberllm"],
+        default="auto",
     )
     parser.add_argument(
         "--atlas-model",
         default=ATLAS_DEFAULT_MODEL,
         help="Atlas Cloud model used only with --backend atlas",
+    )
+    parser.add_argument(
+        "--uberllm-model",
+        default=UBERLLM_DEFAULT_MODEL,
+        help="UberLLM image model used only with --backend uberllm",
     )
     parser.add_argument(
         "--codex-bin",
@@ -500,6 +581,7 @@ def main(argv: list[str] | None = None) -> int:
         "verbose": args.verbose,
         "print_prompt": args.print_prompt,
         "atlas_model": args.atlas_model,
+        "uberllm_model": args.uberllm_model,
     }
     failures = 0
 
