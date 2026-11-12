@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Manager-loop worker report",
+  "description": "The final report of one dispatched worker, for codex exec --output-schema. Every key is required; use an empty array when a list has nothing to say.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pr",
+    "head_sha",
+    "gates",
+    "evidence",
+    "revert_checks",
+    "deviations",
+    "questions",
+    "patch_notes"
+  ],
+  "properties": {
+    "pr": {
+      "type": "integer",
+      "description": "The pull request number the worker opened or updated."
+    },
+    "head_sha": {
+      "type": "string",
+      "description": "The full SHA of the branch head the report describes."
+    },
+    "gates": {
+      "type": "array",
+      "description": "Each mechanical gate the card names, with the last line it printed.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "result_line"],
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "The gate command, exactly as run."
+          },
+          "result_line": {
+            "type": "string",
+            "description": "The command's last output line, quoted verbatim."
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Paths or links that show the acceptance criteria hold.",
+      "items": { "type": "string" }
+    },
+    "revert_checks": {
+      "type": "array",
+      "description": "One line per fix: the check that failed when the fix was reverted.",
+      "items": { "type": "string" }
+    },
+    "deviations": {
+      "type": "array",
+      "description": "Each departure from the card, with the reason.",
+      "items": { "type": "string" }
+    },
+    "questions": {
+      "type": "array",
+      "description": "Questions for the lead that the card did not answer.",
+      "items": { "type": "string" }
+    },
+    "patch_notes": {
+      "type": "array",
+      "description": "Notes for owners of other files or cards that this work touches.",
+      "items": { "type": "string" }
+    }
+  }
+}
