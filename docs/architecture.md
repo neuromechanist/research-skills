@@ -6,7 +6,9 @@ Every plugin in this marketplace is built from the same small set of building bl
 
 ![Plugin ecosystem: a plugin bundles skills, hooks, agents, and MCP servers around the always-loaded CLAUDE.md/AGENTS.md and auto memory](assets/diagrams/plugin-ecosystem.svg)
 
-A plugin is a bundle of **skills**, **hooks**, **agents**, and **MCP servers**, installed alongside the always-loaded project instructions (`CLAUDE.md`/`AGENTS.md`) and, in Claude Code, auto memory. This marketplace's plugins mostly ship skills, plus a handful of bundled agents for review/QA surfaces (see [`project:pr-review-toolkit`](plugins/project.md), [`grant:grant-review`](plugins/grant.md), [`manuscript:paper-review`](plugins/manuscript.md), [`figures:figure-qa`](plugins/figures.md), and the neuroinformatics BIDS validator).
+A plugin is a bundle of **skills**, **hooks**, **agents**, and **MCP servers**, installed alongside the always-loaded project instructions (`CLAUDE.md`/`AGENTS.md`) and, in Claude Code, auto memory.
+This marketplace's plugins mostly ship skills, plus a handful of bundled agents for review/QA surfaces (see [`project:pr-review-toolkit`](plugins/project.md), [`grant:grant-review`](plugins/grant.md), [`grant:grant-figure-qa`](plugins/grant.md), [`manuscript:paper-review`](plugins/manuscript.md), [`figures:figure-qa`](plugins/figures.md), and the neuroinformatics BIDS validator), and the `project` plugin's dependency-auditor and release-prep agents.
+None of them ships hooks or MCP servers; the `project` plugin also ships five commands for explicit orchestration (see [Skills vs. commands](getting-started.md#skills-vs-commands)).
 
 ## Anatomy of a skill
 

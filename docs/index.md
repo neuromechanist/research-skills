@@ -11,7 +11,7 @@ It targets three agent runtimes from one shared set of skill definitions: [Claud
 
 | Plugin | What it does |
 |---|---|
-| [Project](plugins/project.md) | Epics/worktrees, PR review, CI/CD, debugging, agent fan-out |
+| [Project](plugins/project.md) | Epics/worktrees, pull request (PR) review, continuous integration and delivery (CI/CD), debugging, agent fan-out, [hands-off manager loops](plugins/project.md#manager-loops) |
 | [Grant](plugins/grant.md) | NIH/NSF proposal writing, review, figure QA |
 | [Manuscript](plugins/manuscript.md) | Literature review, peer review, writing, journal formatting |
 | [Opencite](plugins/opencite.md) | Literature search, citation management, PDF retrieval |
@@ -20,4 +20,4 @@ It targets three agent runtimes from one shared set of skill definitions: [Claud
 | [Neuroinformatics](plugins/neuroinformatics.md) | BIDS conversion, HED annotation, experiment design |
 | [ML Training](plugins/ml-training.md) | Cloud GPU provisioning, prebaked images, cost control |
 
-Start with [Getting Started](getting-started.md) to install a plugin, or [Architecture](architecture.md) to see how skills, commands, agents, and MCP servers fit together.
+Start with [Getting Started](getting-started.md) to install a plugin, or [Architecture](architecture.md) to see how skills, agents, and MCP servers fit together.

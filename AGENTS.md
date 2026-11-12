@@ -20,8 +20,8 @@ research-skills/
 │   │   ├── commands/{init-project,update-rules,epic-dev,epic-status,release-prep}.md
 │   │   ├── skills/{init-project,project-preflight,update-rules,install-user-instructions,workflow-reference,epic-dev,pr-review-toolkit,codebase-onboarding,implementation-planning,engineering-loop,manager-loop,debugging,agent-fanout,ci-scaffolding,docker-packaging,security-audit,document-processing}/
 │   │   ├── agents/{dependency-auditor,release-prep,pr-review-toolkit}.md
-│   │   ├── agents/templates/pr-review-toolkit.{toml,agent.md}
-│   │   ├── templates/               # AGENTS, Claude, Cursor, context, config, CI/CD
+│   │   ├── agents/templates/{pr-review-toolkit,phase-planner,implementation-worker}.{toml,agent.md}
+│   │   ├── templates/               # AGENTS, Claude, Cursor, context, memory, config, CI/CD
 │   │   └── scripts/                 # project-preflight, project-init-templates, project-init-labels, project-diff-rules, project-templates-path, project-bump-version (never a top-level bin/, which claude.ai chat and Cowork reject)
 │   ├── grant/                        # Grant proposal toolkit
 │   │   ├── .claude-plugin/plugin.json
