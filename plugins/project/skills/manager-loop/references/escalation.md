@@ -54,7 +54,7 @@ It does not act on a recommendation that changes the plan, a card, or a gate unt
 
 ### Format
 
-Every question has: an ID, the question in one sentence, two to four options (one marked `(Recommended)`, each with a one-line reason in the question text or the session message), the default (`none` unless the owner pre-authorized defaults for this class), the time it is needed by, and what waits on it.
+Every question has: an ID, the question in one sentence, two or three options, four where the host allows (one marked `(Recommended)`, each with a one-line reason in the question text or the session message), the default (`none` unless the owner pre-authorized defaults for this class), the time it is needed by, and what waits on it.
 
 ```bash
 python3 <skill>/scripts/manager_board.py ask <board> Q7 \
@@ -66,9 +66,12 @@ python3 <skill>/scripts/manager_board.py ask <board> Q7 \
 ### Asking
 
 1. Record it on the board (above). The board is the record on every host.
-2. If the owner is in an interactive session, ask with the host's structured question tool, batching related questions (limits per host: `platforms.md`).
-3. Otherwise send one notification through the host, naming the question IDs and what waits, and keep working on independent steps.
-4. When an answer arrives (session, board page, or `answer`), act on it, `decide` it with "by owner", and set the question `closed`. `archive` clears closed questions from the board.
+2. If the owner is in an interactive session, ask with the host's structured question tool, batching related questions.
+   Hosts cap a batch and may not offer the tool in every mode: Codex allows three short questions with two or three options each, only on the root thread of an interactive session where the tool is listed (details and the other hosts: `platforms.md`).
+3. If the tool is not offered in this session, ask in plain text in the session; the board record stays.
+4. If the owner is away, send one notification through the host, naming the question IDs and what waits, and keep working on independent steps.
+5. When an answer arrives (session, board page, or `answer`), act on it, record it with `decide <text> --by owner`, and set the question `closed`.
+   `archive` clears closed questions from the board.
 
 Never answer for the owner. Never treat silence as an answer.
 A default applies at its deadline only for a question class the owner pre-authorized in the plan (for example "an escalation's stated default applies at its deadline"); the manager sets the question `defaulted`, logs it, and says so in the next notification.
@@ -85,3 +88,4 @@ A checkpoint digest has five lines: what merged since the last checkpoint, the c
 A permission the owner denied, a merge the host refused, or an automated policy denial is information, not an obstacle.
 Do not retry it, do not route it through another agent, and do not look for a different command that does the same thing.
 Set the step to `owner`, ask a question that names the exact command and why it is needed, and continue with other steps.
+This narrows `project:engineering-loop`'s `references/unblock-rules.md` for the manager role: that table allows another route after a denied tool or permission, and the manager never takes one.

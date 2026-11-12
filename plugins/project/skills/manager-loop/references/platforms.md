@@ -31,9 +31,9 @@ Computer use and visible GUI runs act on the owner's machine: they stay with the
 | Host | How it ticks | How it asks the owner | Notes |
 | --- | --- | --- | --- |
 | Claude Code (recommended) | the start prompt prefixed with `/loop ` and no interval; the manager ends each tick by scheduling its next wake | a structured question tool; a notification to reach the owner away from the terminal | workers run in the background so a completion wakes the manager early; mechanics below |
-| Codex, interactive | the owner keeps one session open; a scheduler sends "Run one manager tick" into it with `codex queue --thread <session> --message ... --resume`, where the installed version has `codex queue` | `request_user_input` (one to three short questions; interactive root thread only) | verify one manual tick before scheduling; the lease stops a queued tick from overlapping a running one |
-| Codex, headless | a scheduler (cron, launchd, a systemd timer) runs `codex exec -C <repo> "<start prompt>"` once per tick | none in `codex exec`: questions go to the board and a notification | workers must be detached and write report files, because nothing wakes a headless manager early |
-| Copilot CLI | interactive session ticked by the owner, or a non-interactive prompt run per tick from a scheduler (check `copilot --help` for the installed flags) | `ask_user` when enabled (it can be disabled with `--no-ask-user`) | same rules as headless Codex when non-interactive |
+| Codex, interactive | the owner keeps one session open; a scheduler sends "Run one manager tick" into it with `codex queue --thread <session> --message ... --resume`, where the installed version has `codex queue` | `request_user_input` when the session lists it, else plain text; see "Codex mechanics" | verify one manual tick before scheduling; the lease stops a queued tick from overlapping a running one |
+| Codex, headless | a scheduler (cron, launchd, a systemd timer) runs `codex exec -m <model id> -s workspace-write -c sandbox_workspace_write.network_access=true -C <repo> "<start prompt>"` once per tick; add the `writable_roots` setting from "Codex worker" when the manager runs in a linked worktree, or use `-s danger-full-access` | none in `codex exec`: questions go to the board and a notification | a headless manager needs network access (`gh`, pushes) and write access to the repository (the board, commits); workers must be detached and write report files, because nothing wakes a headless manager early |
+| Copilot CLI | interactive session ticked by the owner, or a non-interactive prompt run per tick from a scheduler; verify the flags with `copilot --help` on the installed version | `ask_user` when enabled (disabled by `--no-ask-user`); verify the same way | same rules as headless Codex when non-interactive; not yet verified on a live install |
 | A cloud scheduled agent | one tick per run against a board kept on a pushed branch | board and notification only | the lease and the board's commits must go through the branch; use only when the owner wants the manager off their machines |
 
 Whatever the host, record every question on the board first; the host's question tool is the fast path, not the record.
@@ -49,6 +49,21 @@ Whatever the host, record every question on the board first; the host's question
 - Waits: Monitor with a time limit, never an unbounded poll.
 - Workers: the Agent tool with `run_in_background: true`; SendMessage continues a live worker.
 
+### Codex mechanics
+
+- Questions: `request_user_input` works only on the root thread of an interactive session, never in `codex exec`.
+  It takes one to three short questions with two or three choices each.
+  It is offered only when the tool is listed for the session: in Plan collaboration mode, or with the `default_mode_request_user_input` feature, which is "under development" and off by default in 0.167.0.
+  Otherwise Codex asks in plain text in the session; the board record stays.
+- Model ids (read from `~/.codex/models_cache.json`; re-check on the installed version): `gpt-6-astra` (frontier, Fable level), `gpt-6.1-sol` (lead, Opus level), `gpt-6.1-terra` (worker-hard), `gpt-6-luna` (worker and reviewer).
+- Headless ticks: nothing wakes the manager early, so workers are detached and write report files, and a refused tick schedules one wake at the lease expiry and ends.
+
+### Copilot CLI mechanics
+
+- Questions: the `ask_user` tool when it is enabled; `--no-ask-user` turns it off for non-interactive runs.
+- Both come from GitHub's changelog and documentation; Copilot CLI is not installed on the machine where this skill was checked, so verify every Copilot flag and tool with `copilot --help` on the installed version.
+- A non-interactive tick is a prompt run from a scheduler, with the same rules as a headless Codex manager.
+
 ## Dispatching workers
 
 ### Claude Code subagent (local)
@@ -60,23 +75,40 @@ Close the agent when its step merges.
 ### Codex worker
 
 ```bash
-codex exec -m <model id> -c model_reasoning_effort=<effort> -s workspace-write \
+codex exec -m <model id> -c model_reasoning_effort=<effort> \
+  -s workspace-write \
+  -c 'sandbox_workspace_write.writable_roots=["<main repo>/.git/worktrees/<worktree name>"]' \
+  -c sandbox_workspace_write.network_access=true \
   -C <worktree> --json -o <evidence>/codex-last-message.md \
-  --output-schema <plan>/report.schema.json \
+  --output-schema <skill>/assets/report.schema.json \
   "<preamble + card + live facts>" \
   > <evidence>/codex-events.jsonl 2> <evidence>/codex-stderr.log
 ```
 
+`<skill>` is this skill's absolute directory; `assets/report.schema.json` is the worker report schema (see `plan-pack.md`).
+A worker in a linked worktree needs the two `-c` settings (reproduced).
+Under `-s workspace-write` alone it cannot commit: git writes `index.lock` in `<main repo>/.git/worktrees/<worktree name>` (the directory `git -C <worktree> rev-parse --git-dir` prints), which is outside the writable roots.
+It also has no network, so `git push`, `gh`, and installs fail.
+
 Run it in the background (or detached for long cards), one evidence directory per card and round.
 Right after it starts, confirm the model and effort from the worker's own session record, not the newest file: the first event (`thread.started`) gives its thread id; its rollout under `~/.codex/sessions/<yyyy>/<mm>/<dd>/rollout-*-<thread id>.jsonl` must name the card's worktree as `cwd` and show the expected model and reasoning effort.
-Anything else: stop it and dispatch again. Write the thread id, model, and effort on the board's Agents row.
-Prefer `workspace-write`; use `danger-full-access` only when a gate needs it, and then the preamble's rules are the only barrier.
+Anything else: stop it and dispatch again.
+Write the thread id, model, and effort on the board's Agents row.
+Prefer `workspace-write` with those settings; use `-s danger-full-access` only when a gate needs more, and then the preamble's rules are the only barrier.
 A fix round is a new `codex exec` in the same worktree with the continuation line, the PR number, and the decided findings.
 
 ### Copilot CLI worker
 
-Run the preamble and card through Copilot's non-interactive prompt mode with the model flag of the installed version, in the card's worktree; capture its final message as the report.
-Verify the model from its session log the same way before trusting the report.
+This recipe is not yet verified on a live install; verify the flags and the session-log location with `copilot --help` on the installed version.
+The shape of a non-interactive run, in the card's worktree, with its final output captured as the report:
+
+```bash
+copilot -p "<preamble + card + live facts>" --model <model id> --no-ask-user \
+  > <evidence>/copilot-last-message.md 2> <evidence>/copilot-stderr.log
+```
+
+Add the permission flags the card's gates need (file writes, shell, network) once verified.
+Verify the model from its session log the same way as for Codex before trusting the report.
 
 ### Cloud workers (Claude Code on the web, Codex cloud, Copilot coding agent)
 
