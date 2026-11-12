@@ -1,6 +1,6 @@
 # Project
 
-The `project` plugin is the marketplace's development-lifecycle toolkit: initialization, tracked cross-agent project memory, cross-agent user instructions, tiered model routing, epic/sprint workflow, pull request (PR) review, continuous integration and delivery (CI/CD) scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, and multi-agent orchestration.
+The `project` plugin is the marketplace's development-lifecycle toolkit: initialization, tracked cross-agent project memory, cross-agent user instructions, tiered model routing, epic/sprint workflow, pull request (PR) review, continuous integration and delivery (CI/CD) scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, multi-agent orchestration, and hands-off execution of approved plans.
 
 ## Epics, phases, and worktrees
 
@@ -39,8 +39,11 @@ The owner keeps a live parity table that maps capability tiers to models on each
 The board template ships defaults for both, plus budget limits, and the owner's approval of the plan accepts them; the manager asks only when something does not match, such as a refused model id or a quota near its end.
 Cards name a tier, not a model, so the manager can place work wherever there is capacity, and the owner can move budget between platforms by editing one row.
 
-The board is a Markdown file and the single source of truth.
-A standard-library helper validates it, computes the dispatch plan, holds a single-manager lease, enforces budget limits, and serves a live localhost kanban where the owner can also answer the manager's questions.
+The board is `board.md`, a Markdown file that is the single source of truth, with `board-log.md` beside it for decisions and the log.
+The manager writes it only through `scripts/manager_board.py`, a standard-library Python helper that the skill calls by absolute path.
+The helper validates the board, computes the dispatch plan, checks that each card is complete before it is dispatched, holds a single-manager lease, enforces the owner's budget limits, and serves a live localhost kanban that refuses requests with a foreign `Host` header and guards answers with a per-run token.
+Every owner question is recorded on the board first, then asked with the host's structured question tool when the host offers one; the owner can answer in the session or on the live board page.
+Host-specific mechanics (how each host wakes the manager and asks questions) are in [Manager loops across hosts](../cross-agent-compatibility.md#manager-loops-across-hosts).
 
 ## Skills
 
@@ -53,7 +56,7 @@ A standard-library helper validates it, computes the dispatch plan, holds a sing
 - **workflow-reference**: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
 - **pr-review-toolkit**: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification; Codex `all`/pre-merge reviews use a bounded three-reviewer Luna/max panel when preflight detects native subagents, with single/inline fallback and explicit accounting
 - **codebase-onboarding**: verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
-- **implementation-planning**: strongest-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
+- **implementation-planning**: lead-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
 - **engineering-loop**: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons
 - **manager-loop**: hands-off execution of an approved plan by a manager agent, described above
 - **debugging**: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)
@@ -77,6 +80,7 @@ Codex receives opt-in Terra phase-planner and Luna implementation-worker Tom's O
 /epic-dev "build a community dashboard"
 /release-prep --minor
 "Set up CI for this Python project with ruff and pytest"
+"Run the approved plan hands-off with a manager loop and show me the board"
 "Process scanned-document.pdf and convert to markdown"
 ```
 

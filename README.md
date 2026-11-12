@@ -130,7 +130,7 @@ The skill teaches Claude the JSON schema and authoring workflow; the builder rep
 Neuroscience data standards, experiment design, and dataset validation:
 
 - **BIDS conversion** -- convert EEG, EMG, and other modalities to Brain Imaging Data Structure (BIDS) format with proper file naming, JSON sidecars, and metadata
-- **Experiment design** -- scaffold PsychoPy experiments with stimulus presentation, LSL marker integration, and BIDS-compatible output
+- **Experiment design** -- scaffold PsychoPy experiments with stimulus presentation, Lab Streaming Layer (LSL) marker integration, and BIDS-compatible output
 - **BIDS validator agent** -- autonomously validate datasets, diagnose errors, and apply fixes. Claude has the bundled agent shell, Codex has an agent template, and Copilot exposes the `.agent.md` template through the native plugin manifest.
 
 ```
@@ -150,11 +150,11 @@ Complete project lifecycle toolkit combining initialization, epic/sprint workflo
 - **install-user-instructions** -- ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure; preview and install a managed global-default block at each supported user surface without duplicating it in repositories
 - **epic-dev** -- Codex-facing entrypoint for the `/epic-dev` multi-phase feature workflow with git worktrees, GitHub issues, and phased PR delivery
 - **workflow-reference** -- branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
-- **pr-review-toolkit** -- PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification. Inspired by Anthropic's [`pr-review-toolkit`](https://github.com/anthropics/claude-code/tree/main/plugins/pr-review-toolkit) implementation; the upstream plugin README identifies it as MIT licensed. The project skill is an original cross-agent adaptation with shared rubrics in `references/`.
+- **pr-review-toolkit** -- PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification. Inspired by Anthropic's [`pr-review-toolkit`](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/pr-review-toolkit) implementation; the upstream plugin README identifies it as MIT licensed. The project skill is an original cross-agent adaptation with shared rubrics in `references/`.
 - **codebase-onboarding** -- verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence (inventory, intent docs, code, history, what actually runs, SDK probes), parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
 - **implementation-planning** -- lead-tier macro design followed by worker-executable phase plans: two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
 - **engineering-loop** -- the single-PR change workflow: mirror an existing pattern, pin test first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons, plus a detached background-jobs protocol for long-running work
-- **manager-loop** -- run an approved plan hands-off: a lead-written plan pack (cards, slots or waves, checkpoints), a mechanical manager that ticks (dispatch, verify by observation, review, merge), an advisor ladder (Opus or Sol first, then Fable or Astra), owner-owned live parity across Claude, Codex, and Copilot, structured owner questions, and a Markdown board with a live localhost kanban
+- **manager-loop** -- run an approved plan hands-off: a lead-written plan pack (cards, slots or waves, checkpoints), a mechanical manager that ticks (dispatch, verify by observation, review, merge), an advisor ladder (lead tier first; the frontier tier only when the owner asks or the plan lists a trigger), owner-owned live parity across Claude, Codex, and Copilot, structured owner questions, and a Markdown board with a live localhost kanban
 - **debugging** -- reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks) and a numerical-debugging reference for reference-implementation parity work
 - **agent-fanout** -- orchestrating subagents and teammates with explicit cross-agent tiers: Claude Opus lead (Fable only on request or for long-horizon planning) and Sonnet workers; Codex Sol lead (Astra only on request or for long-horizon planning), Terra phase planner, and Luna workers; full-lifecycle briefs, mechanical gates, lead verification, completed-agent cleanup, and a hard cap of 40 agents per run
 - **CI scaffolding** -- generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
@@ -171,6 +171,7 @@ Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **r
 /epic-dev "build a community dashboard"
 /release-prep --minor
 "Set up CI for this Python project with ruff and pytest"
+"Run the approved plan hands-off with a manager loop and show me the board"
 "Process scanned-document.pdf and convert to markdown"
 ```
 
@@ -214,13 +215,15 @@ research-skills/
 
 - [Claude Code](https://claude.com/claude-code), [Codex](https://developers.openai.com/codex), or [GitHub Copilot CLI](https://docs.github.com/en/copilot)
 - For opencite: `opencite` CLI (`uvx opencite`)
-- For icons: OpenAI API key for the OpenAI Images API, or `codex login` for the Codex CLI fallback (preferred). Set `ATLASCLOUD_API_KEY` only when explicitly selecting the Atlas Cloud backend. Optional: `rembg` + `onnxruntime` for the BiRefNet transparency post-process (one-time ~400 MB model download).
+- For AI figures and icons: `codex login` for the Codex CLI backend (preferred; no API key needed), with an OpenAI API key for the OpenAI Images API as the fallback. Set `ATLASCLOUD_API_KEY` only when explicitly selecting the Atlas Cloud backend (icons only). Optional: `rembg` + `onnxruntime` for the BiRefNet transparency post-process (one-time ~400 MB model download).
 - For figure composition: `svgutils` plus an exporter — Inkscape is detected at runtime (`brew install inkscape`) and `cairosvg` is the no-system-deps fallback.
 - For figure QA: `lxml`, `svgelements`, `svgpathtools`, `shapely` for the SVG branch; `pillow`, `pytesseract` for the raster branch; AST analysis for the plot-script branch (no extra deps).
 - For plot styling: matplotlib, seaborn, plotly, plotnine, and SciencePlots via `uv run --with` (on-the-fly).
 - For PDF conversion: poppler (`brew install poppler` on macOS)
-- For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder) (local clone)
+- For presentations: [agentic-presentation-builder](https://github.com/neuromechanist/agentic-presentation-builder), run through its `apb` command-line tool with `bunx github:neuromechanist/agentic-presentation-builder#<tag>` (no clone needed; the skill can keep a managed cache clone for repeated validation)
 - For BIDS validation: bids-validator (`bunx bids-validator`)
+- For experiment design: PsychoPy to run the generated experiments, and `pylsl` (`uv add pylsl`) for LSL markers
+- For manager-loop: `python3` (standard library only) for the board helper `manager_board.py`, and an authenticated `gh` for pull request checks and merges; the board's write lock needs a Portable Operating System Interface (POSIX) system (macOS, Linux, or Windows Subsystem for Linux)
 - For cloud GPU pods: Docker with `buildx` and a container registry login, a RunPod API key, and a dedicated `ssh` key pair whose public half is passed to each pod
 - For OCR: Mistral API key (optional, tesseract as offline fallback)
 

@@ -55,7 +55,7 @@ uv run mkdocs serve   # http://127.0.0.1:8000/
 uv run mkdocs build --strict
 ```
 
-CI builds and deploys this site to the `gh-pages` branch on every push to `main` that touches `docs/**`, `mkdocs.yml`, or `pyproject.toml`. Run `mkdocs build --strict` locally before pushing; it fails on any broken nav entry or image link, which is the easiest way to catch a typo'd path.
+CI builds this site with `mkdocs build --strict` on every pull request that touches `docs/**`, `mkdocs.yml`, `pyproject.toml`, or the docs workflow, and deploys it to the `gh-pages` branch on every push to `main` that touches the same paths. Run `mkdocs build --strict` locally before pushing; it fails on any broken nav entry or image link, which is the easiest way to catch a typo'd path.
 
 ## Adding to these docs
 

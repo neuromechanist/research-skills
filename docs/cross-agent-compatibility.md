@@ -53,7 +53,7 @@ codex plugin marketplace add neuromechanist/research-skills
 codex plugin marketplace add ./path/to/research-skills
 ```
 
-Codex skills are directories containing `SKILL.md` files with `name` and `description` frontmatter. The native `.codex-plugin/plugin.json` manifests point at the existing `plugins/<name>/skills/` trees. Claude-specific commands and agents stay declared in the `.claude-plugin/plugin.json` manifests; Copilot agent templates are exposed through native `.github/plugin/plugin.json` manifests.
+Codex skills are directories containing `SKILL.md` files with `name` and `description` frontmatter. The native `.codex-plugin/plugin.json` manifests point at the existing `plugins/<name>/skills/` trees. Claude Code commands stay declared in the `.claude-plugin/plugin.json` manifests, and Claude Code picks up bundled agents from each plugin's `agents/*.md` without a manifest field; Copilot agent templates are exposed through native `.github/plugin/plugin.json` manifests.
 
 Codex custom subagents are separate from plugin skills. Current Codex docs define custom agents as standalone TOML files under `~/.codex/agents/` for personal scope or `.codex/agents/` for project scope, with required `name`, `description`, and `developer_instructions` fields. Optional fields include `model`, `model_reasoning_effort`, sandbox settings, MCP servers, and skills. `/agent` inspects and switches active threads. For review/QA surfaces in this marketplace, keep `agents/templates/*.toml` as opt-in Codex custom-agent templates.
 
