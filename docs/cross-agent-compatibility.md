@@ -84,12 +84,15 @@ implementation-worker Copilot profiles. They use capability-class language
 instead of hard-coded model names because available Copilot model identifiers
 vary by environment.
 
-## Claude Code model routing
+## Model routing
 
-Claude Code uses Fable when available, otherwise Opus or `best`, for macro
-design, observation, supervision, and synthesis. Sonnet implements approved,
-detailed plans and performs routine focused review. Any unresolved architecture
-or high-risk invariant escalates back to the lead model.
+Every lead role defaults to the lead tier: Claude Opus and Codex Sol (`gpt-6.1-sol`).
+That covers project initiation, architecture, planning, observation, supervision, and synthesis.
+The frontier tier, Claude Fable and Codex Astra (`gpt-6-astra`), is opt-in: use it only when the user explicitly asks for it, or for long-horizon jobs or planning the user names.
+Sonnet on Claude and Luna (`gpt-6-luna`) on Codex implement approved, detailed plans and perform routine focused review.
+Codex Terra (`gpt-6.1-terra`) elaborates an approved architecture into a worker-executable phase plan.
+Any unresolved architecture or high-risk invariant escalates back to the lead tier.
+Copilot CLI and other systems keep the same capability classes (lead, intermediate, worker) with whatever models the environment exposes.
 
 ## Agent lifecycle
 

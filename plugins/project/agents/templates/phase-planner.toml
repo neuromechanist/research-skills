@@ -3,7 +3,7 @@
 
 name = "phase-planner"
 description = "Expand an approved architecture into a worker-executable phase plan without reopening lead decisions."
-model = "gpt-5.6-terra"
+model = "gpt-6.1-terra"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "read-only"
 

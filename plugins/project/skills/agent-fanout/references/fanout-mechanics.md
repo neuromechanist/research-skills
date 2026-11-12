@@ -29,8 +29,10 @@ tool's section; the concepts transfer.
 - `subagent_type`: `Explore` for read-only search, `Plan` for architecture
   plans, `general-purpose` for implementation, or a plugin agent such as
   `project:pr-review-toolkit` for reviews.
-- `model`: use Fable/Opus (or inherit a strongest-tier session) for macro
-  architecture, Sonnet for approved-plan implementation and routine review.
+- `model`: use Opus (or inherit a lead-tier session) for macro architecture,
+  Sonnet for approved-plan implementation and routine review.
+  Use Fable only when the user asks for it or for long-horizon jobs or
+  planning the user names.
   A phase-plan elaborator may use Sonnet only when every architecture decision
   is already fixed; otherwise it inherits the lead model.
 - `name`: set a role-descriptive name (`engine-scout`, `fix-661`,
@@ -77,10 +79,12 @@ agents. Put standalone TOML agent files under `~/.codex/agents/` (personal) or
 
 Route roles explicitly when the current account exposes the aliases:
 
-- lead/architect/observer/synthesizer: `gpt-5.6-sol`;
-- bounded phase-plan elaborator: `gpt-5.6-terra`;
+- lead/architect/observer/synthesizer: `gpt-6.1-sol`;
+- bounded phase-plan elaborator: `gpt-6.1-terra`;
 - detailed implementation, focused tests, routine review, validation:
-  `gpt-5.6-luna`.
+  `gpt-6-luna`;
+- frontier tier, opt-in only (the user asks for it, or a long-horizon job or
+  planning the user names): `gpt-6-astra`.
 
 Use the built-in `explorer` for bounded read-heavy mapping and `worker` for
 execution when custom role files are unnecessary. Use `/agent` in the CLI, or
@@ -90,7 +94,7 @@ names an immediate follow-up.
 
 If the spawn surface does not expose a per-call model choice, select a custom
 agent whose TOML pins the intended model. If the exact alias is unavailable,
-preserve the role class: strongest lead, intermediate elaborator, clear-task
+preserve the role class: lead, intermediate elaborator, clear-task
 worker. This plugin ships opt-in `phase-planner.toml` (Terra) and
 `implementation-worker.toml` (Luna) under `agents/templates/`; copy them to the
 Codex user or project agent directory before use.
@@ -100,7 +104,7 @@ Codex user or project agent directory before use.
 Copilot personal agents live under `~/.copilot/agents/`; project agents live
 under `.github/agents/`. Set the optional `model` frontmatter field only when
 the selected Copilot environment exposes a stable model identifier. Otherwise
-use the strongest/balanced/worker capability classes from the main skill. Use
+use the lead/balanced/worker capability classes from the main skill. Use
 `/agent` to inspect and switch agents, and remove completed one-off agents when
 their reports are incorporated. The plugin exposes matching `phase-planner`
 and `implementation-worker` agent profiles through its native Copilot manifest.
