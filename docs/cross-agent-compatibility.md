@@ -101,6 +101,21 @@ reports are incorporated. Retain an agent only for a named recurring role with
 a concrete next task. This avoids stale agent fleets and makes the active
 workflow observable.
 
+## Manager loops across hosts
+
+The `project:manager-loop` skill runs one board on every host, but each host wakes the manager and asks the owner questions differently.
+`plugins/project/skills/manager-loop/references/platforms.md` holds the full table; these are the verified host facts.
+
+- Codex `request_user_input` works only in the root thread and is unavailable in `codex exec`.
+  It takes one to three short questions with two or three choices each.
+  It appears only when it is listed for the session, in Plan collaboration mode or through the off-by-default `default_mode_request_user_input` feature; otherwise Codex asks in plain text.
+- `codex queue --thread <id> --message <text> --resume` queues a message into an existing Codex session, so a scheduler can send "run one manager tick" into an interactive manager.
+- Under `-s workspace-write`, a Codex worker in a linked git worktree cannot commit or reach the network.
+  Pass `-c 'sandbox_workspace_write.writable_roots=["<main repo>/.git/worktrees/<name>"]'` and `-c sandbox_workspace_write.network_access=true` at launch to allow both.
+- On Claude Code, ScheduleWakeup ends each self-paced `/loop` tick, `stop: true` ends the loop, and delays run from 60 to 3600 seconds.
+- Copilot CLI's `ask_user` question form can be disabled with `--no-ask-user`.
+  This comes from GitHub's changelog; verify it on the installed version.
+
 ## Commands and skills with the same name
 
 Claude Code lists a plugin command and a skill with the same name as two rows in
