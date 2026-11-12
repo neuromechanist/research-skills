@@ -15,15 +15,16 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import fcntl
-import hashlib
 import html
 import json
 import os
 import re
 import secrets
+import stat
 import sys
-import tempfile
+import threading
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from http import HTTPStatus
@@ -31,6 +32,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, cast
 from urllib.parse import unquote
+
+try:
+    import fcntl
+
+    HAVE_FLOCK = True
+except ImportError:  # Windows has no fcntl; writes then say so
+    HAVE_FLOCK = False
 
 DESCRIPTION = "Read, check, update, render, and serve a manager-loop board (board.md)."
 SKILL_DIR = Path(__file__).resolve().parents[1]
@@ -114,6 +122,7 @@ MAX_BOARD_LINES = 300
 MAX_CELL_CHARS = 240
 MAX_ANSWER_CHARS = 200
 LATE_GRACE = timedelta(minutes=10)
+LOCK_WAIT = 10.0  # seconds to wait for another writer before giving up
 HISTORY_TAIL = 20
 CARD_SECTIONS = ("Goal", "Scope", "Acceptance", "Gates", "Stop conditions", "Report")
 CARD_PLACEHOLDER = re.compile(
@@ -894,24 +903,64 @@ def analyze(
 # Writing
 
 
+_HELD = threading.local()
+
+
 @contextlib.contextmanager
 def board_lock(path: Path):
-    digest = hashlib.sha1(str(path.resolve()).encode()).hexdigest()[:16]
-    lock_path = Path(tempfile.gettempdir()) / f"manager-board-{digest}.lock"
-    with open(lock_path, "w") as handle:
-        fcntl.flock(handle, fcntl.LOCK_EX)
+    """Hold the one lock for the board's directory (the board and its log share it).
+
+    The lock is re-entrant within a thread, so a command can hold it across
+    both files. It is an ``flock`` on the directory itself, so it never depends
+    on a temporary directory and a crashed writer cannot leave it stuck.
+    """
+    if not HAVE_FLOCK:
+        raise BoardError("manager_board.py needs a POSIX system (macOS, Linux, or WSL)")
+    directory = str(path.resolve().parent)
+    held: set[str] = _HELD.__dict__.setdefault("dirs", set())
+    if directory in held:
+        yield
+        return
+    fd = os.open(directory, os.O_RDONLY)
+    try:
+        deadline = time.monotonic() + LOCK_WAIT
+        while True:
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if time.monotonic() >= deadline:
+                    raise BoardError("board is locked by another writer") from None
+                time.sleep(0.05)
+        held.add(directory)
         try:
             yield
         finally:
-            fcntl.flock(handle, fcntl.LOCK_UN)
+            held.discard(directory)
+            fcntl.flock(fd, fcntl.LOCK_UN)
+    finally:
+        os.close(fd)
+
+
+def read_utf8(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
 
 
 def write_atomic(path: Path, text: str) -> None:
-    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
+    """Replace a file in one step, keeping its permissions and any symlink to it."""
+    target = Path(os.path.realpath(path))
     try:
-        with os.fdopen(fd, "w") as handle:
+        mode: int | None = stat.S_IMODE(target.stat().st_mode)
+    except FileNotFoundError:
+        mode = None
+    tmp = target.with_name(f".{target.name}.{secrets.token_hex(6)}.tmp")
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
             handle.write(text)
-        os.replace(tmp, path)
+        if mode is not None:
+            os.chmod(tmp, mode)
+        os.replace(tmp, target)
     except BaseException:
         with contextlib.suppress(FileNotFoundError):
             os.unlink(tmp)
@@ -1029,38 +1078,82 @@ def remove_rows(text: str, key: str, ids: set[str]) -> str:
     )
 
 
-def mutate(path: Path, change) -> None:
-    """Apply ``change`` to the board under the lock; refuse a change that leaves it invalid."""
-    with board_lock(path):
-        text = path.read_text()
-        new = change(text)
-        errors, _ = validate(parse_board(new))
+def normalize_error(error: str) -> str:
+    """An error without its counts, so a board that grew is still the same error."""
+    return re.sub(r"\d+ (lines|characters)", r"N \1", error)
+
+
+def read_board(path: Path) -> str:
+    if not path.exists():
+        raise BoardError(f"{path}: no such board")
+    return read_utf8(path)
+
+
+def history_text(board_path: Path) -> str:
+    """The log's text (or a fresh log), refusing a log with parse errors."""
+    path = history_path(board_path)
+    if path.exists():
+        text = read_utf8(path)
+        errors = parse_history(text).errors
         if errors:
             raise BoardError(
-                "the change would leave the board invalid: " + "; ".join(errors)
+                f"{path.name}: the log has errors; fix it before writing: "
+                + "; ".join(errors)
             )
-        write_atomic(path, new)
+        return text
+    title = parse_board(read_utf8(board_path)).title if board_path.exists() else "Board"
+    return read_utf8(TEMPLATE_LOG).replace("__TITLE__", title)
+
+
+def add_history(text: str, entries: list[tuple[str, dict[str, str]]]) -> str:
+    for key, values in entries:
+        text = apply_row(text, key, None, values, create=True, schema=HISTORY_SCHEMA)
+    return text
+
+
+def mutate(
+    path: Path, change: Callable[[str], str], events: list[str] | None = None
+) -> None:
+    """Apply ``change`` to the board under the lock.
+
+    A board that already has parse errors is not written. Validation errors
+    that existed before the change do not block it; only new ones do. Pass a
+    list as ``events`` when the change also logs: the log is checked before
+    anything changes, the lines ``change`` appends to the list are written to
+    the log first, and the board is written last, so a failure never loses a row.
+    """
+    with board_lock(path):
+        text = read_board(path)
+        before = parse_board(text)
+        if before.errors:
+            raise BoardError("fix the file before writing: " + "; ".join(before.errors))
+        known = {normalize_error(e) for e in validate(before)[0]}
+        log = history_text(path) if events is not None else None
+        new = change(text)
+        fresh = [
+            e for e in validate(parse_board(new))[0] if normalize_error(e) not in known
+        ]
+        if fresh:
+            raise BoardError(
+                "the change would leave the board invalid: " + "; ".join(fresh)
+            )
+        if log is not None and events:
+            when = stamp()
+            rows = [("log", {"Time": when, "Event": event}) for event in events]
+            write_atomic(history_path(path), add_history(log, rows))
+        if new != text:
+            write_atomic(path, new)
 
 
 def append_history(board_path: Path, key: str, values: dict[str, str]) -> None:
-    path = history_path(board_path)
-    with board_lock(path):
-        if path.exists():
-            text = path.read_text()
-        else:
-            title = (
-                parse_board(board_path.read_text()).title
-                if board_path.exists()
-                else "Board"
-            )
-            text = TEMPLATE_LOG.read_text().replace("__TITLE__", title)
-        new = apply_row(text, key, None, values, create=True, schema=HISTORY_SCHEMA)
-        write_atomic(path, new)
+    with board_lock(board_path):
+        text = add_history(history_text(board_path), [(key, values)])
+        write_atomic(history_path(board_path), text)
 
 
 def load_history(board_path: Path) -> Board | None:
     path = history_path(board_path)
-    return parse_history(path.read_text()) if path.exists() else None
+    return parse_history(read_utf8(path)) if path.exists() else None
 
 
 def record_answer(path: Path, qid: str, answer: str, by: str) -> None:
@@ -1102,7 +1195,7 @@ def record_answer(path: Path, qid: str, answer: str, by: str) -> None:
 
 
 def render_html(data: dict, mode: str, token: str = "") -> str:
-    template = TEMPLATE_HTML.read_text()
+    template = read_utf8(TEMPLATE_HTML)
     # Escape every "<" (so no "</script>" or "<!--" survives) and the two line
     # separators JavaScript treats as newlines; the result is still valid JSON.
     payload = (
@@ -1120,9 +1213,7 @@ def render_html(data: dict, mode: str, token: str = "") -> str:
 
 
 def load(path: Path) -> Board:
-    if not path.exists():
-        raise BoardError(f"{path}: no such board")
-    return parse_board(path.read_text())
+    return parse_board(read_board(path))
 
 
 def snapshot(path: Path) -> dict:
@@ -1313,18 +1404,20 @@ def cmd_init(args) -> int:
         "__BRANCH__": args.branch or "-",
         "__CREATED__": stamp(),
     }
-    text = TEMPLATE_MD.read_text()
+    text = read_utf8(TEMPLATE_MD)
     for old, new in replacements.items():
         text = text.replace(old, new)
     errors, _ = validate(parse_board(text))
     if errors:
         raise BoardError("template produced an invalid board: " + "; ".join(errors))
     path.parent.mkdir(parents=True, exist_ok=True)
-    write_atomic(path, text)
     log = history_path(path)
-    if not log.exists() or args.force:
-        write_atomic(log, TEMPLATE_LOG.read_text().replace("__TITLE__", args.title))
-    print(f"wrote {path} and {log}")
+    with board_lock(path):
+        write_atomic(path, text)
+        kept = log.exists()  # history is never overwritten, even with --force
+        if not kept:
+            write_atomic(log, read_utf8(TEMPLATE_LOG).replace("__TITLE__", args.title))
+    print(f"wrote {path}" + (f"; kept existing {log}" if kept else f" and {log}"))
     return 0
 
 
@@ -1435,30 +1528,49 @@ def cmd_set(args) -> int:
             f"## {TITLES[key]} is append-only; use the `{'decide' if key == 'decisions' else 'log'}` command"
         )
     values = parse_assignments(args.values)
+    events: list[str] = []
+
+    def row_state(parsed: Board, section: str) -> tuple[Table | None, dict[str, str]]:
+        table = parsed.table(section)
+        rows = table.rows if table else []
+        current = next(
+            (r for r in rows if row_id(parsed, section, r) == plain_id(args.key)), {}
+        )
+        return table, current
 
     def change(text: str) -> str:
         stamped = dict(values)
-        if key == "steps" and stamped.get("State", "").lower() == "active":
-            parsed = parse_board(text)
-            table = parsed.table("steps")
-            current = next(
-                (
-                    r
-                    for r in (table.rows if table else [])
-                    if row_id(parsed, "steps", r) == plain_id(args.key)
-                ),
-                {},
-            )
-            if (
-                table
-                and table.column("Started")
-                and is_empty(current.get("Started"))
-                and "Started" not in stamped
-            ):
-                stamped["Started"] = stamp()
-        return apply_row(text, key, args.key, stamped, create=args.new)
+        parsed = parse_board(text)
+        table, current = row_state(parsed, key)
+        if (
+            key == "steps"
+            and stamped.get("State", "").lower() == "active"
+            and table
+            and table.column("Started")
+            and is_empty(current.get("Started"))
+            and "Started" not in stamped
+        ):
+            stamped["Started"] = stamp()
+        opening = (
+            key == "waves"
+            and stamped.get("State", "").strip().lower() == "active"
+            and current.get("State", "").strip().lower() != "active"
+        )
+        text = apply_row(text, key, args.key, stamped, create=args.new)
+        if opening:  # a wave opening zeroes the budgets that reset per wave
+            for item in parse_board(text).rows("budget"):
+                used = first_number(item.get("Used"))
+                if item.get("Resets", "").strip().lower() == "wave" and used:
+                    name = item.get("Item", "")
+                    text = apply_row(text, "budget", name, {"Used": "0"}, create=False)
+                    events.append(
+                        f"budget reset (wave {args.key} opened): {name} was {item.get('Used', '')}"
+                    )
+        return text
 
-    mutate(Path(args.board), change)
+    # Only opening a wave can log, so only then must the log be checked first.
+    logs = key == "waves" and values.get("State", "").strip().lower() == "active"
+    mutate(Path(args.board), change, events if logs else None)
     print(f"{'added' if args.new else 'updated'} {TITLES[key]} {args.key}")
     return 0
 
@@ -1466,7 +1578,7 @@ def cmd_set(args) -> int:
 def cmd_tick(args) -> int:
     path = Path(args.board)
     moment = local_now()
-    notes: list[str] = []
+    events: list[str] = []
 
     def change(text: str) -> str:
         board = parse_board(text)
@@ -1482,8 +1594,9 @@ def cmd_tick(args) -> int:
             and not args.take_over
         ):
             raise BoardError(
-                f"manager {holder!r} holds this board until {stamp(nxt + LATE_GRACE)}; another manager is live."
+                f"manager {holder!r} holds this board and another manager is live."
                 " Stop here. Use --take-over only after confirming that manager has stopped."
+                f" The lease expires at {stamp(nxt + LATE_GRACE)}"
             )
         values = {"Last tick": stamp(moment)}
         if args.manager:
@@ -1506,16 +1619,14 @@ def cmd_tick(args) -> int:
                     text = apply_row(
                         text, "budget", row.get("Item", ""), {"Used": "0"}, create=False
                     )
-                    notes.append(
+                    events.append(
                         f"budget reset (daily): {row.get('Item', '')} was {row.get('Used', '')}"
                     )
+        if args.note:
+            events.append(args.note)
         return text
 
-    mutate(path, change)
-    for note in notes:
-        append_history(path, "log", {"Time": stamp(moment), "Event": note})
-    if args.note:
-        append_history(path, "log", {"Time": stamp(moment), "Event": args.note})
+    mutate(path, change, events)
     print(f"tick {stamp(moment)}" + (f", next in {args.next}" if args.next else ""))
     return 0
 
@@ -1602,17 +1713,27 @@ def cmd_answer(args) -> int:
     return 0
 
 
+PROPOSAL_LOGGED = re.compile(r"(?:archived )?proposal P(\d+)\b")
+PROPOSAL_OPENED = re.compile(r"proposal P\d+ opened\b")
+
+
 def cmd_propose(args) -> int:
     path = Path(args.board)
     created: list[str] = []
+    events: list[str] = []
 
     def change(text: str) -> str:
         board = parse_board(text)
+        history = load_history(path)
+        log_rows = history.rows("log") if history else []
         last = parse_time(board.now().get("Last tick"))
         rows = board.rows("proposals")
-        if last and any(
-            (t := parse_time(r.get("Time"))) is not None and t >= last for r in rows
-        ):
+        opened = [parse_time(r.get("Time")) for r in rows] + [
+            parse_time(r.get("Time"))
+            for r in log_rows
+            if PROPOSAL_OPENED.match(r.get("Event", ""))
+        ]
+        if last and any(t is not None and t >= last for t in opened):
             raise BoardError(
                 "a proposal was already made this tick; at most one per tick"
             )
@@ -1628,9 +1749,14 @@ def cmd_propose(args) -> int:
             int(m.group(1))
             for r in rows
             if (m := re.fullmatch(r"P(\d+)", row_id(board, "proposals", r)))
+        ] + [
+            int(m.group(1))
+            for r in log_rows
+            if (m := PROPOSAL_LOGGED.match(r.get("Event", "")))
         ]
         pid = f"P{max(numbers, default=0) + 1}"
         created.append(pid)
+        events.append(f"proposal {pid} opened: {args.proposal}")
         values = {
             "Time": stamp(),
             "Proposal": args.proposal,
@@ -1639,7 +1765,7 @@ def cmd_propose(args) -> int:
         }
         return apply_row(text, "proposals", pid, values, create=True)
 
-    mutate(path, change)
+    mutate(path, change, events)
     print(f"proposal {created[0]} recorded")
     return 0
 
@@ -1647,43 +1773,41 @@ def cmd_propose(args) -> int:
 def cmd_archive(args) -> int:
     """Move settled questions and proposals from the board to the log."""
     path = Path(args.board)
-    moved: list[str] = []
+    events: list[str] = []
 
     def change(text: str) -> str:
         board = parse_board(text)
-        q_ids = {
-            row_id(board, "questions", r)
-            for r in board.rows("questions")
-            if r.get("State", "").lower() in ("closed", "defaulted")
-        }
-        p_ids = {
-            row_id(board, "proposals", r)
-            for r in board.rows("proposals")
-            if r.get("State", "").lower() in ("accepted", "rejected", "withdrawn")
-        }
+        q_ids: set[str] = set()
+        p_ids: set[str] = set()
         for r in board.rows("questions"):
             rid = row_id(board, "questions", r)
-            if rid in q_ids:
-                moved.append(
-                    f"question {rid} {r.get('State')}: {r.get('Question')} -> {r.get('Answer')}"
+            if r.get("State", "").strip().lower() in ("closed", "defaulted"):
+                q_ids.add(rid)
+                events.append(
+                    f"archived question {rid} {r.get('State')}: {r.get('Question')} -> {r.get('Answer')}"
                 )
         for r in board.rows("proposals"):
             rid = row_id(board, "proposals", r)
-            if rid in p_ids:
-                moved.append(f"proposal {rid} {r.get('State')}: {r.get('Proposal')}")
+            if r.get("State", "").strip().lower() in (
+                "accepted",
+                "rejected",
+                "withdrawn",
+            ):
+                p_ids.add(rid)
+                events.append(
+                    f"archived proposal {rid} {r.get('State')}: {r.get('Proposal')}"
+                )
         return remove_rows(remove_rows(text, "questions", q_ids), "proposals", p_ids)
 
-    mutate(path, change)
-    for line in moved:
-        append_history(path, "log", {"Time": stamp(), "Event": f"archived {line}"})
-    print(f"archived {len(moved)} rows")
+    mutate(path, change, events)
+    print(f"archived {len(events)} rows")
     return 0
 
 
 def cmd_card(args) -> int:
     failed = 0
     for name in args.cards:
-        problems = check_card(Path(name).read_text())
+        problems = check_card(read_utf8(Path(name)))
         for problem in problems:
             print(f"ERROR {name}: {problem}")
         if not problems:
@@ -1846,7 +1970,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except BoardError as exc:
+    except (BoardError, OSError) as exc:
         print(f"ERROR {exc}", file=sys.stderr)
         return 2
 

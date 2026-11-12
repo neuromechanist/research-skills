@@ -6,6 +6,7 @@ server test starts the real HTTP server on a free localhost port.
 
 import importlib.util
 import json
+import os
 import re
 import socket
 import subprocess
@@ -23,12 +24,15 @@ SKILL = ROOT / "plugins" / "project" / "skills" / "manager-loop"
 SCRIPT = SKILL / "scripts" / "manager_board.py"
 
 
-def run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run(
+    *args: str, check: bool = True, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
         [sys.executable, str(SCRIPT), *args],
         capture_output=True,
         text=True,
         check=False,
+        env={**os.environ, **env} if env else None,
     )
     if check and result.returncode != 0:
         raise AssertionError(
@@ -392,6 +396,234 @@ def embedded_data(page: str) -> dict:
     )
     assert match, "no board-data block"
     return json.loads(match.group(1))
+
+
+def used(board: Path, item: str) -> float:
+    return next(b for b in status(board)["budget"] if b["Item"] == item)["used"]
+
+
+def test_concurrent_writers_share_one_lock(board: Path, tmp_path: Path):
+    for name in ("tmp-a", "tmp-b"):
+        (tmp_path / name).mkdir()
+    procs = [
+        subprocess.Popen(
+            [sys.executable, str(SCRIPT), "spend", str(board), "Agents today", "1"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env={**os.environ, "TMPDIR": str(tmp_path / name)},
+        )
+        for name in ("tmp-a", "tmp-b")
+        for _ in range(10)
+    ]
+    for proc in procs:
+        out, err = proc.communicate(timeout=60)
+        assert proc.returncode == 0, out + err
+    assert used(board, "Agents today") == 20
+
+
+def hold_lock(board: Path):
+    fcntl = pytest.importorskip("fcntl")
+    fd = os.open(board.parent, os.O_RDONLY)
+    fcntl.flock(fd, fcntl.LOCK_EX)
+    return fcntl, fd
+
+
+def test_a_writer_waits_for_the_lock_then_proceeds(board: Path):
+    fcntl, fd = hold_lock(board)
+    proc = subprocess.Popen(
+        [sys.executable, str(SCRIPT), "spend", str(board), "Agents today", "1"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        time.sleep(1)
+        assert proc.poll() is None  # still waiting, not failed
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+    out, err = proc.communicate(timeout=30)
+    assert proc.returncode == 0, out + err
+    assert used(board, "Agents today") == 1
+
+
+def test_lock_gives_up_after_ten_seconds(board: Path):
+    fcntl, fd = hold_lock(board)
+    try:
+        started = time.monotonic()
+        result = run("spend", str(board), "Agents today", check=False)
+        waited = time.monotonic() - started
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+    assert result.returncode == 2
+    assert "board is locked by another writer" in result.stderr
+    assert 9 < waited < 20
+    assert used(board, "Agents today") == 0
+
+
+@pytest.fixture
+def broken_log(board: Path) -> Path:
+    log = board.parent / "board-log.md"
+    log.write_text(
+        log.read_text(encoding="utf-8") + "| 2026-01-01T00:00 | a | extra cell |\n",
+        encoding="utf-8",
+    )
+    return log
+
+
+def test_malformed_log_stops_archive_before_the_board_changes(
+    board: Path, broken_log: Path
+):
+    run(
+        "ask",
+        str(board),
+        "Q1",
+        "--question",
+        "Ship?",
+        "--options",
+        "Yes (Recommended) / No",
+    )
+    run("set", str(board), "questions", "Q1", "State=closed", "Answer=Yes")
+    board_before, log_before = (
+        board.read_text(encoding="utf-8"),
+        broken_log.read_text(encoding="utf-8"),
+    )
+    result = run("archive", str(board), check=False)
+    assert result.returncode == 2 and "board-log.md" in result.stderr
+    assert board.read_text(encoding="utf-8") == board_before
+    assert broken_log.read_text(encoding="utf-8") == log_before
+    assert "| Q1 |" in board.read_text(encoding="utf-8")
+
+
+def test_malformed_log_stops_tick_and_propose(board: Path, broken_log: Path):
+    before = board.read_text(encoding="utf-8")
+    for args in (
+        ("tick", str(board), "--manager", "m1", "--next", "30m"),
+        ("propose", str(board), "Try it", "--why", "cheap"),
+        ("log", str(board), "an event"),
+    ):
+        result = run(*args, check=False)
+        assert result.returncode == 2 and "board-log.md" in result.stderr, args
+    assert board.read_text(encoding="utf-8") == before
+    assert run("check", str(board), check=False).returncode == 1
+
+
+def test_existing_errors_do_not_block_unrelated_writes(board: Path):
+    add_step(board, "S1", "State=todo")
+    board.write_text(
+        board.read_text(encoding="utf-8") + "\n## Notes\n\n" + "line\n" * 300,
+        encoding="utf-8",
+    )
+    text = board.read_text(encoding="utf-8").replace(
+        "| S1 | Step S1 |", "| S1 | " + "t" * 300 + " |", 1
+    )
+    board.write_text(text, encoding="utf-8")
+    assert "limit 300" in run("check", str(board), check=False).stdout
+    run("tick", str(board), "--manager", "m1", "--next", "30m")
+    run(
+        "ask",
+        str(board),
+        "Q1",
+        "--question",
+        "Ship?",
+        "--options",
+        "Yes (Recommended) / No",
+    )
+    run("answer", str(board), "Q1", "Yes")
+    run("set", str(board), "steps", "S1", "State=active", "Slot=claude-sonnet")
+    refused = run(
+        "set",
+        str(board),
+        "steps",
+        "S2",
+        "Title=x",
+        "Next=" + "x" * 300,
+        "--new",
+        check=False,
+    )
+    assert refused.returncode == 2
+    assert "'Next' has 300 characters" in refused.stderr
+    assert "lines (limit" not in refused.stderr and "'Title'" not in refused.stderr
+
+
+def test_proposal_numbers_and_ticks_follow_the_log(board: Path):
+    run("tick", str(board), "--manager", "m1", "--next", "30m")
+    run("propose", str(board), "Run the docs review", "--why", "the plan names it")
+    log = (board.parent / "board-log.md").read_text(encoding="utf-8")
+    assert "proposal P1 opened: Run the docs review" in log
+    run("set", str(board), "proposals", "P1", "State=accepted")
+    run("archive", str(board))
+    assert status(board)["proposals"] == []
+    # The proposal left the board, but the log still shows one opened this tick.
+    again = run("propose", str(board), "Another idea", "--why", "x", check=False)
+    assert again.returncode == 2 and "at most one per tick" in again.stderr
+    later = (datetime.now().astimezone() + timedelta(minutes=5)).isoformat(
+        timespec="minutes"
+    )
+    run("set", str(board), "now", "Last tick", f"Value={later}")
+    run("propose", str(board), "Another idea", "--why", "x")
+    assert [p["id"] for p in status(board)["proposals"]] == ["P2"]
+
+
+def test_wave_opening_resets_wave_budgets(board: Path):
+    run(
+        "set",
+        str(board),
+        "waves",
+        "W1",
+        "Goal=one",
+        "Agents=10",
+        "State=planned",
+        "Exit gate=merged",
+        "--new",
+    )
+    run("spend", str(board), "Agents this wave", "5")
+    run("set", str(board), "waves", "W1", "State=active")
+    assert used(board, "Agents this wave") == 0
+    assert "budget reset (wave W1 opened): Agents this wave was 5" in (
+        board.parent / "board-log.md"
+    ).read_text(encoding="utf-8")
+    run("spend", str(board), "Agents this wave", "3")
+    run(
+        "set", str(board), "waves", "W1", "Goal=still one", "State=active"
+    )  # not a new opening
+    assert used(board, "Agents this wave") == 3
+
+
+def test_init_force_rewrites_the_board_but_keeps_the_log(board: Path):
+    run("log", str(board), "E1 merged")
+    run("decide", str(board), "Use Codex", "--by", "owner")
+    add_step(board, "S1", "State=todo")
+    run("init", str(board), "--title", "Fresh", "--force")
+    assert status(board)["steps"] == [] and status(board)["title"] == "Fresh"
+    log = (board.parent / "board-log.md").read_text(encoding="utf-8")
+    assert "E1 merged" in log and "Use Codex" in log
+
+
+def test_write_keeps_permissions_and_symlinks(board: Path, tmp_path: Path):
+    board.chmod(0o640)
+    run("tick", str(board), "--manager", "m1", "--next", "30m")
+    assert board.stat().st_mode & 0o777 == 0o640
+
+    link_dir = tmp_path / "elsewhere"
+    link_dir.mkdir()
+    link = link_dir / "board.md"
+    link.symlink_to(board)
+    run("set", str(link), "steps", "S1", "Title=via link", "State=todo", "--new")
+    assert link.is_symlink() and link.resolve() == board.resolve()
+    assert "via link" in board.read_text(encoding="utf-8")
+
+
+def test_files_are_utf8_whatever_the_locale(board: Path):
+    text = board.read_text(encoding="utf-8").replace("# Demo plan", "# Démo 日本", 1)
+    board.write_text(text, encoding="utf-8")
+    env = {"LC_ALL": "C", "PYTHONUTF8": "0", "PYTHONCOERCECLOCALE": "0"}
+    run("tick", str(board), "--manager", "m1", "--next", "30m", env=env)
+    run("log", str(board), "event", env=env)
+    run("check", str(board), env=env)
+    assert board.read_text(encoding="utf-8").startswith("# Démo 日本")
 
 
 def test_card_check_ignores_fenced_and_commented_lines(tmp_path: Path):
