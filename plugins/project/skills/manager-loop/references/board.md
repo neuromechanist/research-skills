@@ -17,7 +17,7 @@ So the board holds state only, within hard limits, and history goes to the log.
 | Parity | owner | Tier, one column per platform, Notes | add a platform by adding a column; see `platforms.md` |
 | Slots | owner | Slot, Platform, Tiers, Max, Can, Notes | Platform names a Parity column; Can lists capabilities |
 | Budget | owner sets Limit; manager updates Used | Item, Limit, Used, Resets, Notes | Resets: never, daily, or wave |
-| Waves | lead, then manager sets State | Wave, Goal, Agents, State, Exit gate | optional; states planned, active, done, hold |
+| Waves | lead, then manager sets State | Wave, Goal, Agents, State, Exit gate | optional; states planned, active, done, hold; setting a wave `active` resets the wave budgets |
 | Steps | manager | ID, Title, Wave, Tier, Needs, Slot, State, Depends, PR, Started, Timebox, Next | table order is dispatch priority |
 | Questions | manager asks; owner answers | ID, Step, Question, Options, Default, Needed by, State, Answer | states open, answered, closed, defaulted |
 | Proposals | manager | ID, Time, Proposal, Why, State | states open, accepted, rejected, withdrawn |
@@ -30,11 +30,16 @@ Other `##` sections are kept and shown as text; use them sparingly.
 `outline` (not dispatchable until the lead completes the card), `todo`, `active`, `review`, `blocked` (say on what in Next), `owner` (waits on the owner), `done`, `dropped`.
 A step is ready when it is `todo`, every step in Depends is `done`, and its wave (if the board has waves) is `active`.
 
+### Waves and budgets
+
+Setting a wave's State to `active` (`set Waves <id> State=active`) resets every Budget row whose Resets is `wave` to 0 and logs the reset, so the new wave starts with its full wave budget.
+A step spends the wave budget only when it belongs to a wave.
+
 ### Values
 
 - Lists (Depends, Needs, Tiers, Can) are comma-separated.
 - Options are separated by ` / `; mark one with `(Recommended)`.
-- Times are ISO 8601 (`2026-11-14T17:00` or with an offset); the helper writes local time with its offset.
+- Times are written year-month-day, `T`, hour:minute (`2026-11-14T17:00`), optionally with a numeric offset; the helper writes local time with its offset.
 - Timebox is a duration (`4h`, `2d`); `status` flags a step past its timebox and past twice its timebox.
 - Titles may link to the card: `[Store v3](cards/E1.1.md)`.
 - A literal `|` in a cell is written `\|`.
@@ -53,12 +58,18 @@ It prints the model the slot runs for that tier (from Parity), the steps that ca
 ## The lease
 
 `tick --manager <id>` records the manager's id and its next wake.
+The id is stable per manager, `<host>-<model>` (for example `mba-claude-sonnet`), never per session, so a restart or a headless tick of the same manager keeps the lease.
 A second manager calling `tick` with a different id before that wake (plus ten minutes) is refused, which prevents double dispatch and double merge when a scheduled tick overlaps a live session.
-`--take-over` is only for a manager confirmed stopped; log why.
+The refusal prints the lease expiry; the refused manager schedules one wake at that time and does nothing else.
+The first tick of a session passes `--state running`.
+`tick --state paused`, `stopped`, or `done` clears Next tick and releases the lease, and `status` reports the manager as late only while State is `running`.
+Handing over to a different manager: the old one runs `tick --state paused` first.
+`--take-over` is only for a manager confirmed stopped; log why (`--note`).
 
 ## Writing
 
 The helper is the normal writer: every write takes a lock, re-reads the file, applies one change, validates the result, and replaces the file atomically; an invalid result is refused and the file is left as it was.
+The lock is on the board's directory, so it holds across sandboxes; it is POSIX-only (macOS, Linux, Windows Subsystem for Linux).
 The owner may hand-edit Parity, Slots, and Budget limits; anyone who hand-edits runs `check` afterward.
 Workers never write the board; they report to the manager.
 

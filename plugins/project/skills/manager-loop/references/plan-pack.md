@@ -61,6 +61,7 @@ Short sections the manager can follow literally:
 A card is dispatched verbatim, with only live facts added (the integration tip, a baseline path and checksum, open PRs) copied from the board at dispatch time, never from an earlier prompt.
 Start from `assets/card-template.md`.
 `manager_board.py card cards/<ID>.md` refuses a card that is an outline, misses a required section, has an empty section, names no literal command in Acceptance or Gates, or holds a placeholder such as TBD.
+It skips files named `README.md`, so the shared preamble is never checked as a card.
 
 Required sections: Goal, Scope, Acceptance, Gates, Stop conditions, Report.
 Recommended: Context (what to read first), Decided design ("Settled: ...; the implementer may choose: ..."), Timebox ("L, 2 days; escalate at 4 days or two failed approaches").
@@ -107,6 +108,7 @@ Do not use one for steps that share files or a serialized resource, for sequenti
 | W2 | per-dataset history | 15 | planned | E1.2, E1.3, E4.1 merged |
 
 Inside an active wave, steps still flow through slots: a member starts when its slot frees, not when the whole wave can start.
+Opening a wave (`set Waves <id> State=active`) resets every Budget row whose Resets is `wave` to 0 and logs it; a step spends the wave budget only if it belongs to a wave.
 
 ### Sizing a wave's budget
 
@@ -127,10 +129,11 @@ A decision date is not a deadline for the work; it is the day on which nobody ma
 
 ## Reviewing the pack before the loop
 
-Three lenses, each a fresh agent, every finding with a disposition in the plan's appendix:
+Executability and design reviewers, plus a domain reviewer where it applies, each a fresh agent, every finding with a disposition in the plan's appendix:
 
-1. Executability (worker tier): could a literal manager run this? Missing gates, circular dependencies, ownership collisions, missing escalation defaults.
-2. Design (lead tier or advisor): is the approach sound and the scope right?
-3. Domain (for research: an area-chair style reviewer; for products: a user-facing reviewer).
+1. Executability (worker tier): could a literal manager run this?
+   Look for missing gates, circular dependencies, ownership collisions, and missing escalation defaults.
+2. Design (lead tier): is the approach sound and the scope right?
+3. Domain, where it applies (for research: an area-chair style reviewer; for products: a user-facing reviewer).
 
-Then `manager_board.py check` on the board and `card` on the first cards of every slot list.
+Then `manager_board.py check` on the board and `card` on every card the first dispatches will use (`README.md` preambles are skipped).

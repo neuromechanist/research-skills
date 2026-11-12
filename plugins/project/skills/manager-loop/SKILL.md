@@ -40,8 +40,8 @@ The lead and the manager may be one agent only when the owner says so; that agen
 ## Setup (once, before the first tick)
 
 1. **Plan pack.** The lead writes it per `references/plan-pack.md`: the plan with a goal and a literal acceptance gate per step, the manager's runbook, one card per step, the slot and collision rules (or the named waves), and the checkpoints and risks.
-2. **Pack review.** One executability reviewer (worker tier) and one design reviewer (lead tier or advisor) read the pack; every finding gets a disposition before the loop starts.
-   `manager_board.py card cards/*.md` must pass for every card in the first slot lists.
+2. **Pack review.** An executability reviewer (worker tier) and a design reviewer (lead tier) read the pack, plus a domain reviewer where it applies; every finding gets a disposition before the loop starts.
+   Run `manager_board.py card` on every card the first dispatches will use (README.md preambles are skipped); each must pass.
 3. **Board.** `manager_board.py init .context/<plan>/board.md --title ... --plan ... --repo ... --branch ...`, then add the steps and waves.
    The script lives in this skill's `scripts/` directory; call it by absolute path with `python3` (standard library only).
 4. **Defaults and owner approval.**
@@ -55,21 +55,31 @@ The lead and the manager may be one agent only when the owner says so; that agen
 
 Run in order; each tick is complete on its own because the board carries all state.
 
-1. `date`. Then `manager_board.py tick <board> --manager <host-model-session>`.
-   If it refuses because another manager holds the lease, stop: do nothing else this tick.
+1. `date`. Then `manager_board.py tick <board> --manager <id>`; the first tick of a session adds `--state running`.
+   The manager id is stable per manager, `<host>-<model>` (for example `mba-claude-sonnet`), never per session, so restarts and headless ticks of the same manager keep the lease.
+   If the tick is refused because another manager holds the lease, schedule one wake at the lease expiry the refusal prints and do nothing else.
 2. **First tick of a session only:** reconcile the board with the world.
    For each step in `active` or `review`, read its PR and worktree; the PR and the worktree are right, the board is corrected and the correction logged.
    A step with no live worker is dispatched again with the line "This card was started earlier. Continue from the worktree: run `git status` and `git log --oneline -10` first."
 3. `manager_board.py status <board>`: the needs-you list, the dispatch plan, timeboxes, questions, budget.
 4. **Collect events:** worker reports, open PRs and their checks, owner answers (board and session), dates due.
-5. **Handle events in this order:** owner answers, worker reports, reviews, failed checks or gates, timeboxes and silent workers, dates and questions due, a checkpoint due.
-   - A report: verify by observation (below), then start the review.
+5. **Handle events in this order:** owner answers, worker reports, reviews, failed checks or gates, merge conflicts, timeboxes and silent workers, dates and questions due, a checkpoint due.
+   Limits and next actions come from `project:engineering-loop`'s `references/unblock-rules.md`; apply them literally.
+   - An answered question: act on it, record it with `decide <text> --by owner`, set the question `closed`.
+   - A report: verify by observation (below), then start the review while continuous integration (CI) runs; do not wait for CI.
    - A review: give every finding an outcome per `project:pr-review-toolkit`'s `references/review-convergence.md`; at most two rounds.
+   - A check failing because of the diff: two fix attempts, then escalate to the advisor with the failing log.
+   - CI failing without the diff (it fails on the base, on infrastructure, or flakily): one rerun (`gh run rerun <id> --failed`), then file an issue with the log and continue.
+   - A merge conflict: the branch's worker merges the base into the branch and reruns the gates; never a rebase, never a force-push.
+   - A silent worker, an implementer at 45 minutes without commits or messages or a reviewer at 20 minutes: nudge once, then redispatch with an inventory of its files and commits (the manager hands the card to a worker and never takes it over).
+   - A step past twice its timebox: escalate to the advisor.
+   - A date or question due: ask it now, with a recommendation.
+   - A checkpoint due: the checkpoint items under "Contribute".
    - Merge when the merge gate passes and the board's authority allows it.
+     The merge gate: every review report is in with each finding resolved, no accepted Critical is open, and `gh pr checks N` is green on the final head (every check, not only required ones).
      A merge the host refuses (a refused permission or an automated policy denial) is not retried or worked around: set the step to `owner` and ask.
-   - An answered question: act on it, record it with `decide`, set the question `closed`.
 6. **Fill free slots** from the dispatch plan in `status` (it already applies dependencies, open waves, tiers, needs, and slot limits).
-   For each: `card` check, `spend <board> "Agents today"` (and the wave budget), dispatch the card verbatim plus live facts copied from the board now, then `set` the step `active` with its slot and add its agent row.
+   For each: `card` check, `spend <board> "Agents today"` (and `spend <board> "Agents this wave"` only when the step belongs to a wave), dispatch the card verbatim plus live facts copied from the board now, then `set` the step `active` with its slot and add its agent row.
 7. **Contribute** with the closed checklist below; at most one proposal per tick.
 8. **Ask** the owner if an event needs it (below).
 9. **Write and wake.** `log` one line per event; commit the board locally (push only at checkpoints, with `[skip ci]` when no CI reads it); `tick <board> --next 30m` while workers run, `--next 60m` while waiting on people; then schedule the wake with the host's self-paced loop (`references/platforms.md`).
@@ -83,7 +93,8 @@ A worker's "done" is not evidence. Check, in order, and stop at the first failur
 3. The card's acceptance gate was run on the final head: run its literal command yourself, or read the quoted hook or run record the card names.
 4. Every fix has a revert check or a test that fails without it.
 5. Deviations from the card are listed and each is triaged (accept, send back, or ask the lead).
-6. `gh pr checks N` is green on the final head, every check, not only required ones.
+
+Green checks on the final head belong to the merge gate (tick step 5), not to this list.
 
 Send back, inside the current round: a value stated as measured that was computed, a stop condition the worker passed, a test that cannot fail, a PR body replaced instead of extended.
 
@@ -98,13 +109,14 @@ Apply in order:
 
 On the board, a step whose wave is not `active` is not ready; the manager sets the next wave `active` only after the current wave's exit gate passes and the checkpoint is recorded.
 Wave budget = members x (1 implementer + round-1 panel size + 1 delta reviewer + expected fix dispatches) + 1 advisor.
+Opening a wave (`set Waves <id> State=active`) resets every Budget row whose Resets is `wave` to 0 and logs it; step 6 spends the wave budget only for a step that belongs to a wave.
 Details and examples: `references/plan-pack.md`.
 
 ## Budgets
 
 The board's Budget table holds limits the owner approved; Slots hold concurrency.
 `spend` refuses to pass a limit: at a limit, stop dispatching and ask.
-Daily rows reset on the first tick of a day; wave rows are set to 0 when a wave opens.
+Daily rows reset on the first tick of a day; wave rows reset automatically when a wave opens, and the reset is logged.
 Compute budgets (GPU hours, cloud dollars) carry the plan's overrun trigger and its ordered drop rules; never drop anything on the plan's never-drop list.
 
 ## Parity and platforms
@@ -159,9 +171,9 @@ Write through the helper so limits hold (300 lines, 240 characters per cell); ru
 | --- | --- |
 | `init`, `check`, `status [--json]` | create, validate, read the tick summary |
 | `set <section> <key> Col=value [--new]` | update or add a row (Steps, Questions, Proposals, Agents, Waves) |
-| `tick --manager ID --next 30m` | heartbeat and lease; refuses a second live manager |
-| `spend <item> [n]`, `ask`, `answer`, `propose`, `decide`, `log`, `archive` | budgets, questions, proposals, history |
-| `card <files>` | refuse to dispatch an incomplete card |
+| `tick --manager <id> [--next 30m] [--state <state>]` | heartbeat and lease; refuses a second live manager; `--state paused`, `stopped`, or `done` clears Next tick and releases the lease |
+| `spend <item> [n]`, `ask <id> --question <text>`, `answer`, `propose <text> --why <reason>`, `decide <text> --by <who>`, `log`, `archive` | budgets, questions, proposals, history |
+| `card <files>` | refuse to dispatch an incomplete card (files named README.md are skipped) |
 | `render`, `serve [--port]` | static snapshot, or the live localhost page with answer buttons |
 
 Format, columns, states, and the server's limits: `references/board.md`.
@@ -179,4 +191,5 @@ Format, columns, states, and the server's limits: `references/board.md`.
 ## Stop and hand off
 
 Stop when every step is `done` or `dropped`, or when everything left waits on the owner: set the board's state to `done` or `paused` with `tick --state`, notify once through the host with what waits, and end the host's loop (`references/platforms.md`).
-When the manager's own context runs long, finish the tick, write the board, and restart the session with the same start prompt; the first-tick reconcile resumes it.
+Handing over to a different manager: the old one runs `tick --state paused` first, and the new one uses `--take-over` only for a manager confirmed stopped, with the reason logged.
+When the manager's own context runs long, finish the tick, write the board, and restart the session with the same start prompt and the same manager id; the first-tick reconcile resumes it.
