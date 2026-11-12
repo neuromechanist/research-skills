@@ -191,7 +191,7 @@ def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
         assert model_id in fanout, f"agent-fanout routing table is missing {model_id}"
     assert "opt-in" in fanout
 
-    retired = re.compile(r"gpt-5\.6|Fable when available")
+    retired = re.compile(r"gpt-5[.]6|Fable when[ ]available")
     scanned = [
         ROOT / "AGENTS.md",
         ROOT / "README.md",
@@ -570,9 +570,11 @@ def test_project_script_references_resolve_to_executables():
     stale: list[str] = []
     for source in sources:
         text = source.read_text()
-        for name in re.findall(r"(?:^|[/\s`(])scripts/(project-[A-Za-z0-9_.-]+)", text, re.M):
+        for name in re.findall(
+            r"(?:^|[/\s`(])scripts/(project-[A-Za-z0-9_.-]+)", text, re.MULTILINE
+        ):
             referenced.add(name.rstrip("."))
-        if re.search(r"(?:^|[/\s`(])bin/project-", text, re.M):
+        if re.search(r"(?:^|[/\s`(])bin/project-", text, re.MULTILINE):
             stale.append(str(source.relative_to(ROOT)))
     assert referenced, "expected references to scripts/project-*"
     for name in sorted(referenced):
