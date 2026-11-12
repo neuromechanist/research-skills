@@ -26,9 +26,9 @@ If it does not, stop and plan first.
 | Role | Default tier | Does | Never |
 | --- | --- | --- | --- |
 | Owner | person | approves the plan, budgets, parity, and merge authority; answers questions; outward actions | |
-| Lead | strongest (Fable or Opus; Codex Sol) | writes the plan pack and cards, completes outline cards at checkpoints, decides design and contested findings | dispatch, merge |
+| Lead | frontier tier (Fable; Codex Astra), else lead tier (Opus; Codex Sol) | writes the plan pack and cards, completes outline cards at checkpoints, decides design and contested findings | dispatch, merge |
 | Manager | Sonnet high or xhigh; Codex Luna max | runs the tick: dispatch, verify, review, merge, board, questions, proposals | design, product code, change the plan, a card, or a gate |
-| Advisor | Opus first; Fable for long horizon or when Opus cannot decide | one read-only consult per escalation, from a brief | edit anything |
+| Advisor | lead tier first (Opus; Codex Sol); frontier tier (Fable; Codex Astra) for long horizon or when the lead tier cannot decide | one read-only consult per escalation, from a brief | edit anything |
 | Implementer | by the card's tier and the parity table | one card, one branch, one PR | merge, change scope |
 | Reviewer | `project:pr-review-toolkit`, a different model family from the implementer when possible | | edit |
 
@@ -121,8 +121,8 @@ Never answer for the owner and never treat silence as an answer; a default appli
 
 ## Escalation
 
-Escalate to the advisor (Opus first) on: a step at twice its timebox, two failed approaches, a security or data-integrity invariant, a contested review finding, a red gate on the integration branch, the same gate step flaky twice in seven days, a PR that relaxes a gate, an owner answer that contradicts a card, or a projected budget overrun.
-Escalate to Fable only for a long-horizon question, when Opus cannot decide, or when the same item looped three times.
+Escalate to the advisor (lead tier first: Opus, or Sol on Codex) on: a step at twice its timebox, two failed approaches, a security or data-integrity invariant, a contested review finding, a red gate on the integration branch, the same gate step flaky twice in seven days, a PR that relaxes a gate, an owner answer that contradicts a card, or a projected budget overrun.
+Escalate to the frontier tier (Fable, or Astra on Codex) only for a long-horizon question, when the lead tier cannot decide, or when the same item looped three times.
 Use the brief and output format in `references/escalation.md`; `spend` the advisor budget; record the ruling with `decide` and on the PR.
 The lead turns a ruling into card changes; the manager never edits a card itself.
 

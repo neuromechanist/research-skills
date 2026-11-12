@@ -26,11 +26,11 @@ Step states: outline (not dispatchable), todo, active, review, blocked, owner (w
 
 | Tier | Claude | Codex | Copilot | Notes |
 |---|---|---|---|---|
-| worker | Sonnet high | Luna max | balanced coding model | routine cards from a detailed plan; owner confirms at plan start |
-| worker-hard | Sonnet xhigh | Terra xhigh | balanced reasoning model | protocol, concurrency, security, contract work |
-| lead | Opus xhigh | Sol xhigh | strongest model | subtle implementation and design-level fixes |
-| advisor | Opus xhigh, then Fable | Sol xhigh | strongest model | one-off read-only consults; Fable for long horizon or when Opus cannot decide |
-| reviewer | Sonnet high | Luna max | balanced coding model | a different model family from the implementer when possible |
+| worker | Sonnet high | gpt-6-luna max | balanced coding model | routine cards from a detailed plan; owner confirms at plan start |
+| worker-hard | Sonnet xhigh | gpt-6.1-terra xhigh | balanced reasoning model | protocol, concurrency, security, contract work |
+| lead | Opus xhigh | gpt-6.1-sol xhigh | strong reasoning model | subtle implementation, design-level fixes, first-level advice |
+| frontier | Fable | gpt-6-astra xhigh | strongest model | the plan, long-horizon advice, or when the lead tier cannot decide |
+| reviewer | Sonnet high | gpt-6-luna max | balanced coding model | a different model family from the implementer when possible |
 
 ## Slots
 
@@ -46,7 +46,7 @@ Step states: outline (not dispatchable), todo, active, review, blocked, owner (w
 |---|---|---|---|---|
 | Agents today | 40 | 0 | daily | implementers, reviewers, advisors spawned; the plan approval covers this limit |
 | Agents this wave | 15 | 0 | wave | items x (1 + review panel + 1 delta + fix rounds) + 1 advisor |
-| Advisor consults | 3 | 0 | never | Opus first; Fable only as the ladder says |
+| Advisor consults | 3 | 0 | never | lead tier first (Opus, Sol); frontier tier (Fable, Astra) only as the ladder says |
 
 ## Waves
 

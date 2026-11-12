@@ -28,9 +28,9 @@ It is read-only, never spawns agents, and keeps optional capability failures sep
 ## Manager loops
 
 For a plan of many steps that should run for hours or days without supervision, `manager-loop` splits the work by capability.
-A frontier model (Fable or Opus; Codex Sol) writes the plan pack: one self-contained card per step with a literal acceptance gate, the slot and collision rules or named waves, and the checkpoints.
+A frontier model (Fable, else Opus; on Codex, Astra, else Sol) writes the plan pack: one self-contained card per step with a literal acceptance gate, the slot and collision rules or named waves, and the checkpoints.
 A mechanical manager (Sonnet; Codex Luna) runs it tick by tick: it dispatches cards, verifies each step by observing the PR, the diff, and the gate output rather than trusting a report, runs reviews, merges within its authority, and asks the owner only through structured questions.
-Judgment goes up a ladder: the lead for design, an Opus advisor and then Fable for stuck or long-horizon questions, and the owner for decisions only the owner can make.
+Judgment goes up a ladder: the lead for design, an Opus or Sol advisor and then Fable or Astra for stuck or long-horizon questions, and the owner for decisions only the owner can make.
 
 The owner keeps a live parity table that maps capability tiers to models on each platform (Claude, Codex, Copilot, or any product added later), and the slots that say how many workers each platform may run and what it can do (browser, GUI, GPU).
 Cards name a tier, not a model, so the manager can place work wherever there is capacity, and the owner can move budget between platforms by editing one row.

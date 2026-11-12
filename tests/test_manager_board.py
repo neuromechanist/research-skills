@@ -87,7 +87,7 @@ def test_dispatch_respects_dependencies_tiers_needs_and_capacity(board: Path):
     assert "S4" not in plan  # waits on S3
     assert plan["S5"] == {"step": "S5", "slot": "claude-opus", "model": "Opus xhigh"}
     assert plan["S6"]["slot"] == "codex"
-    assert plan["S6"]["model"] == "Luna max"
+    assert plan["S6"]["model"] == "gpt-6-luna max"
     unplaced = {u["step"]: u["reason"] for u in data["unplaced"]}
     assert unplaced["S3"] == "fitting slots are full"
     lanes = {s["id"]: s["lane"] for s in data["steps"]}

@@ -7,20 +7,20 @@ Each route has mechanical triggers, so a literal manager knows when to use it.
 
 | Trigger | Route |
 | --- | --- |
-| A step past twice its timebox, or two failed approaches | advisor (Opus) |
-| A security, data-integrity, concurrency, or authorization invariant is in play | advisor (Opus), before any fix |
-| A contested review finding (implementer and reviewer disagree) | advisor (Opus) |
-| A red gate on the integration branch | advisor (Opus); stop merging into it |
+| A step past twice its timebox, or two failed approaches | advisor (lead tier) |
+| A security, data-integrity, concurrency, or authorization invariant is in play | advisor (lead tier), before any fix |
+| A contested review finding (implementer and reviewer disagree) | advisor (lead tier) |
+| A red gate on the integration branch | advisor (lead tier); stop merging into it |
 | The same gate step flaky twice in seven days | lead: a diagnosis card |
 | A PR that relaxes a gate's assertion | lead; never merge it on the manager's authority |
 | An owner answer that contradicts a card's assumption | lead: correct the card before dispatch |
 | A projected budget overrun (remaining work x measured median / free slots > time left) | owner: apply the plan's next drop rule only if pre-authorized, otherwise ask |
-| Opus cannot decide, or the same item looped three times, or a long-horizon question (strategy, priorities across the whole plan) | advisor (Fable) |
+| The lead tier cannot decide, or the same item looped three times, or a long-horizon question (strategy, priorities across the whole plan) | advisor (frontier tier) |
 | A decision only the owner can make (scope, dates, money, outward actions, a merge the host refused, parity or budget changes) | owner question |
 
 ## The advisor
 
-Opus first; Fable only by the ladder above. `spend <board> "Advisor consults"` before each one.
+The lead tier first (Opus; Codex Sol), the frontier tier (Fable; Codex Astra) only by the ladder above, as the board's Parity table maps them. `spend <board> "Advisor consults"` before each one.
 
 ### Brief (one file, under 600 words)
 

@@ -8,6 +8,7 @@ The same card, the same gates, and the same report schema apply on every platfor
 
 The Parity table maps tiers to a model and effort per platform; the Slots table says how many workers each platform may run, which tiers it takes, and what it can do.
 A real example of an owner's mapping when Codex budget grew: "Luna max for Sonnet work (high), Terra xhigh for Sonnet xhigh, Sol xhigh for Opus", with a Codex slot of at most four Luna plus two Terra (or one Terra and one Sol) at a time.
+The frontier tier maps the same way: Fable to Astra (`gpt-6-astra`), with Sol (`gpt-6.1-sol`) at the Opus level.
 
 Models get renamed, new products ship, and quotas move, so:
 
