@@ -8,6 +8,7 @@ description: "Use this skill when the user asks to \"run the plan hands-off\", \
 A lead-tier model writes the plan; a mechanical manager runs it, tick by tick, for hours or days.
 The manager dispatches self-contained cards, verifies each step's goal by observing evidence, runs reviews, merges, keeps the board, and asks the owner only through structured questions.
 Judgment goes up a ladder (lead, advisor, owner); it never happens in the manager.
+Invoke sibling skills through the host's own skill mechanism.
 
 ## When to use
 
@@ -47,7 +48,7 @@ The lead and the manager may be one agent only when the owner says so; that agen
    The defaults are the board template's Parity, Slots, and Budget, the plan's merge authority, and "no question takes a default answer".
    The owner's approval of the plan accepts them, including the budget limits that `project:agent-fanout`'s cap asks the user to approve, per wave and per day.
    Ask only about what has no default (for example the notification channel when the host has none), in one batch of structured questions (see "Owner questions").
-5. **Start.** Per host, as `references/platforms.md` says. On Claude Code: `/loop` with no interval and the runbook's start prompt.
+5. **Start.** Run the plan's start prompt on the host's self-paced loop with no interval, as `references/platforms.md` says for each host.
    Optional: `manager_board.py serve <board>` in a detached shell for the owner's live view.
 
 ## The tick
@@ -63,15 +64,15 @@ Run in order; each tick is complete on its own because the board carries all sta
 4. **Collect events:** worker reports, open PRs and their checks, owner answers (board and session), dates due.
 5. **Handle events in this order:** owner answers, worker reports, reviews, failed checks or gates, timeboxes and silent workers, dates and questions due, a checkpoint due.
    - A report: verify by observation (below), then start the review.
-   - A review: give every finding an outcome per `pr-review-toolkit`'s `review-convergence.md`; at most two rounds.
+   - A review: give every finding an outcome per `project:pr-review-toolkit`'s `references/review-convergence.md`; at most two rounds.
    - Merge when the merge gate passes and the board's authority allows it.
-     A merge the host refuses (permission or auto-mode denial) is not retried or worked around: set the step to `owner` and ask.
+     A merge the host refuses (a refused permission or an automated policy denial) is not retried or worked around: set the step to `owner` and ask.
    - An answered question: act on it, record it with `decide`, set the question `closed`.
 6. **Fill free slots** from the dispatch plan in `status` (it already applies dependencies, open waves, tiers, needs, and slot limits).
    For each: `card` check, `spend <board> "Agents today"` (and the wave budget), dispatch the card verbatim plus live facts copied from the board now, then `set` the step `active` with its slot and add its agent row.
 7. **Contribute** with the closed checklist below; at most one proposal per tick.
 8. **Ask** the owner if an event needs it (below).
-9. **Write and wake.** `log` one line per event; commit the board locally (push only at checkpoints, with `[skip ci]` when no CI reads it); `tick <board> --next 30m` while workers run, `--next 60m` while waiting on people; then schedule the wake on the host.
+9. **Write and wake.** `log` one line per event; commit the board locally (push only at checkpoints, with `[skip ci]` when no CI reads it); `tick <board> --next 30m` while workers run, `--next 60m` while waiting on people; then schedule the wake with the host's self-paced loop (`references/platforms.md`).
 
 ## Verify by observation
 
@@ -116,13 +117,14 @@ The owner owns them and edits them when things change; the manager never edits t
 The manager asks the parity question only on a mismatch (a refused model id, a platform missing from Parity, a quota near its end, a capability no slot has), never routinely at a checkpoint: "update the parity, add this platform as a slot, or keep it?"
 Allocate by capability first (GUI, browser, computer use, hardware), then cost and quota.
 Computer use and visible GUI runs stay with the manager's host and need the owner's announced consent every time.
-Dispatch commands, model checks, and handover rules per platform: `references/platforms.md`.
+Dispatch commands, model checks, handover rules, and every host-specific mechanic (the self-paced loop, questions, notifications, waits) are in `references/platforms.md`.
 
 ## Owner questions
 
-Record every question on the board first: `manager_board.py ask <board> Q7 --question ... --options "A (Recommended) / B" --default none --needed-by <ISO>`.
-Then, if the owner is in an interactive session, ask it with the host's structured question tool (Claude Code AskUserQuestion; Codex `request_user_input`; Copilot CLI `ask_user`), batching up to three or four related questions, each with options, one recommended, the default, and what waits.
-Otherwise notify once (push notification where available) and keep working on independent steps.
+Record every question on the board first: `manager_board.py ask <board> Q7 --question <text> --options "A (Recommended) / B" --default none --needed-by <time>`.
+Then, if the owner is in an interactive session, ask it with the host's structured question tool, batching a few related questions, each with options, one recommended, the default, and what waits; the batch limits per host are in `references/platforms.md`.
+If the host offers no such tool in this session, ask in plain text in the session; the board record stays either way.
+If the owner is away, send one notification through the host and keep working on independent steps.
 The owner may answer in the session or on the live board page; both land in the board's Questions table.
 Never answer for the owner and never treat silence as an answer; a default applies at its deadline only for a question class the owner pre-authorized, and the manager logs that it applied it.
 
@@ -168,7 +170,7 @@ Format, columns, states, and the server's limits: `references/board.md`.
 
 - Merge with a red or pending check, an unresolved finding, or a review still running; start a third review round.
 - Change a gate's expectation, a card, the plan, the parity, or a budget limit.
-- Retry a refused permission, work around an auto-mode denial, force-push, or rebase a pushed branch.
+- Retry a refused permission, work around an automated policy denial, force-push, or rebase a pushed branch.
 - Perform outward actions (deploy, publish, post, contact anyone); hand them to the owner as exact commands.
 - Delegate computer use, or start a visible GUI run without an announcement and a stop file.
 - Answer for the owner, or act on an assumed answer.
@@ -176,5 +178,5 @@ Format, columns, states, and the server's limits: `references/board.md`.
 
 ## Stop and hand off
 
-Stop when every step is `done` or `dropped`, or when everything left waits on the owner: set the board's state to `done` or `paused` with `tick --state`, notify once with what waits, and end the loop.
+Stop when every step is `done` or `dropped`, or when everything left waits on the owner: set the board's state to `done` or `paused` with `tick --state`, notify once through the host with what waits, and end the host's loop (`references/platforms.md`).
 When the manager's own context runs long, finish the tick, write the board, and restart the session with the same start prompt; the first-tick reconcile resumes it.

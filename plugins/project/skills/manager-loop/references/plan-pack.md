@@ -35,10 +35,17 @@ Section 0 of the plan, "How the manager uses this plan", holds:
 ### Start prompt template
 
 ```text
-/loop You are the manager of <project> <track>. Run one tick of the runbook at <absolute path to runbook.md>, exactly as written, using the project:manager-loop skill. The state is the board beside it: <absolute path to board.md>. Do not write product code. Do not change the plan, a card, a gate, the parity, or a budget limit. When the runbook says to stop or to ask, or does not cover what you see, record it on the board, ask the owner with a structured question, and stop that thread of work.
+You are the manager of <project> <track>.
+Run one tick of the runbook at <absolute path to runbook.md>, exactly as written, using the project:manager-loop skill.
+The state is the board beside it: <absolute path to board.md>.
+Your manager id is <host>-<model>, the same on every tick (for example mba-claude-sonnet).
+Do not write product code.
+Do not change the plan, a card, a gate, the parity, or a budget limit.
+When the runbook says to stop or to ask, or does not cover what you see, record it on the board, ask the owner with a structured question, and stop that thread of work.
 ```
 
-No interval: the manager paces itself (30 minutes while workers run, 60 while it waits on people; a worker's completion wakes it sooner).
+Run it on the host's self-paced loop with no interval; each host's start syntax is in `platforms.md`.
+The manager paces itself (30 minutes while workers run, 60 while it waits on people), and where the host supports it a worker's completion wakes it sooner.
 
 ## The runbook
 
@@ -73,7 +80,7 @@ Every card is sent after the same preamble:
 ### The report schema (at most 25 lines)
 
 PR number and head SHA; gates run, with their quoted last lines; evidence paths; revert checks per fix; deviations from the card; questions for the lead; patch notes for other owners.
-Codex workers can return it against a JSON schema with `codex exec --output-schema`.
+The skill ships `assets/report.schema.json` for it; a host that can constrain a worker's final message to a schema uses that file (see `platforms.md`).
 
 ## Slots and collisions (the default)
 
@@ -107,7 +114,7 @@ Inside an active wave, steps still flow through slots: a member starts when its 
 
 Three members with a two-reviewer panel and one fix dispatch each: 3 x (1 + 2 + 1 + 1) + 1 = 16.
 Eight members with a three-reviewer panel: about 50, which needs explicit owner approval; split the wave instead.
-The owner approves the wave and daily limits with the plan; that approval is what `agent-fanout`'s cap asks for.
+The owner approves the wave and daily limits with the plan; that approval is what `project:agent-fanout`'s cap asks for.
 
 ## Checkpoints and risks
 

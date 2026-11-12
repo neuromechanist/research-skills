@@ -30,13 +30,24 @@ Computer use and visible GUI runs act on the owner's machine: they stay with the
 
 | Host | How it ticks | How it asks the owner | Notes |
 | --- | --- | --- | --- |
-| Claude Code (recommended) | `/loop` with no interval; the manager ends each tick by scheduling its next wake (ScheduleWakeup) | AskUserQuestion; PushNotification to reach the owner away from the terminal | dispatch workers with `run_in_background: true` so a completion wakes the manager early; use Monitor with a time limit for waits on CI or jobs |
+| Claude Code (recommended) | the start prompt prefixed with `/loop ` and no interval; the manager ends each tick by scheduling its next wake | a structured question tool; a notification to reach the owner away from the terminal | workers run in the background so a completion wakes the manager early; mechanics below |
 | Codex, interactive | the owner keeps one session open; a scheduler sends "Run one manager tick" into it with `codex queue --thread <session> --message ... --resume`, where the installed version has `codex queue` | `request_user_input` (one to three short questions; interactive root thread only) | verify one manual tick before scheduling; the lease stops a queued tick from overlapping a running one |
 | Codex, headless | a scheduler (cron, launchd, a systemd timer) runs `codex exec -C <repo> "<start prompt>"` once per tick | none in `codex exec`: questions go to the board and a notification | workers must be detached and write report files, because nothing wakes a headless manager early |
 | Copilot CLI | interactive session ticked by the owner, or a non-interactive prompt run per tick from a scheduler (check `copilot --help` for the installed flags) | `ask_user` when enabled (it can be disabled with `--no-ask-user`) | same rules as headless Codex when non-interactive |
 | A cloud scheduled agent | one tick per run against a board kept on a pushed branch | board and notification only | the lease and the board's commits must go through the branch; use only when the owner wants the manager off their machines |
 
 Whatever the host, record every question on the board first; the host's question tool is the fast path, not the record.
+
+### Claude Code mechanics
+
+- Start: prefix the plan's start prompt with `/loop ` and give no interval, so the loop paces itself.
+- Wake: end each tick by scheduling the next wake with ScheduleWakeup; its delay is clamped to 60-3600 seconds, so a 30-minute cadence is 1800 and a 60-minute cadence is 3600.
+  ScheduleWakeup with `stop: true` ends the dynamic loop; use it when the board is `done` or `paused`.
+- Refused tick: schedule one wake at the lease expiry the refusal prints, and do nothing else.
+- Questions: AskUserQuestion, up to four questions per call with two to four options each, one marked recommended.
+- Notifications: PushNotification, to reach the owner away from the terminal.
+- Waits: Monitor with a time limit, never an unbounded poll.
+- Workers: the Agent tool with `run_in_background: true`; SendMessage continues a live worker.
 
 ## Dispatching workers
 

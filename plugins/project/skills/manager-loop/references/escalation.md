@@ -66,8 +66,8 @@ python3 <skill>/scripts/manager_board.py ask <board> Q7 \
 ### Asking
 
 1. Record it on the board (above). The board is the record on every host.
-2. If the owner is in an interactive session, ask with the host's structured question tool, batching related questions (Claude Code AskUserQuestion, up to four; Codex `request_user_input`, one to three, interactive root thread only; Copilot CLI `ask_user`).
-3. Otherwise send one notification (Claude Code PushNotification where available) naming the question IDs and what waits, and keep working on independent steps.
+2. If the owner is in an interactive session, ask with the host's structured question tool, batching related questions (limits per host: `platforms.md`).
+3. Otherwise send one notification through the host, naming the question IDs and what waits, and keep working on independent steps.
 4. When an answer arrives (session, board page, or `answer`), act on it, `decide` it with "by owner", and set the question `closed`. `archive` clears closed questions from the board.
 
 Never answer for the owner. Never treat silence as an answer.
@@ -82,6 +82,6 @@ A checkpoint digest has five lines: what merged since the last checkpoint, the c
 
 ## Denied permissions and refused merges
 
-A permission prompt the owner denied, or a merge the host's auto mode refused, is information, not an obstacle.
+A permission the owner denied, a merge the host refused, or an automated policy denial is information, not an obstacle.
 Do not retry it, do not route it through another agent, and do not look for a different command that does the same thing.
 Set the step to `owner`, ask a question that names the exact command and why it is needed, and continue with other steps.
