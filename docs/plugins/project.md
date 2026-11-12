@@ -25,6 +25,19 @@ plugin helpers are not on `PATH`.
 It reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI command/network/auth/token status, child-shell credential inheritance, and native-agent capability.
 It is read-only, never spawns agents, and keeps optional capability failures separate from repository detection failures.
 
+## Manager loops
+
+For a plan of many steps that should run for hours or days without supervision, `manager-loop` splits the work by capability.
+A frontier model (Fable or Opus; Codex Sol) writes the plan pack: one self-contained card per step with a literal acceptance gate, the slot and collision rules or named waves, and the checkpoints.
+A mechanical manager (Sonnet; Codex Luna) runs it tick by tick: it dispatches cards, verifies each step by observing the PR, the diff, and the gate output rather than trusting a report, runs reviews, merges within its authority, and asks the owner only through structured questions.
+Judgment goes up a ladder: the lead for design, an Opus advisor and then Fable for stuck or long-horizon questions, and the owner for decisions only the owner can make.
+
+The owner keeps a live parity table that maps capability tiers to models on each platform (Claude, Codex, Copilot, or any product added later), and the slots that say how many workers each platform may run and what it can do (browser, GUI, GPU).
+Cards name a tier, not a model, so the manager can place work wherever there is capacity, and the owner can move budget between platforms by editing one row.
+
+The board is a Markdown file and the single source of truth.
+A standard-library helper validates it, computes the dispatch plan, holds a single-manager lease, enforces budget limits, and serves a live localhost kanban where the owner can also answer the manager's questions.
+
 ## Skills
 
 - **init-project**: scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, `.memory/`, and config files. `.memory/` contains one Markdown observation per file plus an index; reruns add only missing convention files.
@@ -37,6 +50,7 @@ It is read-only, never spawns agents, and keeps optional capability failures sep
 - **codebase-onboarding**: verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
 - **implementation-planning**: strongest-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
 - **engineering-loop**: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons
+- **manager-loop**: hands-off execution of an approved plan by a manager agent, described below
 - **debugging**: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)
 - **agent-fanout**: orchestrating subagents and teammates within a session with explicit model tiers: Claude Fable/Opus lead and Sonnet workers; Codex Sol lead, Terra approved-plan elaboration, and Luna workers. It adds full-lifecycle briefs, mechanical gates, lead verification, mandatory cleanup of completed one-off agents, and a hard cap of 40 agents per run. This is in-session delegation, distinct from the git-tracked epic/worktree workflow above.
 - **ci-scaffolding**: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
