@@ -1,7 +1,7 @@
 # The Plan Pack
 
 What the lead writes before the first tick, so that a mechanical manager can run the plan without reconstructing intent.
-Distilled from three long-running loops: a research rebuttal (six days, a Sonnet manager and a persistent Opus science lead), an application track (84 cards, about 75 merged PRs in three days, Claude and Codex slots), and a web product (waves of at most three implementers driven by a project manager).
+Distilled from three long-running loops: a research rebuttal (six days, a Sonnet manager and a persistent Opus science lead), an application track (84 cards, about 75 merged pull requests (PRs) in three days, Claude and Codex slots), and a web product (waves of at most three implementers driven by a project manager).
 
 ## Layout
 
@@ -20,7 +20,7 @@ Distilled from three long-running loops: a research rebuttal (six days, a Sonnet
 
 ## The plan
 
-Every step has: an ID, a one-sentence goal, a literal acceptance gate (commands and thresholds, set before any result is seen), dependencies, the files it owns, the host it runs on, and a tier (not a model).
+Every step has: an identifier (ID), a one-sentence goal, a literal acceptance gate (commands and thresholds, set before any result is seen), dependencies, the files it owns, the host it runs on, and a tier (not a model).
 A step the lead cannot specify yet is an `outline`; it is completed at a named checkpoint and is never dispatched before.
 
 Section 0 of the plan, "How the manager uses this plan", holds:
@@ -29,15 +29,23 @@ Section 0 of the plan, "How the manager uses this plan", holds:
 2. The tick, or a pointer to the runbook.
 3. Precedence: the owner's later instructions override the plan and are logged with `decide`; the repository's `AGENTS.md` overrides the plan except where the plan names an explicit exception.
 4. Merge authority: which PRs the manager may merge after the merge gate (usually every step PR into the integration branch), and which it never merges (releases, deploying repositories, anything outward).
-5. The question classes that may take a default at their deadline (often none).
+5. The question classes that may take a default at their deadline (none unless listed).
+6. Routing: any frontier trigger the plan lists (for example "frontier tier when the lead tier cannot decide, or after three loops"); with none listed, the frontier tier is used only when the owner asks.
 
 ### Start prompt template
 
 ```text
-/loop You are the manager of <project> <track>. Run one tick of the runbook at <absolute path to runbook.md>, exactly as written, using the project:manager-loop skill. The state is the board beside it: <absolute path to board.md>. Do not write product code. Do not change the plan, a card, a gate, the parity, or a budget limit. When the runbook says to stop or to ask, or does not cover what you see, record it on the board, ask the owner with a structured question, and stop that thread of work.
+You are the manager of <project> <track>.
+Run one tick of the runbook at <absolute path to runbook.md>, exactly as written, using the project:manager-loop skill.
+The state is the board beside it: <absolute path to board.md>.
+Your manager id is <host>-<model>, the same on every tick (for example mba-claude-sonnet).
+Do not write product code.
+Do not change the plan, a card, a gate, the parity, or a budget limit.
+When the runbook says to stop or to ask, or does not cover what you see, record it on the board, ask the owner with a structured question, and stop that thread of work.
 ```
 
-No interval: the manager paces itself (30 minutes while workers run, 60 while it waits on people; a worker's completion wakes it sooner).
+Run it on the host's self-paced loop with no interval; each host's start syntax is in `platforms.md`.
+The manager paces itself (30 minutes while workers run, 60 while it waits on people), and where the host supports it a worker's completion wakes it sooner.
 
 ## The runbook
 
@@ -52,7 +60,8 @@ Short sections the manager can follow literally:
 
 A card is dispatched verbatim, with only live facts added (the integration tip, a baseline path and checksum, open PRs) copied from the board at dispatch time, never from an earlier prompt.
 Start from `assets/card-template.md`.
-`manager_board.py card cards/<ID>.md` refuses a card that is an outline, misses a required section, has an empty section, names no literal command in Acceptance or Gates, or holds a placeholder such as TBD.
+`manager_board.py card cards/<ID>.md` refuses a card that is an outline, misses a required section, has an empty section, names no literal command in Acceptance or Gates, or holds a placeholder such as "to be determined" (TBD).
+It skips files named `README.md`, so the shared preamble is never checked as a card.
 
 Required sections: Goal, Scope, Acceptance, Gates, Stop conditions, Report.
 Recommended: Context (what to read first), Decided design ("Settled: ...; the implementer may choose: ..."), Timebox ("L, 2 days; escalate at 4 days or two failed approaches").
@@ -61,18 +70,18 @@ Recommended: Context (what to read first), Decided design ("Settled: ...; the im
 
 Every card is sent after the same preamble:
 
-- One card, one branch, one PR, in the worktree named on the card. Absolute paths.
-- Only the manager merges. Push once per review round. Never force-push or rebase a pushed branch.
+- One card, one branch, one PR, in the worktree named on the card; use absolute paths.
+- Only the manager merges; push once per review round; never force-push or rebase a pushed branch.
 - Stay inside Scope; anything else goes in the report as a patch note for its owner.
 - Run every gate yourself and quote its output; a computed value is never reported as measured.
 - Stop and report on any stop condition, or when the card seems wrong.
-- No computer use, no visible GUI runs, no secrets.
+- No computer use, no visible graphical user interface (GUI) runs, no secrets.
 - The final message is the report, in the card's schema.
 
 ### The report schema (at most 25 lines)
 
-PR number and head SHA; gates run, with their quoted last lines; evidence paths; revert checks per fix; deviations from the card; questions for the lead; patch notes for other owners.
-Codex workers can return it against a JSON schema with `codex exec --output-schema`.
+PR number and head commit hash; gates run, with their quoted last lines; evidence paths; revert checks per fix; deviations from the card; questions for the lead; patch notes for other owners.
+The skill ships `assets/report.schema.json` for it; a host that can constrain a worker's final message to a schema uses that file (see `platforms.md`).
 
 ## Slots and collisions (the default)
 
@@ -99,6 +108,7 @@ Do not use one for steps that share files or a serialized resource, for sequenti
 | W2 | per-dataset history | 15 | planned | E1.2, E1.3, E4.1 merged |
 
 Inside an active wave, steps still flow through slots: a member starts when its slot frees, not when the whole wave can start.
+Opening a wave (`set Waves <id> State=active`) resets every Budget row whose Resets is `wave` to 0 and logs it; a step spends the wave budget only if it belongs to a wave.
 
 ### Sizing a wave's budget
 
@@ -106,23 +116,24 @@ Inside an active wave, steps still flow through slots: a member starts when its 
 
 Three members with a two-reviewer panel and one fix dispatch each: 3 x (1 + 2 + 1 + 1) + 1 = 16.
 Eight members with a three-reviewer panel: about 50, which needs explicit owner approval; split the wave instead.
-The owner approves the wave and daily limits with the plan; that approval is what `agent-fanout`'s cap asks for.
+The owner approves the wave and daily limits with the plan; that approval is what `project:agent-fanout`'s cap asks for.
 
 ## Checkpoints and risks
 
 Checkpoints are scheduled lead reviews (for example after each wave, weekly, or when a trigger fires).
 The lead reads only what the checkpoint row lists, completes the outline cards that are due, updates risks, and produces one docs PR with a note of at most one page.
-The manager runs the anticipation pass and the parity question at each checkpoint (see the skill).
+The manager runs the anticipation pass at each checkpoint; the parity question waits for a mismatch (see the skill).
 
 Each risk is pre-registered with an observation, a date by which it is read, what happens if it reads bad, and who decides.
 A decision date is not a deadline for the work; it is the day on which nobody may keep hoping.
 
 ## Reviewing the pack before the loop
 
-Three lenses, each a fresh agent, every finding with a disposition in the plan's appendix:
+Executability and design reviewers, plus a domain reviewer where it applies, each a fresh agent, every finding with a disposition in the plan's appendix:
 
-1. Executability (worker tier): could a literal manager run this? Missing gates, circular dependencies, ownership collisions, missing escalation defaults.
-2. Design (lead tier or advisor): is the approach sound and the scope right?
-3. Domain (for research: an area-chair style reviewer; for products: a user-facing reviewer).
+1. Executability (worker tier): could a literal manager run this?
+   Look for missing gates, circular dependencies, ownership collisions, and missing escalation defaults.
+2. Design (lead tier): is the approach sound and the scope right?
+3. Domain, where it applies (for research: an area-chair style reviewer; for products: a user-facing reviewer).
 
-Then `manager_board.py check` on the board and `card` on the first cards of every slot list.
+Then `manager_board.py check` on the board and `card` on every card the first dispatches will use (`README.md` preambles are skipped).

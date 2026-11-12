@@ -4,14 +4,17 @@ Every test runs the real script as a subprocess against a real board file; the
 server test starts the real HTTP server on a free localhost port.
 """
 
+import importlib.util
 import json
+import os
+import re
 import socket
 import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -21,12 +24,15 @@ SKILL = ROOT / "plugins" / "project" / "skills" / "manager-loop"
 SCRIPT = SKILL / "scripts" / "manager_board.py"
 
 
-def run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run(
+    *args: str, check: bool = True, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
         [sys.executable, str(SCRIPT), *args],
         capture_output=True,
         text=True,
         check=False,
+        env={**os.environ, **env} if env else None,
     )
     if check and result.returncode != 0:
         raise AssertionError(
@@ -261,6 +267,73 @@ def test_daily_budget_resets_on_first_tick_of_a_day(board: Path):
     assert "budget reset (daily): Agents today was 7" in log
 
 
+def test_daily_reset_compares_local_calendar_days(board: Path):
+    local = {"TZ": "Etc/GMT+12"}  # UTC-12, the far end from +14:00
+    tz = timezone(timedelta(hours=-12))
+    now = datetime.now(tz)
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    hour_ago = max(now - timedelta(hours=1), midnight)  # still today, locally
+    far_east = hour_ago.astimezone(timezone(timedelta(hours=14)))
+    assert far_east.date() != now.date()  # the wall-clock date there is another day
+    run("spend", str(board), "Agents today", "7")
+    run(
+        "set",
+        str(board),
+        "now",
+        "Last tick",
+        f"Value={far_east.isoformat(timespec='minutes')}",
+    )
+    run("tick", str(board), "--manager", "m1", "--next", "30m", env=local)
+    assert used(board, "Agents today") == 7
+    yesterday = (now - timedelta(days=1)).isoformat(timespec="minutes")
+    run("set", str(board), "now", "Last tick", f"Value={yesterday}")
+    run("tick", str(board), "--manager", "m1", "--next", "30m", env=local)
+    assert used(board, "Agents today") == 0
+
+
+def test_late_flag_needs_a_running_manager(board: Path):
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    long_ago = (datetime.now().astimezone() - timedelta(hours=3)).isoformat(
+        timespec="minutes"
+    )
+    run("set", str(board), "now", "Next tick", f"Value={long_ago}")
+    data = status(board)
+    assert data["heartbeat"]["late"] is True
+    assert any(item["kind"] == "late" for item in data["needs_you"])
+    assert "LATE" in run("status", str(board)).stdout
+
+    run("tick", str(board), "--manager", "m1", "--state", "done")
+    data = status(board)
+    assert data["now"]["Next tick"] == "-" and data["heartbeat"]["next"] == ""
+    assert data["heartbeat"]["late"] is False
+    assert not any(item["kind"] == "late" for item in data["needs_you"])
+    assert "LATE" not in run("status", str(board)).stdout
+
+    run("set", str(board), "now", "State", "Value=paused")  # a hand-set stale wake
+    run("set", str(board), "now", "Next tick", f"Value={long_ago}")
+    assert status(board)["heartbeat"]["late"] is False
+
+
+@pytest.mark.parametrize("state", ["paused", "stopped", "done"])
+def test_a_stopped_manager_releases_the_lease(board: Path, state: str):
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    blocked = run("tick", str(board), "--manager", "m2", "--next", "30m", check=False)
+    assert blocked.returncode == 2
+    run("tick", str(board), "--manager", "m1", "--state", state)
+    run("tick", str(board), "--manager", "m2", "--next", "30m")
+    assert status(board)["heartbeat"]["manager"] == "m2"
+
+
+def test_lease_refusal_ends_with_the_expiry_time(board: Path):
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    next_tick = datetime.fromisoformat(status(board)["heartbeat"]["next"])
+    expires = (next_tick + timedelta(minutes=10)).isoformat(timespec="minutes")
+    result = run("tick", str(board), "--manager", "m2", "--next", "30m", check=False)
+    assert result.returncode == 2
+    assert result.stderr.strip().endswith(expires)
+    assert "--take-over" in result.stderr
+
+
 def test_question_lifecycle(board: Path):
     result = run(
         "ask",
@@ -382,14 +455,450 @@ def test_card_check(tmp_path: Path):
     assert "status is outline" in run("card", str(card), check=False).stdout
 
 
-def test_render_escapes_script_breakout(board: Path, tmp_path: Path):
-    add_step(board, "S1", "State=todo", "Next=</script><script>alert(1)</script>")
+def embedded_data(page: str) -> dict:
+    match = re.search(
+        r'<script id="board-data" type="application/json">(.*?)</script>',
+        page,
+        re.DOTALL,
+    )
+    assert match, "no board-data block"
+    return json.loads(match.group(1))
+
+
+def used(board: Path, item: str) -> float:
+    return next(b for b in status(board)["budget"] if b["Item"] == item)["used"]
+
+
+def test_concurrent_writers_share_one_lock(board: Path, tmp_path: Path):
+    for name in ("tmp-a", "tmp-b"):
+        (tmp_path / name).mkdir()
+    procs = [
+        subprocess.Popen(
+            [sys.executable, str(SCRIPT), "spend", str(board), "Agents today", "1"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env={**os.environ, "TMPDIR": str(tmp_path / name)},
+        )
+        for name in ("tmp-a", "tmp-b")
+        for _ in range(10)
+    ]
+    for proc in procs:
+        out, err = proc.communicate(timeout=60)
+        assert proc.returncode == 0, out + err
+    assert used(board, "Agents today") == 20
+
+
+def hold_lock(board: Path):
+    fcntl = pytest.importorskip("fcntl")
+    fd = os.open(board.parent, os.O_RDONLY)
+    fcntl.flock(fd, fcntl.LOCK_EX)
+    return fcntl, fd
+
+
+def test_a_writer_waits_for_the_lock_then_proceeds(board: Path):
+    fcntl, fd = hold_lock(board)
+    proc = subprocess.Popen(
+        [sys.executable, str(SCRIPT), "spend", str(board), "Agents today", "1"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        time.sleep(1)
+        assert proc.poll() is None  # still waiting, not failed
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+    out, err = proc.communicate(timeout=30)
+    assert proc.returncode == 0, out + err
+    assert used(board, "Agents today") == 1
+
+
+def test_lock_gives_up_after_ten_seconds(board: Path):
+    fcntl, fd = hold_lock(board)
+    try:
+        started = time.monotonic()
+        result = run("spend", str(board), "Agents today", check=False)
+        waited = time.monotonic() - started
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+    assert result.returncode == 2
+    assert "board is locked by another writer" in result.stderr
+    assert 9 < waited < 20
+    assert used(board, "Agents today") == 0
+
+
+@pytest.fixture
+def broken_log(board: Path) -> Path:
+    log = board.parent / "board-log.md"
+    log.write_text(
+        log.read_text(encoding="utf-8") + "| 2026-01-01T00:00 | a | extra cell |\n",
+        encoding="utf-8",
+    )
+    return log
+
+
+def test_malformed_log_stops_archive_before_the_board_changes(
+    board: Path, broken_log: Path
+):
+    run(
+        "ask",
+        str(board),
+        "Q1",
+        "--question",
+        "Ship?",
+        "--options",
+        "Yes (Recommended) / No",
+    )
+    run("set", str(board), "questions", "Q1", "State=closed", "Answer=Yes")
+    board_before, log_before = (
+        board.read_text(encoding="utf-8"),
+        broken_log.read_text(encoding="utf-8"),
+    )
+    result = run("archive", str(board), check=False)
+    assert result.returncode == 2 and "board-log.md" in result.stderr
+    assert board.read_text(encoding="utf-8") == board_before
+    assert broken_log.read_text(encoding="utf-8") == log_before
+    assert "| Q1 |" in board.read_text(encoding="utf-8")
+
+
+def test_malformed_log_stops_tick_and_propose(board: Path, broken_log: Path):
+    before = board.read_text(encoding="utf-8")
+    for args in (
+        ("tick", str(board), "--manager", "m1", "--next", "30m", "--note", "logged"),
+        ("propose", str(board), "Try it", "--why", "cheap"),
+        ("log", str(board), "an event"),
+    ):
+        result = run(*args, check=False)
+        assert result.returncode == 2 and "board-log.md" in result.stderr, args
+    assert board.read_text(encoding="utf-8") == before
+    assert run("check", str(board), check=False).returncode == 1
+    # A tick that logs nothing does not need the log, so the heartbeat survives a broken log.
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    assert (
+        run("archive", str(board)).returncode == 0
+    )  # nothing to archive, nothing to log
+
+
+def test_first_running_tick_takes_the_lease(board: Path):
+    run("tick", str(board), "--manager", "mba-claude-sonnet", "--state", "running")
+    assert status(board)["heartbeat"]["next"], (
+        "a running tick without --next still sets a wake"
+    )
+    rival = run(
+        "tick",
+        str(board),
+        "--manager",
+        "mcm-codex-luna",
+        "--state",
+        "running",
+        check=False,
+    )
+    assert rival.returncode == 2 and "another manager is live" in rival.stderr
+
+
+def test_state_typos_and_session_ids_are_refused_or_discouraged(board: Path):
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    before = board.read_text(encoding="utf-8")
+    typo = run("tick", str(board), "--manager", "m1", "--state", "pause", check=False)
+    assert typo.returncode == 2 and "invalid choice" in typo.stderr
+    assert board.read_text(encoding="utf-8") == before
+    assert "never per session" in " ".join(run("tick", "-h").stdout.split())
+
+
+def test_existing_errors_do_not_block_unrelated_writes(board: Path):
+    add_step(board, "S1", "State=todo")
+    board.write_text(
+        board.read_text(encoding="utf-8") + "\n## Notes\n\n" + "line\n" * 300,
+        encoding="utf-8",
+    )
+    text = board.read_text(encoding="utf-8").replace(
+        "| S1 | Step S1 |", "| S1 | " + "t" * 300 + " |", 1
+    )
+    board.write_text(text, encoding="utf-8")
+    assert "limit 300" in run("check", str(board), check=False).stdout
+    run("tick", str(board), "--manager", "m1", "--next", "30m")
+    run(
+        "ask",
+        str(board),
+        "Q1",
+        "--question",
+        "Ship?",
+        "--options",
+        "Yes (Recommended) / No",
+    )
+    run("answer", str(board), "Q1", "Yes")
+    run("set", str(board), "steps", "S1", "State=active", "Slot=claude-sonnet")
+    refused = run(
+        "set",
+        str(board),
+        "steps",
+        "S2",
+        "Title=x",
+        "Next=" + "x" * 300,
+        "--new",
+        check=False,
+    )
+    assert refused.returncode == 2
+    assert "'Next' has 300 characters" in refused.stderr
+    assert "lines (limit" not in refused.stderr and "'Title'" not in refused.stderr
+
+
+def test_proposal_numbers_and_ticks_follow_the_log(board: Path):
+    run("tick", str(board), "--manager", "m1", "--next", "30m")
+    run("propose", str(board), "Run the docs review", "--why", "the plan names it")
+    log = (board.parent / "board-log.md").read_text(encoding="utf-8")
+    assert "proposal P1 opened: Run the docs review" in log
+    run("set", str(board), "proposals", "P1", "State=accepted")
+    run("archive", str(board))
+    assert status(board)["proposals"] == []
+    # The proposal left the board, but the log still shows one opened this tick.
+    again = run("propose", str(board), "Another idea", "--why", "x", check=False)
+    assert again.returncode == 2 and "at most one per tick" in again.stderr
+    later = (datetime.now().astimezone() + timedelta(minutes=5)).isoformat(
+        timespec="minutes"
+    )
+    run("set", str(board), "now", "Last tick", f"Value={later}")
+    run("propose", str(board), "Another idea", "--why", "x")
+    assert [p["id"] for p in status(board)["proposals"]] == ["P2"]
+
+
+def test_wave_opening_resets_wave_budgets(board: Path):
+    run(
+        "set",
+        str(board),
+        "waves",
+        "W1",
+        "Goal=one",
+        "Agents=10",
+        "State=planned",
+        "Exit gate=merged",
+        "--new",
+    )
+    run("spend", str(board), "Agents this wave", "5")
+    run("set", str(board), "waves", "W1", "State=active")
+    assert used(board, "Agents this wave") == 0
+    assert "budget reset (wave W1 opened): Agents this wave was 5" in (
+        board.parent / "board-log.md"
+    ).read_text(encoding="utf-8")
+    run("spend", str(board), "Agents this wave", "3")
+    run(
+        "set", str(board), "waves", "W1", "Goal=still one", "State=active"
+    )  # not a new opening
+    assert used(board, "Agents this wave") == 3
+    for paused in ("hold", "done"):  # a resume keeps the approved per-wave count
+        run("set", str(board), "waves", "W1", f"State={paused}")
+        run("set", str(board), "waves", "W1", "State=active")
+        assert used(board, "Agents this wave") == 3
+
+
+def test_init_force_rewrites_the_board_but_keeps_the_log(board: Path):
+    run("log", str(board), "E1 merged")
+    run("decide", str(board), "Use Codex", "--by", "owner")
+    add_step(board, "S1", "State=todo")
+    run("init", str(board), "--title", "Fresh", "--force")
+    assert status(board)["steps"] == [] and status(board)["title"] == "Fresh"
+    log = (board.parent / "board-log.md").read_text(encoding="utf-8")
+    assert "E1 merged" in log and "Use Codex" in log
+
+
+def test_write_keeps_permissions_and_symlinks(board: Path, tmp_path: Path):
+    board.chmod(0o640)
+    run("tick", str(board), "--manager", "m1", "--next", "30m")
+    assert board.stat().st_mode & 0o777 == 0o640
+
+    link_dir = tmp_path / "elsewhere"
+    link_dir.mkdir()
+    link = link_dir / "board.md"
+    link.symlink_to(board)
+    run("set", str(link), "steps", "S1", "Title=via link", "State=todo", "--new")
+    assert link.is_symlink() and link.resolve() == board.resolve()
+    assert "via link" in board.read_text(encoding="utf-8")
+
+
+def test_files_are_utf8_whatever_the_locale(board: Path):
+    text = board.read_text(encoding="utf-8").replace("# Demo plan", "# Démo 日本", 1)
+    board.write_text(text, encoding="utf-8")
+    env = {"LC_ALL": "C", "PYTHONUTF8": "0", "PYTHONCOERCECLOCALE": "0"}
+    run("tick", str(board), "--manager", "m1", "--next", "30m", env=env)
+    run("log", str(board), "event", env=env)
+    run("check", str(board), env=env)
+    assert board.read_text(encoding="utf-8").startswith("# Démo 日本")
+
+
+def test_large_and_fractional_totals_are_written_without_exponents(board: Path):
+    run("set", str(board), "budget", "Agents today", "Limit=5000000", "Used=999999")
+    run("spend", str(board), "Agents today", "1")
+    run("spend", str(board), "Agents today", "5")
+    assert used(board, "Agents today") == 1000005
+    text = board.read_text(encoding="utf-8")
+    assert "| Agents today | 5000000 | 1000005 |" in text
+    assert "e+" not in text
+
+    run("set", str(board), "budget", "Advisor consults", "Limit=10", "Used=0")
+    run("spend", str(board), "Advisor consults", "0.1")
+    run("spend", str(board), "Advisor consults", "0.2")
+    assert "| Advisor consults | 10 | 0.3 |" in board.read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("amount", ["nan", "inf", "-inf", "-1", "-0.5", "lots"])
+def test_spend_refuses_non_finite_and_negative_amounts(board: Path, amount: str):
+    before = board.read_text(encoding="utf-8")
+    result = run("spend", str(board), "Agents today", amount, check=False)
+    assert result.returncode != 0
+    assert board.read_text(encoding="utf-8") == before
+
+
+def test_card_skips_the_readme_preamble(tmp_path: Path):
+    readme = tmp_path / "README.md"
+    readme.write_text("# Cards\n\nTODO <describe the folder>\n", encoding="utf-8")
+    result = run("card", str(readme))
+    assert "skipped (preamble)" in result.stdout
+
+
+def test_report_schema_describes_the_worker_report():
+    schema = json.loads(
+        (SKILL / "assets" / "report.schema.json").read_text(encoding="utf-8")
+    )
+    assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
+    assert schema["type"] == "object" and schema["additionalProperties"] is False
+    required = [
+        "pr",
+        "head_sha",
+        "gates",
+        "evidence",
+        "revert_checks",
+        "deviations",
+        "questions",
+        "patch_notes",
+    ]
+    assert schema["required"] == required
+    assert sorted(schema["properties"]) == sorted(required)
+    props = schema["properties"]
+    assert props["pr"]["type"] == "integer" and props["head_sha"]["type"] == "string"
+    gate = props["gates"]["items"]
+    assert gate["required"] == ["command", "result_line"]
+    assert gate["additionalProperties"] is False
+    for key in ("evidence", "revert_checks", "deviations", "questions", "patch_notes"):
+        assert props[key] == {
+            **props[key],
+            "type": "array",
+            "items": {"type": "string"},
+        }
+
+
+def test_card_check_ignores_fenced_and_commented_lines(tmp_path: Path):
+    card = tmp_path / "E2.md"
+    card.write_text(
+        "# Card E2: Store v3\n\nStatus: ready\n\n<!-- TODO <fill in later> -->\n\n"
+        "## Goal\nStore keeps 30 conversations.\n\n~~~\nTODO <title>\n## Scope\n~~~\n\n"
+        "## Scope\n`frontend/store.js`\n\n## Acceptance\n`bun test` passes.\n\n"
+        "## Gates\n`bun run biome check`\n\n## Stop conditions\nA design question.\n\n"
+        "## Report\nPR and gates.\n",
+        encoding="utf-8",
+    )
+    assert "ready to dispatch" in run("card", str(card)).stdout
+
+
+def test_render_embeds_json_that_cannot_break_out(board: Path, tmp_path: Path):
+    breakout = "</script><script>alert(1)</script>"
+    add_step(board, "S1", "State=todo", f"Next={breakout}", "Title=a <!-- note")
     out = tmp_path / "snap.html"
     run("render", str(board), "-o", str(out))
-    page = out.read_text()
+    page = out.read_text(encoding="utf-8")
     assert page.count("</script>") == 2  # the data block and the app script only
-    assert "<\\/script><script>alert(1)<\\/script>" in page
+    assert "<!-- note" not in page.split('id="board-data"', 1)[1].split("</script>")[0]
+    steps = {s["id"]: s for s in embedded_data(page)["steps"]}
+    assert steps["S1"]["Next"] == breakout
+    assert steps["S1"]["Title"] == "a <!-- note"
     assert 'content="snapshot"' in page
+
+
+def load_module():
+    spec = importlib.util.spec_from_file_location("manager_board_under_test", SCRIPT)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_render_escapes_javascript_line_separators():
+    module = load_module()
+    page = module.render_html(
+        {"title": "t", "cell": "a\u2028b\u2029c <!--"}, "snapshot"
+    )
+    assert "\u2028" not in page and "\u2029" not in page
+    assert embedded_data(page)["cell"] == "a\u2028b\u2029c <!--"
+
+
+def test_fences_and_comments_are_inert(board: Path):
+    add_step(board, "S1", "State=todo")
+    block = (
+        "\n## Notes\n\n```text\n## Steps\n| a | b |\n```\n\n"
+        "~~~\n## Questions\n| x | y |\n~~~\n\n"
+        "<!--\n## Proposals\n| c | d |\n-->\n"
+    )
+    board.write_text(board.read_text(encoding="utf-8") + block, encoding="utf-8")
+    assert "board OK" in run("check", str(board)).stdout
+    assert [s["id"] for s in status(board)["steps"]] == ["S1"]
+    add_step(board, "S2", "State=todo")
+    assert board.read_text(encoding="utf-8").count("| S2 |") == 1
+
+
+def test_duplicate_column_is_an_error(board: Path):
+    text = board.read_text(encoding="utf-8").replace(
+        "| ID | Time | Proposal | Why | State |", "| ID | Time | Time | Why | State |"
+    )
+    board.write_text(text, encoding="utf-8")
+    result = run("check", str(board), check=False)
+    assert result.returncode == 1
+    assert "duplicate column 'Time'" in result.stdout
+
+
+def test_first_header_names_the_row(board: Path):
+    text = board.read_text(encoding="utf-8")
+    text = text.replace("| ID | Step | Question |", "| Ref | Step | Question |")
+    text = text.replace("| ID | Time | Proposal |", "| Ref | Time | Proposal |")
+    board.write_text(text, encoding="utf-8")
+    run("tick", str(board), "--manager", "m1", "--next", "30m")
+    run(
+        "ask",
+        str(board),
+        "Q1",
+        "--question",
+        "Ship?",
+        "--options",
+        "Yes (Recommended) / No",
+    )
+    run("answer", str(board), "Q1", "Yes")
+    run("set", str(board), "questions", "Q1", "State=closed")
+    run("propose", str(board), "Try it", "--why", "cheap")
+    run("set", str(board), "proposals", "P1", "State=accepted")
+    data = status(board)
+    assert data["questions"][0]["id"] == "Q1" and data["proposals"][0]["id"] == "P1"
+    assert "archived 2 rows" in run("archive", str(board)).stdout
+    log = (board.parent / "board-log.md").read_text(encoding="utf-8")
+    assert "archived question Q1 closed" in log and "archived proposal P1" in log
+
+
+@pytest.mark.parametrize("bad", ["2 months", "3 sprints", "5m30", "soon", ""])
+def test_durations_must_match_in_full(board: Path, bad: str):
+    before = board.read_text(encoding="utf-8")
+    result = run("tick", str(board), "--manager", "m1", "--next", bad, check=False)
+    assert result.returncode == 2 and "cannot read duration" in result.stderr
+    assert board.read_text(encoding="utf-8") == before
+
+
+@pytest.mark.parametrize(
+    ("good", "minutes"), [("1h30m", 90), ("2d", 2880), ("45", 45), ("1h 15m", 75)]
+)
+def test_durations_accept_tokens_and_bare_minutes(board: Path, good: str, minutes: int):
+    run("tick", str(board), "--manager", "m1", "--next", good)
+    beat = status(board)["heartbeat"]
+    gap = datetime.fromisoformat(beat["next"]) - datetime.fromisoformat(beat["last"])
+    assert gap == timedelta(minutes=minutes)
 
 
 def free_port() -> int:
@@ -398,21 +907,76 @@ def free_port() -> int:
         return sock.getsockname()[1]
 
 
-def request(
-    url: str, method: str = "GET", body: dict | None = None, headers: dict | None = None
-):
+def fetch(
+    url: str, method: str = "GET", body=None, headers: dict | None = None
+) -> tuple[int, dict[str, str], str]:
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(url, data=data, method=method, headers=headers or {})
     if data is not None:
         req.add_header("Content-Type", "application/json")
     try:
         with urllib.request.urlopen(req, timeout=5) as res:
-            return res.status, res.read().decode()
+            return res.status, dict(res.headers), res.read().decode()
     except urllib.error.HTTPError as err:
-        return err.code, err.read().decode()
+        return err.code, dict(err.headers), err.read().decode()
 
 
-def test_live_server(board: Path):
+def request(
+    url: str, method: str = "GET", body=None, headers: dict | None = None
+) -> tuple[int, str]:
+    status_code, _, text = fetch(url, method, body, headers)
+    return status_code, text
+
+
+def raw_request(port: int, head: str) -> tuple[int, str]:
+    """Send hand-written request bytes, for cases urllib will not produce."""
+    with socket.create_connection(("127.0.0.1", port), timeout=5) as sock:
+        sock.sendall(head.encode("latin-1"))
+        data = b""
+        while chunk := sock.recv(4096):
+            data += chunk
+    return int(data.split(b" ", 2)[1]), data.partition(b"\r\n\r\n")[2].decode()
+
+
+class Live:
+    def __init__(self, port: int, base: str, token: str, proc: subprocess.Popen):
+        self.port, self.base, self.token, self.proc = port, base, token, proc
+
+    def answer(self, body, headers: dict | None = None):
+        return request(
+            self.base + "/answer",
+            "POST",
+            body,
+            {"X-Board-Token": self.token, **(headers or {})},
+        )
+
+
+def start_server(board: Path, *extra: str, host: str = "127.0.0.1") -> Live:
+    port = free_port()
+    proc = subprocess.Popen(
+        [sys.executable, str(SCRIPT), "serve", str(board), "--port", str(port), *extra],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    shown = f"[{host}]" if ":" in host else host
+    base = f"http://{shown}:{port}"
+    for _ in range(50):
+        try:
+            code, page = request(base + "/")
+            break
+        except urllib.error.URLError:
+            time.sleep(0.1)
+    else:
+        proc.kill()
+        pytest.fail("server did not start")
+    assert code == 200 and 'content="live"' in page
+    token = page.split('name="board-token" content="', 1)[1].split('"', 1)[0]
+    return Live(port, base, token, proc)
+
+
+@pytest.fixture
+def live(board: Path):
     run(
         "ask",
         str(board),
@@ -423,50 +987,174 @@ def test_live_server(board: Path):
         "Yes (Recommended) / No",
     )
     (board.parent / "cards").mkdir()
-    (board.parent / "cards" / "S1.md").write_text("# S1\n")
-    (board.parent.parent / "secret.md").write_text("outside\n")
+    (board.parent / "cards" / "S1.md").write_text("# S1\n", encoding="utf-8")
+    (board.parent.parent / "secret.md").write_text("outside\n", encoding="utf-8")
+    server = start_server(board)
+    yield server
+    server.proc.terminate()
+    server.proc.wait(timeout=5)
+    for pipe in (server.proc.stdout, server.proc.stderr):
+        if pipe:
+            pipe.close()
+
+
+def test_live_server(board: Path, live: Live):
+    base, token = live.base, live.token
+    assert len(token) >= 24
+
+    assert request(base + "/board.json", headers={"Host": "evil.example"})[0] == 403
+    assert request(base + "/cards/S1.md")[0] == 200
+    assert request(base + "/%2e%2e/secret.md")[0] == 404
+    assert request(base + "/board-log.md")[0] == 200
+    assert request(base + "/../secret.md")[0] == 404
+
+    answer = {"id": "Q1", "answer": "Yes"}
+    assert request(base + "/answer", "POST", answer)[0] == 403
+    assert (
+        request(base + "/answer", "POST", answer, {"X-Board-Token": "wrong"})[0] == 403
+    )
+    code, body = live.answer(answer)
+    assert code == 200, body
+    code, body = live.answer(answer)
+    assert code == 400 and "not open" in body
+
+    code, body = request(base + "/board.json")
+    assert json.loads(body)["questions"][0]["state"] == "answered"
+    assert "| answered | Yes (owner, " in board.read_text(encoding="utf-8")
+
+
+CSP = (
+    "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
+    "connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; "
+    "base-uri 'none'; form-action 'none'"
+)
+
+
+def test_every_response_carries_security_headers(live: Live):
+    responses = [
+        fetch(live.base + "/"),
+        fetch(live.base + "/board.json"),
+        fetch(live.base + "/nope"),
+        fetch(live.base + "/answer", "POST", {"id": "Q1", "answer": "x"}),  # 403
+    ]
+    assert [code for code, _, _ in responses] == [200, 200, 404, 403]
+    for _, headers, _ in responses:
+        lowered = {k.lower(): v for k, v in headers.items()}
+        assert lowered["x-frame-options"] == "DENY"
+        assert lowered["content-security-policy"] == CSP
+        assert lowered["x-content-type-options"] == "nosniff"
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        [1, 2],
+        "text",
+        7,
+        None,
+        {"id": "Q1"},
+        {"answer": "Yes"},
+        {"id": 1, "answer": "Yes"},
+        {"id": "Q1", "answer": ["Yes"]},
+    ],
+)
+def test_answer_body_must_be_an_object_of_strings(live: Live, board: Path, body):
+    before = board.read_text(encoding="utf-8")
+    code, text = live.answer(body)
+    assert code == 400, text
+    assert "error" in json.loads(text)
+    assert board.read_text(encoding="utf-8") == before
+
+
+def test_answer_rejects_bad_json_and_bad_content_length(live: Live, board: Path):
+    before = board.read_text(encoding="utf-8")
+    head = (
+        f"POST /answer HTTP/1.0\r\nHost: 127.0.0.1:{live.port}\r\n"
+        f"X-Board-Token: {live.token}\r\n"
+    )
+    assert raw_request(live.port, head + "\r\n")[0] == 400  # no Content-Length
+    for length in ("abc", "-5", "0", "1_0", "16001", "99999999999999"):
+        code, _ = raw_request(live.port, head + f"Content-Length: {length}\r\n\r\n")
+        assert code == 400, length
+    junk = "not json"
+    code, _ = raw_request(
+        live.port, head + f"Content-Length: {len(junk)}\r\n\r\n{junk}"
+    )
+    assert code == 400
+    assert board.read_text(encoding="utf-8") == before
+
+
+def test_non_ascii_token_and_nul_path_are_refused_cleanly(live: Live):
+    code, _ = live.answer(
+        {"id": "Q1", "answer": "Yes"}, {"X-Board-Token": "t\u00f6k\u00e9n"}
+    )
+    assert code == 403
+    assert request(live.base + "/%00.md")[0] == 404
+    assert request(live.base + "/cards/%00.md")[0] == 404
+    assert request(live.base + "/")[0] == 200  # still serving
+
+
+def test_unexpected_failure_is_a_json_500_without_a_traceback(live: Live, board: Path):
+    board.write_bytes(b"# broken \xff\xfe board\n")  # not UTF-8: not a BoardError
+    code, text = request(live.base + "/board.json")
+    assert code == 500
+    assert json.loads(text) == {"error": "internal error"}
+    assert "Traceback" not in text
+    board.write_text("# fixed\n", encoding="utf-8")
+    assert request(live.base + "/board.md")[0] == 200  # the server survived
+    live.proc.terminate()
+    assert "Traceback" not in live.proc.communicate(timeout=5)[1]
+
+
+def test_busy_port_is_a_clean_error(board: Path):
+    with socket.socket() as blocker:
+        blocker.bind(("127.0.0.1", 0))
+        blocker.listen()
+        port = blocker.getsockname()[1]
+        result = run("serve", str(board), "--port", str(port), check=False)
+    assert result.returncode == 2
+    assert result.stderr.startswith("ERROR cannot listen on")
+    assert "Traceback" not in result.stderr
+
+
+def test_serve_on_ipv6_loopback(board: Path):
+    try:
+        with socket.socket(socket.AF_INET6) as probe:
+            probe.bind(("::1", 0))
+    except OSError:
+        pytest.skip("no IPv6 loopback on this host")
     port = free_port()
     proc = subprocess.Popen(
-        [sys.executable, str(SCRIPT), "serve", str(board), "--port", str(port)],
+        [
+            sys.executable,
+            str(SCRIPT),
+            "serve",
+            str(board),
+            "--port",
+            str(port),
+            "--host",
+            "::1",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
     )
-    base = f"http://127.0.0.1:{port}"
-    code, page = 0, ""
     try:
         for _ in range(50):
             try:
-                code, page = request(base + "/")
+                code, _, page = fetch(f"http://[::1]:{port}/")
                 break
             except urllib.error.URLError:
                 time.sleep(0.1)
         else:
-            pytest.fail("server did not start")
+            pytest.fail("IPv6 server did not start")
         assert code == 200 and 'content="live"' in page
-        token = page.split('name="board-token" content="', 1)[1].split('"', 1)[0]
-        assert len(token) >= 24
-
-        assert request(base + "/board.json", headers={"Host": "evil.example"})[0] == 403
-        assert request(base + "/cards/S1.md")[0] == 200
-        assert request(base + "/%2e%2e/secret.md")[0] == 404
-        assert request(base + "/board-log.md")[0] == 200
-        assert request(base + "/../secret.md")[0] == 404
-
-        answer = {"id": "Q1", "answer": "Yes"}
-        assert request(base + "/answer", "POST", answer)[0] == 403
         assert (
-            request(base + "/answer", "POST", answer, {"X-Board-Token": "wrong"})[0]
+            request(
+                f"http://[::1]:{port}/board.json", headers={"Host": "evil.example"}
+            )[0]
             == 403
         )
-        code, body = request(base + "/answer", "POST", answer, {"X-Board-Token": token})
-        assert code == 200, body
-        code, body = request(base + "/answer", "POST", answer, {"X-Board-Token": token})
-        assert code == 400 and "not open" in body
-
-        code, body = request(base + "/board.json")
-        assert json.loads(body)["questions"][0]["state"] == "answered"
-        assert "| answered | Yes (owner, " in board.read_text()
     finally:
         proc.terminate()
-        proc.wait(timeout=5)
+        proc.communicate(timeout=5)

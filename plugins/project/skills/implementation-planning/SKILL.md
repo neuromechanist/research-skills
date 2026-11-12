@@ -10,14 +10,14 @@ your reasoning, with success criteria fixed before any result is seen.
 
 ## Model handoff
 
-Use the strongest available model for problem framing, macro architecture,
-irreversible decisions, and plan approval. In Codex this is Sol; in Claude it
-is Fable when available, otherwise Opus. After the architecture is approved, a
-bounded phase planner may expand it on the intermediate tier (Codex Terra;
-Claude Sonnet when no design choice remains). Write the resulting brief so a
-clear-task worker (Codex Luna or Claude Sonnet) can implement it without
-reconstructing design intent. See `agent-fanout` for the full routing and
-escalation policy.
+Use the lead tier for problem framing, macro architecture, irreversible
+decisions, and plan approval. In Codex this is Sol; in Claude it is Opus.
+Planning defaults to the lead tier; the frontier tier (Claude Fable, Codex
+Astra) is used only when the user explicitly asks for it or for long-horizon
+planning the user names.
+After the architecture is approved, a bounded phase planner may expand it on the intermediate tier (Codex Terra; Claude Sonnet when no design choice remains).
+Write the resulting brief so a clear-task worker (Codex Luna or Claude Sonnet) can implement it without reconstructing design intent.
+See `agent-fanout` for the full routing and escalation policy.
 
 ## Pick the register (by stakes, not size)
 

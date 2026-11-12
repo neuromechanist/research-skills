@@ -145,6 +145,8 @@ details.panel > summary { cursor: pointer; font-weight: 700; color: var(--muted)
   let data = JSON.parse(document.getElementById("board-data").textContent);
   let lastJson = JSON.stringify(data);
   const openCards = new Set();
+  const pending = new Set();
+  let openPanels = new Set();
   let waveFilter = "";
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -208,7 +210,7 @@ details.panel > summary { cursor: pointer; font-weight: 700; color: var(--muted)
   }
 
   function questionCard(q) {
-    const disabled = LIVE ? "" : "disabled";
+    const disabled = LIVE && !pending.has(q.id) ? "" : "disabled";
     const opts = (q.options || []).map((o) => {
       const rec = /\(recommended\)\s*$/i.test(o);
       const name = o.replace(/\s*\(recommended\)\s*$/i, "");
@@ -233,7 +235,7 @@ details.panel > summary { cursor: pointer; font-weight: 700; color: var(--muted)
     for (const q of data.questions || []) if (q.state === "open") items.push(questionCard(q));
     for (const q of data.questions || []) if (q.state === "answered") items.push(`<div class="need"><div class="kind"><span>answered ${esc(q.id)}</span><span>waiting for the manager</span></div><div class="q">${inline(q.Question)}</div><div class="sub">${inline(q.Answer)}</div></div>`);
     for (const s of data.steps || []) if (s.state === "owner") items.push(`<div class="need"><div class="kind"><span>step ${esc(s.id)} waits on you</span></div><div class="q">${inline(s.Title)}</div><div class="sub">${inline(s.Next)}</div></div>`);
-    for (const p of data.proposals || []) if (String(p.State).toLowerCase() === "open") items.push(`<div class="need proposal"><div class="kind"><span>proposal ${esc(p.ID)}</span><span>${ago(p.Time)}</span></div><div class="q">${inline(p.Proposal)}</div><div class="sub">${inline(p.Why)}</div></div>`);
+    for (const p of data.proposals || []) if (String(p.State).toLowerCase() === "open") items.push(`<div class="need proposal"><div class="kind"><span>proposal ${esc(p.id)}</span><span>${ago(p.Time)}</span></div><div class="q">${inline(p.Proposal)}</div><div class="sub">${inline(p.Why)}</div></div>`);
     return `<section class="block"><h2>Needs you</h2>${items.length ? `<div class="needs">${items.join("")}</div>` : `<div class="calm">Nothing needs you right now.</div>`}</section>`;
   }
 
@@ -326,8 +328,10 @@ details.panel > summary { cursor: pointer; font-weight: 700; color: var(--muted)
     const focus = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.free : null;
     const typed = {};
     document.querySelectorAll("input[data-free]").forEach((i) => { if (i.value) typed[i.dataset.free] = i.value; });
+    openPanels = new Set([...document.querySelectorAll("details[open] > summary")].map((s) => s.textContent));
     document.title = data.title || "Board";
     document.getElementById("app").innerHTML = header() + needs() + gauges() + lanes() + history();
+    document.querySelectorAll("details > summary").forEach((s) => { if (openPanels.has(s.textContent)) s.parentElement.open = true; });
     document.querySelectorAll("input[data-free]").forEach((i) => { if (typed[i.dataset.free]) i.value = typed[i.dataset.free]; });
     if (focus) { const el = document.querySelector(`input[data-free="${CSS.escape(focus)}"]`); if (el) el.focus(); }
   }
@@ -349,7 +353,9 @@ details.panel > summary { cursor: pointer; font-weight: 700; color: var(--muted)
   }
 
   async function answer(id, text) {
-    if (!text.trim()) return;
+    if (!text.trim() || pending.has(id)) return;
+    pending.add(id);
+    render();  // the question's buttons and input stay disabled until the server replies
     try {
       const res = await fetch("answer", { method: "POST", headers: { "Content-Type": "application/json", "X-Board-Token": TOKEN }, body: JSON.stringify({ id, answer: text }) });
       const out = await res.json();
@@ -357,6 +363,7 @@ details.panel > summary { cursor: pointer; font-weight: 700; color: var(--muted)
       toast(`Answer to ${id} recorded; the manager acts on it at its next tick`);
       await refresh();
     } catch (e) { toast("The board server is not reachable"); }
+    finally { pending.delete(id); render(); }
   }
 
   document.addEventListener("click", (ev) => {

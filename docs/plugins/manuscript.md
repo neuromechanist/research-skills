@@ -26,7 +26,7 @@ Convergence in one review pass is treated as a red flag, not a good sign: critic
 
 ![Literature review pipeline: Direction, Collect, Synthesize, Draft, Review, with gaps found in review boomeranging back to collection, not just the prose](../assets/diagrams/lit-review-pipeline.svg)
 
-Every claim in a multi-phase review must trace back to a paper-card on disk: a schema-enforced markdown file with YAML front matter (slug, type, year, DOI, license, relevance, PDF status) and six required sections, validated by `opencite`:
+Every claim in a multi-phase review must trace back to a paper-card on disk: a markdown file with YAML front matter (slug, type, year, DOI, license, relevance, PDF status) and six required sections, defined by the paper-card schema in `manuscript:lit-review`:
 
 ![Paper-card anatomy: YAML front matter plus TL;DR, Summary, Relevance, Notable details, Open questions, and Citations sections, the same shape across every card](../assets/diagrams/paper-card-anatomy.svg)
 

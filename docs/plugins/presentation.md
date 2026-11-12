@@ -3,6 +3,7 @@
 The `presentation` plugin creates interactive Reveal.js presentations from a JSON spec, using the [Agentic Presentation Builder](https://github.com/neuromechanist/agentic-presentation-builder) engine. It supports 7 element types (text, bullets, images, Mermaid diagrams, callouts, code blocks, tables), 5 themes, animated progressive reveals, speaker notes, and LaTeX math.
 
 The skill teaches the agent the JSON schema and authoring workflow; the builder repo handles rendering, so you describe the deck and the skill produces a spec the builder can render, present, or export.
+The skill runs the builder's `apb` command-line tool (`validate`, `present`, `export`) with `bunx github:neuromechanist/agentic-presentation-builder#<tag>`, so no local clone is needed; a managed cache clone is optional for repeated validation.
 
 ## Skills
 

@@ -34,7 +34,8 @@ unclear reasons).
 Follow `agent-fanout` driver mode. The session driver (Claude Sonnet at
 `xhigh`, Codex Luna at `max`) orchestrates the workflow mechanically. Epic
 decomposition, architecture, and high-risk or contested findings go to Opus
-(or Fable) or Sol at `xhigh`. Named Sonnet or Luna workers implement the
+or Sol at `xhigh` (Fable or Astra only when the user asks or for long-horizon
+planning the user names). Named Sonnet or Luna workers implement the
 approved brief in the isolated worktree; fresh Sonnet or Luna reviewers review
 each phase per the review-convergence rules (two rounds at most). Close/remove
 one-off agents after their reports are incorporated.

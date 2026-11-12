@@ -8,7 +8,7 @@ A conversion skill sits at the center; a validator agent defends its output; exp
 
 ![Neuroinformatics plugin map: bids-conversion at the center, defended by the bids-validator agent, with experiment-design covering data collection](../assets/diagrams/neuro-plugin-map.svg)
 
-## One command, six steps, to a validated dataset
+## One request, six steps, to a validated dataset
 
 Converting raw recordings into a shareable BIDS dataset is a fixed sequence:
 
@@ -33,7 +33,7 @@ A standard structure turns "my data" into "reusable data": the same folder and f
 
 ## HED annotation
 
-HED annotation, tagging events with a standardized, machine-readable vocabulary for the *what* of an event, not just its timing, lives inside the `bids-conversion` and `experiment-design` skills' reference material rather than as a separate skill. Conceptually, going from a plain-English event description to a schema-valid HED tag string is a parse → tag → validate pipeline:
+HED annotation, tagging events with a standardized, machine-readable vocabulary for the *what* of an event, not just its timing, is covered inside the `experiment-design` skill (a section on adding a `HED` column to event markers) rather than as a separate skill. Conceptually, going from a plain-English event description to a schema-valid HED tag string is a parse → tag → validate pipeline:
 
 ![HEDit pipeline: parse natural language into structured facts, tag by retrieving HED schema nodes, then validate against the official HED validator with feedback looped back into re-tagging](../assets/diagrams/hedit-pipeline.svg)
 

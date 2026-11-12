@@ -31,7 +31,7 @@ Required keys are `theme_id`, `palette`, `style_tokens`; everything else is opti
 | `text.max_words_per_title` | integer | `8` | Word budget for a headline/title. |
 | `text.headline_size_class` | `large`\|`medium` | `large` | Relative size class for the largest on-image text. |
 | `reference_images` | path array (max 16) | `[]` | Canonical images attached for style transfer. |
-| `model_preferences.codex_model` | string | `gpt-5.6-luna` | Passed to the Codex CLI `image_gen` tool. |
+| `model_preferences.codex_model` | string | `gpt-6-luna` | Passed to the Codex CLI `image_gen` tool. |
 | `model_preferences.codex_effort` | string | `xhigh` | Codex reasoning effort for prompt planning. |
 | `model_preferences.image_quality` | string | `high` | Image generation quality parameter. |
 | `model_preferences.icons` / `.figures` / `.poster_text` | string | none | Legacy per-use-case overrides, kept optional for themes written before the bible existed. |

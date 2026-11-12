@@ -1,12 +1,14 @@
 # Architecture
 
-Every plugin in this marketplace is built from the same small set of building blocks: skills, agents, and (for the tools that reach outside the agent) MCP servers. This page explains what each one is for and when to reach for which.
+Every plugin in this marketplace is built from the same small set of building blocks: skills, agents, and (for the tools that reach outside the agent) Model Context Protocol (MCP) servers. This page explains what each one is for and when to reach for which.
 
 ## Plugin anatomy
 
 ![Plugin ecosystem: a plugin bundles skills, hooks, agents, and MCP servers around the always-loaded CLAUDE.md/AGENTS.md and auto memory](assets/diagrams/plugin-ecosystem.svg)
 
-A plugin is a bundle of **skills**, **hooks**, **agents**, and **MCP servers**, installed alongside the always-loaded project instructions (`CLAUDE.md`/`AGENTS.md`) and, in Claude Code, auto memory. This marketplace's plugins mostly ship skills, plus a handful of bundled agents for review/QA surfaces (see [`project:pr-review-toolkit`](plugins/project.md), [`grant:grant-review`](plugins/grant.md), [`manuscript:paper-review`](plugins/manuscript.md), [`figures:figure-qa`](plugins/figures.md), and the neuroinformatics BIDS validator).
+A plugin is a bundle of **skills**, **hooks**, **agents**, and **MCP servers**, installed alongside the always-loaded project instructions (`CLAUDE.md`/`AGENTS.md`) and, in Claude Code, auto memory.
+This marketplace's plugins mostly ship skills, plus a handful of bundled agents for review and quality assurance (QA) surfaces (see [`project:pr-review-toolkit`](plugins/project.md), [`grant:grant-review`](plugins/grant.md), [`grant:grant-figure-qa`](plugins/grant.md), [`manuscript:paper-review`](plugins/manuscript.md), [`figures:figure-qa`](plugins/figures.md), and the neuroinformatics Brain Imaging Data Structure (BIDS) validator), and the `project` plugin's dependency-auditor and release-prep agents.
+None of them ships hooks or MCP servers; the `project` plugin also ships five commands for explicit orchestration (see [Skills vs. commands](getting-started.md#skills-vs-commands)).
 
 ## Anatomy of a skill
 
@@ -32,11 +34,13 @@ Both are triggered by the agent runtime, but they differ in where the work happe
 
 Reach for an agent when the work is isolated, repeatable, or runs in parallel (fan-out reviews, QA passes, background validation). A skill keeps the procedure with you when the work benefits from staying in the main conversation.
 
+When a plan outlives one session, `project:agent-fanout` covers delegation inside a session, and [`project:manager-loop`](plugins/project.md#manager-loops) covers hands-off execution across many ticks: a lead-tier model writes the plan, a mechanical manager dispatches worker agents and verifies their results, and a Markdown board carries the state.
+
 ## Skill vs. MCP
 
 ![Skill vs MCP: a skill teaches the agent with tools it already has; an MCP server wires in new tools to external systems](assets/diagrams/mcp-wire.svg)
 
-A skill teaches the agent using tools it already has. An **MCP (Model Context Protocol) server** gives it new tools by wiring to something outside the agent entirely: a database, a web API, a browser, or an external application like MATLAB/EEGLAB. If the job needs to reach the outside world, it's an MCP server's job, not a skill's.
+A skill teaches the agent using tools it already has. An **MCP server** gives it new tools by wiring to something outside the agent entirely: a database, a web API, a browser, or an external application like MATLAB/EEGLAB. If the job needs to reach the outside world, it's an MCP server's job, not a skill's.
 
 ## Cross-agent design
 

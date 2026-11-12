@@ -53,9 +53,15 @@ under review. Compute the count first.
 
 ## Roles and model routing
 
-Keep the lead/orchestrator on the strongest available reasoning tier; in
-driver mode (below), the driver delegates the lead's hard calls to that tier. The lead
-owns requirements, architecture, irreversible decisions, supervision,
+Keep the lead/orchestrator on the lead tier (Claude Opus, Codex Sol); in
+driver mode (below), the driver delegates the lead's hard calls to that tier.
+Every lead role defaults to the lead tier, including project initiation,
+architecture, and planning.
+The frontier tier (Claude Fable, Codex Astra) is opt-in: use it only when the
+user explicitly asks for it, or for long-horizon jobs or planning the user
+names.
+Never promote a role to the frontier tier on your own judgment.
+The lead owns requirements, architecture, irreversible decisions, supervision,
 load-bearing verification, and final synthesis. Delegate bounded plan
 elaboration to the intermediate tier only after the architecture is fixed.
 Delegate implementation to the worker tier only after the brief names exact
@@ -72,12 +78,16 @@ intermediate tier.
 Use an exact alias only when the current runtime exposes it. Otherwise apply
 the capability class in the final column.
 
-| Ecosystem | Lead / architect / observer / synthesizer | Phase-plan elaborator | Implementer / focused reviewer / validator | Capability fallback |
-| --- | --- | --- | --- | --- |
-| Claude Code | Fable when available, otherwise Opus or `best` | Opus for unresolved design; Sonnet after architecture approval | Sonnet | strongest / balanced / worker |
-| OpenAI Codex | Sol (`gpt-5.6-sol`) | Terra (`gpt-5.6-terra`) | Luna (`gpt-5.6-luna`) | strongest / intermediate / clear-repeatable worker |
-| GitHub Copilot CLI | strongest available model | balanced reasoning model | cost-efficient coding model | strongest / intermediate / worker |
-| Other systems | strongest available model | intermediate model | fastest model that passes the gates | strongest / intermediate / worker |
+| Ecosystem | Frontier (opt-in only) | Lead / architect / observer / synthesizer | Phase-plan elaborator | Implementer / focused reviewer / validator | Capability fallback |
+| --- | --- | --- | --- | --- | --- |
+| Claude Code | Fable | Opus | Opus for unresolved design; Sonnet after architecture approval | Sonnet | lead / balanced / worker |
+| OpenAI Codex | Astra (`gpt-6-astra`) | Sol (`gpt-6.1-sol`) | Terra (`gpt-6.1-terra`) | Luna (`gpt-6-luna`) | lead / intermediate / clear-repeatable worker |
+| GitHub Copilot CLI | a frontier model only if the user names one | strongest available model | balanced reasoning model | cost-efficient coding model | lead / intermediate / worker |
+| Other systems | a frontier model only if the user names one | strongest available model | intermediate model | fastest model that passes the gates | lead / intermediate / worker |
+
+The frontier column is never a default.
+Use it only when the user explicitly asks for it, or for long-horizon jobs or
+planning the user names.
 
 **Driver mode (the usual session).** The session driver is Sonnet at `xhigh`
 (Claude) or Luna at `max` (Codex). The driver runs the workflow mechanically
@@ -85,8 +95,9 @@ and delegates hard calls instead of making them:
 
 - routine implementation, focused review, and validation: Sonnet `xhigh` or Luna `max`;
 - architecture, unresolved design, high-risk invariants, contested findings,
-  and repeated non-mechanical failures: Opus `xhigh` (Fable when available)
-  or Sol `xhigh`.
+  and repeated non-mechanical failures: Opus `xhigh` or Sol `xhigh`; Fable or
+  Astra only when the user asks or for long-horizon jobs or planning the user
+  names.
 
 Pass the effort explicitly on every delegation.
 
@@ -95,16 +106,17 @@ detailed plan. Escalate a worker to Terra or Sol when the task exposes an
 unresolved architecture choice, repeatedly fails a gate for a non-mechanical
 reason, or touches data integrity, encryption, concurrency, authorization, or
 another high-risk invariant. On Claude, use the same escalation rule from
-Sonnet to Opus/Fable.
+Sonnet to Opus.
 
 | Role | Agent type | Default tier | Notes |
 | --- | --- | --- | --- |
-| Lead/orchestrator | main session | strongest, or a Sonnet/Luna driver in driver mode | Preserve requirements, approve architecture, supervise, verify, and synthesize; a driver delegates hard calls to the strongest tier. |
+| Lead/orchestrator | main session | lead tier, or a Sonnet/Luna driver in driver mode | Preserve requirements, approve architecture, supervise, verify, and synthesize; a driver delegates hard calls to the lead tier. |
 | Explorer/scout | read-only explorer | intermediate or worker | One-shot for bounded facts; the lead re-verifies the keystone fact. |
-| Architect | plan agent | strongest | Owns macro design and open judgment calls. |
+| Architect | plan agent | lead | Owns macro design and open judgment calls. |
+| Frontier consult | advisor | frontier (opt-in) | Only when the user asks, or for long-horizon jobs or planning the user names. |
 | Phase planner | plan agent | intermediate | Expands an approved architecture into worker-executable actions; escalates unresolved design. |
 | Implementer | general-purpose | worker | One per issue and worktree, named; receives the full lifecycle contract. |
-| Reviewer | review agent | worker | One fresh panel per PR; use intermediate/strongest for high-risk invariants. |
+| Reviewer | review agent | worker | One fresh panel per PR; use intermediate/lead for high-risk invariants. |
 | Validator | general-purpose | worker | Runs named checks; classify first what needs human hardware. |
 | Integration reviewer | review agent | worker | Reviews only cross-phase integration at the end. |
 

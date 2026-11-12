@@ -299,7 +299,7 @@ def theme_defaults(
         },
         "reference_images": [],
         "model_preferences": {
-            "codex_model": "gpt-5.6-luna",
+            "codex_model": "gpt-6-luna",
             "codex_effort": "xhigh",
             "image_quality": "high",
         },

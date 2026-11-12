@@ -1,6 +1,6 @@
 {
   "title": "Research Skills",
-  "description": "A cross-agent marketplace of plugins and skills for academic research and development workflows: literature search and citation management, grant writing and review, manuscript preparation, publication figures, presentations, project lifecycle management, and neuroinformatics. Targets Claude Code, Codex, and Copilot CLI from shared skill definitions.",
+  "description": "A cross-agent marketplace of plugins and skills for academic research and development workflows: literature search and citation management, grant writing and review, manuscript preparation, publication figures, presentations, project lifecycle management, neuroinformatics, and cloud graphics processing unit (GPU) provisioning for model training. Targets Claude Code, Codex, and Copilot CLI from shared skill definitions.",
   "upload_type": "software",
   "access_right": "open",
   "license": "BSD-3-Clause",
