@@ -811,21 +811,76 @@ def free_port() -> int:
         return sock.getsockname()[1]
 
 
-def request(
-    url: str, method: str = "GET", body: dict | None = None, headers: dict | None = None
-):
+def fetch(
+    url: str, method: str = "GET", body=None, headers: dict | None = None
+) -> tuple[int, dict[str, str], str]:
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(url, data=data, method=method, headers=headers or {})
     if data is not None:
         req.add_header("Content-Type", "application/json")
     try:
         with urllib.request.urlopen(req, timeout=5) as res:
-            return res.status, res.read().decode()
+            return res.status, dict(res.headers), res.read().decode()
     except urllib.error.HTTPError as err:
-        return err.code, err.read().decode()
+        return err.code, dict(err.headers), err.read().decode()
 
 
-def test_live_server(board: Path):
+def request(
+    url: str, method: str = "GET", body=None, headers: dict | None = None
+) -> tuple[int, str]:
+    status_code, _, text = fetch(url, method, body, headers)
+    return status_code, text
+
+
+def raw_request(port: int, head: str) -> tuple[int, str]:
+    """Send hand-written request bytes, for cases urllib will not produce."""
+    with socket.create_connection(("127.0.0.1", port), timeout=5) as sock:
+        sock.sendall(head.encode("latin-1"))
+        data = b""
+        while chunk := sock.recv(4096):
+            data += chunk
+    return int(data.split(b" ", 2)[1]), data.partition(b"\r\n\r\n")[2].decode()
+
+
+class Live:
+    def __init__(self, port: int, base: str, token: str, proc: subprocess.Popen):
+        self.port, self.base, self.token, self.proc = port, base, token, proc
+
+    def answer(self, body, headers: dict | None = None):
+        return request(
+            self.base + "/answer",
+            "POST",
+            body,
+            {"X-Board-Token": self.token, **(headers or {})},
+        )
+
+
+def start_server(board: Path, *extra: str, host: str = "127.0.0.1") -> Live:
+    port = free_port()
+    proc = subprocess.Popen(
+        [sys.executable, str(SCRIPT), "serve", str(board), "--port", str(port), *extra],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    shown = f"[{host}]" if ":" in host else host
+    base = f"http://{shown}:{port}"
+    for _ in range(50):
+        try:
+            code, page = request(base + "/")
+            break
+        except urllib.error.URLError:
+            time.sleep(0.1)
+    else:
+        proc.kill()
+        pytest.fail("server did not start")
+    assert code == 200 and 'content="live"' in page
+    token = page.split('name="board-token" content="', 1)[1].split('"', 1)[0]
+    return Live(port, base, token, proc)
+
+
+@pytest.fixture
+def live(board: Path):
     run(
         "ask",
         str(board),
@@ -836,50 +891,174 @@ def test_live_server(board: Path):
         "Yes (Recommended) / No",
     )
     (board.parent / "cards").mkdir()
-    (board.parent / "cards" / "S1.md").write_text("# S1\n")
-    (board.parent.parent / "secret.md").write_text("outside\n")
+    (board.parent / "cards" / "S1.md").write_text("# S1\n", encoding="utf-8")
+    (board.parent.parent / "secret.md").write_text("outside\n", encoding="utf-8")
+    server = start_server(board)
+    yield server
+    server.proc.terminate()
+    server.proc.wait(timeout=5)
+    for pipe in (server.proc.stdout, server.proc.stderr):
+        if pipe:
+            pipe.close()
+
+
+def test_live_server(board: Path, live: Live):
+    base, token = live.base, live.token
+    assert len(token) >= 24
+
+    assert request(base + "/board.json", headers={"Host": "evil.example"})[0] == 403
+    assert request(base + "/cards/S1.md")[0] == 200
+    assert request(base + "/%2e%2e/secret.md")[0] == 404
+    assert request(base + "/board-log.md")[0] == 200
+    assert request(base + "/../secret.md")[0] == 404
+
+    answer = {"id": "Q1", "answer": "Yes"}
+    assert request(base + "/answer", "POST", answer)[0] == 403
+    assert (
+        request(base + "/answer", "POST", answer, {"X-Board-Token": "wrong"})[0] == 403
+    )
+    code, body = live.answer(answer)
+    assert code == 200, body
+    code, body = live.answer(answer)
+    assert code == 400 and "not open" in body
+
+    code, body = request(base + "/board.json")
+    assert json.loads(body)["questions"][0]["state"] == "answered"
+    assert "| answered | Yes (owner, " in board.read_text(encoding="utf-8")
+
+
+CSP = (
+    "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
+    "connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; "
+    "base-uri 'none'; form-action 'none'"
+)
+
+
+def test_every_response_carries_security_headers(live: Live):
+    responses = [
+        fetch(live.base + "/"),
+        fetch(live.base + "/board.json"),
+        fetch(live.base + "/nope"),
+        fetch(live.base + "/answer", "POST", {"id": "Q1", "answer": "x"}),  # 403
+    ]
+    assert [code for code, _, _ in responses] == [200, 200, 404, 403]
+    for _, headers, _ in responses:
+        lowered = {k.lower(): v for k, v in headers.items()}
+        assert lowered["x-frame-options"] == "DENY"
+        assert lowered["content-security-policy"] == CSP
+        assert lowered["x-content-type-options"] == "nosniff"
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        [1, 2],
+        "text",
+        7,
+        None,
+        {"id": "Q1"},
+        {"answer": "Yes"},
+        {"id": 1, "answer": "Yes"},
+        {"id": "Q1", "answer": ["Yes"]},
+    ],
+)
+def test_answer_body_must_be_an_object_of_strings(live: Live, board: Path, body):
+    before = board.read_text(encoding="utf-8")
+    code, text = live.answer(body)
+    assert code == 400, text
+    assert "error" in json.loads(text)
+    assert board.read_text(encoding="utf-8") == before
+
+
+def test_answer_rejects_bad_json_and_bad_content_length(live: Live, board: Path):
+    before = board.read_text(encoding="utf-8")
+    head = (
+        f"POST /answer HTTP/1.0\r\nHost: 127.0.0.1:{live.port}\r\n"
+        f"X-Board-Token: {live.token}\r\n"
+    )
+    assert raw_request(live.port, head + "\r\n")[0] == 400  # no Content-Length
+    for length in ("abc", "-5", "0", "1_0", "16001", "99999999999999"):
+        code, _ = raw_request(live.port, head + f"Content-Length: {length}\r\n\r\n")
+        assert code == 400, length
+    junk = "not json"
+    code, _ = raw_request(
+        live.port, head + f"Content-Length: {len(junk)}\r\n\r\n{junk}"
+    )
+    assert code == 400
+    assert board.read_text(encoding="utf-8") == before
+
+
+def test_non_ascii_token_and_nul_path_are_refused_cleanly(live: Live):
+    code, _ = live.answer(
+        {"id": "Q1", "answer": "Yes"}, {"X-Board-Token": "t\u00f6k\u00e9n"}
+    )
+    assert code == 403
+    assert request(live.base + "/%00.md")[0] == 404
+    assert request(live.base + "/cards/%00.md")[0] == 404
+    assert request(live.base + "/")[0] == 200  # still serving
+
+
+def test_unexpected_failure_is_a_json_500_without_a_traceback(live: Live, board: Path):
+    board.write_bytes(b"# broken \xff\xfe board\n")  # not UTF-8: not a BoardError
+    code, text = request(live.base + "/board.json")
+    assert code == 500
+    assert json.loads(text) == {"error": "internal error"}
+    assert "Traceback" not in text
+    board.write_text("# fixed\n", encoding="utf-8")
+    assert request(live.base + "/board.md")[0] == 200  # the server survived
+    live.proc.terminate()
+    assert "Traceback" not in live.proc.communicate(timeout=5)[1]
+
+
+def test_busy_port_is_a_clean_error(board: Path):
+    with socket.socket() as blocker:
+        blocker.bind(("127.0.0.1", 0))
+        blocker.listen()
+        port = blocker.getsockname()[1]
+        result = run("serve", str(board), "--port", str(port), check=False)
+    assert result.returncode == 2
+    assert result.stderr.startswith("ERROR cannot listen on")
+    assert "Traceback" not in result.stderr
+
+
+def test_serve_on_ipv6_loopback(board: Path):
+    try:
+        with socket.socket(socket.AF_INET6) as probe:
+            probe.bind(("::1", 0))
+    except OSError:
+        pytest.skip("no IPv6 loopback on this host")
     port = free_port()
     proc = subprocess.Popen(
-        [sys.executable, str(SCRIPT), "serve", str(board), "--port", str(port)],
+        [
+            sys.executable,
+            str(SCRIPT),
+            "serve",
+            str(board),
+            "--port",
+            str(port),
+            "--host",
+            "::1",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
     )
-    base = f"http://127.0.0.1:{port}"
-    code, page = 0, ""
     try:
         for _ in range(50):
             try:
-                code, page = request(base + "/")
+                code, _, page = fetch(f"http://[::1]:{port}/")
                 break
             except urllib.error.URLError:
                 time.sleep(0.1)
         else:
-            pytest.fail("server did not start")
+            pytest.fail("IPv6 server did not start")
         assert code == 200 and 'content="live"' in page
-        token = page.split('name="board-token" content="', 1)[1].split('"', 1)[0]
-        assert len(token) >= 24
-
-        assert request(base + "/board.json", headers={"Host": "evil.example"})[0] == 403
-        assert request(base + "/cards/S1.md")[0] == 200
-        assert request(base + "/%2e%2e/secret.md")[0] == 404
-        assert request(base + "/board-log.md")[0] == 200
-        assert request(base + "/../secret.md")[0] == 404
-
-        answer = {"id": "Q1", "answer": "Yes"}
-        assert request(base + "/answer", "POST", answer)[0] == 403
         assert (
-            request(base + "/answer", "POST", answer, {"X-Board-Token": "wrong"})[0]
+            request(
+                f"http://[::1]:{port}/board.json", headers={"Host": "evil.example"}
+            )[0]
             == 403
         )
-        code, body = request(base + "/answer", "POST", answer, {"X-Board-Token": token})
-        assert code == 200, body
-        code, body = request(base + "/answer", "POST", answer, {"X-Board-Token": token})
-        assert code == 400 and "not open" in body
-
-        code, body = request(base + "/board.json")
-        assert json.loads(body)["questions"][0]["state"] == "answered"
-        assert "| answered | Yes (owner, " in board.read_text()
     finally:
         proc.terminate()
-        proc.wait(timeout=5)
+        proc.communicate(timeout=5)

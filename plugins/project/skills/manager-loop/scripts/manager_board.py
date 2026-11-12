@@ -20,6 +20,7 @@ import json
 import os
 import re
 import secrets
+import socket
 import stat
 import sys
 import threading
@@ -123,6 +124,22 @@ MAX_CELL_CHARS = 240
 MAX_ANSWER_CHARS = 200
 LATE_GRACE = timedelta(minutes=10)
 RELEASING_STATES = ("paused", "stopped", "done")  # a manager in these holds no lease
+MAX_BODY = 16_000  # bytes accepted by POST /answer
+REQUEST_TIMEOUT = 10  # seconds a client may stall the server
+# The page is self-contained: inline script and style, same-origin fetches, no framing.
+SECURITY_HEADERS = (
+    ("X-Content-Type-Options", "nosniff"),
+    ("Referrer-Policy", "no-referrer"),
+    ("X-Frame-Options", "DENY"),
+    (
+        "Content-Security-Policy",
+        (
+            "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; "
+            "connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; "
+            "base-uri 'none'; form-action 'none'"
+        ),
+    ),
+)
 LOCK_WAIT = 10.0  # seconds to wait for another writer before giving up
 HISTORY_TAIL = 20
 CARD_SECTIONS = ("Goal", "Scope", "Acceptance", "Gates", "Stop conditions", "Report")
@@ -1231,7 +1248,13 @@ class BoardServer(ThreadingHTTPServer):
         self.token = token
 
 
+class BoardServer6(BoardServer):
+    address_family = socket.AF_INET6
+
+
 class BoardHandler(BaseHTTPRequestHandler):
+    timeout = REQUEST_TIMEOUT
+
     def log_message(self, format: str, *args) -> None:
         del format, args
 
@@ -1253,8 +1276,11 @@ class BoardHandler(BaseHTTPRequestHandler):
         if not route.endswith(".md"):
             return None
         root = self.board_server.board_path.parent.resolve()
-        target = (root / unquote(route).lstrip("/")).resolve()
-        if not target.is_relative_to(root) or not target.is_file():
+        try:
+            target = (root / unquote(route).lstrip("/")).resolve()
+            if not target.is_relative_to(root) or not target.is_file():
+                return None
+        except (ValueError, OSError):  # an embedded NUL, a name too long, and the like
             return None
         return target
 
@@ -1263,8 +1289,8 @@ class BoardHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Referrer-Policy", "no-referrer")
+        for name, value in SECURITY_HEADERS:
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
 
@@ -1275,7 +1301,26 @@ class BoardHandler(BaseHTTPRequestHandler):
             "application/json; charset=utf-8",
         )
 
+    def _guarded(self, handler: Callable[[], None]) -> None:
+        """Run a request handler; an unexpected failure is a JSON 500, never a traceback."""
+        try:
+            handler()
+        except (BrokenPipeError, ConnectionResetError, TimeoutError):
+            return  # the client went away or stalled; there is nobody to answer
+        except Exception as exc:  # noqa: BLE001  last resort: answer 500, never drop the socket
+            print(f"board server: {type(exc).__name__}: {exc}", file=sys.stderr)
+            with contextlib.suppress(OSError):
+                self._json(
+                    HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "internal error"}
+                )
+
     def do_GET(self) -> None:
+        self._guarded(self._get)
+
+    def do_POST(self) -> None:
+        self._guarded(self._post)
+
+    def _get(self) -> None:
         if not self._host_ok():
             return self._send(HTTPStatus.FORBIDDEN, b"forbidden host", "text/plain")
         route = self.path.split("?", 1)[0]
@@ -1301,28 +1346,43 @@ class BoardHandler(BaseHTTPRequestHandler):
             return self._json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": str(exc)})
         return self._send(HTTPStatus.NOT_FOUND, b"not found", "text/plain")
 
-    def do_POST(self) -> None:
+    def _bad(self, message: str) -> None:
+        self._json(HTTPStatus.BAD_REQUEST, {"error": message})
+
+    def _post(self) -> None:
         if not self._host_ok():
             return self._send(HTTPStatus.FORBIDDEN, b"forbidden host", "text/plain")
         if self.path.split("?", 1)[0] != "/answer":
             return self._send(HTTPStatus.NOT_FOUND, b"not found", "text/plain")
-        if not secrets.compare_digest(
-            self.headers.get("X-Board-Token", ""), self.board_server.token
-        ):
+        # Headers arrive as latin-1 text; compare bytes so no input can raise.
+        supplied = self.headers.get("X-Board-Token", "").encode("latin-1", "replace")
+        if not secrets.compare_digest(supplied, self.board_server.token.encode()):
             return self._json(
                 HTTPStatus.FORBIDDEN, {"error": "bad token; reload the page"}
             )
+        raw = (self.headers.get("Content-Length") or "").strip()
+        length = int(raw) if re.fullmatch(r"[0-9]{1,9}", raw) else 0
+        if not 0 < length <= MAX_BODY:
+            return self._bad(f"Content-Length must be 1 to {MAX_BODY} bytes")
+        body = self.rfile.read(length)
         try:
-            length = min(int(self.headers.get("Content-Length", "0")), 16_000)
-            body = json.loads(self.rfile.read(length) or b"{}")
-            record_answer(
-                self.board_server.board_path,
-                str(body.get("id", "")),
-                str(body.get("answer", "")),
-                "owner",
+            payload = json.loads(body)
+        except ValueError:
+            return self._bad("the body is not JSON")
+        if not (
+            isinstance(payload, dict)
+            and isinstance(payload.get("id"), str)
+            and isinstance(payload.get("answer"), str)
+        ):
+            return self._bad(
+                'the body must be a JSON object with string "id" and "answer"'
             )
-        except (ValueError, BoardError) as exc:
-            return self._json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
+        try:
+            record_answer(
+                self.board_server.board_path, payload["id"], payload["answer"], "owner"
+            )
+        except BoardError as exc:
+            return self._bad(str(exc))
         return self._json(HTTPStatus.OK, {"ok": True})
 
 
@@ -1842,9 +1902,15 @@ def cmd_serve(args) -> int:
             f"WARNING: serving on {args.host}; anyone who can reach it can read the board",
             file=sys.stderr,
         )
-    server = BoardServer((args.host, args.port), path, secrets.token_urlsafe(24))
+    server_class = BoardServer6 if ":" in args.host else BoardServer
+    try:
+        server = server_class((args.host, args.port), path, secrets.token_urlsafe(24))
+    except OSError as exc:
+        raise BoardError(
+            f"cannot listen on {args.host}:{args.port}: {exc.strerror or exc}"
+        ) from exc
     host, port = server.server_address[:2]
-    shown = "localhost" if host in ("127.0.0.1", "::1") else host
+    shown = "localhost" if host == "127.0.0.1" else f"[{host}]" if ":" in host else host
     print(f"board: http://{shown}:{port}/  (Ctrl-C to stop)", flush=True)
     with contextlib.suppress(KeyboardInterrupt):
         server.serve_forever()
