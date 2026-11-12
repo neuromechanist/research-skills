@@ -1,0 +1,4 @@
+interface:
+  display_name: "Manager Loop"
+  short_description: "Run an approved plan hands-off with a manager, a board, and owner questions."
+  default_prompt: "Run one manager tick for this project's plan and board."
