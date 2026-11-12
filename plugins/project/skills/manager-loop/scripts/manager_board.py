@@ -122,6 +122,7 @@ MAX_BOARD_LINES = 300
 MAX_CELL_CHARS = 240
 MAX_ANSWER_CHARS = 200
 LATE_GRACE = timedelta(minutes=10)
+RELEASING_STATES = ("paused", "stopped", "done")  # a manager in these holds no lease
 LOCK_WAIT = 10.0  # seconds to wait for another writer before giving up
 HISTORY_TAIL = 20
 CARD_SECTIONS = ("Goal", "Scope", "Acceptance", "Gates", "Stop conditions", "Report")
@@ -833,7 +834,8 @@ def analyze(
 
     info = board.now()
     last, nxt = parse_time(info.get("Last tick")), parse_time(info.get("Next tick"))
-    late = bool(nxt and now > nxt + LATE_GRACE)
+    running = info.get("State", "").strip().lower() == "running"
+    late = bool(nxt and running and now > nxt + LATE_GRACE)
 
     needs_you: list[dict[str, str]] = []
     if late:
@@ -1579,6 +1581,7 @@ def cmd_tick(args) -> int:
     path = Path(args.board)
     moment = local_now()
     events: list[str] = []
+    released = (args.state or "").strip().lower() in RELEASING_STATES
 
     def change(text: str) -> str:
         board = parse_board(text)
@@ -1601,17 +1604,20 @@ def cmd_tick(args) -> int:
         values = {"Last tick": stamp(moment)}
         if args.manager:
             values["Manager id"] = args.manager
-        if args.next is not None:
-            values["Next tick"] = stamp(moment + parse_duration(args.next))
+        wake = parse_duration(args.next) if args.next is not None else None
+        if wake is not None:
+            values["Next tick"] = stamp(moment + wake)
         if args.state:
             values["State"] = args.state
+            if released:
+                values["Next tick"] = "-"  # no pending wake, so no lease
         for name, value in values.items():
             exists = any(
                 r.get("Key", "").strip() == name for r in parse_board(text).rows("now")
             )
             text = apply_row(text, "now", name, {"Value": value}, create=not exists)
         last = parse_time(info.get("Last tick"))
-        if last and last.date() != moment.date():
+        if last and last.astimezone().date() != moment.date():
             for row in parse_board(text).rows("budget"):
                 if row.get("Resets", "").strip().lower() == "daily" and first_number(
                     row.get("Used")
@@ -1627,7 +1633,11 @@ def cmd_tick(args) -> int:
         return text
 
     mutate(path, change, events)
-    print(f"tick {stamp(moment)}" + (f", next in {args.next}" if args.next else ""))
+    if released:
+        after = f", state {args.state}, lease released"
+    else:
+        after = f", next in {args.next}" if args.next else ""
+    print(f"tick {stamp(moment)}{after}")
     return 0
 
 

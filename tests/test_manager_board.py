@@ -14,7 +14,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -265,6 +265,73 @@ def test_daily_budget_resets_on_first_tick_of_a_day(board: Path):
     assert budget["Advisor consults"] == 2  # Resets: never
     log = (board.parent / "board-log.md").read_text()
     assert "budget reset (daily): Agents today was 7" in log
+
+
+def test_daily_reset_compares_local_calendar_days(board: Path):
+    local = {"TZ": "Etc/GMT+12"}  # UTC-12, the far end from +14:00
+    tz = timezone(timedelta(hours=-12))
+    now = datetime.now(tz)
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    hour_ago = max(now - timedelta(hours=1), midnight)  # still today, locally
+    far_east = hour_ago.astimezone(timezone(timedelta(hours=14)))
+    assert far_east.date() != now.date()  # the wall-clock date there is another day
+    run("spend", str(board), "Agents today", "7")
+    run(
+        "set",
+        str(board),
+        "now",
+        "Last tick",
+        f"Value={far_east.isoformat(timespec='minutes')}",
+    )
+    run("tick", str(board), "--manager", "m1", "--next", "30m", env=local)
+    assert used(board, "Agents today") == 7
+    yesterday = (now - timedelta(days=1)).isoformat(timespec="minutes")
+    run("set", str(board), "now", "Last tick", f"Value={yesterday}")
+    run("tick", str(board), "--manager", "m1", "--next", "30m", env=local)
+    assert used(board, "Agents today") == 0
+
+
+def test_late_flag_needs_a_running_manager(board: Path):
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    long_ago = (datetime.now().astimezone() - timedelta(hours=3)).isoformat(
+        timespec="minutes"
+    )
+    run("set", str(board), "now", "Next tick", f"Value={long_ago}")
+    data = status(board)
+    assert data["heartbeat"]["late"] is True
+    assert any(item["kind"] == "late" for item in data["needs_you"])
+    assert "LATE" in run("status", str(board)).stdout
+
+    run("tick", str(board), "--manager", "m1", "--state", "done")
+    data = status(board)
+    assert data["now"]["Next tick"] == "-" and data["heartbeat"]["next"] == ""
+    assert data["heartbeat"]["late"] is False
+    assert not any(item["kind"] == "late" for item in data["needs_you"])
+    assert "LATE" not in run("status", str(board)).stdout
+
+    run("set", str(board), "now", "State", "Value=paused")  # a hand-set stale wake
+    run("set", str(board), "now", "Next tick", f"Value={long_ago}")
+    assert status(board)["heartbeat"]["late"] is False
+
+
+@pytest.mark.parametrize("state", ["paused", "stopped", "done"])
+def test_a_stopped_manager_releases_the_lease(board: Path, state: str):
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    blocked = run("tick", str(board), "--manager", "m2", "--next", "30m", check=False)
+    assert blocked.returncode == 2
+    run("tick", str(board), "--manager", "m1", "--state", state)
+    run("tick", str(board), "--manager", "m2", "--next", "30m")
+    assert status(board)["heartbeat"]["manager"] == "m2"
+
+
+def test_lease_refusal_ends_with_the_expiry_time(board: Path):
+    run("tick", str(board), "--manager", "m1", "--next", "30m", "--state", "running")
+    next_tick = datetime.fromisoformat(status(board)["heartbeat"]["next"])
+    expires = (next_tick + timedelta(minutes=10)).isoformat(timespec="minutes")
+    result = run("tick", str(board), "--manager", "m2", "--next", "30m", check=False)
+    assert result.returncode == 2
+    assert result.stderr.strip().endswith(expires)
+    assert "--take-over" in result.stderr
 
 
 def test_question_lifecycle(board: Path):
