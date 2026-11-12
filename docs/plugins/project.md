@@ -53,7 +53,7 @@ A standard-library helper validates it, computes the dispatch plan, holds a sing
 - **manager-loop**: hands-off execution of an approved plan by a manager agent, described below
 - **debugging**: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)
 - **agent-fanout**: orchestrating subagents and teammates within a session with explicit model tiers: Claude Fable/Opus lead and Sonnet workers; Codex Sol lead, Terra approved-plan elaboration, and Luna workers. It adds full-lifecycle briefs, mechanical gates, lead verification, mandatory cleanup of completed one-off agents, and a hard cap of 40 agents per run. This is in-session delegation, distinct from the git-tracked epic/worktree workflow above.
-- **ci-scaffolding**: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test)
+- **ci-scaffolding**: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test); `references/ci-speed.md` covers measuring and speeding up a slow pipeline (time-balanced sharding behind gate jobs, setup fixes, parallel jobs)
 - **docker-packaging**: multi-stage Dockerfiles with uv/bun, health checks, and security hardening
 - **security-audit**: credential scanning, dependency audit, OWASP checklist, configuration hardening
 - **document-processing**: PDF/image OCR, text extraction, markdown conversion

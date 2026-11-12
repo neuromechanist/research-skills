@@ -17,7 +17,7 @@ authors:
       ror: "https://ror.org/01bt2qm76"
 repository-code: "https://github.com/neuromechanist/research-skills"
 license: BSD-3-Clause
-version: 0.16.15
+version: 0.16.16
 date-released: "2026-11-12"
 keywords:
   - claude-code
