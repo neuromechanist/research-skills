@@ -20,6 +20,7 @@ and how to combine results.
 | One pull request (PR) ready for review | One review panel (2-5 reviewers, see Review panels below). |
 | Sequential work where step N needs step N-1's output | Do NOT parallelize. Run one agent at a time or do it inline. |
 | Task needs secrets, deploy rights, or user-only credentials | Do NOT delegate. Keep it in the main session (mark the task "owner: lead"). |
+| Work spans many ticks or days, driven by a manager agent and a board | `project:manager-loop`; this skill's briefing and supervision rules apply to each dispatch. |
 
 Do not fan out for work you can finish inline in a few minutes; a subagent costs
 setup, supervision, and synthesis time.
@@ -35,7 +36,9 @@ setup, supervision, and synthesis time.
    (`maxItems`-style limits in the prompt), one verification vote instead of
    three. Going past 40 requires explicit user approval in the same
    conversation. If the user's own configuration states a stricter cap, the
-   stricter number wins.
+   stricter number wins. A multi-day manager loop counts per wave and per
+   day instead: the owner approves those limits with the plan, and the
+   board's budget refuses to pass them (`project:manager-loop`).
 3. Prefer waves of 10 or fewer concurrent agents. Finish and synthesize a wave
    before launching the next.
 4. Every phase plan states its own agent budget and routing up front (for

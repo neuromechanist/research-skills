@@ -129,6 +129,8 @@ One phase = one independently reviewable and testable pull request (PR):
 roughly one subsystem, one migration, or up to ~500 net lines of
 non-generated change.
 If the description contains two or more such units, it is an epic (use
-epic-dev); if not, it is a single feature (engineering-loop). Name phases
+epic-dev); if not, it is a single feature (engineering-loop). A plan that a
+manager agent will run hands-off also needs a plan pack (cards, slots or
+waves, checkpoints): see `project:manager-loop`. Name phases
 with 2-3 word kebab-case slugs: drop stopwords, keep the object noun first
 ("backend-metrics", "sync-engine", not "implement-the-new-backend-metrics").
