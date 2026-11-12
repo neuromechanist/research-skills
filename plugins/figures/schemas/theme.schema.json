@@ -115,7 +115,7 @@
       "type": "object",
       "description": "Per-use-case model selection and generation parameters. Values are advisory hints consumed by the generator scripts.",
       "properties": {
-        "codex_model": {"type": "string", "default": "gpt-5.6-luna"},
+        "codex_model": {"type": "string", "default": "gpt-6-luna"},
         "codex_effort": {"type": "string", "default": "xhigh"},
         "image_quality": {"type": "string", "default": "high"},
         "icons": {"type": "string", "description": "Legacy per-use-case override, kept optional for backward compatibility."},

@@ -1,7 +1,7 @@
 ---
 name: ai-full-figure
 description: Use this skill when the user asks to "generate an AI figure", "make an AI-generated figure", "make a poster figure", "make a presentation figure", "generate a figure with AI", "generate figure panels with Codex", "make a multi-panel AI figure", "AI background for a figure", or wants a pictorial figure or panel (brain scene, apparatus, anatomy, pipeline illustration) rendered by gpt-image-2 through the Codex CLI with large verbatim titles and panel letters, then QA'd and iterated until it passes. Expects a theme from figures:figure-bible. Data plots, axes, numerals, and equations go to figures:plot-styling or figures:svg-primitives instead.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # AI Full Figure
@@ -57,7 +57,7 @@ Details and prompt patterns live in `references/prompt-patterns.md`.
 - Or `OPENAI_API_KEY` for the API path (`--backend api`).
 - `uv` for Python, with `--with pillow` for the generators; `--with svgutils --with cairosvg` for composition.
 
-Model defaults come from the theme's `model_preferences`: `gpt-5.6-luna` at `xhigh` effort with image quality `high`, which lands good figures at the cheapest tier.
+Model defaults come from the theme's `model_preferences`: `gpt-6-luna` at `xhigh` effort with image quality `high`, which lands good figures at the cheapest tier.
 Expect one to three minutes per image; panels run in parallel.
 
 ## Usage

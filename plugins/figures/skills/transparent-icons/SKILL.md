@@ -1,7 +1,7 @@
 ---
 name: transparent-icons
 description: Use this skill when the user asks to "make an icon", "generate an icon", "create a scientific icon", "make a transparent icon", "make a minimal icon", "icon for a figure", "icon for a paper", "generate an icon set", "batch icons", or wants flat scientific icons (brain, neuron, DNA, EEG cap, microscope) with transparent backgrounds in a journal style. Generates PNG icons with gpt-image-2 through the Codex CLI (or the OpenAI Images API), or Atlas Cloud with explicit opt-in, keeps the model's native alpha, and reads palette and model settings from the project theme made by figures:figure-bible.
-version: 0.2.0
+version: 0.2.1
 ---
 
 # Transparent Icons
@@ -15,7 +15,7 @@ Sister skills are invoked by their fully qualified `figures:<skill>` names throu
 Generation goes through the shared backend in `plugins/figures/lib/image_backend.py`, the same one `figures:ai-full-figure` uses.
 
 1. **Codex CLI `image_gen`** (default when `codex` is logged in). No API key needed.
-   The model and effort come from the theme's `model_preferences` (default `gpt-5.6-luna` at `xhigh`), which lands good icons at the cheapest tier in one to two minutes each.
+   The model and effort come from the theme's `model_preferences` (default `gpt-6-luna` at `xhigh`), which lands good icons at the cheapest tier in one to two minutes each.
 2. **OpenAI Images API** (`--backend api`) with `OPENAI_API_KEY`.
 3. **Atlas Cloud** (`--backend atlas`) with `ATLASCLOUD_API_KEY`. This is explicit-only; it never changes the Codex-first auto route. The default model is `black-forest-labs/flux-schnell`, and the asynchronous result is polled with a bounded timeout.
 
