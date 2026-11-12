@@ -56,7 +56,7 @@ Host-specific mechanics (how each host wakes the manager and asks questions) are
 - **workflow-reference**: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
 - **pr-review-toolkit**: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification; Codex `all`/pre-merge reviews use a bounded three-reviewer Luna/max panel when preflight detects native subagents, with single/inline fallback and explicit accounting
 - **codebase-onboarding**: verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
-- **implementation-planning**: lead-tier macro design (Opus or Sol; the frontier tier only on request) followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
+- **implementation-planning**: lead-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
 - **engineering-loop**: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons
 - **manager-loop**: hands-off execution of an approved plan by a manager agent, described above
 - **debugging**: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)
