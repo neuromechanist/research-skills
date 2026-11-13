@@ -991,7 +991,7 @@ documentation with strict link validation. The separate CI typo job still uses
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>serve<span class="w">   </span><span class="c1"># http://127.0.0.1:8000/</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
 </code></pre></div>
-<p>CI builds and deploys this site to the <code>gh-pages</code> branch on every push to <code>main</code> that touches <code>docs/**</code>, <code>mkdocs.yml</code>, or <code>pyproject.toml</code>. Run <code>mkdocs build --strict</code> locally before pushing; it fails on any broken nav entry or image link, which is the easiest way to catch a typo'd path.</p>
+<p>CI builds this site with <code>mkdocs build --strict</code> on every pull request that touches <code>docs/**</code>, <code>mkdocs.yml</code>, <code>pyproject.toml</code>, or the docs workflow, and deploys it to the <code>gh-pages</code> branch on every push to <code>main</code> that touches the same paths. Run <code>mkdocs build --strict</code> locally before pushing; it fails on any broken nav entry or image link, which is the easiest way to catch a typo'd path.</p>
 <h2 id="adding-to-these-docs">Adding to these docs<a class="headerlink" href="#adding-to-these-docs" title="Permanent link">&para;</a></h2>
 <p>A new plugin gets a page at <code>docs/plugins/&lt;name&gt;.md</code> following the same skeleton every existing plugin page uses, in this order:</p>
 <ol>

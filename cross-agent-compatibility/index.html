@@ -757,10 +757,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#claude-code-model-routing" class="md-nav__link">
+  <a href="#model-routing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Claude Code model routing
+        Model routing
       
     </span>
   </a>
@@ -772,6 +772,17 @@
     <span class="md-ellipsis">
       
         Agent lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manager-loops-across-hosts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manager loops across hosts
       
     </span>
   </a>
@@ -917,10 +928,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#claude-code-model-routing" class="md-nav__link">
+  <a href="#model-routing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Claude Code model routing
+        Model routing
       
     </span>
   </a>
@@ -932,6 +943,17 @@
     <span class="md-ellipsis">
       
         Agent lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manager-loops-across-hosts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manager loops across hosts
       
     </span>
   </a>
@@ -1052,7 +1074,7 @@ is legacy.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>codex<span class="w"> </span>plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>neuromechanist/research-skills
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>codex<span class="w"> </span>plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>./path/to/research-skills
 </code></pre></div>
-<p>Codex skills are directories containing <code>SKILL.md</code> files with <code>name</code> and <code>description</code> frontmatter. The native <code>.codex-plugin/plugin.json</code> manifests point at the existing <code>plugins/&lt;name&gt;/skills/</code> trees. Claude-specific commands and agents stay declared in the <code>.claude-plugin/plugin.json</code> manifests; Copilot agent templates are exposed through native <code>.github/plugin/plugin.json</code> manifests.</p>
+<p>Codex skills are directories containing <code>SKILL.md</code> files with <code>name</code> and <code>description</code> frontmatter. The native <code>.codex-plugin/plugin.json</code> manifests point at the existing <code>plugins/&lt;name&gt;/skills/</code> trees. Claude Code commands stay declared in the <code>.claude-plugin/plugin.json</code> manifests, and Claude Code picks up bundled agents from each plugin's <code>agents/*.md</code> without a manifest field; Copilot agent templates are exposed through native <code>.github/plugin/plugin.json</code> manifests.</p>
 <p>Codex custom subagents are separate from plugin skills. Current Codex docs define custom agents as standalone TOML files under <code>~/.codex/agents/</code> for personal scope or <code>.codex/agents/</code> for project scope, with required <code>name</code>, <code>description</code>, and <code>developer_instructions</code> fields. Optional fields include <code>model</code>, <code>model_reasoning_effort</code>, sandbox settings, MCP servers, and skills. <code>/agent</code> inspects and switches active threads. For review/QA surfaces in this marketplace, keep <code>agents/templates/*.toml</code> as opt-in Codex custom-agent templates.</p>
 <p>The project workflow routes Codex roles by capability: Sol for architecture,
 observation, supervision, and synthesis; Terra for bounded phase-plan
@@ -1073,16 +1095,33 @@ Terra and Luna for local Codex custom agents.</p>
 implementation-worker Copilot profiles. They use capability-class language
 instead of hard-coded model names because available Copilot model identifiers
 vary by environment.</p>
-<h2 id="claude-code-model-routing">Claude Code model routing<a class="headerlink" href="#claude-code-model-routing" title="Permanent link">&para;</a></h2>
-<p>Claude Code uses Fable when available, otherwise Opus or <code>best</code>, for macro
-design, observation, supervision, and synthesis. Sonnet implements approved,
-detailed plans and performs routine focused review. Any unresolved architecture
-or high-risk invariant escalates back to the lead model.</p>
+<h2 id="model-routing">Model routing<a class="headerlink" href="#model-routing" title="Permanent link">&para;</a></h2>
+<p>Every lead role defaults to the lead tier: Claude Opus and Codex Sol (<code>gpt-6.1-sol</code>).
+That covers project initiation, architecture, planning, observation, supervision, and synthesis.
+The frontier tier, Claude Fable and Codex Astra (<code>gpt-6-astra</code>), is opt-in: use it only when the user explicitly asks for it, or for long-horizon jobs or planning the user names.
+Sonnet on Claude and Luna (<code>gpt-6-luna</code>) on Codex implement approved, detailed plans and perform routine focused review.
+Codex Terra (<code>gpt-6.1-terra</code>) elaborates an approved architecture into a worker-executable phase plan.
+Any unresolved architecture or high-risk invariant escalates back to the lead tier.
+Copilot CLI and other systems keep the same capability classes (lead, intermediate, worker) with whatever models the environment exposes.</p>
 <h2 id="agent-lifecycle">Agent lifecycle<a class="headerlink" href="#agent-lifecycle" title="Permanent link">&para;</a></h2>
 <p>All supported systems should close/remove completed one-off agents after their
 reports are incorporated. Retain an agent only for a named recurring role with
 a concrete next task. This avoids stale agent fleets and makes the active
 workflow observable.</p>
+<h2 id="manager-loops-across-hosts">Manager loops across hosts<a class="headerlink" href="#manager-loops-across-hosts" title="Permanent link">&para;</a></h2>
+<p>The <code>project:manager-loop</code> skill runs one board on every host, but each host wakes the manager and asks the owner questions differently.
+<code>plugins/project/skills/manager-loop/references/platforms.md</code> holds the full table; these are the verified host facts.</p>
+<ul>
+<li>Codex <code>request_user_input</code> works only in the root thread and is unavailable in <code>codex exec</code>.
+  It takes one to three short questions with two or three choices each.
+  It appears only when it is listed for the session, in Plan collaboration mode or through the off-by-default <code>default_mode_request_user_input</code> feature; otherwise Codex asks in plain text.</li>
+<li><code>codex queue --thread &lt;id&gt; --message &lt;text&gt; --resume</code> queues a message into an existing Codex session, so a scheduler can send "run one manager tick" into an interactive manager.</li>
+<li>Under <code>-s workspace-write</code>, a Codex worker in a linked git worktree cannot commit or reach the network.
+  Pass <code>-c 'sandbox_workspace_write.writable_roots=["&lt;main repo&gt;/.git/worktrees/&lt;name&gt;"]'</code> and <code>-c sandbox_workspace_write.network_access=true</code> at launch to allow both.</li>
+<li>On Claude Code, ScheduleWakeup ends each self-paced <code>/loop</code> tick, <code>stop: true</code> ends the loop, and delays run from 60 to 3600 seconds.</li>
+<li>Copilot CLI's <code>ask_user</code> question form can be disabled with <code>--no-ask-user</code>.
+  This comes from GitHub's changelog; verify it on the installed version.</li>
+</ul>
 <h2 id="commands-and-skills-with-the-same-name">Commands and skills with the same name<a class="headerlink" href="#commands-and-skills-with-the-same-name" title="Permanent link">&para;</a></h2>
 <p>Claude Code lists a plugin command and a skill with the same name as two rows in
 the <code>/</code> menu. The command wins whether it is run from the menu or loaded through

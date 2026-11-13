@@ -661,10 +661,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#one-command-six-steps-to-a-validated-dataset" class="md-nav__link">
+  <a href="#one-request-six-steps-to-a-validated-dataset" class="md-nav__link">
     <span class="md-ellipsis">
       
-        One command, six steps, to a validated dataset
+        One request, six steps, to a validated dataset
       
     </span>
   </a>
@@ -862,10 +862,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#one-command-six-steps-to-a-validated-dataset" class="md-nav__link">
+  <a href="#one-request-six-steps-to-a-validated-dataset" class="md-nav__link">
     <span class="md-ellipsis">
       
-        One command, six steps, to a validated dataset
+        One request, six steps, to a validated dataset
       
     </span>
   </a>
@@ -952,7 +952,7 @@
 <h2 id="the-plugin-map">The plugin map<a class="headerlink" href="#the-plugin-map" title="Permanent link">&para;</a></h2>
 <p>A conversion skill sits at the center; a validator agent defends its output; experiment design covers the data-collection side that happens before conversion:</p>
 <p><img alt="Neuroinformatics plugin map: bids-conversion at the center, defended by the bids-validator agent, with experiment-design covering data collection" src="../../assets/diagrams/neuro-plugin-map.svg" /></p>
-<h2 id="one-command-six-steps-to-a-validated-dataset">One command, six steps, to a validated dataset<a class="headerlink" href="#one-command-six-steps-to-a-validated-dataset" title="Permanent link">&para;</a></h2>
+<h2 id="one-request-six-steps-to-a-validated-dataset">One request, six steps, to a validated dataset<a class="headerlink" href="#one-request-six-steps-to-a-validated-dataset" title="Permanent link">&para;</a></h2>
 <p>Converting raw recordings into a shareable BIDS dataset is a fixed sequence:</p>
 <p><img alt="BIDS conversion flow: Inventory, Scaffold, Convert files, JSON sidecars, TSV tables, Validate" src="../../assets/diagrams/bids-conversion-flow.svg" /></p>
 <ol>
@@ -969,7 +969,7 @@
 <p><img alt="Why BIDS: one predictable layout with machine-readable sidecars lets EEGLAB, MNE-Python, bids-validator, BIDS Apps, OpenNeuro, and NEMAR all read the same data unchanged" src="../../assets/diagrams/bids-why.svg" /></p>
 <p>A standard structure turns "my data" into "reusable data": the same folder and filename conventions apply to every BIDS dataset, anywhere, which is what makes cross-dataset tools and mega-analysis pooling possible in the first place.</p>
 <h2 id="hed-annotation">HED annotation<a class="headerlink" href="#hed-annotation" title="Permanent link">&para;</a></h2>
-<p>HED annotation, tagging events with a standardized, machine-readable vocabulary for the <em>what</em> of an event, not just its timing, lives inside the <code>bids-conversion</code> and <code>experiment-design</code> skills' reference material rather than as a separate skill. Conceptually, going from a plain-English event description to a schema-valid HED tag string is a parse → tag → validate pipeline:</p>
+<p>HED annotation, tagging events with a standardized, machine-readable vocabulary for the <em>what</em> of an event, not just its timing, is covered inside the <code>experiment-design</code> skill (a section on adding a <code>HED</code> column to event markers) rather than as a separate skill. Conceptually, going from a plain-English event description to a schema-valid HED tag string is a parse → tag → validate pipeline:</p>
 <p><img alt="HEDit pipeline: parse natural language into structured facts, tag by retrieving HED schema nodes, then validate against the official HED validator with feedback looped back into re-tagging" src="../../assets/diagrams/hedit-pipeline.svg" /></p>
 <p>The HED schema is the contract; nothing in that pipeline invents vocabulary outside it.</p>
 <h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>

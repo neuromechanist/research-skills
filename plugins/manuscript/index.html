@@ -921,7 +921,7 @@
 <h2 id="literature-review-in-two-modes">Literature review, in two modes<a class="headerlink" href="#literature-review-in-two-modes" title="Permanent link">&para;</a></h2>
 <p><code>manuscript:lit-review</code> covers two workflows: a rigorous, citation-traceable multi-phase protocol, and an express single-pass synthesis for writing an Introduction or Background section. The multi-phase mode is itself a five-stage pipeline that can delegate its epic/sub-issue/worktree orchestration to <code>project:epic-dev</code>:</p>
 <p><img alt="Literature review pipeline: Direction, Collect, Synthesize, Draft, Review, with gaps found in review boomeranging back to collection, not just the prose" src="../../assets/diagrams/lit-review-pipeline.svg" /></p>
-<p>Every claim in a multi-phase review must trace back to a paper-card on disk: a schema-enforced markdown file with YAML front matter (slug, type, year, DOI, license, relevance, PDF status) and six required sections, validated by <code>opencite</code>:</p>
+<p>Every claim in a multi-phase review must trace back to a paper-card on disk: a markdown file with YAML front matter (slug, type, year, DOI, license, relevance, PDF status) and six required sections, defined by the paper-card schema in <code>manuscript:lit-review</code>:</p>
 <p><img alt="Paper-card anatomy: YAML front matter plus TL;DR, Summary, Relevance, Notable details, Open questions, and Citations sections, the same shape across every card" src="../../assets/diagrams/paper-card-anatomy.svg" /></p>
 <p>The same shape across every card is what lets synthesis scan the corpus quickly instead of re-reading full papers.</p>
 <h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>
