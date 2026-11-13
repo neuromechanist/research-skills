@@ -160,3 +160,4 @@ For each phase, starting from the current state:
 
 - `workflow-reference` skill: branch strategy, state file format, worktree commands, GitHub commands, and variation handling.
 - `pr-review-toolkit` skill: phase and final PR review before merge.
+- `manager-loop` skill: hands-off execution of an approved epic by a manager agent, with a board, parity across platforms, and structured owner questions.

@@ -17,6 +17,7 @@ verification. Lightweight counterpart to the epic-dev workflow.
 | You have not worked in this code before | codebase-onboarding first, then return here. |
 | Behavior is wrong and cause unknown | debugging skill first; the fix then follows this loop. |
 | No issue exists yet | Create one (except trivial fixes); it is the durable spec. |
+| An approved plan of many steps to run hands-off over hours or days | `project:manager-loop`; each step's PR still follows this loop. |
 
 ## The loop
 

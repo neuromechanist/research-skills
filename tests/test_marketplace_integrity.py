@@ -171,7 +171,7 @@ def test_same_name_command_and_skill_do_not_double_list_in_claude_code():
 
 def test_project_model_routing_contract_is_cross_agent():
     fanout = (PLUGINS_DIR / "project" / "skills" / "agent-fanout" / "SKILL.md").read_text()
-    for model in ("Fable", "Opus", "Sonnet", "Sol", "Terra", "Luna"):
+    for model in ("Fable", "Opus", "Sonnet", "Astra", "Sol", "Terra", "Luna"):
         assert model in fanout, f"agent-fanout routing is missing {model}"
 
     consumers = [
@@ -183,6 +183,34 @@ def test_project_model_routing_contract_is_cross_agent():
         assert "agent-fanout" in path.read_text(), (
             f"{path.relative_to(ROOT)} does not reference central routing policy"
         )
+
+
+def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
+    fanout = (PLUGINS_DIR / "project" / "skills" / "agent-fanout" / "SKILL.md").read_text()
+    for model_id in ("gpt-6-astra", "gpt-6.1-sol", "gpt-6.1-terra", "gpt-6-luna"):
+        assert model_id in fanout, f"agent-fanout routing table is missing {model_id}"
+    assert "opt-in" in fanout
+
+    retired = re.compile(r"gpt-5[.]6|Fable when[ ]available")
+    # Scan tracked files only: ignored local outputs (for example examples/out/) are not shipped.
+    tracked = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files", "-z", "--", "AGENTS.md", "README.md", "docs", "plugins"],
+        capture_output=True,
+        check=True,
+    ).stdout.decode()
+    scanned = [
+        ROOT / name
+        for name in tracked.split("\0")
+        if name
+        and (
+            name in {"AGENTS.md", "README.md"}
+            or (name.startswith("docs/") and name.endswith(".md"))
+            or (name.startswith("plugins/") and Path(name).suffix in {".md", ".py", ".json", ".toml", ".sh"})
+        )
+    ]
+    assert scanned, "git ls-files returned no files to scan"
+    stale = [str(p.relative_to(ROOT)) for p in scanned if retired.search(p.read_text())]
+    assert not stale, f"retired model ids or default-to-Fable wording remain in: {stale}"
 
 
 def test_pr_review_panel_contract_is_bounded_and_has_fallback():
@@ -197,7 +225,7 @@ def test_pr_review_panel_contract_is_bounded_and_has_fallback():
     ).read_text()
 
     assert "project-preflight --format json" in skill
-    assert "gpt-5.6-luna" in protocol
+    assert "gpt-6-luna" in protocol
     assert "max" in protocol
     assert "at most three" in protocol
     assert "single" in skill and "inline" in skill
@@ -310,9 +338,9 @@ def test_codex_agent_templates_are_valid_and_pin_worker_tiers():
             assert data.get(key), f"{path.relative_to(ROOT)}: missing {key}"
         parsed[data["name"]] = data
 
-    assert parsed["phase-planner"]["model"] == "gpt-5.6-terra"
+    assert parsed["phase-planner"]["model"] == "gpt-6.1-terra"
     assert parsed["phase-planner"]["sandbox_mode"] == "read-only"
-    assert parsed["implementation-worker"]["model"] == "gpt-5.6-luna"
+    assert parsed["implementation-worker"]["model"] == "gpt-6-luna"
     assert parsed["implementation-worker"]["sandbox_mode"] == "workspace-write"
 
 
@@ -549,9 +577,11 @@ def test_project_script_references_resolve_to_executables():
     stale: list[str] = []
     for source in sources:
         text = source.read_text()
-        for name in re.findall(r"(?:^|[/\s`(])scripts/(project-[A-Za-z0-9_.-]+)", text, re.M):
+        for name in re.findall(
+            r"(?:^|[/\s`(])scripts/(project-[A-Za-z0-9_.-]+)", text, re.MULTILINE
+        ):
             referenced.add(name.rstrip("."))
-        if re.search(r"(?:^|[/\s`(])bin/project-", text, re.M):
+        if re.search(r"(?:^|[/\s`(])bin/project-", text, re.MULTILINE):
             stale.append(str(source.relative_to(ROOT)))
     assert referenced, "expected references to scripts/project-*"
     for name in sorted(referenced):

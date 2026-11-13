@@ -1,6 +1,6 @@
 # Project
 
-The `project` plugin is the marketplace's development-lifecycle toolkit: initialization, tracked cross-agent project memory, cross-agent user instructions, tiered model routing, epic/sprint workflow, PR review, CI/CD scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, and multi-agent orchestration.
+The `project` plugin is the marketplace's development-lifecycle toolkit: initialization, tracked cross-agent project memory, cross-agent user instructions, tiered model routing, epic/sprint workflow, pull request (PR) review, continuous integration and delivery (CI/CD) scaffolding, and core engineering workflows for onboarding, planning, implementation, debugging, multi-agent orchestration, and hands-off execution of approved plans.
 
 ## Epics, phases, and worktrees
 
@@ -12,7 +12,9 @@ Each phase gets its own worktree, checked out from the epic branch, so you can h
 
 ![Worktree layout: main, epic-hbn, and per-phase feature worktrees (feature/epic-hbn-phase1, feature/epic-hbn-phase2) checked out side by side](../assets/diagrams/worktree.svg)
 
-The same epic → sub-issue → worktree shape generalizes beyond code changes. `epic-dev` is the entry point other skills delegate to when they need git-tracked, parallelizable phase decomposition. For example, `manuscript:lit-review`'s multi-phase mode delegates strand orchestration (one strand per literature-review theme, each with its own sub-issue, worktree, and collection folder) to `project:epic-dev`:
+The same epic → sub-issue → worktree shape generalizes beyond code changes.
+`epic-dev` is the entry point other skills delegate to when they need git-tracked, parallelizable phase decomposition.
+For example, `manuscript:lit-review`'s multi-phase mode delegates strand orchestration (one strand per literature-review theme, each with its own sub-issue, worktree, and collection folder) to `project:epic-dev`:
 
 ![Strand fan-out: one epic issue decomposed into four strand sub-issues, each with its own collection folder and acceptance criteria](../assets/diagrams/strand-fanout.svg)
 
@@ -22,29 +24,52 @@ Before an epic or PR workflow, invoke the bundled
 `<project-plugin-root>/scripts/project-preflight --format json` executable by absolute path;
 plugin helpers are not on `PATH`.
 `<project-plugin-root>` is the plugin directory that holds `skills/`, `scripts/`, and `templates/`.
-It reports the actual repository root, branch/worktree state, shell and terminal, GitHub CLI command/network/auth/token status, child-shell credential inheritance, and native-agent capability.
+It reports the actual repository root, branch/worktree state, shell and terminal, GitHub command-line interface (CLI) command/network/auth/token status, child-shell credential inheritance, and native-agent capability.
 It is read-only, never spawns agents, and keeps optional capability failures separate from repository detection failures.
+
+## Manager loops
+
+For a plan of many steps that should run for hours or days without supervision, `manager-loop` splits the work by capability.
+A lead-tier model (Claude Opus; on Codex, Sol) writes the plan pack: one self-contained card per step with a literal acceptance gate, the slot and collision rules or named waves, and the checkpoints.
+The frontier tier (Fable; on Codex, Astra) is used only when the owner asks, for long-horizon planning the owner names, or when the approved plan lists a frontier trigger.
+A mechanical manager (Sonnet; Codex Luna) runs the plan tick by tick: it dispatches cards, verifies each step by observing the PR, the diff, and the gate output rather than trusting a report, runs reviews, merges within its authority, and asks the owner only through structured questions.
+Judgment goes up a ladder: the lead for design, an advisor on the lead tier for stuck steps, the frontier tier only on request or by a plan-listed trigger, and the owner for decisions only the owner can make.
+
+The owner keeps a live parity table that maps capability tiers to models on each platform (Claude, Codex, Copilot, or any product added later), and the slots that say how many workers each platform may run and what it can do (browser, graphical user interface (GUI), graphics processing unit (GPU)).
+The board template ships defaults for both, plus budget limits, and the owner's approval of the plan accepts them; the manager asks only when something does not match, such as a refused model id or a quota near its end.
+Cards name a tier, not a model, so the manager can place work wherever there is capacity, and the owner can move budget between platforms by editing one row.
+
+The board is `board.md`, a Markdown file that is the single source of truth, with `board-log.md` beside it for decisions and the log.
+The manager writes it only through `scripts/manager_board.py`, a standard-library Python helper that the skill calls by absolute path.
+The helper validates the board, computes the dispatch plan, checks that each card is complete before it is dispatched, holds a single-manager lease, enforces the owner's budget limits, and serves a live localhost kanban that refuses requests with a foreign `Host` header and guards answers with a per-run token.
+Every owner question is recorded on the board first, then asked with the host's structured question tool when the host offers one; the owner can answer in the session or on the live board page.
+Host-specific mechanics (how each host wakes the manager and asks questions) are in [Manager loops across hosts](../cross-agent-compatibility.md#manager-loops-across-hosts).
 
 ## Skills
 
-- **init-project**: scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, `.memory/`, and config files. `.memory/` contains one Markdown observation per file plus an index; reruns add only missing convention files.
-- **project-preflight**: read-only startup detection of repository, shell, terminal, GitHub, and native-agent surfaces with `KEY=VALUE` or JSON output
+- **init-project**: scaffold new projects with `AGENTS.md`, a Claude Code `CLAUDE.md` import wrapper, `.rules/`, `.context/`, `.memory/`, and config files.
+  `.memory/` contains one Markdown observation per file plus an index; reruns add only missing convention files.
+- **project-preflight**: read-only startup detection of repository, shell, terminal, GitHub, and native-agent surfaces with `KEY=VALUE` or JavaScript Object Notation (JSON) output
 - **update-rules**: non-destructive project sync of `AGENTS.md`, the `CLAUDE.md` adapter, `.rules/`, and `.memory/` convention files; reports a former template rule as `RULE_RETIRED` (for example the Serena `serena_mcp.md`, replaced by the language-server rule `lsp.md`) and deletes it only on approval; user-level setup delegates to `install-user-instructions`
 - **install-user-instructions**: ask which of Claude Code, Codex, Copilot CLI, and Cursor to configure, then preview and install shared personal defaults at each documented user surface without copying them into downstream repositories
 - **epic-dev**: the multi-phase feature workflow described above: git worktrees, GitHub issues, and phased PR delivery
 - **workflow-reference**: branch, state-file, worktree, and GitHub command reference for epic/sprint workflows
 - **pr-review-toolkit**: PR and recent-change review across code quality, tests, error handling, comments/docs, type design, and simplification; Codex `all`/pre-merge reviews use a bounded three-reviewer Luna/max panel when preflight detects native subagents, with single/inline fallback and explicit accounting
 - **codebase-onboarding**: verified reconnaissance of an unfamiliar codebase or research field before planning or editing: a fixed bootstrap sequence, parallel read-only explorer fan-out, and a report contract separating verified facts from assumptions
-- **implementation-planning**: strongest-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
+- **implementation-planning**: lead-tier macro design followed by worker-executable phase plans, with two registers by stakes, pre-registered decision gates, load-bearing-claim verification, and a mandatory open-judgment-calls list
 - **engineering-loop**: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons
+- **manager-loop**: hands-off execution of an approved plan by a manager agent, described above
 - **debugging**: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)
-- **agent-fanout**: orchestrating subagents and teammates within a session with explicit model tiers: Claude Fable/Opus lead and Sonnet workers; Codex Sol lead, Terra approved-plan elaboration, and Luna workers. It adds full-lifecycle briefs, mechanical gates, lead verification, mandatory cleanup of completed one-off agents, and a hard cap of 40 agents per run. This is in-session delegation, distinct from the git-tracked epic/worktree workflow above.
+- **agent-fanout**: orchestrating subagents and teammates within a session with explicit model tiers: Claude Opus lead (Fable only on request or for long-horizon planning) and Sonnet workers; Codex Sol lead (Astra only on request or for long-horizon planning), Terra approved-plan elaboration, and Luna workers.
+  It adds full-lifecycle briefs, mechanical gates, lead verification, mandatory cleanup of completed one-off agents, and a hard cap of 40 agents per run.
+  This is in-session delegation, distinct from the git-tracked epic/worktree workflow above.
 - **ci-scaffolding**: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test); `references/ci-speed.md` covers measuring and speeding up a slow pipeline (time-balanced sharding behind gate jobs, setup fixes, parallel jobs)
 - **docker-packaging**: multi-stage Dockerfiles with uv/bun, health checks, and security hardening
-- **security-audit**: credential scanning, dependency audit, OWASP checklist, configuration hardening
-- **document-processing**: PDF/image OCR, text extraction, markdown conversion
+- **security-audit**: credential scanning, dependency audit, Open Worldwide Application Security Project (OWASP) checklist, configuration hardening
+- **document-processing**: Portable Document Format (PDF) and image optical character recognition (OCR), text extraction, markdown conversion
 
-Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **release-prep** (pre-release validation), and a Claude-bundled **pr-review-toolkit** reviewer. Codex receives opt-in Terra phase-planner and Luna implementation-worker TOML templates; Copilot exposes matching agent profiles through its native plugin manifest.
+Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **release-prep** (pre-release validation), and a Claude-bundled **pr-review-toolkit** reviewer.
+Codex receives opt-in Terra phase-planner and Luna implementation-worker Tom's Obvious, Minimal Language (TOML) templates; Copilot exposes matching agent profiles through its native plugin manifest.
 
 ## Try it
 
@@ -55,6 +80,7 @@ Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **r
 /epic-dev "build a community dashboard"
 /release-prep --minor
 "Set up CI for this Python project with ruff and pytest"
+"Run the approved plan hands-off with a manager loop and show me the board"
 "Process scanned-document.pdf and convert to markdown"
 ```
 

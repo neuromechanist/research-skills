@@ -80,9 +80,8 @@ not this skill directory.
 ## Content policy
 
 The bundled defaults encode the central `agent-fanout` routing contract:
-strongest-tier lead judgment, intermediate approved-plan elaboration, and
-worker-tier implementation with explicit tests and gates. They also require
-closing/removing completed one-off agents.
+lead-tier judgment (Opus or Sol; Fable or Astra only on request), intermediate approved-plan elaboration, and worker-tier implementation with explicit tests and gates.
+They also require closing/removing completed one-off agents.
 
 Use semantic line breaks in prose source generally. Text posted to GitHub
 (issue and pull-request bodies, comments, reviews, and discussions) is the

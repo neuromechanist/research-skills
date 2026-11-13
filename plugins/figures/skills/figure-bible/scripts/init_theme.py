@@ -11,7 +11,7 @@ Run from anywhere:
         [--primary HEX] [--accent HEX] [--neutral HEX] \\
         [--font Helvetica] [--style "flat vector, minimal"] \\
         [--negative "gradients,shadows"] [--reference img.png ...] \\
-        [--codex-model gpt-5.6-luna] [--codex-effort xhigh] [--force]
+        [--codex-model gpt-6-luna] [--codex-effort xhigh] [--force]
 
 Add --with jsonschema to get full schema validation; without it, init_theme.py
 falls back to lib/theme.py's hand-written structural check.

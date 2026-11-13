@@ -5,7 +5,8 @@ abstract: >-
   Research Skills is a cross-agent marketplace of plugins and skills for academic
   research and development workflows: literature search and citation management,
   grant writing and review, manuscript preparation, publication figures,
-  presentations, project lifecycle management, and neuroinformatics. It targets
+  presentations, project lifecycle management, neuroinformatics, and cloud
+  graphics processing unit (GPU) provisioning for model training. It targets
   Claude Code, Codex, and Copilot CLI from shared skill definitions.
 type: software
 authors:
@@ -17,8 +18,8 @@ authors:
       ror: "https://ror.org/01bt2qm76"
 repository-code: "https://github.com/neuromechanist/research-skills"
 license: BSD-3-Clause
-version: 0.16.15
-date-released: "2026-11-06"
+version: 0.16.16
+date-released: "2026-11-12"
 keywords:
   - claude-code
   - codex
