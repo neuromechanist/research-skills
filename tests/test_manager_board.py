@@ -820,7 +820,14 @@ def load_module():
     spec = importlib.util.spec_from_file_location("manager_board_under_test", SCRIPT)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # Register before executing: dataclasses resolve the defining module through
+    # sys.modules, and Python 3.14 fails without it.
+    sys.modules[spec.name] = module
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        sys.modules.pop(spec.name, None)
+        raise
     return module
 
 
@@ -961,6 +968,7 @@ def start_server(board: Path, *extra: str, host: str = "127.0.0.1") -> Live:
     )
     shown = f"[{host}]" if ":" in host else host
     base = f"http://{shown}:{port}"
+    code, page = 0, ""
     for _ in range(50):
         try:
             code, page = request(base + "/")
@@ -1139,6 +1147,7 @@ def test_serve_on_ipv6_loopback(board: Path):
         stderr=subprocess.PIPE,
         text=True,
     )
+    code, page = 0, ""
     try:
         for _ in range(50):
             try:
