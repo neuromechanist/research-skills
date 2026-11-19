@@ -295,6 +295,18 @@ def test_pr_review_seam_lens_is_wired_on_every_surface():
         assert "lens `seam`" in path.read_text(), f"{path.relative_to(ROOT)} does not route the epic merge to the seam lens"
 
 
+def test_manager_loop_requires_a_pr_review_before_every_merge():
+    manager = PLUGINS_DIR / "project" / "skills" / "manager-loop"
+    skill = (manager / "SKILL.md").read_text()
+    gate = next(line for line in skill.splitlines() if "The merge gate:" in line)
+    assert "project:pr-review-toolkit" in gate, "the merge gate must require the PR's own review"
+    assert "lens `seam`" in gate
+    never = skill.split("## Never", 1)[1]
+    assert "has not had its own `project:pr-review-toolkit` review" in never
+    preamble = (manager / "references" / "plan-pack.md").read_text()
+    assert "only after the PR's own `project:pr-review-toolkit` review" in preamble
+
+
 def test_pr_workflows_cap_review_rounds_and_link_unblock_rules():
     project = PLUGINS_DIR / "project"
     convergence = (

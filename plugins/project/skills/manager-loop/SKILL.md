@@ -72,7 +72,9 @@ Run in order; each tick is complete on its own because the board carries all sta
    - An answered question: act on it, record it with `decide <text> --by owner`, set the question `closed`.
    - A report: verify by observation (below), then start the review while continuous integration (CI) runs; do not wait for CI.
    - A review: give every finding an outcome per `project:pr-review-toolkit`'s `review-convergence.md`; at most two rounds.
-     Before a checkpoint or release merge that integrates several cards, run the same skill with lens `seam` (its `seam-review.md` reference).
+     Every PR gets its own `project:pr-review-toolkit` review before it merges, with the lenses its diff calls for (`review-procedure.md`, "Select Lenses": `code` always, plus `tests`, `errors`, `comments`, or `types` when the diff touches them), and the reviewer count `review-convergence.md` sets (one reviewer for docs-only PRs and PRs under 50 changed lines, a panel otherwise).
+     Before a checkpoint, release, or epic merge that integrates several cards, run the same skill with lens `seam` (its `seam-review.md` reference).
+     The implementer's own checks, a gate passing, or a review of another PR never stand in for this review.
    - A check failing because of the diff: two fix attempts, then escalate to the advisor with the failing log.
    - CI failing without the diff (it fails on the base, on infrastructure, or flakily): one rerun (`gh run rerun <id> --failed`), then file an issue with the log and continue.
    - A merge conflict: the branch's worker merges the base into the branch and reruns the gates; never a rebase, never a force-push.
@@ -81,7 +83,8 @@ Run in order; each tick is complete on its own because the board carries all sta
    - A date or question due: ask it now, with a recommendation.
    - A checkpoint due: the checkpoint items under "Contribute".
    - Merge when the merge gate passes and the board's authority allows it.
-     The merge gate: every review report is in with each finding resolved, no accepted Critical is open, and `gh pr checks N` is green on the final head (every check, not only required ones).
+     The merge gate: a `project:pr-review-toolkit` review with the lenses the diff calls for has run on this PR (lens `seam` for an integration merge), every review report is in with each finding resolved, no accepted Critical is open, and `gh pr checks N` is green on the final head (every check, not only required ones).
+     After the merge, `set` the step `done` with `Review=` the review it passed (for example `r1 code+tests 2 fixed; r2 clean`); the board refuses `done` for a step with a PR and no Review.
      A merge the host refuses (a refused permission or an automated policy denial) is not retried or worked around: set the step to `owner` and ask.
 6. **Fill free slots** from the dispatch plan in `status` (it already applies dependencies, open waves, tiers, needs, and slot limits).
    For each: `card` check, `spend <board> "Agents today"` (and `spend <board> "Agents this wave"` only when the step belongs to a wave), dispatch the card verbatim plus live facts copied from the board now, then `set` the step `active` with its slot and add its agent row.
@@ -187,7 +190,7 @@ Format, columns, states, and the server's limits: `references/board.md`.
 
 ## Never
 
-- Merge with a red or pending check, an unresolved finding, or a review still running; start a third review round.
+- Merge a PR that has not had its own `project:pr-review-toolkit` review, or merge with a red or pending check, an unresolved finding, or a review still running; start a third review round.
 - Change a gate's expectation, a card, the plan, the parity, or a budget limit.
 - Retry a refused permission, work around an automated policy denial, force-push, or rebase a pushed branch.
 - Perform outward actions (deploy, publish, post, contact anyone); hand them to the owner as exact commands.
