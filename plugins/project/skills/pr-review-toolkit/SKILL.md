@@ -41,7 +41,7 @@ A `seam` review never uses the panel on any surface: dispatch one integration-sc
 
 - Scope: PR number, branch range, staged changes, unstaged changes, or explicit files.
 - Lens selection: one or more of `code`, `tests`, `errors`, `comments`, `types`, `simplify`, `seam`, or `all`.
-- Seam inputs (lens `seam` only): mode `epic` (epic issue number and epic branch) or `promotion` (base and head refs, such as `main` and `dev`, plus the last promotion tag when one exists); see `references/seam-review.md`.
+- Seam inputs (lens `seam` only): mode `epic` (epic issue number and epic branch) or `promotion` (base and head refs, such as `main` and `dev`, plus the last promotion tag when one exists); for a round-2 seam `delta`, pass the round-1 report, each finding's outcome, and the round-1 head commit; see `references/seam-review.md`.
 - Mode: advisory review by default; `pre-merge` selects the bounded panel when available; `delta` is the round-2 review of fix commits only (one reviewer); `single` and `inline` opt out; edit mode is allowed only when the user explicitly asks to simplify/refine or implement review fixes.
 - Round: a review that gates a merge is round 1 (full) or round 2 (delta). There is no round 3 unless the user asks.
 - Overrides: user-supplied model, effort, panel size, lens grouping, or fallback choice always wins over defaults.

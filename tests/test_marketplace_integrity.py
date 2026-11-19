@@ -251,7 +251,12 @@ def test_pr_review_seam_lens_is_wired_on_every_surface():
         project / "agents" / "templates" / "pr-review-toolkit.agent.md",
     ]:
         assert "seam-review.md" in shell.read_text(), f"{shell.relative_to(ROOT)} lacks the seam lens"
-    for path in [project / "commands" / "epic-dev.md", project / "skills" / "epic-dev" / "SKILL.md"]:
+    for path in [
+        project / "commands" / "epic-dev.md",
+        project / "skills" / "epic-dev" / "SKILL.md",
+        project / "skills" / "workflow-reference" / "SKILL.md",
+        project / "skills" / "manager-loop" / "SKILL.md",
+    ]:
         assert "lens `seam`" in path.read_text(), f"{path.relative_to(ROOT)} does not route the epic merge to the seam lens"
 
 

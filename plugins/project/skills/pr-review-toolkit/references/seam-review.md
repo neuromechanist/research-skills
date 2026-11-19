@@ -131,12 +131,18 @@ Check each item; record `clean` with the command that showed it, or a finding.
 | S1 | Assumed work: a PR says another phase "will" or "already does" something | Search PR bodies, issue bodies, and review threads for "phase", "later", "follow-up", "out of scope", "separate PR"; confirm the other side landed. |
 | S2 | Interfaces between PRs: names, signatures, schemas, config keys, file formats, exit codes | For each symbol or key one PR produces and another consumes, read both ends on the head. |
 | S3 | Duplicated or conflicting helpers, constants, and defaults | `git diff --stat {base}...{head}` for files added by different PRs; `rg` each new helper name and constant. |
-| S4 | Deferred items: `TODO`, `FIXME`, `XXX`, `HACK`, skipped or expected-fail tests, feature flags left off | `git diff {base}...{head} \| rg '^\+.*(TODO\|FIXME\|XXX\|HACK\|skip\|xfail)'` |
+| S4 | Deferred items: `TODO`, `FIXME`, `XXX`, `HACK`, skipped or expected-fail tests, feature flags left off | Run the S4 command below the table. |
 | S5 | Merge damage: a later PR's conflict resolution or squash reverted an earlier PR's change | For each file touched by two or more PRs, compare the earlier PR's hunks against the head. |
 | S6 | Cross-cutting work no PR owned: docs, tests that cross PRs, manifests, parity across agent or platform surfaces, migrations, continuous integration (CI) configuration | Read the project's rules (`AGENTS.md`, `.rules/`) for required companions to each kind of change, and check each exists. |
 | S7 | Dead code from an abandoned approach: unused modules, flags, fixtures, dependencies | `rg` each symbol and dependency added in range for a caller on the head. |
 | S8 | Config and manifest drift: values declared in more than one place disagree | Compare every declaration of each version, name, path, and count the range touched. |
 | S9 | Half-landed work: one side of a pair merged (writer without reader, flag without code, migration without rollback, command without registration) | From the manifest, pair each PR with the PR its body says it depends on or enables. |
+
+S4 command:
+
+```bash
+git diff {base}...{head} | rg '^\+.*(TODO|FIXME|XXX|HACK|skip|xfail)'
+```
 
 A defect that lives inside one PR's diff and involves no other PR is out of scope.
 Report it only when it is Critical, tagged `escaped`.
@@ -226,7 +232,7 @@ Where fixes go:
 - `promotion` mode: one fix PR into the integration branch for the whole round, never one PR per finding, and never a direct push to a protected branch.
 - Changelog, version, and doc corrections ride with the fixes; never defer them to after the merge.
 
-Round 2 (`delta`) runs when round 1 had a Critical, an `unmet` goal, or a large fix.
+Round 2 (`delta`) runs when round 1 had an accepted Critical, an `unmet` goal, or a large fix.
 One reviewer rechecks only the fix diff, the matrix rows that were not `met`, and the findings triaged `fix`, then restates the verdict.
 Otherwise the driver verifies each fix against its finding and updates the verdict itself.
 A `not-ready` verdict after round 2 goes to the user with the open rows; do not review again.
