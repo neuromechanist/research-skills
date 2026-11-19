@@ -20,6 +20,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write  # dispatch Validation and Typos on the bot branch
   contents: write
   pull-requests: write
   id-token: write  # GitHub OIDC token for Anthropic Workload Identity Federation
@@ -53,6 +54,7 @@ jobs:
       if: steps.gate.outputs.run == 'true'
       with:
         token: ${{ secrets.MODEL_BOT_TOKEN || github.token }}
+        fetch-depth: 0  # the version-bump check compares with origin/main
 
     - uses: astral-sh/setup-uv@v5
       if: steps.gate.outputs.run == 'true'
@@ -76,10 +78,15 @@ jobs:
       if: steps.check.outputs.changed == 'true'
       run: ./scripts/validate
 
+    - name: Require plugin and marketplace version bumps
+      if: steps.check.outputs.changed == 'true'
+      run: uv run python scripts/check_version_bump.py --base origin/main
+
     - name: Open or refresh the update PR
       if: steps.check.outputs.changed == 'true'
       env:
         GH_TOKEN: ${{ secrets.MODEL_BOT_TOKEN || github.token }}
+        HAS_BOT_TOKEN: ${{ secrets.MODEL_BOT_TOKEN != '' }}
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -99,6 +106,14 @@ jobs:
           echo "::error::Pushed $BRANCH but could not open a PR. Enable 'Allow GitHub Actions to create and approve pull requests' or add a MODEL_BOT_TOKEN secret, then open the PR from $BRANCH."
           exit 1
         fi
+        # Events from GITHUB_TOKEN start no workflows, except workflow_dispatch: run the
+        # required checks on the branch so their results attach to the PR's head commit.
+        if [ "$HAS_BOT_TOKEN" != "true" ]; then
+          gh workflow run tests.yml --ref "$BRANCH"
+          gh workflow run typos.yml --ref "$BRANCH"
+        fi
+        # Merge on its own once the required checks (validate, typos) pass.
+        gh pr merge "$BRANCH" --auto --merge
 
     - name: Fail when the check was incomplete
       if: steps.check.outputs.incomplete == 'true'
