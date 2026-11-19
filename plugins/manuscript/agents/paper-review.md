@@ -1,7 +1,8 @@
 ---
 name: paper-review
 description: Independent fresh-context academic manuscript peer reviewer. Invoked by the paper-review skill (single or panel mode); not triggered directly by the user.
-model: sonnet
+model: opus
+effort: medium
 tools: Bash, Read, Glob, Grep
 color: cyan
 ---

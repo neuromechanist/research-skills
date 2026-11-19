@@ -1,7 +1,8 @@
 ---
 name: grant-figure-qa
 description: Independent fresh-context grant-figure compliance reviewer. Invoked by the grant-figure-qa skill; not triggered directly by the user.
-model: sonnet
+model: opus
+effort: medium
 tools: Bash, Read, Glob, Grep
 color: blue
 ---

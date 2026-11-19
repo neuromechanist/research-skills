@@ -132,7 +132,7 @@ Recipes are in `references/overlay-recipes.md`.
 
 Invoke `figures:figure-qa` through the host's skill-invocation mechanism after every generation unless the user passed `no-qa`.
 Give it the figure path, the journal, the theme path, and every verbatim string that was requested, so the raster text check runs.
-Run one QA dispatch per candidate in a single message so they execute in parallel on the Sonnet tier, then follow the figure-qa skill's `iterate-loop.md` for ranking, the one-change rule, and the stopping conditions.
+Run one QA dispatch per candidate in a single message so they execute in parallel on the worker tier (Opus at `medium` effort), then follow the figure-qa skill's `iterate-loop.md` for ranking, the one-change rule, and the stopping conditions.
 
 ## Cross-agent notes
 
