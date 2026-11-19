@@ -11,7 +11,7 @@
       }
     },
     "openai": {
-      "credentials": "OPENAI_API_KEY",
+      "credentials": "OPENAI_API_KEY, or the OPENAI_IDENTITY_PROVIDER_ID, OPENAI_SERVICE_ACCOUNT_ID, and OPENAI_IDENTITY_TOKEN_FILE federation variables",
       "families": {
         "astra": {"pattern": "^gpt-(\\d+(?:\\.\\d+)?)-astra$", "current": "gpt-6-astra"},
         "sol": {"pattern": "^gpt-(\\d+(?:\\.\\d+)?)-sol$", "current": "gpt-6.1-sol"},

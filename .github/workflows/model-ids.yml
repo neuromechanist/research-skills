@@ -5,10 +5,9 @@ name: Model IDs
 # family to its newest id, with plugin and marketplace patch bumps.
 #
 # Setup (see "Model ids" in AGENTS.md):
-#   Anthropic: Workload Identity Federation, no stored key. Repository variables
-#   ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID, ANTHROPIC_SERVICE_ACCOUNT_ID
-#   (and ANTHROPIC_WORKSPACE_ID when the rule spans several workspaces);
-#   OpenAI: secret OPENAI_API_KEY. A provider without a credential is skipped and the job
+#   Anthropic and OpenAI: Workload Identity Federation through the shared
+#   neuromechanist/.github/actions/{claude,openai}-auth actions (no stored keys, nothing to
+#   configure per repository). A provider without a credential is skipped and the job
 #   fails at the end;
 #   either "Allow GitHub Actions to create and approve pull requests" in the
 #   repository's Actions settings, or a MODEL_BOT_TOKEN secret (fine-grained token with
@@ -58,23 +57,17 @@ jobs:
     - uses: astral-sh/setup-uv@v5
       if: steps.gate.outputs.run == 'true'
 
-    - name: Fetch a GitHub OIDC token for Anthropic
-      if: steps.gate.outputs.run == 'true' && vars.ANTHROPIC_FEDERATION_RULE_ID != ''
-      run: |
-        curl -sSf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-          "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.anthropic.com" \
-          | jq -r .value > "$RUNNER_TEMP/gha-jwt"
-        echo "ANTHROPIC_IDENTITY_TOKEN_FILE=$RUNNER_TEMP/gha-jwt" >> "$GITHUB_ENV"
+    - name: Authenticate to Anthropic (Workload Identity Federation)
+      if: steps.gate.outputs.run == 'true'
+      uses: neuromechanist/.github/actions/claude-auth@v1
+
+    - name: Authenticate to OpenAI (Workload Identity Federation)
+      if: steps.gate.outputs.run == 'true'
+      uses: neuromechanist/.github/actions/openai-auth@v1
 
     - name: Compare model lists and apply updates
       id: check
       if: steps.gate.outputs.run == 'true'
-      env:
-        ANTHROPIC_FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
-        ANTHROPIC_ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
-        ANTHROPIC_SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
-        ANTHROPIC_WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
         uv run python scripts/update_model_ids.py --apply --summary "$RUNNER_TEMP/summary.md"
         cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
