@@ -95,6 +95,10 @@ CREDENTIAL_VARS = (
     "ANTHROPIC_IDENTITY_TOKEN_FILE",
     "ANTHROPIC_IDENTITY_TOKEN",
     "OPENAI_API_KEY",
+    "OPENAI_IDENTITY_PROVIDER_ID",
+    "OPENAI_SERVICE_ACCOUNT_ID",
+    "OPENAI_IDENTITY_TOKEN_FILE",
+    "OPENAI_IDENTITY_TOKEN",
 )
 
 
@@ -320,3 +324,18 @@ def test_anthropic_credential_follows_sdk_precedence(tmp_path):
         updater.anthropic_credential(
             {**federation, "ANTHROPIC_IDENTITY_TOKEN_FILE": str(tmp_path / "empty-jwt")}
         )
+
+
+def test_openai_credential_prefers_key_then_federation(tmp_path):
+    federation = {
+        "OPENAI_IDENTITY_PROVIDER_ID": "idp_x",
+        "OPENAI_SERVICE_ACCOUNT_ID": "sa_x",
+        "OPENAI_IDENTITY_TOKEN_FILE": str(tmp_path / "missing-jwt"),
+    }
+    assert updater.openai_credential({}) is None
+    assert updater.openai_credential({"OPENAI_IDENTITY_PROVIDER_ID": "idp_x"}) is None
+    assert updater.openai_credential({**federation, "OPENAI_API_KEY": "k"}) == "k"
+    with pytest.raises(
+        updater.UpdateError, match="cannot read OPENAI_IDENTITY_TOKEN_FILE"
+    ):
+        updater.openai_credential(federation)

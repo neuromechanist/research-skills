@@ -124,8 +124,59 @@ def anthropic_credential(env: dict[str, str]) -> str | None:
         ) from error
 
 
+TOKEN_EXCHANGE = "urn:ietf:params:oauth:grant-type:token-exchange"
+
+
+def _identity_token(env: dict[str, str], prefix: str) -> str:
+    """The IdP JWT from ``<prefix>_IDENTITY_TOKEN_FILE`` or ``<prefix>_IDENTITY_TOKEN``."""
+    token_file, token = (
+        env.get(f"{prefix}_IDENTITY_TOKEN_FILE"),
+        env.get(f"{prefix}_IDENTITY_TOKEN"),
+    )
+    provider = prefix.lower()
+    try:
+        assertion = Path(token_file).read_text().strip() if token_file else token
+    except OSError as error:
+        raise UpdateError(
+            f"{provider}: cannot read {prefix}_IDENTITY_TOKEN_FILE: {error}"
+        ) from error
+    if not assertion:
+        raise UpdateError(f"{provider}: the identity token is empty")
+    return assertion
+
+
 def openai_credential(env: dict[str, str]) -> str | None:
-    return env.get("OPENAI_API_KEY") or None
+    """``OPENAI_API_KEY``, else Workload Identity Federation.
+
+    Federation needs ``OPENAI_IDENTITY_PROVIDER_ID``, ``OPENAI_SERVICE_ACCOUNT_ID``, and
+    ``OPENAI_IDENTITY_TOKEN_FILE`` (or ``OPENAI_IDENTITY_TOKEN``); the JWT is exchanged at
+    ``POST https://auth.openai.com/oauth/token`` (RFC 8693 token exchange).
+    """
+    if env.get("OPENAI_API_KEY"):
+        return env["OPENAI_API_KEY"]
+    provider, account = (
+        env.get("OPENAI_IDENTITY_PROVIDER_ID"),
+        env.get("OPENAI_SERVICE_ACCOUNT_ID"),
+    )
+    if not (
+        provider
+        and account
+        and (env.get("OPENAI_IDENTITY_TOKEN_FILE") or env.get("OPENAI_IDENTITY_TOKEN"))
+    ):
+        return None
+    body = {
+        "grant_type": TOKEN_EXCHANGE,
+        "subject_token_type": "urn:ietf:params:oauth:token-type:jwt",
+        "subject_token": _identity_token(env, "OPENAI"),
+        "identity_provider_id": provider,
+        "service_account_id": account,
+    }
+    try:
+        return _post_json("https://auth.openai.com/oauth/token", body)["access_token"]
+    except (urllib.error.URLError, KeyError, ValueError) as error:
+        raise UpdateError(
+            f"openai: federation token exchange failed ({error})"
+        ) from error
 
 
 CREDENTIALS = {"anthropic": anthropic_credential, "openai": openai_credential}
