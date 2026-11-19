@@ -50,13 +50,13 @@ jobs:
           *) echo "run=false" >> "$GITHUB_OUTPUT"; echo "Not noon Pacific for this trigger (offset $offset); skipping." ;;
         esac
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       if: steps.gate.outputs.run == 'true'
       with:
         token: ${{ secrets.MODEL_BOT_TOKEN || github.token }}
         fetch-depth: 0  # the version-bump check compares with origin/main
 
-    - uses: astral-sh/setup-uv@v5
+    - uses: astral-sh/setup-uv@v10.3.2
       if: steps.gate.outputs.run == 'true'
 
     - name: Authenticate to Anthropic (Workload Identity Federation)
