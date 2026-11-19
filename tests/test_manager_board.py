@@ -193,10 +193,9 @@ def test_done_with_a_pr_requires_a_recorded_review(board: Path):
     add_step(board, "S2", "State=active")  # no PR: nothing to review, done is allowed
     run("set", str(board), "steps", "S2", "State=done")
 
-    placeholder = run("set", str(board), "steps", "S1", "Review=-", check=False)
-    assert (
-        placeholder.returncode == 0
-    )  # editing Review alone is fine; done with a placeholder is not
+    # A recorded review cannot be blanked on a done step: every write is validated.
+    erased = run("set", str(board), "steps", "S1", "Review=-", check=False)
+    assert erased.returncode != 0 and "no Review" in erased.stderr + erased.stdout
     add_step(board, "S4", "State=review", "PR=14")
     refused = run(
         "set", str(board), "steps", "S4", "State=done", "Review=-", check=False
