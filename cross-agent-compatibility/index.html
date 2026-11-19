@@ -1099,7 +1099,7 @@ vary by environment.</p>
 <p>Every lead role defaults to the lead tier: Claude Opus and Codex Sol (<code>gpt-6.1-sol</code>).
 That covers project initiation, architecture, planning, observation, supervision, and synthesis.
 The frontier tier, Claude Fable and Codex Astra (<code>gpt-6-astra</code>), is opt-in: use it only when the user explicitly asks for it, or for long-horizon jobs or planning the user names.
-Sonnet on Claude and Luna (<code>gpt-6-luna</code>) on Codex implement approved, detailed plans and perform routine focused review.
+Sonnet on Claude and Luna (<code>gpt-6-luna</code>) on Codex implement approved, detailed plans; routine and PR review runs on Opus at <code>medium</code> effort on Claude (it outscores Sonnet at <code>xhigh</code> and costs less) and on Luna at <code>max</code> on Codex.
 Codex Terra (<code>gpt-6.1-terra</code>) elaborates an approved architecture into a worker-executable phase plan.
 Any unresolved architecture or high-risk invariant escalates back to the lead tier.
 Copilot CLI and other systems keep the same capability classes (lead, intermediate, worker) with whatever models the environment exposes.</p>
