@@ -17,7 +17,8 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 - **Track progress**: Use TodoWrite to track all phases and steps
 - **No emojis**: Never use emojis in commits, PRs, or issues
 - **Model routing** (per `project:agent-fanout`): a Sonnet (`xhigh`) driver
-  orchestrates; named Sonnet (`xhigh`) agents implement, review, and validate;
+  orchestrates; named Sonnet (`xhigh`) agents implement and validate; Opus (`medium`)
+  reviewers review;
   epic design, unresolved architecture, and high-risk invariants go to Opus
   (`xhigh`); Fable only when the user asks or for long-horizon planning the
   user names.
@@ -205,7 +206,7 @@ Update state: mark phase `in_progress`.
 
 2. Push epic branch: `git -C "$PARENT/epic-{slug}" push -u origin {epic_branch}`
 
-3. Review the epic PR with one integration-scoped reviewer (`project:pr-review-toolkit`): cross-phase integration only, not content the phase reviews covered; same two-round limit
+3. Review the epic PR with `project:pr-review-toolkit`, lens `seam`, mode `epic` (its `seam-review.md` reference): one integration-scoped reviewer checks the epic's goals against evidence, cross-phase seams, changelog, version, and doc accuracy, and unresolved phase-review follow-ups, not content the phase reviews covered; same two-round limit
 
 4. **Confirm**: Present review summary and ask user to approve final merge
 

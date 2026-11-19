@@ -30,7 +30,7 @@ tool's section; the concepts transfer.
   plans, `general-purpose` for implementation, or a plugin agent such as
   `project:pr-review-toolkit` for reviews.
 - `model`: use Opus (or inherit a lead-tier session) for macro architecture,
-  Sonnet for approved-plan implementation and routine review.
+  Sonnet for approved-plan implementation, and Opus at `medium` effort for routine review.
   Use Fable only when the user asks for it or for long-horizon jobs or
   planning the user names.
   A phase-plan elaborator may use Sonnet only when every architecture decision

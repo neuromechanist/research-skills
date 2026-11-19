@@ -20,8 +20,10 @@ Use the panel only when all of these are true:
    pre-merge review, and this is round 1 (a round-2 `delta` review always
    uses one reviewer; see `review-convergence.md`);
 2. `native_agent_status` is `available`;
-3. the caller has not selected `single`, `inline`, or another opt-out; and
-4. the requested work is not an advisory review of one named lens.
+3. the caller has not selected `single`, `inline`, or another opt-out;
+4. the requested work is not an advisory review of one named lens; and
+5. the lens is not `seam` (a seam review always uses one integration-scoped
+   reviewer; see `seam-review.md`).
 
 If any condition is false, run the single inline procedure or the explicitly
 configured single reviewer. Optional capability failure is a fallback reason,
@@ -40,9 +42,9 @@ Group the six lenses into risk-focused briefs:
 | `maintainability` | `comments`, `simplify` | Find stale public documentation, misleading rationale, and complexity that can cause defects. |
 
 Use **Codex `gpt-6-luna` at `max` effort** for these reviewers by default.
-On Claude surfaces use **Sonnet at `xhigh`** by default. A user-supplied model,
+On Claude surfaces use **Opus at `medium` effort** by default; it outscores Sonnet at `xhigh` on review and costs less. A user-supplied model,
 effort, panel size, lens, or single/inline choice always overrides this policy.
-Do not route routine reviews to Sol, Terra, or Astra (Opus or Fable on Claude).
+Do not route routine reviews to Sol, Terra, or Astra, or to Fable or higher-effort Opus on Claude.
 
 Each brief must include the changed range, project rules, the assigned lenses,
 the specific risk class, a confidence filter, and a request for no more than

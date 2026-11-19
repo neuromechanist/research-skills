@@ -72,6 +72,7 @@ Run in order; each tick is complete on its own because the board carries all sta
    - An answered question: act on it, record it with `decide <text> --by owner`, set the question `closed`.
    - A report: verify by observation (below), then start the review while continuous integration (CI) runs; do not wait for CI.
    - A review: give every finding an outcome per `project:pr-review-toolkit`'s `review-convergence.md`; at most two rounds.
+     Before a checkpoint or release merge that integrates several cards, run the same skill with lens `seam` (its `seam-review.md` reference).
    - A check failing because of the diff: two fix attempts, then escalate to the advisor with the failing log.
    - CI failing without the diff (it fails on the base, on infrastructure, or flakily): one rerun (`gh run rerun <id> --failed`), then file an issue with the log and continue.
    - A merge conflict: the branch's worker merges the base into the branch and reruns the gates; never a rebase, never a force-push.

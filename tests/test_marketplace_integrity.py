@@ -234,6 +234,32 @@ def test_pr_review_panel_contract_is_bounded_and_has_fallback():
     assert "close completed" in protocol
 
 
+def test_pr_review_seam_lens_is_wired_on_every_surface():
+    project = PLUGINS_DIR / "project"
+    refs = project / "skills" / "pr-review-toolkit" / "references"
+    seam = (refs / "seam-review.md").read_text()
+    for verdict in ("`ready`", "`ready-with-fixes`", "`not-ready`"):
+        assert verdict in seam
+    assert "review-convergence.md" in seam
+    assert "seam-review.md" in (project / "skills" / "pr-review-toolkit" / "SKILL.md").read_text()
+    assert "seam-review.md" in (refs / "review-rubrics.md").read_text()
+    # Codex compatibility: the bounded panel must never run for a seam review.
+    assert "the lens is not `seam`" in (refs / "review-panel-protocol.md").read_text()
+    for shell in [
+        project / "agents" / "pr-review-toolkit.md",
+        project / "agents" / "templates" / "pr-review-toolkit.toml",
+        project / "agents" / "templates" / "pr-review-toolkit.agent.md",
+    ]:
+        assert "seam-review.md" in shell.read_text(), f"{shell.relative_to(ROOT)} lacks the seam lens"
+    for path in [
+        project / "commands" / "epic-dev.md",
+        project / "skills" / "epic-dev" / "SKILL.md",
+        project / "skills" / "workflow-reference" / "SKILL.md",
+        project / "skills" / "manager-loop" / "SKILL.md",
+    ]:
+        assert "lens `seam`" in path.read_text(), f"{path.relative_to(ROOT)} does not route the epic merge to the seam lens"
+
+
 def test_pr_workflows_cap_review_rounds_and_link_unblock_rules():
     project = PLUGINS_DIR / "project"
     convergence = (
