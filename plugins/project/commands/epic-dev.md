@@ -16,9 +16,8 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 - **Use absolute paths**: Bash calls do not persist `cd`; always use full worktree paths
 - **Track progress**: Use TodoWrite to track all phases and steps
 - **No emojis**: Never use emojis in commits, PRs, or issues
-- **Model routing** (per `project:agent-fanout`): a Sonnet (`xhigh`) driver
-  orchestrates; named Sonnet (`xhigh`) agents implement and validate; Opus (`medium`)
-  reviewers review;
+- **Model routing** (per `project:agent-fanout`): an Opus (`medium`) driver
+  orchestrates; named Opus (`medium`) agents implement, validate, and review;
   epic design, unresolved architecture, and high-risk invariants go to Opus
   (`xhigh`); Fable only when the user asks or for long-horizon planning the
   user names.
@@ -128,16 +127,16 @@ git worktree add "$PARENT/{phase-slug}" -b feature/issue-{N}-phase{X}-{slug} {EP
 Update state: mark phase `in_progress`.
 
 ### Step 2.2: Implementation planning
-- Enter plan mode using `EnterPlanMode`; delegate the phase architecture to Opus (`xhigh`) when the driver is Sonnet
-- The lead fixes architecture and open judgment calls. A Sonnet planner may
+- Enter plan mode using `EnterPlanMode`; delegate the phase architecture to Opus (`xhigh`) when the driver runs at `medium`
+- The lead fixes architecture and open judgment calls. An Opus (`medium`) planner may
   elaborate an approved architecture into exact files, tests, and gates.
-- The plan should focus on this specific phase's scope and be executable by a
-  Sonnet implementer without re-deriving design intent.
+- The plan should focus on this specific phase's scope and be executable by an
+  Opus (`medium`) implementer without re-deriving design intent.
 - Wait for user to approve the plan (this is handled by ExitPlanMode)
 - After plan approval, proceed to implementation
 
 ### Step 2.3: Implementation
-- Delegate the approved plan to a named Sonnet implementer working only in the
+- Delegate the approved plan to a named Opus (`medium`) implementer working only in the
   phase worktree at `$PARENT/{phase-slug}/`
 - Follow the approved plan; unresolved design returns to the Opus lead
 - Write tests (unit + integration)

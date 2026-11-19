@@ -1,7 +1,8 @@
 ---
 name: figure-qa
 description: Independent fresh-context scientific-figure QA reviewer. Invoked by the figure-qa skill; not triggered directly by the user.
-model: sonnet
+model: opus
+effort: medium
 tools: Bash, Read, Glob, Grep
 color: green
 ---

@@ -30,9 +30,9 @@ It is read-only, never spawns agents, and keeps optional capability failures sep
 ## Manager loops
 
 For a plan of many steps that should run for hours or days without supervision, `manager-loop` splits the work by capability.
-A lead-tier model (Claude Opus; on Codex, Sol) writes the plan pack: one self-contained card per step with a literal acceptance gate, the slot and collision rules or named waves, and the checkpoints.
+A lead-tier model (Claude Opus at `xhigh`; on Codex, Sol) writes the plan pack: one self-contained card per step with a literal acceptance gate, the slot and collision rules or named waves, and the checkpoints.
 The frontier tier (Fable; on Codex, Astra) is used only when the owner asks, for long-horizon planning the owner names, or when the approved plan lists a frontier trigger.
-A mechanical manager (Sonnet; Codex Luna) runs the plan tick by tick: it dispatches cards, verifies each step by observing the PR, the diff, and the gate output rather than trusting a report, runs reviews, merges within its authority, and asks the owner only through structured questions.
+A mechanical manager (Claude Opus at `medium`; Codex Luna) runs the plan tick by tick: it dispatches cards, verifies each step by observing the PR, the diff, and the gate output rather than trusting a report, runs reviews, merges within its authority, and asks the owner only through structured questions.
 Judgment goes up a ladder: the lead for design, an advisor on the lead tier for stuck steps, the frontier tier only on request or by a plan-listed trigger, and the owner for decisions only the owner can make.
 
 The owner keeps a live parity table that maps capability tiers to models on each platform (Claude, Codex, Copilot, or any product added later), and the slots that say how many workers each platform may run and what it can do (browser, graphical user interface (GUI), graphics processing unit (GPU)).
@@ -60,7 +60,7 @@ Host-specific mechanics (how each host wakes the manager and asks questions) are
 - **engineering-loop**: the single-PR change workflow: mirror an existing pattern, pin tests first for refactors, per-commit gates against a measured baseline, review with all findings addressed or rejected with reasons
 - **manager-loop**: hands-off execution of an approved plan by a manager agent, described above
 - **debugging**: reproduce-isolate-prove-fix-verify with anti-shortcut gates (never weaken tests or guardrails, no silent fallbacks)
-- **agent-fanout**: orchestrating subagents and teammates within a session with explicit model tiers: Claude Opus lead (Fable only on request or for long-horizon planning) and Sonnet workers; Codex Sol lead (Astra only on request or for long-horizon planning), Terra approved-plan elaboration, and Luna workers.
+- **agent-fanout**: orchestrating subagents and teammates within a session with explicit model tiers: Claude Opus lead (Fable only on request or for long-horizon planning) and Opus (`medium`) workers, with hard tasks on Opus (`xhigh`); Codex Sol lead (Astra only on request or for long-horizon planning), Terra approved-plan elaboration, and Luna workers.
   It adds full-lifecycle briefs, mechanical gates, lead verification, mandatory cleanup of completed one-off agents, and a hard cap of 40 agents per run.
   This is in-session delegation, distinct from the git-tracked epic/worktree workflow above.
 - **ci-scaffolding**: generate GitHub Actions workflows for Python (ruff + pytest) or TypeScript (biome + bun test); `references/ci-speed.md` covers measuring and speeding up a slow pipeline (time-balanced sharding behind gate jobs, setup fixes, parallel jobs)

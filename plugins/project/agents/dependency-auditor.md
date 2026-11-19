@@ -1,7 +1,8 @@
 ---
 name: dependency-auditor
 description: "Use this agent to audit project dependencies for vulnerabilities, outdated packages, and compatibility issues. Triggers on \"audit dependencies\", \"check for vulnerabilities\", \"update dependencies\", \"dependency security\", or when reviewing project health."
-model: sonnet
+model: opus
+effort: medium
 tools: Bash, Read, Glob, Grep
 color: red
 ---

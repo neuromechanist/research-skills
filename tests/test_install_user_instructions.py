@@ -196,7 +196,7 @@ def test_unmatched_managed_marker_fails_without_writing(tmp_path: Path):
 def test_template_encodes_routing_cleanup_and_github_exception():
     text = TEMPLATE.read_text()
 
-    assert all(name in text for name in ("Fable", "Opus", "Sonnet"))
+    assert all(name in text for name in ("Fable", "Opus", "`medium`", "`xhigh`"))
     assert all(name in text for name in ("Sol", "Terra", "Luna"))
     assert "close or remove the agent" in text
     assert "Use semantic line breaks" in text

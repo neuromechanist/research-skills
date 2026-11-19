@@ -56,7 +56,7 @@ The lead and the manager may be one agent only when the owner says so; that agen
 Run in order; each tick is complete on its own because the board carries all state.
 
 1. Run `date`, then `manager_board.py tick <board> --manager <id>`; the first tick of a session adds `--state running --next 30m`, a provisional wake that step 9 replaces.
-   The manager id is stable per manager, `<host>-<model>` (for example `mba-claude-sonnet`), never per session, so restarts and headless ticks of the same manager keep the lease.
+   The manager id is stable per manager, `<host>-<model>` (for example `mba-claude-opus`), never per session, so restarts and headless ticks of the same manager keep the lease.
    If the tick is refused because another manager holds the lease, schedule one wake at the lease expiry the refusal prints and do nothing else.
 2. **First tick of a session only:** reconcile the board with the world.
    For each step in `active` or `review`, read its PR and worktree; the PR and the worktree are right, the board is corrected and the correction logged.

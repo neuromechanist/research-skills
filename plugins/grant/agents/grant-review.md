@@ -1,7 +1,8 @@
 ---
 name: grant-review
 description: Independent fresh-context NIH/NSF grant proposal reviewer. Invoked by the grant-review skill (single or panel mode); not triggered directly by the user.
-model: sonnet
+model: opus
+effort: medium
 tools: Bash, Read, Glob, Grep
 color: purple
 ---

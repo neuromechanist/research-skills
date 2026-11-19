@@ -31,11 +31,11 @@ unclear reasons).
 
 ## Model handoff by phase
 
-Follow `agent-fanout` driver mode. The session driver (Claude Sonnet at
-`xhigh`, Codex Luna at `max`) orchestrates the workflow mechanically. Epic
+Follow `agent-fanout` driver mode. The session driver (Claude Opus at
+`medium`, Codex Luna at `max`) orchestrates the workflow mechanically. Epic
 decomposition, architecture, and high-risk or contested findings go to Opus
 or Sol at `xhigh` (Fable or Astra only when the user asks or for long-horizon
-planning the user names). Named Sonnet or Luna workers implement the
+planning the user names). Named Opus (`medium`) or Luna workers implement the
 approved brief in the isolated worktree; fresh Opus (`medium`) or Luna (`max`) reviewers review
 each phase per the review-convergence rules (two rounds at most). Close/remove
 one-off agents after their reports are incorporated.

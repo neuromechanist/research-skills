@@ -38,7 +38,7 @@ Every report ends with a JSON verdict (`status`, `findings[].action`, `hint`) th
 
 ## The generate, QA, fix loop
 
-AI-generated figures follow a bounded loop defined in `figure-qa/references/iterate-loop.md`: generate N candidates in parallel, QA all of them in one parallel dispatch of Sonnet-tier reviewers, rank by status and findings, apply exactly one targeted change (a Codex edit, a regenerated prompt, or moving a string to the overlay), re-QA, and stop at `ship` or after three iterations.
+AI-generated figures follow a bounded loop defined in `figure-qa/references/iterate-loop.md`: generate N candidates in parallel, QA all of them in one parallel dispatch of worker-tier reviewers (Opus at `medium` effort), rank by status and findings, apply exactly one targeted change (a Codex edit, a regenerated prompt, or moving a string to the overlay), re-QA, and stop at `ship` or after three iterations.
 Text placement follows a ladder: the model renders panel letters, titles, and short labels at large size; dense labels go to the SVG overlay; numerals, axes, and equations go to the plot or vector skills.
 
 ## Skills

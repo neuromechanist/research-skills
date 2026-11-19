@@ -38,7 +38,7 @@ Section 0 of the plan, "How the manager uses this plan", holds:
 You are the manager of <project> <track>.
 Run one tick of the runbook at <absolute path to runbook.md>, exactly as written, using the project:manager-loop skill.
 The state is the board beside it: <absolute path to board.md>.
-Your manager id is <host>-<model>, the same on every tick (for example mba-claude-sonnet).
+Your manager id is <host>-<model>, the same on every tick (for example mba-claude-opus).
 Do not write product code.
 Do not change the plan, a card, a gate, the parity, or a budget limit.
 When the runbook says to stop or to ask, or does not cover what you see, record it on the board, ask the owner with a structured question, and stop that thread of work.

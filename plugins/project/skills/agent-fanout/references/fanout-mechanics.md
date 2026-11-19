@@ -29,12 +29,14 @@ tool's section; the concepts transfer.
 - `subagent_type`: `Explore` for read-only search, `Plan` for architecture
   plans, `general-purpose` for implementation, or a plugin agent such as
   `project:pr-review-toolkit` for reviews.
-- `model`: use Opus (or inherit a lead-tier session) for macro architecture,
-  Sonnet for approved-plan implementation, and Opus at `medium` effort for routine review.
+- `model` and effort: use Opus at `xhigh` (or inherit a lead-tier session) for macro
+  architecture and hard tasks, and Opus at `medium` for approved-plan
+  implementation and routine review; Haiku at `max` (the Luna `max`
+  class) for clear, repeatable work from a fully specified brief.
   Use Fable only when the user asks for it or for long-horizon jobs or
   planning the user names.
-  A phase-plan elaborator may use Sonnet only when every architecture decision
-  is already fixed; otherwise it inherits the lead model.
+  A phase-plan elaborator may use Opus at `medium` only when every architecture
+  decision is already fixed; otherwise it runs at the lead effort.
 - `name`: set a role-descriptive name (`engine-scout`, `fix-661`,
   `phase2-reviewer`) whenever you may need to follow up. A transcript that
   reads "engine-scout reported X" stays legible.

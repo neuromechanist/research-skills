@@ -28,7 +28,7 @@ Every dispatch carries the same briefing, so the right checks run:
 A QA pass is more trustworthy from a reviewer that did not just author the figure.
 Run it in a separate context and pass only the briefing above.
 On tools without subagents, run the procedure inline.
-For several candidates, issue one dispatch per candidate in a single message so they run in parallel on the Sonnet tier.
+For several candidates, issue one dispatch per candidate in a single message so they run in parallel on the worker tier (Opus at `medium` effort).
 
 ## Dispatch
 

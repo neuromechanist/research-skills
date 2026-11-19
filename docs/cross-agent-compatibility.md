@@ -86,10 +86,12 @@ vary by environment.
 
 ## Model routing
 
-Every lead role defaults to the lead tier: Claude Opus and Codex Sol (`gpt-6.1-sol`).
+Every lead role defaults to the lead tier: Claude Opus at `xhigh` and Codex Sol (`gpt-6.1-sol`).
 That covers project initiation, architecture, planning, observation, supervision, and synthesis.
 The frontier tier, Claude Fable and Codex Astra (`gpt-6-astra`), is opt-in: use it only when the user explicitly asks for it, or for long-horizon jobs or planning the user names.
-Sonnet on Claude and Luna (`gpt-6-luna`) on Codex implement approved, detailed plans; routine and PR review runs on Opus at `medium` effort on Claude (it outscores Sonnet at `xhigh` and costs less) and on Luna at `max` on Codex.
+Opus at `medium` effort on Claude and Luna (`gpt-6-luna`) on Codex implement approved, detailed plans and run routine and PR review; hard tasks go to Opus at `xhigh` or Terra and Sol.
+Claude Haiku at `max` is the Luna `max` class for clear, repeatable work.
+Sonnet is retired from Claude routing: on FrontierCode 1.1, Opus at `medium` outscores Sonnet at `xhigh` for about half the cost per task.
 Codex Terra (`gpt-6.1-terra`) elaborates an approved architecture into a worker-executable phase plan.
 Any unresolved architecture or high-risk invariant escalates back to the lead tier.
 Copilot CLI and other systems keep the same capability classes (lead, intermediate, worker) with whatever models the environment exposes.
