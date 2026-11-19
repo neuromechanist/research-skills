@@ -3,10 +3,9 @@ name: Validation
 on:
   push:
     branches: [main]
-    paths-ignore: ['.context/**', '.memory/**']
   pull_request:
     branches: [main]
-    paths-ignore: ['.context/**', '.memory/**']
+  workflow_dispatch:  # lets the model id bot run this required check on its PR branch
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
