@@ -13,6 +13,7 @@ Prefer the narrowest scope that matches the user request.
 - Unstaged review: use `git diff`.
 - Recent local work: inspect `git status --short`, then both staged and unstaged diffs.
 - Explicit files: inspect only those files and the relevant diff hunks.
+- Epic integration or `dev` to `main` promotion (lens `seam`): build the scope manifest in `seam-review.md` step 1 instead.
 
 If scope is ambiguous and choosing wrong could waste time or cause false
 findings, ask a short clarification. Otherwise review the current branch changes.
@@ -39,14 +40,19 @@ lenses, apply:
 - `errors` when error handling, fallbacks, IO, network, parsing, auth, persistence, or async paths changed
 - `comments` when comments, docs, docstrings, READMEs, generated docs, or public API docs changed
 - `types` when public types, schemas, models, enums, validation boundaries, or state machines changed
-- `simplify` when code works but is complex, or the user asks to refine/simplify
+- `simplify` when code works but is complex, or the user asks to refine/simplify; run it after the other lenses pass, as polish, not alongside blocking fixes
+
+`seam` is never implied by `all` on an ordinary PR.
+Select it when the user asks for a seam or integration review, or when the scope is an epic branch merge or a `dev` to `main` promotion; then read `seam-review.md` and follow its scope discovery instead of section 1.
+A seam review may add one targeted lens (for example `tests` over the integrated range) when the seam checklist surfaces a gap that lens owns.
 
 ### Panel sizing and reviewer briefing (when dispatching parallel reviewers)
 
 - Panel size tracks how settled the code is: 4-5 lenses while new types and
   invariants are being introduced; 2-3 once the core has stabilized; exactly 1
-  integration-scoped reviewer for a final epic/trunk merge, explicitly told
-  not to re-review content already covered by per-PR panels.
+  integration-scoped reviewer with lens `seam` (`seam-review.md`) for a final
+  epic merge or a `dev` to `main` promotion, explicitly told not to re-review
+  content already covered by per-PR panels.
 - Brief each reviewer with the specific risk class the diff introduces, not a
   generic "review this". Name the failure mode (example: for a pure code
   move, "handler bodies moved verbatim; pre-existing patterns are out of
@@ -133,7 +139,14 @@ Use this shape:
 
 **Residual Risk**
 - Mention skipped checks, unrun tests, or areas outside scope.
+
+**Strengths** (optional, at most three bullets)
+- Patterns worth keeping, so fixes do not regress them.
 ```
+
+When findings come from several lenses, prefix each with its lens (for example `[errors]`) so the author can route the fix.
+End a merge-gating review with the recommended action: fix in severity order, give every finding an outcome per `review-convergence.md`, then re-run the targeted lens on the fix diff.
+A seam review adds the verdict and traceability sections defined in `seam-review.md`.
 
 If there are no actionable findings, say that clearly and still include any
 remaining test gaps or verification limits.

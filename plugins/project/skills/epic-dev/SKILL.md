@@ -136,7 +136,7 @@ For each phase, starting from the current state:
 
 1. Create the final PR from the epic branch to the integration branch.
 2. Run project tests or the best available integration verification from the epic worktree.
-3. Review the final PR with one integration-scoped reviewer (`pr-review-toolkit`): cross-phase integration only, not content the phase reviews covered; same two-round limit.
+3. Review the final PR with `pr-review-toolkit`, lens `seam`, mode `epic` (its `seam-review.md` reference): one integration-scoped reviewer checks the epic's goals against evidence, cross-phase seams, changelog, version, and doc accuracy, and unresolved phase-review follow-ups, not content the phase reviews covered; same two-round limit. Run the same lens in mode `promotion` before an integration branch merges into a release branch.
 4. Present the final review summary and ask for merge approval.
 5. Merge the final PR with a regular merge (`--merge`) to preserve per-phase history; only squash if the user explicitly asks.
 6. Close the epic issue if GitHub did not close it automatically.

@@ -7,7 +7,7 @@ Every workflow that reviews a PR follows this file.
 
 | Round | Runs when | Scope | Reviewers |
 | --- | --- | --- | --- |
-| 1. Full | Always | Whole PR diff | Panel per `review-panel-protocol.md`; one reviewer for docs-only PRs, PRs under 50 changed lines, and final epic or release PRs (integration scope only) |
+| 1. Full | Always | Whole PR diff | Panel per `review-panel-protocol.md`; one reviewer for docs-only PRs, PRs under 50 changed lines, and final epic or release PRs (lens `seam`, integration scope only; see `seam-review.md`) |
 | 2. Delta | Round 1 was substantial (below) | Fix commits only | One reviewer |
 | 3 | Never, unless the user asks | - | - |
 
@@ -46,7 +46,8 @@ Never re-review the whole PR.
 
 When the PR's head branch blocks direct pushes (for example a `develop` to `main` release PR):
 
-- Round 1 uses one integration-scoped reviewer; the feature PRs were already reviewed.
+- Round 1 uses one integration-scoped reviewer with lens `seam`, mode `promotion` (`seam-review.md`); the feature PRs were already reviewed.
+- A seam review's `unmet` or `partial` goal cannot be filed as an issue, and an `unmet` goal makes round 1 substantial; `seam-review.md` holds those rules.
 - All fixes from a round go in ONE fix PR into the head branch, never one PR per finding.
 - Open the release PR only when it is ready to merge, and merge it promptly; every push to the head branch re-runs its CI.
 

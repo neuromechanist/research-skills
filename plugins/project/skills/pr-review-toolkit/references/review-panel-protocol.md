@@ -21,7 +21,9 @@ Use the panel only when all of these are true:
    uses one reviewer; see `review-convergence.md`);
 2. `native_agent_status` is `available`;
 3. the caller has not selected `single`, `inline`, or another opt-out; and
-4. the requested work is not an advisory review of one named lens.
+4. the requested work is not an advisory review of one named lens; and
+5. the lens is not `seam` (a seam review always uses one integration-scoped
+   reviewer; see `seam-review.md`).
 
 If any condition is false, run the single inline procedure or the explicitly
 configured single reviewer. Optional capability failure is a fallback reason,

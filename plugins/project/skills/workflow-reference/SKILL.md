@@ -216,7 +216,7 @@ When invoked with `--finalize`:
 ## Integration with Other Skills/Commands
 
 - **EnterPlanMode**: Invoke at the start of each phase for implementation planning (Codex and Copilot: write the plan before editing)
-- **`project:pr-review-toolkit`**: Invoke before merging each phase PR and the final epic PR; its `review-convergence.md` reference caps review at two rounds
+- **`project:pr-review-toolkit`**: Invoke before merging each phase PR and the final epic PR; its `review-convergence.md` reference caps review at two rounds. The final epic PR, and any promotion of an integration branch into a release branch (for example `develop` to `main`), uses lens `seam` (mode `epic` or `promotion`) per its `seam-review.md` reference
 - **`project:engineering-loop`**: Optionally follow within a phase for the single-PR change workflow (user decides)
 - **TodoWrite**: Track all phases and steps throughout
 

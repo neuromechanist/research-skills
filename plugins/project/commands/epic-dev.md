@@ -205,7 +205,7 @@ Update state: mark phase `in_progress`.
 
 2. Push epic branch: `git -C "$PARENT/epic-{slug}" push -u origin {epic_branch}`
 
-3. Review the epic PR with one integration-scoped reviewer (`project:pr-review-toolkit`): cross-phase integration only, not content the phase reviews covered; same two-round limit
+3. Review the epic PR with `project:pr-review-toolkit`, lens `seam`, mode `epic` (its `seam-review.md` reference): one integration-scoped reviewer checks the epic's goals against evidence, cross-phase seams, changelog, version, and doc accuracy, and unresolved phase-review follow-ups, not content the phase reviews covered; same two-round limit
 
 4. **Confirm**: Present review summary and ask user to approve final merge
 
