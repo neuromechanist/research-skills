@@ -193,7 +193,7 @@ def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
 
     # Sonnet is retired from Claude routing: Opus `medium` replaces Sonnet `xhigh`.
     retired = re.compile(
-        r"gpt-5[.]6|Fable when[ ]available|^model: sonnet$|model: sonnet\)"
+        r"gpt-5[.]6|Fable when[ ]available|model:\s*[\"']?(?:claude-)?sonnet"
         r"|Sonnet \(`xhigh`\)|Sonnet `xhigh`",
         re.MULTILINE,
     )
@@ -216,6 +216,24 @@ def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
     assert scanned, "git ls-files returned no files to scan"
     stale = [str(p.relative_to(ROOT)) for p in scanned if retired.search(p.read_text())]
     assert not stale, f"retired model ids or default-to-Fable wording remain in: {stale}"
+
+
+def test_claude_routing_has_no_sonnet_tier():
+    allowed = {"opus", "haiku", "inherit"}
+    for agent in sorted(PLUGINS_DIR.glob("*/agents/*.md")):
+        match = re.search(r"^model:\s*(\S+)\s*$", agent.read_text(), re.MULTILINE)
+        if match:
+            assert match.group(1).strip("\"'") in allowed, (
+                f"{agent.relative_to(ROOT)}: model {match.group(1)!r} is not in {sorted(allowed)}"
+            )
+    template = (
+        PLUGINS_DIR / "project" / "skills" / "manager-loop" / "assets" / "board-template.md"
+    ).read_text()
+    parity = template.split("## Parity", 1)[1].split("\n## ", 1)[0]
+    claude_cells = [
+        row.split("|")[2].strip() for row in parity.splitlines() if row.startswith("| ") and "---" not in row
+    ]
+    assert claude_cells and not any("Sonnet" in cell for cell in claude_cells), claude_cells
 
 
 def test_pr_review_panel_contract_is_bounded_and_has_fallback():

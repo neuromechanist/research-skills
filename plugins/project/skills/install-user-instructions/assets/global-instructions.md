@@ -2,7 +2,7 @@
 
 ### Task strategy and model routing
 
-- Keep requirements, architecture, difficult judgment, observation, supervision, load-bearing verification, and final synthesis on the lead-tier model (Opus or Sol), directly or by delegation from an Opus (`medium`) or Luna driver.
+- Keep requirements, architecture, difficult judgment, observation, supervision, load-bearing verification, and final synthesis on the lead-tier model (Opus at `xhigh` or Sol), directly or by delegation from an Opus (`medium`) or Luna driver.
 - On Claude Code, use Opus at `xhigh` for lead reasoning, planning, and hard tasks, and Opus at `medium` for implementation from an approved detailed plan, routine review, and validation (it outscores Sonnet at `xhigh` for about half the cost, so do not route to Sonnet); Haiku at `max` is the Luna `max`-class option for clear, repeatable work; use Fable only when the user asks or for long-horizon planning.
 - On OpenAI Codex, use Sol for lead reasoning, Terra for bounded phase-plan elaboration after architecture approval, and Luna for clear, repeatable implementation, focused tests, routine review, and validation; use Astra only when the user asks or for long-horizon planning.
 - When the session itself runs on Opus at `medium` or Luna, act as a mechanical driver: delegate routine work to Opus (`medium`) or Luna (`max`), and architecture, high-risk invariants, and contested findings to Opus or Sol (`xhigh`).

@@ -7,7 +7,7 @@ The orchestrating skill (`ai-full-figure`) drives the loop. It never QAs its own
 ## Contract
 
 1. **Generate N candidates in parallel.** `N` defaults to 2, with a maximum of 4. Each candidate is a separate `generate_figure.py` run with the same prompt and theme; run them concurrently as background shell jobs rather than sequentially; there is no shared state between candidates to serialize on.
-2. **QA every candidate in one dispatch.** Send all `N` QA calls in a single message, as parallel `Agent(subagent_type: "figures:figure-qa", model: opus, effort: medium)` invocations, one per candidate. Do not QA candidates one at a time; the whole point of generating N candidates is to judge them together.
+2. **QA every candidate in one dispatch.** Send all `N` QA calls in a single message, as parallel `Agent(subagent_type: "figures:figure-qa")` invocations, one per candidate. Do not QA candidates one at a time; the whole point of generating N candidates is to judge them together.
 3. **Rank the QA'd candidates**, in this order:
    1. `status`: `ship` beats `revise` beats `block`.
    2. Fewer `block`-severity findings wins a tie on `status`.
@@ -40,7 +40,7 @@ Do not shorten this to just the figure path. `figure-qa-procedure.md`'s raster t
 
 ## Model routing
 
-Candidate generation and every QA dispatch run on the worker tier (Opus at `medium` effort on the `Agent` call, or the equivalent worker-tier model on Codex/Copilot). The orchestrating model, whichever tier is driving `ai-full-figure` itself, does the ranking, the fix selection, and the final report; it does not delegate those judgment calls, because they are exactly the "pick the best candidate" and "which one change" decisions that make the loop worth running. See `project:agent-fanout` for the general worker-tier routing rule this follows.
+Candidate generation and every QA dispatch run on the worker tier (the bundled agent's frontmatter pins Opus at `medium` effort, or the equivalent worker-tier model on Codex/Copilot). The orchestrating model, whichever tier is driving `ai-full-figure` itself, does the ranking, the fix selection, and the final report; it does not delegate those judgment calls, because they are exactly the "pick the best candidate" and "which one change" decisions that make the loop worth running. See `project:agent-fanout` for the general worker-tier routing rule this follows.
 
 ## Cross-agent fallback
 

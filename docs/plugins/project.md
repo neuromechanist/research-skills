@@ -30,7 +30,7 @@ It is read-only, never spawns agents, and keeps optional capability failures sep
 ## Manager loops
 
 For a plan of many steps that should run for hours or days without supervision, `manager-loop` splits the work by capability.
-A lead-tier model (Claude Opus; on Codex, Sol) writes the plan pack: one self-contained card per step with a literal acceptance gate, the slot and collision rules or named waves, and the checkpoints.
+A lead-tier model (Claude Opus at `xhigh`; on Codex, Sol) writes the plan pack: one self-contained card per step with a literal acceptance gate, the slot and collision rules or named waves, and the checkpoints.
 The frontier tier (Fable; on Codex, Astra) is used only when the owner asks, for long-horizon planning the owner names, or when the approved plan lists a frontier trigger.
 A mechanical manager (Claude Opus at `medium`; Codex Luna) runs the plan tick by tick: it dispatches cards, verifies each step by observing the PR, the diff, and the gate output rather than trusting a report, runs reviews, merges within its authority, and asks the owner only through structured questions.
 Judgment goes up a ladder: the lead for design, an advisor on the lead tier for stuck steps, the frontier tier only on request or by a plan-listed trigger, and the owner for decisions only the owner can make.

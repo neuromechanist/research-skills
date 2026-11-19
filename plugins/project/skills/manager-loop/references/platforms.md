@@ -9,7 +9,7 @@ The same card, the same gates, and the same report schema apply on every platfor
 The Parity table maps tiers to a model and effort per platform; the Slots table says how many workers each platform may run, which tiers it takes, and what it can do.
 The board template ships both as defaults, and the owner's approval of the plan accepts them, so setup does not ask about them.
 A real example of an owner's mapping when Codex budget grew: "Luna max for Sonnet work (high), Terra xhigh for Sonnet xhigh, Sol xhigh for Opus", with a Codex slot of at most four Luna plus two Terra (or one Terra and one Sol) at a time.
-The lead tier (Opus; Codex Sol, `gpt-6.1-sol`) is the default for every lead role, including project initiation and planning.
+The lead tier (Opus at `xhigh`; Codex Sol, `gpt-6.1-sol`) is the default for every lead role, including project initiation and planning.
 The frontier tier (Fable; Codex Astra, `gpt-6-astra`) is used only when the owner explicitly asks, for long-horizon jobs or planning the owner names, or when the approved plan's routing lists a frontier trigger.
 
 Models get renamed, new products ship, and quotas move, so:

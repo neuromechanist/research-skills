@@ -11,7 +11,7 @@ your reasoning, with success criteria fixed before any result is seen.
 ## Model handoff
 
 Use the lead tier for problem framing, macro architecture, irreversible
-decisions, and plan approval. In Codex this is Sol; in Claude it is Opus.
+decisions, and plan approval. In Codex this is Sol; in Claude it is Opus at `xhigh`.
 Planning defaults to the lead tier; the frontier tier (Claude Fable, Codex
 Astra) is used only when the user explicitly asks for it or for long-horizon
 planning the user names.
