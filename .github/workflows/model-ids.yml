@@ -5,7 +5,11 @@ name: Model IDs
 # family to its newest id, with plugin and marketplace patch bumps.
 #
 # Setup (see "Model ids" in AGENTS.md):
-#   secrets ANTHROPIC_API_KEY and OPENAI_API_KEY (a provider without a key is skipped);
+#   Anthropic: Workload Identity Federation, no stored key. Repository variables
+#   ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID, ANTHROPIC_SERVICE_ACCOUNT_ID
+#   (and ANTHROPIC_WORKSPACE_ID when the rule spans several workspaces);
+#   OpenAI: secret OPENAI_API_KEY. A provider without a credential is skipped and the job
+#   fails at the end;
 #   either "Allow GitHub Actions to create and approve pull requests" in the
 #   repository's Actions settings, or a MODEL_BOT_TOKEN secret (fine-grained token with
 #   contents and pull-requests write). PRs opened with GITHUB_TOKEN do not trigger the
@@ -19,6 +23,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write  # GitHub OIDC token for Anthropic Workload Identity Federation
 
 concurrency:
   group: model-ids
@@ -53,11 +58,22 @@ jobs:
     - uses: astral-sh/setup-uv@v5
       if: steps.gate.outputs.run == 'true'
 
+    - name: Fetch a GitHub OIDC token for Anthropic
+      if: steps.gate.outputs.run == 'true' && vars.ANTHROPIC_FEDERATION_RULE_ID != ''
+      run: |
+        curl -sSf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+          "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.anthropic.com" \
+          | jq -r .value > "$RUNNER_TEMP/gha-jwt"
+        echo "ANTHROPIC_IDENTITY_TOKEN_FILE=$RUNNER_TEMP/gha-jwt" >> "$GITHUB_ENV"
+
     - name: Compare model lists and apply updates
       id: check
       if: steps.gate.outputs.run == 'true'
       env:
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        ANTHROPIC_FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+        ANTHROPIC_ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+        ANTHROPIC_SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+        ANTHROPIC_WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
         uv run python scripts/update_model_ids.py --apply --summary "$RUNNER_TEMP/summary.md"

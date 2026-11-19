@@ -59,18 +59,88 @@ def _get_json(url: str, headers: dict[str, str]) -> dict:
         return json.load(response)
 
 
+ANTHROPIC_API = "https://api.anthropic.com"
+JWT_BEARER = "urn:ietf:params:oauth:grant-type:jwt-bearer"
+
+
+def _post_json(url: str, body: dict) -> dict:
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(body).encode(),
+        headers={"User-Agent": USER_AGENT, "content-type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.load(response)
+
+
+def anthropic_credential(env: dict[str, str]) -> str | None:
+    """Bearer credential in the SDK's precedence order, or None when none is configured.
+
+    ``ANTHROPIC_API_KEY``, then ``ANTHROPIC_AUTH_TOKEN``, then Workload Identity
+    Federation: ``ANTHROPIC_FEDERATION_RULE_ID`` + ``ANTHROPIC_ORGANIZATION_ID`` +
+    ``ANTHROPIC_IDENTITY_TOKEN_FILE`` (or ``ANTHROPIC_IDENTITY_TOKEN``), with optional
+    ``ANTHROPIC_SERVICE_ACCOUNT_ID`` and ``ANTHROPIC_WORKSPACE_ID``, exchanged at
+    ``POST /v1/oauth/token`` for a short-lived access token.
+    """
+    for name in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"):
+        if env.get(name):
+            return env[name]
+    rule, org = (
+        env.get("ANTHROPIC_FEDERATION_RULE_ID"),
+        env.get("ANTHROPIC_ORGANIZATION_ID"),
+    )
+    token_file, token = (
+        env.get("ANTHROPIC_IDENTITY_TOKEN_FILE"),
+        env.get("ANTHROPIC_IDENTITY_TOKEN"),
+    )
+    if not (rule and org and (token_file or token)):
+        return None
+    try:
+        assertion = Path(token_file).read_text().strip() if token_file else token
+    except OSError as error:
+        raise UpdateError(
+            f"anthropic: cannot read ANTHROPIC_IDENTITY_TOKEN_FILE: {error}"
+        ) from error
+    if not assertion:
+        raise UpdateError("anthropic: the identity token is empty")
+    body = {
+        "grant_type": JWT_BEARER,
+        "assertion": assertion,
+        "federation_rule_id": rule,
+        "organization_id": org,
+    }
+    for field, name in (
+        ("service_account_id", "ANTHROPIC_SERVICE_ACCOUNT_ID"),
+        ("workspace_id", "ANTHROPIC_WORKSPACE_ID"),
+    ):
+        if env.get(name):
+            body[field] = env[name]
+    try:
+        return _post_json(f"{ANTHROPIC_API}/v1/oauth/token", body)["access_token"]
+    except (urllib.error.URLError, KeyError, ValueError) as error:
+        raise UpdateError(
+            f"anthropic: federation token exchange failed ({error}); the Console's authentication history shows the deny reason"
+        ) from error
+
+
+def openai_credential(env: dict[str, str]) -> str | None:
+    return env.get("OPENAI_API_KEY") or None
+
+
+CREDENTIALS = {"anthropic": anthropic_credential, "openai": openai_credential}
+
+
 def fetch_anthropic(key: str) -> list[str]:
-    headers = {"x-api-key": key, "anthropic-version": "2023-06-01"}
+    headers = {"authorization": f"Bearer {key}", "anthropic-version": "2026-10-21"}
     ids: list[str] = []
-    url = "https://api.anthropic.com/v1/models?limit=1000"
+    url = f"{ANTHROPIC_API}/v1/models?limit=1000"
     while True:
         page = _get_json(url, headers)
         ids += [model["id"] for model in page["data"]]
         if not page.get("has_more"):
             return ids
-        url = (
-            f"https://api.anthropic.com/v1/models?limit=1000&after_id={page['last_id']}"
-        )
+        url = f"{ANTHROPIC_API}/v1/models?limit=1000&after_id={page['last_id']}"
 
 
 def fetch_openai(key: str) -> list[str]:
@@ -308,9 +378,11 @@ def collect_listings(
     for provider, spec in registry["providers"].items():
         if provider in listings:
             continue
-        key = os.environ.get(spec["env"], "")
+        key = CREDENTIALS[provider](dict(os.environ))
         if not key:
-            warnings.append(f"{provider}: {spec['env']} is not set; skipped.")
+            warnings.append(
+                f"{provider}: no credential ({spec['credentials']}); skipped."
+            )
             continue
         try:
             listings[provider] = FETCHERS[provider](key)

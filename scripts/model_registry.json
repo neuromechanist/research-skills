@@ -2,7 +2,7 @@
   "comment": "Current model id per family, read and rewritten by scripts/update_model_ids.py. Each pattern must capture the version in group 1; versions compare as integer tuples split on '.' or '-'.",
   "providers": {
     "anthropic": {
-      "env": "ANTHROPIC_API_KEY",
+      "credentials": "ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, or the ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID, and ANTHROPIC_IDENTITY_TOKEN_FILE federation variables",
       "families": {
         "opus": {"pattern": "^claude-opus-(\\d{1,2}(?:-\\d{1,2})?)$", "current": "claude-opus-5-5"},
         "sonnet": {"pattern": "^claude-sonnet-(\\d{1,2}(?:-\\d{1,2})?)$", "current": "claude-sonnet-5-5"},
@@ -11,7 +11,7 @@
       }
     },
     "openai": {
-      "env": "OPENAI_API_KEY",
+      "credentials": "OPENAI_API_KEY",
       "families": {
         "astra": {"pattern": "^gpt-(\\d+(?:\\.\\d+)?)-astra$", "current": "gpt-6-astra"},
         "sol": {"pattern": "^gpt-(\\d+(?:\\.\\d+)?)-sol$", "current": "gpt-6.1-sol"},

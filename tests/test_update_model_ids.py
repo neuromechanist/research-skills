@@ -26,7 +26,7 @@ ZETA = r"^gpt-(\d+(?:\.\d+)?)-zeta$"
 REGISTRY = {
     "providers": {
         "anthropic": {
-            "env": "ANTHROPIC_API_KEY",
+            "credentials": "ANTHROPIC_API_KEY or federation variables",
             "families": {
                 "zeta": {
                     "pattern": r"^claude-zeta-(\d{1,2}(?:-\d{1,2})?)$",
@@ -35,7 +35,7 @@ REGISTRY = {
             },
         },
         "openai": {
-            "env": "OPENAI_API_KEY",
+            "credentials": "OPENAI_API_KEY",
             "families": {"zeta": {"pattern": ZETA, "current": "gpt-6-zeta"}},
         },
     },
@@ -87,10 +87,21 @@ def repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
+CREDENTIAL_VARS = (
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_AUTH_TOKEN",
+    "ANTHROPIC_FEDERATION_RULE_ID",
+    "ANTHROPIC_ORGANIZATION_ID",
+    "ANTHROPIC_IDENTITY_TOKEN_FILE",
+    "ANTHROPIC_IDENTITY_TOKEN",
+    "OPENAI_API_KEY",
+)
+
+
 @pytest.fixture
 def no_keys(monkeypatch):
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    for name in CREDENTIAL_VARS:
+        monkeypatch.delenv(name, raising=False)
 
 
 def listing(tmp_path: Path, name: str, payload: object) -> str:
@@ -267,7 +278,7 @@ def test_strict_fails_when_a_provider_is_skipped_or_a_family_unmatched(
         )
         == 1
     )
-    assert "ANTHROPIC_API_KEY is not set" in capsys.readouterr().err
+    assert "anthropic: no credential" in capsys.readouterr().err
 
     claude = listing(tmp_path, "claude", {"data": [{"id": "claude-other-1"}]})
     both = ["--from-file", f"anthropic={claude}", "--from-file", f"openai={openai}"]
@@ -284,3 +295,28 @@ def test_listed_current_id_missing_is_reported(repo, tmp_path, no_keys, capsys):
 def test_no_provider_available_fails(repo, no_keys, capsys):
     assert updater.main(["--root", str(repo)]) == 1
     assert "no provider list available" in capsys.readouterr().err
+
+
+def test_anthropic_credential_follows_sdk_precedence(tmp_path):
+    federation = {
+        "ANTHROPIC_FEDERATION_RULE_ID": "fdrl_x",
+        "ANTHROPIC_ORGANIZATION_ID": "org",
+        "ANTHROPIC_IDENTITY_TOKEN_FILE": str(tmp_path / "missing-jwt"),
+    }
+    assert updater.anthropic_credential({}) is None
+    assert (
+        updater.anthropic_credential({"ANTHROPIC_FEDERATION_RULE_ID": "fdrl_x"}) is None
+    )
+    assert updater.anthropic_credential({**federation, "ANTHROPIC_API_KEY": "k"}) == "k"
+    assert (
+        updater.anthropic_credential({**federation, "ANTHROPIC_AUTH_TOKEN": "t"}) == "t"
+    )
+    with pytest.raises(
+        updater.UpdateError, match="cannot read ANTHROPIC_IDENTITY_TOKEN_FILE"
+    ):
+        updater.anthropic_credential(federation)
+    (tmp_path / "empty-jwt").write_text("\n")
+    with pytest.raises(updater.UpdateError, match="identity token is empty"):
+        updater.anthropic_credential(
+            {**federation, "ANTHROPIC_IDENTITY_TOKEN_FILE": str(tmp_path / "empty-jwt")}
+        )
