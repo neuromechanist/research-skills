@@ -1,7 +1,8 @@
 ---
 name: release-prep
 description: "Use this agent to autonomously prepare a project release by running pre-release checks, validating CI, checking test coverage, and verifying changelog. Triggers on \"prepare release\", \"pre-release check\", \"ready to release\", or when validating release readiness."
-model: sonnet
+model: opus
+effort: medium
 tools: Bash, Read, Glob, Grep
 color: green
 ---

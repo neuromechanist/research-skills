@@ -80,7 +80,7 @@ the capability class in the final column.
 
 | Ecosystem | Frontier (opt-in only) | Lead / architect / observer / synthesizer | Phase-plan elaborator | Implementer / focused reviewer / validator | Capability fallback |
 | --- | --- | --- | --- | --- | --- |
-| Claude Code | Fable | Opus | Opus for unresolved design; Sonnet after architecture approval | Sonnet | lead / balanced / worker |
+| Claude Code | Fable | Opus (`xhigh`) | Opus `xhigh` for unresolved design; Opus `medium` after architecture approval | Opus (`medium`); Haiku (`max`) for clear, repeatable work; hard tasks Opus (`xhigh`) | lead / balanced / worker |
 | OpenAI Codex | Astra (`gpt-6-astra`) | Sol (`gpt-6.1-sol`) | Terra (`gpt-6.1-terra`) | Luna (`gpt-6-luna`) | lead / intermediate / clear-repeatable worker |
 | GitHub Copilot CLI | a frontier model only if the user names one | strongest available model | balanced reasoning model | cost-efficient coding model | lead / intermediate / worker |
 | Other systems | a frontier model only if the user names one | strongest available model | intermediate model | fastest model that passes the gates | lead / intermediate / worker |
@@ -89,11 +89,12 @@ The frontier column is never a default.
 Use it only when the user explicitly asks for it, or for long-horizon jobs or
 planning the user names.
 
-**Driver mode (the usual session).** The session driver is Sonnet at `xhigh`
+**Driver mode (the usual session).** The session driver is Opus at `medium`
 (Claude) or Luna at `max` (Codex). The driver runs the workflow mechanically
 and delegates hard calls instead of making them:
 
-- routine implementation and validation: Sonnet `xhigh` or Luna `max`;
+- routine implementation and validation: Opus `medium` or Luna `max`;
+- clear, repeatable work from a fully specified brief (mechanical edits, bounded scouts, checklist validation): Haiku `max` or Luna `max`;
 - PR and focused review: Opus `medium` or Luna `max`;
 - architecture, unresolved design, high-risk invariants, contested findings,
   and repeated non-mechanical failures: Opus `xhigh` or Sol `xhigh`; Fable or
@@ -101,17 +102,19 @@ and delegates hard calls instead of making them:
   names.
 
 Pass the effort explicitly on every delegation.
+On FrontierCode 1.1, Opus at `medium` scores higher than Sonnet at `xhigh` for about half the cost per task, so Claude routing no longer uses Sonnet.
+Haiku at `max` is the Claude counterpart of Luna at `max` for clear, repeatable work; escalate it to Opus `medium` on the first non-mechanical failure.
 
 Codex Luna is appropriate only for clear, repeatable implementation from a
 detailed plan. Escalate a worker to Terra or Sol when the task exposes an
 unresolved architecture choice, repeatedly fails a gate for a non-mechanical
 reason, or touches data integrity, encryption, concurrency, authorization, or
 another high-risk invariant. On Claude, use the same escalation rule from
-Sonnet to Opus.
+Opus `medium` to Opus `xhigh`.
 
 | Role | Agent type | Default tier | Notes |
 | --- | --- | --- | --- |
-| Lead/orchestrator | main session | lead tier, or a Sonnet/Luna driver in driver mode | Preserve requirements, approve architecture, supervise, verify, and synthesize; a driver delegates hard calls to the lead tier. |
+| Lead/orchestrator | main session | lead tier, or an Opus `medium`/Luna driver in driver mode | Preserve requirements, approve architecture, supervise, verify, and synthesize; a driver delegates hard calls to the lead tier. |
 | Explorer/scout | read-only explorer | intermediate or worker | One-shot for bounded facts; the lead re-verifies the keystone fact. |
 | Architect | plan agent | lead | Owns macro design and open judgment calls. |
 | Frontier consult | advisor | frontier (opt-in) | Only when the user asks, or for long-horizon jobs or planning the user names. |

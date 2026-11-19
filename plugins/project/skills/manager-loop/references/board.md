@@ -61,7 +61,7 @@ It prints the model the slot runs for that tier (from Parity), the steps that ca
 ## The lease
 
 `tick --manager <id>` records the manager's id and its next wake.
-The id is stable per manager, `<host>-<model>` (for example `mba-claude-sonnet`), never per session, so a restart or a headless tick of the same manager keeps the lease.
+The id is stable per manager, `<host>-<model>` (for example `mba-claude-opus`), never per session, so a restart or a headless tick of the same manager keeps the lease.
 A second manager calling `tick` with a different id before that wake (plus ten minutes) is refused, which prevents double dispatch and double merge when a scheduled tick overlaps a live session.
 The refusal prints the lease expiry; the refused manager schedules one wake at that time and does nothing else.
 The first tick of a session passes `--state running --next 30m`; a running tick without `--next` and with no pending wake gets a provisional 30-minute wake, so it always holds the lease.

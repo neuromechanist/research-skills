@@ -47,7 +47,7 @@ actually say" (judgment docs such as ADRs and strategy docs; read those
 yourself). When the area is larger than one context can hold:
 
 Use the worker/intermediate tier for bounded scouts (Codex Luna/Terra or
-Claude Sonnet), but keep diagnosis, keystone verification, and synthesis on
+Claude Haiku at `max` or Opus at `medium`), but keep diagnosis, keystone verification, and synthesis on
 the lead tier (Codex Sol or Claude Opus). Close/remove each one-off scout
 after its report is incorporated. See `agent-fanout` for escalation rules.
 

@@ -171,7 +171,7 @@ def test_same_name_command_and_skill_do_not_double_list_in_claude_code():
 
 def test_project_model_routing_contract_is_cross_agent():
     fanout = (PLUGINS_DIR / "project" / "skills" / "agent-fanout" / "SKILL.md").read_text()
-    for model in ("Fable", "Opus", "Sonnet", "Astra", "Sol", "Terra", "Luna"):
+    for model in ("Fable", "Opus", "Astra", "Sol", "Terra", "Luna"):
         assert model in fanout, f"agent-fanout routing is missing {model}"
 
     consumers = [
@@ -191,7 +191,12 @@ def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
         assert model_id in fanout, f"agent-fanout routing table is missing {model_id}"
     assert "opt-in" in fanout
 
-    retired = re.compile(r"gpt-5[.]6|Fable when[ ]available")
+    # Sonnet is retired from Claude routing: Opus `medium` replaces Sonnet `xhigh`.
+    retired = re.compile(
+        r"gpt-5[.]6|Fable when[ ]available|^model: sonnet$|model: sonnet\)"
+        r"|Sonnet \(`xhigh`\)|Sonnet `xhigh`",
+        re.MULTILINE,
+    )
     # Scan tracked files only: ignored local outputs (for example examples/out/) are not shipped.
     tracked = subprocess.run(
         ["git", "-C", str(ROOT), "ls-files", "-z", "--", "AGENTS.md", "README.md", "docs", "plugins"],

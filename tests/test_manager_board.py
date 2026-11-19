@@ -76,7 +76,7 @@ def test_init_writes_valid_board_and_log(board: Path):
 
 def test_dispatch_respects_dependencies_tiers_needs_and_capacity(board: Path):
     run("set", str(board), "slots", "codex", "Max=1")
-    run("set", str(board), "slots", "claude-sonnet", "Max=1")
+    run("set", str(board), "slots", "claude-worker", "Max=1")
     add_step(board, "S1", "Tier=worker", "State=done")
     add_step(board, "S2", "Tier=worker", "State=todo", "Depends=S1")
     add_step(board, "S3", "Tier=worker", "State=todo", "Needs=browser")
@@ -86,10 +86,10 @@ def test_dispatch_respects_dependencies_tiers_needs_and_capacity(board: Path):
 
     data = status(board)
     plan = {d["step"]: d for d in data["dispatch"]}
-    # S2 is first in table order and fits claude-sonnet first; S3 needs a browser,
-    # which codex cannot do, and claude-sonnet is then full.
-    assert plan["S2"]["slot"] == "claude-sonnet"
-    assert plan["S2"]["model"] == "Sonnet high"
+    # S2 is first in table order and fits claude-worker first; S3 needs a browser,
+    # which codex cannot do, and claude-worker is then full.
+    assert plan["S2"]["slot"] == "claude-worker"
+    assert plan["S2"]["model"] == "Opus medium"
     assert "S4" not in plan  # waits on S3
     assert plan["S5"] == {"step": "S5", "slot": "claude-opus", "model": "Opus xhigh"}
     assert plan["S6"]["slot"] == "codex"
@@ -189,7 +189,7 @@ def test_pipe_in_cell_round_trips(board: Path):
 
 def test_active_step_gets_started_stamp(board: Path):
     add_step(board, "S1", "State=todo")
-    run("set", str(board), "steps", "S1", "State=active", "Slot=claude-sonnet")
+    run("set", str(board), "steps", "S1", "State=active", "Slot=claude-worker")
     step = next(s for s in status(board)["steps"] if s["id"] == "S1")
     assert datetime.fromisoformat(step["Started"]).date() == datetime.now().date()
 
@@ -202,7 +202,7 @@ def test_timebox_flags(board: Path):
         board,
         "S1",
         "State=active",
-        "Slot=claude-sonnet",
+        "Slot=claude-worker",
         f"Started={started}",
         "Timebox=2h",
     )
@@ -210,7 +210,7 @@ def test_timebox_flags(board: Path):
         board,
         "S2",
         "State=active",
-        "Slot=claude-sonnet",
+        "Slot=claude-worker",
         f"Started={started}",
         "Timebox=4h",
     )
@@ -583,7 +583,7 @@ def test_malformed_log_stops_tick_and_propose(board: Path, broken_log: Path):
 
 
 def test_first_running_tick_takes_the_lease(board: Path):
-    run("tick", str(board), "--manager", "mba-claude-sonnet", "--state", "running")
+    run("tick", str(board), "--manager", "mba-claude-opus", "--state", "running")
     assert status(board)["heartbeat"]["next"], (
         "a running tick without --next still sets a wake"
     )
@@ -630,7 +630,7 @@ def test_existing_errors_do_not_block_unrelated_writes(board: Path):
         "Yes (Recommended) / No",
     )
     run("answer", str(board), "Q1", "Yes")
-    run("set", str(board), "steps", "S1", "State=active", "Slot=claude-sonnet")
+    run("set", str(board), "steps", "S1", "State=active", "Slot=claude-worker")
     refused = run(
         "set",
         str(board),
