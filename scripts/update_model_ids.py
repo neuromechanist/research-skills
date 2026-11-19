@@ -13,11 +13,12 @@ matches each family's pattern. When a family has a newer id, ``--apply``:
 3. bumps the patch version of every plugin with a changed file outside its
    ``tests/`` directory, the marketplace version once, and ``CITATION.cff``.
 
-Without ``--apply`` it only reports. Writes a Markdown summary with ``--summary``
-and ``changed=true|false`` to ``$GITHUB_OUTPUT`` when that variable is set.
+Without ``--apply`` it only reports. Writes a Markdown summary with ``--summary``,
+and ``changed`` and ``incomplete`` (a provider skipped or a family unmatched) to
+``$GITHUB_OUTPUT`` when that variable is set; ``--strict`` exits 1 when incomplete.
 
 Usage:
-  update_model_ids.py [--apply] [--summary PATH] [--from-file PROVIDER=PATH ...]
+  update_model_ids.py [--apply] [--strict] [--summary PATH] [--from-file PROVIDER=PATH ...]
 """
 
 from __future__ import annotations
@@ -30,6 +31,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -114,9 +116,10 @@ def newest(ids: list[str], pattern: str) -> str | None:
 
 def plan(
     registry: dict, listings: dict[str, list[str]]
-) -> tuple[list[dict], list[str]]:
-    """Return (updates, notes). An update is {provider, family, old, new}."""
-    updates, notes = [], []
+) -> tuple[list[dict], list[str], list[str]]:
+    """Return (updates, notes, unmatched). An update is {provider, family, old, new};
+    ``unmatched`` names families no listed model matches."""
+    updates, notes, unmatched = [], [], []
     for provider, spec in registry["providers"].items():
         if provider not in listings:
             continue
@@ -125,6 +128,7 @@ def plan(
             current, pattern = entry["current"], entry["pattern"]
             latest = newest(ids, pattern)
             if latest is None:
+                unmatched.append(f"{provider}/{family}")
                 notes.append(
                     f"{provider}/{family}: no listed model matches `{pattern}`."
                 )
@@ -141,7 +145,7 @@ def plan(
                         "new": latest,
                     }
                 )
-    return updates, notes
+    return updates, notes, unmatched
 
 
 # --- rewriting ----------------------------------------------------------------
@@ -162,6 +166,15 @@ def id_regex(model_id: str) -> re.Pattern[str]:
     # Exact id only: not a prefix of a longer id (gpt-6-luna-mini, gpt-6-luna.1), but a
     # sentence-ending period is fine.
     return re.compile(rf"(?<![\w.-]){re.escape(model_id)}(?![\w-]|\.\w)")
+
+
+def retired_regex(patterns: list[str]) -> re.Pattern[str]:
+    """Match any retired id with the same boundaries as ``id_regex``.
+
+    A variant or snapshot of a retired id (``gpt-6-luna-mini``) and a longer current id
+    that merely starts with it (``claude-opus-5-5`` for a retired ``claude-opus-5``) do not match.
+    """
+    return re.compile("|".join(rf"(?<![\w.-])(?:{p})(?![\w-]|\.\w)" for p in patterns))
 
 
 def rewrite(root: Path, globs: list[str], updates: list[dict]) -> list[Path]:
@@ -235,6 +248,11 @@ def bump_versions(root: Path, changed: list[Path]) -> dict[str, tuple[str, str]]
             path = root / doc
             if path.exists():
                 text = path.read_text()
+                hits = sum(text.count(pattern.format(old)) for pattern in patterns)
+                if hits == 0 and f"**{name}**" in text:
+                    raise UpdateError(
+                        f"{doc}: lists {name} but no version text matches {old}; update the patterns in bump_versions"
+                    )
                 for pattern in patterns:
                     text = text.replace(pattern.format(old), pattern.format(new))
                 path.write_text(text)
@@ -244,9 +262,15 @@ def bump_versions(root: Path, changed: list[Path]) -> dict[str, tuple[str, str]]
         new = bump_patch(old)
         bumps["marketplace"] = (old, new)
         for marketplace in MARKETPLACES:
-            replace_once(
-                root / marketplace, f'"version": "{old}"', f'"version": "{new}"'
-            )
+            path = root / marketplace
+            text = path.read_text()
+            head, sep, tail = text.partition('"plugins"')
+            target = f'"version": "{old}"'
+            if head.count(target) != 1:
+                raise UpdateError(
+                    f"{marketplace}: expected one top-level {target}, found {head.count(target)}"
+                )
+            path.write_text(head.replace(target, f'"version": "{new}"') + sep + tail)
         citation = root / "CITATION.cff"
         if citation.exists():
             text = re.sub(
@@ -288,7 +312,12 @@ def collect_listings(
         if not key:
             warnings.append(f"{provider}: {spec['env']} is not set; skipped.")
             continue
-        listings[provider] = FETCHERS[provider](key)
+        try:
+            listings[provider] = FETCHERS[provider](key)
+        except (urllib.error.URLError, KeyError, ValueError) as error:
+            raise UpdateError(
+                f"{provider}: model list request failed: {error}"
+            ) from error
     if not listings:
         raise UpdateError(
             "no provider list available: set ANTHROPIC_API_KEY and/or OPENAI_API_KEY, or pass --from-file"
@@ -337,6 +366,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--from-file", action="append", default=[], metavar="PROVIDER=PATH"
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="fail when a provider is skipped or a family matches no listed model",
+    )
     parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
 
@@ -345,7 +379,7 @@ def main(argv: list[str] | None = None) -> int:
     registry = json.loads(registry_path.read_text())
     try:
         listings, warnings = collect_listings(registry, args.from_file)
-        updates, notes = plan(registry, listings)
+        updates, notes, unmatched = plan(registry, listings)
         changed, bumps = [], {}
         if args.apply and updates:
             changed = rewrite(root, registry["scan"], updates)
@@ -366,9 +400,20 @@ def main(argv: list[str] | None = None) -> int:
     print(summary)
     if args.summary:
         args.summary.write_text(summary)
+    incomplete = bool(warnings or unmatched)
     if output := os.environ.get("GITHUB_OUTPUT"):
         with open(output, "a") as handle:
             handle.write(f"changed={'true' if args.apply and updates else 'false'}\n")
+            handle.write(f"incomplete={'true' if incomplete else 'false'}\n")
+    if args.strict and incomplete:
+        print(
+            "::error::incomplete check: "
+            + "; ".join(
+                warnings + [f"{f}: no listed model matches" for f in unmatched]
+            ),
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 

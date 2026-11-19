@@ -34,6 +34,6 @@
     "tests/*.py"
   ],
   "retired": [
-    "gpt-5[.]6"
+    "gpt-5[.]6-(?:astra|sol|terra|luna)"
   ]
 }

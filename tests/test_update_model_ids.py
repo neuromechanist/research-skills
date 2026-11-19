@@ -1,7 +1,8 @@
 """Tests for scripts/update_model_ids.py against a real temporary git repository.
 
 Provider listings are fixture data in the shape the APIs return; nothing in the
-updater is replaced.
+updater is replaced. Fixture ids use the made-up ``zeta`` family so that a real
+model update, which rewrites ids across ``tests/*.py``, never edits this file.
 """
 
 import importlib.util
@@ -21,29 +22,25 @@ updater = importlib.util.module_from_spec(SPEC)
 sys.modules["update_model_ids"] = updater
 SPEC.loader.exec_module(updater)
 
+ZETA = r"^gpt-(\d+(?:\.\d+)?)-zeta$"
 REGISTRY = {
     "providers": {
         "anthropic": {
             "env": "ANTHROPIC_API_KEY",
             "families": {
-                "opus": {
-                    "pattern": r"^claude-opus-(\d{1,2}(?:-\d{1,2})?)$",
-                    "current": "claude-opus-5-5",
+                "zeta": {
+                    "pattern": r"^claude-zeta-(\d{1,2}(?:-\d{1,2})?)$",
+                    "current": "claude-zeta-5-5",
                 }
             },
         },
         "openai": {
             "env": "OPENAI_API_KEY",
-            "families": {
-                "luna": {
-                    "pattern": r"^gpt-(\d+(?:\.\d+)?)-luna$",
-                    "current": "gpt-6-luna",
-                }
-            },
+            "families": {"zeta": {"pattern": ZETA, "current": "gpt-6-zeta"}},
         },
     },
     "scan": ["AGENTS.md", "README.md", "plugins/*.md", "plugins/*.json"],
-    "retired": ["gpt-5[.]6"],
+    "retired": ["gpt-1[.]0-zeta"],
 }
 
 
@@ -64,9 +61,9 @@ def repo(tmp_path: Path) -> Path:
         write(tmp_path / "plugins/demo" / rel, manifest)
     write(
         tmp_path / "plugins/demo/skills/s/SKILL.md",
-        "Workers run gpt-6-luna.\nNot gpt-6-luna-mini, not gpt-6-luna.1.\n",
+        "Workers run gpt-6-zeta.\nNot gpt-6-zeta-mini, not gpt-6-zeta.1.\n",
     )
-    write(tmp_path / "plugins/demo/tests/test_x.py", "# gpt-6-luna\n")
+    write(tmp_path / "plugins/demo/tests/test_x.py", "# gpt-6-zeta\n")
     write(
         tmp_path / "plugins/other/.claude-plugin/plugin.json",
         '{\n  "name": "other",\n  "version": "1.0.0"\n}\n',
@@ -83,11 +80,17 @@ def repo(tmp_path: Path) -> Path:
         f'{{\n  "metadata": {{"version": "0.9.0"}},\n  "plugins": {entries}\n}}\n',
     )
     write(tmp_path / "CITATION.cff", 'version: 0.9.0\ndate-released: "2026-01-01"\n')
-    write(tmp_path / "AGENTS.md", "- **demo** (v0.1.0): uses gpt-6-luna.\n")
+    write(tmp_path / "AGENTS.md", "- **demo** (v0.1.0): uses gpt-6-zeta.\n")
     write(tmp_path / "README.md", "| **demo** | 0.1.0 | x |\n")
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     subprocess.run(["git", "add", "-A"], cwd=tmp_path, check=True)
     return tmp_path
+
+
+@pytest.fixture
+def no_keys(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
 
 
 def listing(tmp_path: Path, name: str, payload: object) -> str:
@@ -96,44 +99,53 @@ def listing(tmp_path: Path, name: str, payload: object) -> str:
     return str(path)
 
 
+def snapshot(repo: Path) -> dict[Path, str]:
+    return {
+        p: p.read_text()
+        for p in repo.rglob("*")
+        if p.is_file() and ".git" not in p.parts
+    }
+
+
 def test_newest_ignores_snapshots_and_variants():
+    claude = REGISTRY["providers"]["anthropic"]["families"]["zeta"]["pattern"]
     ids = [
-        "claude-opus-5-5",
-        "claude-opus-6",
-        "claude-opus-5-5-20260101",
-        "claude-opus-6-fast",
+        "claude-zeta-5-5",
+        "claude-zeta-6",
+        "claude-zeta-5-5-20260101",
+        "claude-zeta-6-fast",
     ]
-    assert (
-        updater.newest(
-            ids, REGISTRY["providers"]["anthropic"]["families"]["opus"]["pattern"]
-        )
-        == "claude-opus-6"
-    )
-    luna = REGISTRY["providers"]["openai"]["families"]["luna"]["pattern"]
-    assert (
-        updater.newest(
-            ["gpt-6-luna", "gpt-6.10-luna", "gpt-6.9-luna", "gpt-7-luna-mini"], luna
-        )
-        == "gpt-6.10-luna"
-    )
-    assert updater.newest(["gpt-6-sol"], luna) is None
+    assert updater.newest(ids, claude) == "claude-zeta-6"
+    ids = ["gpt-6-zeta", "gpt-6.10-zeta", "gpt-6.9-zeta", "gpt-7-zeta-mini"]
+    assert updater.newest(ids, ZETA) == "gpt-6.10-zeta"
+    assert updater.newest(["gpt-6-other"], ZETA) is None
 
 
 def test_ids_from_listing_reads_api_and_codex_cache_shapes():
     assert updater.ids_from_listing({"data": [{"id": "a"}, {"id": "b"}]}) == ["a", "b"]
-    assert updater.ids_from_listing(
-        {"models": [{"slug": "gpt-6-luna"}, {"slug": "x"}]}
-    ) == ["gpt-6-luna", "x"]
+    cache = {"models": [{"slug": "gpt-6-zeta"}, {"slug": "x"}]}
+    assert updater.ids_from_listing(cache) == ["gpt-6-zeta", "x"]
 
 
-def test_apply_rewrites_exact_ids_and_bumps_versions(repo, tmp_path, monkeypatch):
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+def test_retired_regex_spares_variants_and_longer_current_ids():
+    retired = updater.retired_regex(
+        ["gpt\\-6\\-zeta", "claude\\-zeta\\-5", "gpt-1[.]0-zeta"]
+    )
+    assert retired.search("still uses gpt-6-zeta.")
+    assert retired.search("gpt-1.0-zeta")
+    assert not retired.search("gpt-6-zeta-mini and gpt-6-zeta.1")
+    assert not retired.search("claude-zeta-5-5")
+
+
+def test_apply_rewrites_exact_ids_and_bumps_versions(
+    repo, tmp_path, no_keys, monkeypatch
+):
     output = tmp_path / "gh_output"
     monkeypatch.setenv("GITHUB_OUTPUT", str(output))
     cache = listing(
         tmp_path,
         "codex",
-        {"models": [{"slug": "gpt-6-luna"}, {"slug": "gpt-6.1-luna"}]},
+        {"models": [{"slug": "gpt-6-zeta"}, {"slug": "gpt-6.1-zeta"}]},
     )
 
     assert (
@@ -143,9 +155,9 @@ def test_apply_rewrites_exact_ids_and_bumps_versions(repo, tmp_path, monkeypatch
 
     skill = (repo / "plugins/demo/skills/s/SKILL.md").read_text()
     assert (
-        skill == "Workers run gpt-6.1-luna.\nNot gpt-6-luna-mini, not gpt-6-luna.1.\n"
+        skill == "Workers run gpt-6.1-zeta.\nNot gpt-6-zeta-mini, not gpt-6-zeta.1.\n"
     )
-    assert (repo / "plugins/demo/tests/test_x.py").read_text() == "# gpt-6-luna\n", (
+    assert (repo / "plugins/demo/tests/test_x.py").read_text() == "# gpt-6-zeta\n", (
         "outside the scan globs"
     )
     for rel in (
@@ -165,57 +177,110 @@ def test_apply_rewrites_exact_ids_and_bumps_versions(repo, tmp_path, monkeypatch
 
     claude_mkt = json.loads((repo / ".claude-plugin/marketplace.json").read_text())
     github_mkt = json.loads((repo / ".github/plugin/marketplace.json").read_text())
-    assert (
-        claude_mkt["version"] == "0.9.1"
-        and github_mkt["metadata"]["version"] == "0.9.1"
-    )
+    assert claude_mkt["version"] == "0.9.1"
+    assert github_mkt["metadata"]["version"] == "0.9.1"
     assert [p["version"] for p in claude_mkt["plugins"]] == ["0.1.1", "1.0.0"]
     assert [p["version"] for p in github_mkt["plugins"]] == ["0.1.1", "1.0.0"]
     assert "version: 0.9.1" in (repo / "CITATION.cff").read_text()
     assert (
         repo / "AGENTS.md"
-    ).read_text() == "- **demo** (v0.1.1): uses gpt-6.1-luna.\n"
+    ).read_text() == "- **demo** (v0.1.1): uses gpt-6.1-zeta.\n"
     assert (repo / "README.md").read_text() == "| **demo** | 0.1.1 | x |\n"
 
     registry = json.loads((repo / "scripts/model_registry.json").read_text())
     assert (
-        registry["providers"]["openai"]["families"]["luna"]["current"] == "gpt-6.1-luna"
+        registry["providers"]["openai"]["families"]["zeta"]["current"] == "gpt-6.1-zeta"
     )
-    assert registry["retired"] == ["gpt-5[.]6", "gpt\\-6\\-luna"]
-    assert output.read_text() == "changed=true\n"
+    assert registry["retired"] == ["gpt-1[.]0-zeta", "gpt\\-6\\-zeta"]
+    # anthropic was skipped (no key), so the run is incomplete but not failed
+    assert output.read_text() == "changed=true\nincomplete=true\n"
 
 
-def test_no_newer_id_changes_nothing(repo, tmp_path, monkeypatch):
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    output = tmp_path / "gh_output"
-    monkeypatch.setenv("GITHUB_OUTPUT", str(output))
-    before = {
-        p: p.read_text()
-        for p in repo.rglob("*")
-        if p.is_file() and ".git" not in p.parts
-    }
-    cache = listing(
-        tmp_path, "api", {"data": [{"id": "gpt-6-luna"}, {"id": "gpt-5.6-luna"}]}
-    )
+def test_marketplace_version_equal_to_a_plugin_version_still_bumps_once(
+    repo, tmp_path, no_keys
+):
+    for rel in (".claude-plugin/marketplace.json", ".github/plugin/marketplace.json"):
+        path = repo / rel
+        path.write_text(
+            path.read_text().replace('"version": "1.0.0"', '"version": "0.9.0"')
+        )
+    cache = listing(tmp_path, "codex", {"data": [{"id": "gpt-6.1-zeta"}]})
 
     assert (
         updater.main(["--apply", "--root", str(repo), "--from-file", f"openai={cache}"])
         == 0
     )
 
+    claude_mkt = json.loads((repo / ".claude-plugin/marketplace.json").read_text())
+    assert claude_mkt["version"] == "0.9.1"
+    assert [p["version"] for p in claude_mkt["plugins"]] == ["0.1.1", "0.9.0"]
+
+
+def test_unrecognized_doc_version_format_fails_loudly(repo, tmp_path, no_keys, capsys):
+    (repo / "AGENTS.md").write_text("- **demo** version 0.1.0: uses gpt-6-zeta.\n")
+    cache = listing(tmp_path, "codex", {"data": [{"id": "gpt-6.1-zeta"}]})
+
+    assert (
+        updater.main(["--apply", "--root", str(repo), "--from-file", f"openai={cache}"])
+        == 1
+    )
+    assert (
+        "AGENTS.md: lists demo but no version text matches 0.1.0"
+        in capsys.readouterr().err
+    )
+
+
+def test_no_newer_id_changes_nothing(repo, tmp_path, no_keys, monkeypatch):
+    output = tmp_path / "gh_output"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(output))
+    before = snapshot(repo)
+    claude = listing(tmp_path, "claude", {"data": [{"id": "claude-zeta-5-5"}]})
+    openai = listing(
+        tmp_path, "openai", {"data": [{"id": "gpt-6-zeta"}, {"id": "gpt-1.0-zeta"}]}
+    )
+    args = ["--apply", "--strict", "--root", str(repo)]
+
+    assert (
+        updater.main(
+            [
+                *args,
+                "--from-file",
+                f"anthropic={claude}",
+                "--from-file",
+                f"openai={openai}",
+            ]
+        )
+        == 0
+    )
+
     assert {p: p.read_text() for p in before} == before
-    assert output.read_text() == "changed=false\n"
+    assert output.read_text() == "changed=false\nincomplete=false\n"
 
 
-def test_listed_current_id_missing_is_reported(repo, tmp_path, monkeypatch, capsys):
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    cache = listing(tmp_path, "api", {"data": [{"id": "gpt-5.6-luna"}]})
+def test_strict_fails_when_a_provider_is_skipped_or_a_family_unmatched(
+    repo, tmp_path, no_keys, capsys
+):
+    openai = listing(tmp_path, "openai", {"data": [{"id": "gpt-6-zeta"}]})
+    assert (
+        updater.main(
+            ["--strict", "--root", str(repo), "--from-file", f"openai={openai}"]
+        )
+        == 1
+    )
+    assert "ANTHROPIC_API_KEY is not set" in capsys.readouterr().err
+
+    claude = listing(tmp_path, "claude", {"data": [{"id": "claude-other-1"}]})
+    both = ["--from-file", f"anthropic={claude}", "--from-file", f"openai={openai}"]
+    assert updater.main(["--strict", "--root", str(repo), *both]) == 1
+    assert "anthropic/zeta: no listed model matches" in capsys.readouterr().err
+
+
+def test_listed_current_id_missing_is_reported(repo, tmp_path, no_keys, capsys):
+    cache = listing(tmp_path, "api", {"data": [{"id": "gpt-1.0-zeta"}]})
     assert updater.main(["--root", str(repo), "--from-file", f"openai={cache}"]) == 0
-    assert "`gpt-6-luna` is no longer listed" in capsys.readouterr().out
+    assert "`gpt-6-zeta` is no longer listed" in capsys.readouterr().out
 
 
-def test_no_provider_available_fails(repo, monkeypatch, capsys):
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+def test_no_provider_available_fails(repo, no_keys, capsys):
     assert updater.main(["--root", str(repo)]) == 1
     assert "no provider list available" in capsys.readouterr().err

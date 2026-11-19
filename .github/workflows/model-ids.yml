@@ -77,7 +77,12 @@ jobs:
         git switch -c "$BRANCH"
         git add -A
         git commit -q -m "Update model ids to the newest provider releases"
-        git push --force -q origin "$BRANCH"
+        # Leave an open PR alone when it already carries this exact tree, so reviews and checks survive.
+        if git fetch -q origin "$BRANCH" 2>/dev/null && git diff --quiet FETCH_HEAD HEAD; then
+          echo "origin/$BRANCH already has this update; nothing to push."
+        else
+          git push --force -q origin "$BRANCH"
+        fi
         title="Update model ids to the newest provider releases"
         if [ "$(gh pr view "$BRANCH" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
           gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/summary.md"
@@ -85,3 +90,9 @@ jobs:
           echo "::error::Pushed $BRANCH but could not open a PR. Enable 'Allow GitHub Actions to create and approve pull requests' or add a MODEL_BOT_TOKEN secret, then open the PR from $BRANCH."
           exit 1
         fi
+
+    - name: Fail when the check was incomplete
+      if: steps.check.outputs.incomplete == 'true'
+      run: |
+        echo "::error::A provider was skipped (missing secret) or a family matched no listed model; see the job summary."
+        exit 1

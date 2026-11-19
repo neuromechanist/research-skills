@@ -15,6 +15,7 @@ skill/agent files:
 Run: ``uv run --with pytest pytest tests/ -q``
 """
 
+import importlib.util
 import json
 import os
 import re
@@ -195,15 +196,13 @@ def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
     assert "opt-in" in fanout
 
     # Sonnet is retired from Claude routing: Opus `medium` replaces Sonnet `xhigh`.
+    spec = importlib.util.spec_from_file_location("update_model_ids", ROOT / "scripts" / "update_model_ids.py")
+    assert spec and spec.loader
+    updater = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(updater)
+    retired_ids = updater.retired_regex(registry["retired"])
     retired = re.compile(
-        "|".join(
-            [
-                *(rf"(?<![\w.-]){pattern}(?!\w|\.\d)" for pattern in registry["retired"]),
-                r"Fable when[ ]available",
-                r"model:\s*[\"']?(?:claude-)?sonnet",
-                r"Sonnet \(`xhigh`\)|Sonnet `xhigh`",
-            ]
-        ),
+        r"Fable when[ ]available|model:\s*[\"']?(?:claude-)?sonnet|Sonnet \(`xhigh`\)|Sonnet `xhigh`",
         re.MULTILINE,
     )
     # Scan tracked files only: ignored local outputs (for example examples/out/) are not shipped.
@@ -223,7 +222,11 @@ def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
         )
     ]
     assert scanned, "git ls-files returned no files to scan"
-    stale = [str(p.relative_to(ROOT)) for p in scanned if retired.search(p.read_text())]
+    stale = [
+        str(p.relative_to(ROOT))
+        for p in scanned
+        if retired.search(p.read_text()) or retired_ids.search(p.read_text())
+    ]
     assert not stale, f"retired model ids or default-to-Fable wording remain in: {stale}"
 
 
