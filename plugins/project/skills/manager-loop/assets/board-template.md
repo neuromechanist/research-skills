@@ -31,8 +31,8 @@ In Steps and Questions, the first column holds each row's identifier (ID); in St
 | worker-light | Haiku max | gpt-6-luna max | cost-efficient coding model | clear, repeatable cards from a fully specified brief |
 | worker | Opus medium | gpt-6-luna max | balanced coding model | routine cards from a detailed plan |
 | worker-hard | Opus xhigh | gpt-6.1-terra xhigh | balanced reasoning model | protocol, concurrency, security, contract work |
-| lead | Opus xhigh | gpt-6.1-sol xhigh | strong reasoning model | default for planning, design, first-level advice |
-| frontier | Fable | gpt-6-astra xhigh | strongest model | only when the owner asks, for long-horizon planning, or a frontier trigger the plan lists |
+| lead | Opus xhigh | gpt-6.2-sol xhigh | strong reasoning model | default for planning, design, first-level advice |
+| frontier | Fable | gpt-6.2-astra xhigh | strongest model | only when the owner asks, for long-horizon planning, or a frontier trigger the plan lists |
 | reviewer | Opus medium | gpt-6-luna max | balanced coding model | a different model family from the implementer when possible |
 
 ## Slots

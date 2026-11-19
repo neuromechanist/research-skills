@@ -81,7 +81,7 @@ the capability class in the final column.
 | Ecosystem | Frontier (opt-in only) | Lead / architect / observer / synthesizer | Phase-plan elaborator | Implementer / focused reviewer / validator | Capability fallback |
 | --- | --- | --- | --- | --- | --- |
 | Claude Code | Fable | Opus (`xhigh`) | Opus `xhigh` for unresolved design; Opus `medium` after architecture approval | Opus (`medium`); Haiku (`max`) for clear, repeatable work; hard tasks Opus (`xhigh`) | lead / balanced / worker |
-| OpenAI Codex | Astra (`gpt-6-astra`) | Sol (`gpt-6.1-sol`) | Terra (`gpt-6.1-terra`) | Luna (`gpt-6-luna`) | lead / intermediate / clear-repeatable worker |
+| OpenAI Codex | Astra (`gpt-6.2-astra`) | Sol (`gpt-6.2-sol`) | Terra (`gpt-6.1-terra`) | Luna (`gpt-6-luna`) | lead / intermediate / clear-repeatable worker |
 | GitHub Copilot CLI | a frontier model only if the user names one | strongest available model | balanced reasoning model | cost-efficient coding model | lead / intermediate / worker |
 | Other systems | a frontier model only if the user names one | strongest available model | intermediate model | fastest model that passes the gates | lead / intermediate / worker |
 

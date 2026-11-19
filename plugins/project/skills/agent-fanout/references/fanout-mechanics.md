@@ -81,12 +81,12 @@ agents. Put standalone TOML agent files under `~/.codex/agents/` (personal) or
 
 Route roles explicitly when the current account exposes the aliases:
 
-- lead/architect/observer/synthesizer: `gpt-6.1-sol`;
+- lead/architect/observer/synthesizer: `gpt-6.2-sol`;
 - bounded phase-plan elaborator: `gpt-6.1-terra`;
 - detailed implementation, focused tests, routine review, validation:
   `gpt-6-luna`;
 - frontier tier, opt-in only (the user asks for it, or a long-horizon job or
-  planning the user names): `gpt-6-astra`.
+  planning the user names): `gpt-6.2-astra`.
 
 Use the built-in `explorer` for bounded read-heavy mapping and `worker` for
 execution when custom role files are unnecessary. Use `/agent` in the CLI, or
