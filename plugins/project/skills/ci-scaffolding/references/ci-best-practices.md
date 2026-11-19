@@ -4,7 +4,7 @@
 
 ### Python (uv)
 ```yaml
-- uses: astral-sh/setup-uv@v5
+- uses: astral-sh/setup-uv@v10.3.2
   with:
     enable-cache: true
 ```
@@ -19,7 +19,7 @@
 
 ### Go
 ```yaml
-- uses: actions/setup-go@v5
+- uses: actions/setup-go@v7
   with:
     go-version: '1.22'
     cache: true
@@ -55,9 +55,9 @@ Only run expensive operations (coverage upload, artifact creation) on one matrix
 ### Pin third-party actions to SHA
 ```yaml
 # Instead of:
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 # Use:
-- uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+- uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 ```
 
 ### Minimal permissions
@@ -72,7 +72,7 @@ permissions:
 # DANGEROUS - don't do this:
 on: pull_request_target
 steps:
-  - uses: actions/checkout@v4
+  - uses: actions/checkout@v7
     with:
       ref: ${{ github.event.pull_request.head.sha }}  # Runs untrusted code with write access
 ```
@@ -91,8 +91,8 @@ jobs:
     outputs:
       code: ${{ steps.filter.outputs.code }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # lint, typecheck, test
   gate:
     needs: [changes, test]
@@ -127,7 +127,7 @@ jobs:
 ## Artifact Upload
 
 ```yaml
-- uses: actions/upload-artifact@v4
+- uses: actions/upload-artifact@v7
   with:
     name: test-results
     path: |

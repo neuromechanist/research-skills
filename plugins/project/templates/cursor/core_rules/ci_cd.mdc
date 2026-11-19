@@ -56,8 +56,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-    - uses: actions/checkout@v4
-    - uses: astral-sh/setup-uv@v4
+    - uses: actions/checkout@v7
+    - uses: astral-sh/setup-uv@v10.3.2
     - run: uv python install 3.12 && uv tool install ruff && ruff check .
 
   test:
@@ -67,15 +67,15 @@ jobs:
     strategy:
       matrix: { python-version: ['3.10', '3.11', '3.12'] }
     steps:
-    - uses: actions/checkout@v4
-    - uses: astral-sh/setup-uv@v4
+    - uses: actions/checkout@v7
+    - uses: astral-sh/setup-uv@v10.3.2
     - run: uv python install ${{ matrix.python-version }}
     - run: uv sync --extra test
     - run: uv run pytest --cov=src
 ```
 
 ## Key Practices (Think About Pipeline Flow)
-- **Pin versions:** `actions/checkout@v4` (reproducibility)
+- **Pin versions:** `actions/checkout@v7` (reproducibility)
 - **Cache deps:** Speed matters for developer happiness
 - **Fail fast:** Lint→Test→Build→Deploy (catch cheap failures first)
 - **Matrix testing:** Test all supported versions
