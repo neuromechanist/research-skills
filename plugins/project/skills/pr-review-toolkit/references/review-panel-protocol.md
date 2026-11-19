@@ -42,9 +42,9 @@ Group the six lenses into risk-focused briefs:
 | `maintainability` | `comments`, `simplify` | Find stale public documentation, misleading rationale, and complexity that can cause defects. |
 
 Use **Codex `gpt-6-luna` at `max` effort** for these reviewers by default.
-On Claude surfaces use **Sonnet at `xhigh`** by default. A user-supplied model,
+On Claude surfaces use **Opus at `medium` effort** by default; it outscores Sonnet at `xhigh` on review and costs less. A user-supplied model,
 effort, panel size, lens, or single/inline choice always overrides this policy.
-Do not route routine reviews to Sol, Terra, or Astra (Opus or Fable on Claude).
+Do not route routine reviews to Sol, Terra, or Astra, or to Fable or higher-effort Opus on Claude.
 
 Each brief must include the changed range, project rules, the assigned lenses,
 the specific risk class, a confidence filter, and a request for no more than

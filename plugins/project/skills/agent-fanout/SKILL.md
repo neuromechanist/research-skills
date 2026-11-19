@@ -93,7 +93,8 @@ planning the user names.
 (Claude) or Luna at `max` (Codex). The driver runs the workflow mechanically
 and delegates hard calls instead of making them:
 
-- routine implementation, focused review, and validation: Sonnet `xhigh` or Luna `max`;
+- routine implementation and validation: Sonnet `xhigh` or Luna `max`;
+- PR and focused review: Opus `medium` or Luna `max`;
 - architecture, unresolved design, high-risk invariants, contested findings,
   and repeated non-mechanical failures: Opus `xhigh` or Sol `xhigh`; Fable or
   Astra only when the user asks or for long-horizon jobs or planning the user

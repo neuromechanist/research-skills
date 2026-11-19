@@ -35,7 +35,7 @@ If a required input is missing and cannot be derived, ask once; do not guess the
 
 ## Reviewer briefing
 
-Dispatch exactly one integration-scoped reviewer, fresh context, read-only: Claude Sonnet at `xhigh` or Codex Luna (`gpt-6-luna`) at `max`.
+Dispatch exactly one integration-scoped reviewer, fresh context, read-only: Claude Opus at `medium` effort or Codex Luna (`gpt-6-luna`) at `max`.
 Do not dispatch the per-PR panel for this lens.
 A user-supplied model, effort, or inline choice overrides the default.
 With no subagent surface, the session runs this file inline.

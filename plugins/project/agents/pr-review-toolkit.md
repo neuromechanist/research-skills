@@ -1,7 +1,8 @@
 ---
 name: pr-review-toolkit
 description: Fresh-context PR reviewer invoked by the pr-review-toolkit skill. Loads the skill's references and reviews pull requests or local diffs across code, tests, errors, comments, types, simplification, and seam (integration) review.
-model: sonnet
+model: opus
+effort: medium
 tools: Bash, Read, Glob, Grep
 color: green
 ---

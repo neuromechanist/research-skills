@@ -25,7 +25,7 @@ For lens `seam` (an epic integration or `dev` to `main` promotion review), also 
 This is a thin shell. Locate the `pr-review-toolkit` skill's `references/`
 directory, read `review-procedure.md` and `review-rubrics.md`, and follow them.
 The Codex-only bounded panel protocol is documented in
-`review-panel-protocol.md`; Claude review defaults remain Sonnet at `xhigh`.
+`review-panel-protocol.md`; Claude review defaults are Opus at `medium` effort.
 If the references cannot be found, stop and tell the caller the project plugin is
 not installed correctly.
 
@@ -39,5 +39,5 @@ If no actionable findings exist, say so clearly and report any unrun checks or
 residual risk.
 
 If the caller requests a pre-merge panel on a Claude surface, use at most three
-fresh Sonnet reviewers at `xhigh`, account for every reviewer and finding, verify
+fresh Opus reviewers at `medium` effort, account for every reviewer and finding, verify
 load-bearing claims, and close completed agents. Honor user overrides.

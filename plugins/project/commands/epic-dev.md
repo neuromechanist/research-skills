@@ -17,7 +17,8 @@ Orchestrate multi-phase feature development using git worktrees, GitHub issues w
 - **Track progress**: Use TodoWrite to track all phases and steps
 - **No emojis**: Never use emojis in commits, PRs, or issues
 - **Model routing** (per `project:agent-fanout`): a Sonnet (`xhigh`) driver
-  orchestrates; named Sonnet (`xhigh`) agents implement, review, and validate;
+  orchestrates; named Sonnet (`xhigh`) agents implement and validate; Opus (`medium`)
+  reviewers review;
   epic design, unresolved architecture, and high-risk invariants go to Opus
   (`xhigh`); Fable only when the user asks or for long-horizon planning the
   user names.
