@@ -634,10 +634,16 @@ def validate(board: Board) -> tuple[list[str], list[str]]:
             and not is_empty(row.get("PR"))
             and is_empty(row.get("Review"))
         ):
-            errors.append(
-                f"## Steps: {sid} is done with PR {row.get('PR')} but no Review;"
-                " every PR needs its own project:pr-review-toolkit review before merge"
-            )
+            if steps_table and steps_table.column("Review") is not None:
+                errors.append(
+                    f"## Steps: {sid} is done with PR {row.get('PR')} but no Review;"
+                    " every PR needs its own project:pr-review-toolkit review before merge"
+                )
+            else:  # a board that predates the column: its done steps were merged under the old rule
+                warnings.append(
+                    f"## Steps: {sid} is done with PR {row.get('PR')} and this board has no Review"
+                    " column; add `Review` after `PR` in ## Steps so new merges record their review"
+                )
         wave = plain_id(row.get("Wave", ""))
         if board.rows("waves") and not is_empty(wave) and wave not in waves:
             errors.append(f"## Steps: {sid}: wave {wave!r} is not in ## Waves")

@@ -193,6 +193,32 @@ def test_done_with_a_pr_requires_a_recorded_review(board: Path):
     add_step(board, "S2", "State=active")  # no PR: nothing to review, done is allowed
     run("set", str(board), "steps", "S2", "State=done")
 
+    placeholder = run("set", str(board), "steps", "S1", "Review=-", check=False)
+    assert (
+        placeholder.returncode == 0
+    )  # editing Review alone is fine; done with a placeholder is not
+    add_step(board, "S4", "State=review", "PR=14")
+    refused = run(
+        "set", str(board), "steps", "S4", "State=done", "Review=-", check=False
+    )
+    assert refused.returncode != 0 and "no Review" in refused.stderr + refused.stdout
+
+    created_done = run(
+        "set",
+        str(board),
+        "steps",
+        "S3",
+        "Title=Step S3",
+        "State=done",
+        "PR=5",
+        "--new",
+        check=False,
+    )
+    assert (
+        created_done.returncode != 0
+        and "no Review" in created_done.stderr + created_done.stdout
+    )
+
 
 def test_check_flags_a_hand_edited_done_step_without_review(board: Path):
     add_step(board, "S1", "State=review", "PR=12")
@@ -216,6 +242,14 @@ def test_board_without_review_column_gets_the_fix_in_the_error(board: Path):
     refused = run("set", str(board), "steps", "S1", "State=done", check=False)
     assert refused.returncode != 0
     assert "predates the Review column" in refused.stderr + refused.stdout
+
+    # A step already done before the rule existed only warns, so a running loop is not blocked.
+    board.write_text(
+        re.sub(r"(\| S1 \|.*?\| )review( \|)", r"\1done\2", board.read_text())
+    )
+    result = run("check", str(board), check=False)
+    assert result.returncode == 0
+    assert "this board has no Review column" in result.stdout
 
 
 def test_board_line_limit(board: Path):
