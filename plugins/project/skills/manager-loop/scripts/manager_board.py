@@ -67,6 +67,7 @@ SCHEMA: dict[str, list[str]] = {
         "State",
         "Depends",
         "PR",
+        "Review",
         "Started",
         "Timebox",
         "Next",
@@ -628,6 +629,15 @@ def validate(board: Board) -> tuple[list[str], list[str]]:
             errors.append(f"## Steps: {sid}: slot {slot!r} is not in ## Slots")
         if state in IN_FLIGHT and board.rows("slots") and is_empty(slot):
             warnings.append(f"## Steps: {sid} is {state} but has no slot")
+        if (
+            state == "done"
+            and not is_empty(row.get("PR"))
+            and is_empty(row.get("Review"))
+        ):
+            errors.append(
+                f"## Steps: {sid} is done with PR {row.get('PR')} but no Review;"
+                " every PR needs its own project:pr-review-toolkit review before merge"
+            )
         wave = plain_id(row.get("Wave", ""))
         if board.rows("waves") and not is_empty(wave) and wave not in waves:
             errors.append(f"## Steps: {sid}: wave {wave!r} is not in ## Waves")
@@ -1624,6 +1634,20 @@ def cmd_set(args) -> int:
         stamped = dict(values)
         parsed = parse_board(text)
         table, current = row_state(parsed, key)
+        if key == "steps" and stamped.get("State", "").strip().lower() == "done":
+            pr = stamped.get("PR", current.get("PR", ""))
+            review = stamped.get("Review", current.get("Review", ""))
+            if not is_empty(pr) and is_empty(review):
+                hint = (
+                    ""
+                    if table and table.column("Review")
+                    else " (this board predates the Review column: add `Review` after `PR` in ## Steps)"
+                )
+                raise BoardError(
+                    f"step {args.key} has PR {pr} but no Review: record the PR's own"
+                    " project:pr-review-toolkit review (rounds and verdict, or the report link) with"
+                    f" Review=... before State=done{hint}"
+                )
         if (
             key == "steps"
             and stamped.get("State", "").lower() == "active"
