@@ -15,6 +15,7 @@ skill/agent files:
 Run: ``uv run --with pytest pytest tests/ -q``
 """
 
+import importlib.util
 import json
 import os
 import re
@@ -187,14 +188,21 @@ def test_project_model_routing_contract_is_cross_agent():
 
 def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
     fanout = (PLUGINS_DIR / "project" / "skills" / "agent-fanout" / "SKILL.md").read_text()
-    for model_id in ("gpt-6-astra", "gpt-6.1-sol", "gpt-6.1-terra", "gpt-6-luna"):
+    # Current and retired ids come from the registry that scripts/update_model_ids.py maintains.
+    registry = json.loads((ROOT / "scripts" / "model_registry.json").read_text())
+    for family in registry["providers"]["openai"]["families"].values():
+        model_id = family["current"]
         assert model_id in fanout, f"agent-fanout routing table is missing {model_id}"
     assert "opt-in" in fanout
 
     # Sonnet is retired from Claude routing: Opus `medium` replaces Sonnet `xhigh`.
+    spec = importlib.util.spec_from_file_location("update_model_ids", ROOT / "scripts" / "update_model_ids.py")
+    assert spec and spec.loader
+    updater = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(updater)
+    retired_ids = updater.retired_regex(registry["retired"])
     retired = re.compile(
-        r"gpt-5[.]6|Fable when[ ]available|model:\s*[\"']?(?:claude-)?sonnet"
-        r"|Sonnet \(`xhigh`\)|Sonnet `xhigh`",
+        r"Fable when[ ]available|model:\s*[\"']?(?:claude-)?sonnet|Sonnet \(`xhigh`\)|Sonnet `xhigh`",
         re.MULTILINE,
     )
     # Scan tracked files only: ignored local outputs (for example examples/out/) are not shipped.
@@ -214,7 +222,11 @@ def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
         )
     ]
     assert scanned, "git ls-files returned no files to scan"
-    stale = [str(p.relative_to(ROOT)) for p in scanned if retired.search(p.read_text())]
+    stale = [
+        str(p.relative_to(ROOT))
+        for p in scanned
+        if retired.search(p.read_text()) or retired_ids.search(p.read_text())
+    ]
     assert not stale, f"retired model ids or default-to-Fable wording remain in: {stale}"
 
 

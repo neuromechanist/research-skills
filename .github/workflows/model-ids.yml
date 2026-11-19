@@ -1,0 +1,114 @@
+name: Model IDs
+
+# Daily at 12:00 America/Los_Angeles: compare scripts/model_registry.json with the
+# Anthropic and OpenAI model lists and open (or refresh) one PR that moves every
+# family to its newest id, with plugin and marketplace patch bumps.
+#
+# Setup (see "Model ids" in AGENTS.md):
+#   Anthropic: Workload Identity Federation, no stored key. Repository variables
+#   ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID, ANTHROPIC_SERVICE_ACCOUNT_ID
+#   (and ANTHROPIC_WORKSPACE_ID when the rule spans several workspaces);
+#   OpenAI: secret OPENAI_API_KEY. A provider without a credential is skipped and the job
+#   fails at the end;
+#   either "Allow GitHub Actions to create and approve pull requests" in the
+#   repository's Actions settings, or a MODEL_BOT_TOKEN secret (fine-grained token with
+#   contents and pull-requests write). PRs opened with GITHUB_TOKEN do not trigger the
+#   Validation workflow, so this job runs ./scripts/validate itself before pushing.
+on:
+  schedule:
+    - cron: '0 19 * * *'  # 12:00 PDT
+    - cron: '0 20 * * *'  # 12:00 PST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write  # GitHub OIDC token for Anthropic Workload Identity Federation
+
+concurrency:
+  group: model-ids
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BRANCH: bot/model-ids
+    steps:
+    - name: Run once per day at noon Pacific
+      id: gate
+      env:
+        EVENT: ${{ github.event_name }}
+        SCHEDULE: ${{ github.event.schedule }}
+      run: |
+        # Each cron matches noon in one half of the year; keep the one whose UTC offset is current,
+        # judged by the trigger rather than the clock, so a delayed start still runs.
+        offset=$(TZ=America/Los_Angeles date +%z)
+        case "$EVENT/$SCHEDULE/$offset" in
+          workflow_dispatch/*|schedule/"0 19 * * *"/-0700|schedule/"0 20 * * *"/-0800) echo "run=true" >> "$GITHUB_OUTPUT" ;;
+          *) echo "run=false" >> "$GITHUB_OUTPUT"; echo "Not noon Pacific for this trigger (offset $offset); skipping." ;;
+        esac
+
+    - uses: actions/checkout@v4
+      if: steps.gate.outputs.run == 'true'
+      with:
+        token: ${{ secrets.MODEL_BOT_TOKEN || github.token }}
+
+    - uses: astral-sh/setup-uv@v5
+      if: steps.gate.outputs.run == 'true'
+
+    - name: Fetch a GitHub OIDC token for Anthropic
+      if: steps.gate.outputs.run == 'true' && vars.ANTHROPIC_FEDERATION_RULE_ID != ''
+      run: |
+        curl -sSf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+          "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.anthropic.com" \
+          | jq -r .value > "$RUNNER_TEMP/gha-jwt"
+        echo "ANTHROPIC_IDENTITY_TOKEN_FILE=$RUNNER_TEMP/gha-jwt" >> "$GITHUB_ENV"
+
+    - name: Compare model lists and apply updates
+      id: check
+      if: steps.gate.outputs.run == 'true'
+      env:
+        ANTHROPIC_FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+        ANTHROPIC_ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+        ANTHROPIC_SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+        ANTHROPIC_WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        uv run python scripts/update_model_ids.py --apply --summary "$RUNNER_TEMP/summary.md"
+        cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Validate the updated tree
+      if: steps.check.outputs.changed == 'true'
+      run: ./scripts/validate
+
+    - name: Open or refresh the update PR
+      if: steps.check.outputs.changed == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.MODEL_BOT_TOKEN || github.token }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git switch -c "$BRANCH"
+        git add -A
+        git commit -q -m "Update model ids to the newest provider releases"
+        # Leave an open PR alone when it already carries this exact tree, so reviews and checks survive.
+        if git fetch -q origin "$BRANCH" 2>/dev/null && git diff --quiet FETCH_HEAD HEAD; then
+          echo "origin/$BRANCH already has this update; nothing to push."
+        else
+          git push --force -q origin "$BRANCH"
+        fi
+        title="Update model ids to the newest provider releases"
+        if [ "$(gh pr view "$BRANCH" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+          gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/summary.md"
+        elif ! gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/summary.md"; then
+          echo "::error::Pushed $BRANCH but could not open a PR. Enable 'Allow GitHub Actions to create and approve pull requests' or add a MODEL_BOT_TOKEN secret, then open the PR from $BRANCH."
+          exit 1
+        fi
+
+    - name: Fail when the check was incomplete
+      if: steps.check.outputs.incomplete == 'true'
+      run: |
+        echo "::error::A provider was skipped (missing secret) or a family matched no listed model; see the job summary."
+        exit 1

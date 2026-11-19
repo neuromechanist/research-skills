@@ -1,0 +1,39 @@
+{
+  "comment": "Current model id per family, read and rewritten by scripts/update_model_ids.py. Each pattern must capture the version in group 1; versions compare as integer tuples split on '.' or '-'.",
+  "providers": {
+    "anthropic": {
+      "credentials": "ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN, or the ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID, and ANTHROPIC_IDENTITY_TOKEN_FILE federation variables",
+      "families": {
+        "opus": {"pattern": "^claude-opus-(\\d{1,2}(?:-\\d{1,2})?)$", "current": "claude-opus-5-5"},
+        "sonnet": {"pattern": "^claude-sonnet-(\\d{1,2}(?:-\\d{1,2})?)$", "current": "claude-sonnet-5-5"},
+        "haiku": {"pattern": "^claude-haiku-(\\d{1,2}(?:-\\d{1,2})?)$", "current": "claude-haiku-5-5"},
+        "fable": {"pattern": "^claude-fable-(\\d{1,2}(?:-\\d{1,2})?)$", "current": "claude-fable-5-2"}
+      }
+    },
+    "openai": {
+      "credentials": "OPENAI_API_KEY",
+      "families": {
+        "astra": {"pattern": "^gpt-(\\d+(?:\\.\\d+)?)-astra$", "current": "gpt-6-astra"},
+        "sol": {"pattern": "^gpt-(\\d+(?:\\.\\d+)?)-sol$", "current": "gpt-6.1-sol"},
+        "terra": {"pattern": "^gpt-(\\d+(?:\\.\\d+)?)-terra$", "current": "gpt-6.1-terra"},
+        "luna": {"pattern": "^gpt-(\\d+(?:\\.\\d+)?)-luna$", "current": "gpt-6-luna"}
+      }
+    }
+  },
+  "scan": [
+    "AGENTS.md",
+    "README.md",
+    "docs/*.md",
+    "plugins/*.md",
+    "plugins/*.py",
+    "plugins/*.json",
+    "plugins/*.toml",
+    "plugins/*.yaml",
+    "plugins/*.yml",
+    "plugins/*.sh",
+    "tests/*.py"
+  ],
+  "retired": [
+    "gpt-5[.]6-(?:astra|sol|terra|luna)"
+  ]
+}
