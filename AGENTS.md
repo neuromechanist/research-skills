@@ -110,6 +110,13 @@ individual. Correct or delete entries when they become false.
 - The repository is archived to Zenodo on every GitHub release, minting a versioned DOI under a stable concept DOI. When you bump the marketplace version for a release, also bump `version` (and `date-released`) in `CITATION.cff` and keep `.zenodo.json` in sync. Merging that bump to `main` makes `.github/workflows/release.yml` tag `vX.Y.Z` and create the GitHub release automatically; do not tag by hand.
 - The concept DOI, added to `CITATION.cff` (`doi:`) and the README badge after the first Zenodo deposit, is stable across versions and does not change.
 
+## Model ids
+- `scripts/model_registry.json` holds the current model id for each family (Claude Opus, Sonnet, Haiku, Fable; Codex Astra, Sol, Terra, Luna), a version pattern per family, and the retired ids that tests forbid.
+- `.github/workflows/model-ids.yml` runs daily at 12:00 Pacific (and on demand): `scripts/update_model_ids.py --apply` compares the registry with the Anthropic and OpenAI model lists, replaces each outdated id by exact match in the files the registry's `scan` globs cover, patch-bumps every touched plugin plus the marketplace and `CITATION.cff`, runs `./scripts/validate`, and opens or refreshes one PR from `bot/model-ids`.
+- Setup: repository secrets `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` (a provider without a key is skipped with a warning), plus either the Actions setting "Allow GitHub Actions to create and approve pull requests" or a `MODEL_BOT_TOKEN` secret; a PR opened with the default token does not trigger the Validation workflow.
+- Run it locally with `uv run python scripts/update_model_ids.py` (report only) or add `--apply`; `--from-file openai=~/.codex/models_cache.json` reads the Codex CLI's model cache instead of the API.
+- A new Claude id usually changes only the registry, because routing text names families rather than ids; review the routing when a family gains a new generation.
+
 ## Cross-agent compatibility
 - Keep shared project and marketplace instructions in AGENTS.md; detailed
   cross-agent update rules live in `.rules/cross-agent-compatibility.md`.

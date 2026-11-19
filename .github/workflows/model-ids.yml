@@ -1,0 +1,87 @@
+name: Model IDs
+
+# Daily at 12:00 America/Los_Angeles: compare scripts/model_registry.json with the
+# Anthropic and OpenAI model lists and open (or refresh) one PR that moves every
+# family to its newest id, with plugin and marketplace patch bumps.
+#
+# Setup (see "Model ids" in AGENTS.md):
+#   secrets ANTHROPIC_API_KEY and OPENAI_API_KEY (a provider without a key is skipped);
+#   either "Allow GitHub Actions to create and approve pull requests" in the
+#   repository's Actions settings, or a MODEL_BOT_TOKEN secret (fine-grained token with
+#   contents and pull-requests write). PRs opened with GITHUB_TOKEN do not trigger the
+#   Validation workflow, so this job runs ./scripts/validate itself before pushing.
+on:
+  schedule:
+    - cron: '0 19 * * *'  # 12:00 PDT
+    - cron: '0 20 * * *'  # 12:00 PST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: model-ids
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BRANCH: bot/model-ids
+    steps:
+    - name: Run once per day at noon Pacific
+      id: gate
+      env:
+        EVENT: ${{ github.event_name }}
+        SCHEDULE: ${{ github.event.schedule }}
+      run: |
+        # Each cron matches noon in one half of the year; keep the one whose UTC offset is current,
+        # judged by the trigger rather than the clock, so a delayed start still runs.
+        offset=$(TZ=America/Los_Angeles date +%z)
+        case "$EVENT/$SCHEDULE/$offset" in
+          workflow_dispatch/*|schedule/"0 19 * * *"/-0700|schedule/"0 20 * * *"/-0800) echo "run=true" >> "$GITHUB_OUTPUT" ;;
+          *) echo "run=false" >> "$GITHUB_OUTPUT"; echo "Not noon Pacific for this trigger (offset $offset); skipping." ;;
+        esac
+
+    - uses: actions/checkout@v4
+      if: steps.gate.outputs.run == 'true'
+      with:
+        token: ${{ secrets.MODEL_BOT_TOKEN || github.token }}
+
+    - uses: astral-sh/setup-uv@v5
+      if: steps.gate.outputs.run == 'true'
+
+    - name: Compare model lists and apply updates
+      id: check
+      if: steps.gate.outputs.run == 'true'
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        uv run python scripts/update_model_ids.py --apply --summary "$RUNNER_TEMP/summary.md"
+        cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Validate the updated tree
+      if: steps.check.outputs.changed == 'true'
+      run: ./scripts/validate
+
+    - name: Open or refresh the update PR
+      if: steps.check.outputs.changed == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.MODEL_BOT_TOKEN || github.token }}
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git switch -c "$BRANCH"
+        git add -A
+        git commit -q -m "Update model ids to the newest provider releases"
+        git push --force -q origin "$BRANCH"
+        title="Update model ids to the newest provider releases"
+        if [ "$(gh pr view "$BRANCH" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+          gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/summary.md"
+        elif ! gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/summary.md"; then
+          echo "::error::Pushed $BRANCH but could not open a PR. Enable 'Allow GitHub Actions to create and approve pull requests' or add a MODEL_BOT_TOKEN secret, then open the PR from $BRANCH."
+          exit 1
+        fi
