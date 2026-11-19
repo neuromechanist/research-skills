@@ -187,14 +187,23 @@ def test_project_model_routing_contract_is_cross_agent():
 
 def test_codex_model_ids_are_current_and_frontier_tier_is_opt_in():
     fanout = (PLUGINS_DIR / "project" / "skills" / "agent-fanout" / "SKILL.md").read_text()
-    for model_id in ("gpt-6-astra", "gpt-6.1-sol", "gpt-6.1-terra", "gpt-6-luna"):
+    # Current and retired ids come from the registry that scripts/update_model_ids.py maintains.
+    registry = json.loads((ROOT / "scripts" / "model_registry.json").read_text())
+    for family in registry["providers"]["openai"]["families"].values():
+        model_id = family["current"]
         assert model_id in fanout, f"agent-fanout routing table is missing {model_id}"
     assert "opt-in" in fanout
 
     # Sonnet is retired from Claude routing: Opus `medium` replaces Sonnet `xhigh`.
     retired = re.compile(
-        r"gpt-5[.]6|Fable when[ ]available|model:\s*[\"']?(?:claude-)?sonnet"
-        r"|Sonnet \(`xhigh`\)|Sonnet `xhigh`",
+        "|".join(
+            [
+                *(rf"(?<![\w.-]){pattern}(?!\w|\.\d)" for pattern in registry["retired"]),
+                r"Fable when[ ]available",
+                r"model:\s*[\"']?(?:claude-)?sonnet",
+                r"Sonnet \(`xhigh`\)|Sonnet `xhigh`",
+            ]
+        ),
         re.MULTILINE,
     )
     # Scan tracked files only: ignored local outputs (for example examples/out/) are not shipped.
