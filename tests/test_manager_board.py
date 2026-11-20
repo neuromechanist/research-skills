@@ -250,6 +250,30 @@ def test_board_without_review_column_gets_the_fix_in_the_error(board: Path):
     assert result.returncode == 0
     assert "this board has no Review column" in result.stdout
 
+    # Passing Review on an old board migrates ## Steps: the column lands after PR in every row.
+    add_step(board, "S2", "State=review", "PR=13")
+    run("set", str(board), "steps", "S2", "State=done", "Review=r1 code clean")
+    text = board.read_text()
+    assert "| PR | Review | Started |" in text
+    # S1 was merged under the old rule; the migration says so instead of inventing a review.
+    assert "not recorded (merged before the Review column)" in text
+    assert run("check", str(board)).returncode == 0
+
+
+def test_review_gate_matches_column_names_case_insensitively(board: Path):
+    add_step(board, "S1", "State=review", "PR=12")
+    refused = run("set", str(board), "steps", "S1", "state=done", check=False)
+    assert refused.returncode != 0 and "no Review" in refused.stderr + refused.stdout
+    run("set", str(board), "steps", "S1", "state=done", "review=r1 code clean")
+    assert run("check", str(board)).returncode == 0
+
+
+def test_done_cannot_clear_the_pr_in_the_same_write(board: Path):
+    add_step(board, "S1", "State=review", "PR=12")
+    refused = run("set", str(board), "steps", "S1", "State=done", "PR=-", check=False)
+    assert refused.returncode != 0
+    assert "refusing to clear PR 12" in refused.stderr + refused.stdout
+
 
 def test_board_line_limit(board: Path):
     board.write_text(board.read_text() + "\n## Notes\n\n" + "line\n" * 300)

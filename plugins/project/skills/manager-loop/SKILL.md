@@ -83,8 +83,8 @@ Run in order; each tick is complete on its own because the board carries all sta
    - A date or question due: ask it now, with a recommendation.
    - A checkpoint due: the checkpoint items under "Contribute".
    - Merge when the merge gate passes and the board's authority allows it.
-     The merge gate: a `project:pr-review-toolkit` review with the lenses the diff calls for has run on this PR (lens `seam` for an integration merge), every review report is in with each finding resolved, no accepted Critical is open, and `gh pr checks N` is green on the final head (every check, not only required ones).
-     After the merge, `set` the step `done` with `Review=` the review it passed (for example `r1 code+tests 2 fixed; r2 clean`); the board refuses `done` for a step with a PR and no Review.
+     The merge gate: a `project:pr-review-toolkit` review with the lenses the diff calls for has run on this PR and is recorded in the step's `Review` cell (lens `seam` for an integration merge), every review report is in with each finding resolved, no accepted Critical is open, and `gh pr checks N` is green on the final head (every check, not only required ones).
+     When the review converges, and before merging, `set` the step's `Review=` to the review it passed (for example `r1 code+tests 2 fixed; r2 clean`) while the step is still in review; the merge gate reads that cell, and an empty Review means no merge. After the merge, `set` the step `done`; the board refuses `done` for a step with a PR and no Review, and refuses to clear a PR in the same write.
      A merge the host refuses (a refused permission or an automated policy denial) is not retried or worked around: set the step to `owner` and ask.
 6. **Fill free slots** from the dispatch plan in `status` (it already applies dependencies, open waves, tiers, needs, and slot limits).
    For each: `card` check, `spend <board> "Agents today"` (and `spend <board> "Agents this wave"` only when the step belongs to a wave), dispatch the card verbatim plus live facts copied from the board now, then `set` the step `active` with its slot and add its agent row.

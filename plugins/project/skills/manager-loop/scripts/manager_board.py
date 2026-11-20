@@ -642,7 +642,7 @@ def validate(board: Board) -> tuple[list[str], list[str]]:
             else:  # a board that predates the column: its done steps were merged under the old rule
                 warnings.append(
                     f"## Steps: {sid} is done with PR {row.get('PR')} and this board has no Review"
-                    " column; add `Review` after `PR` in ## Steps so new merges record their review"
+                    f" column; so new merges record their review, {OLD_BOARD_REVIEW_HINT}"
                 )
         wave = plain_id(row.get("Wave", ""))
         if board.rows("waves") and not is_empty(wave) and wave not in waves:
@@ -1619,6 +1619,53 @@ def cmd_status(args) -> int:
     return 1 if data["errors"] else 0
 
 
+def pick(values: dict[str, str], name: str) -> tuple[str | None, str | None]:
+    """Return (key, value) for ``name`` in ``values``, matched as columns are: case-insensitively."""
+    wanted = name.strip().lower()
+    for k, v in values.items():
+        if k.strip().lower() == wanted:
+            return k, v
+    return None, None
+
+
+OLD_BOARD_REVIEW_HINT = (
+    "pass Review=... with `set` and the tool adds the column, or by hand add a `Review`"
+    " header cell after `PR`, one `---` separator cell, and an empty cell after the PR"
+    " cell in every ## Steps row"
+)
+
+
+PRE_RULE_REVIEW = "not recorded (merged before the Review column)"
+
+
+def add_review_column(text: str) -> str:
+    """Insert an empty ``Review`` column after ``PR`` in ## Steps of a board that predates it."""
+    board = parse_board(text)
+    table = board.table("steps")
+    if table is None or table.column("Review") is not None:
+        return text
+    pr = table.column("PR")
+    at = table.header.index(pr) + 1 if pr is not None else len(table.header)
+    lines = text.splitlines()
+    header = list(table.header)
+    header.insert(at, "Review")
+    lines[table.header_line] = format_row(header)
+    lines[table.header_line + 1] = format_separator(header)
+    state_col = table.column("State")
+    for row, index in zip(table.rows, table.row_lines, strict=True):
+        cells = [row.get(col, "") for col in table.header]
+        merged_before = (
+            state_col is not None
+            and row.get(state_col, "").strip().lower() == "done"
+            and pr is not None
+            and not is_empty(row.get(pr))
+        )
+        # Steps merged under the old rule stay honest: no review was recorded for them.
+        cells.insert(at, PRE_RULE_REVIEW if merged_before else "")
+        lines[index] = format_row(cells)
+    return "\n".join(lines) + ("\n" if text.endswith("\n") else "")
+
+
 def cmd_set(args) -> int:
     key = resolve_section(args.section)
     if key in HISTORY_SCHEMA:
@@ -1640,14 +1687,38 @@ def cmd_set(args) -> int:
         stamped = dict(values)
         parsed = parse_board(text)
         table, current = row_state(parsed, key)
-        if key == "steps" and stamped.get("State", "").strip().lower() == "done":
-            pr = stamped.get("PR", current.get("PR", ""))
-            review = stamped.get("Review", current.get("Review", ""))
+        if (
+            key == "steps"
+            and pick(stamped, "Review")[0] is not None
+            and table
+            and table.column("Review") is None
+        ):
+            text = add_review_column(text)  # migrate a board that predates the column
+            parsed = parse_board(text)
+            table, current = row_state(parsed, key)
+        _, new_state = pick(stamped, "State")
+        if key == "steps" and (new_state or "").strip().lower() == "done":
+            pr_key, new_pr = pick(stamped, "PR")
+            old_pr = current.get(table.column("PR") or "PR", "") if table else ""
+            if pr_key is not None and is_empty(new_pr) and not is_empty(old_pr):
+                raise BoardError(
+                    f"step {args.key}: refusing to clear PR {old_pr} while setting State=done;"
+                    " a merged PR stays on the board with its Review"
+                )
+            pr = new_pr if pr_key is not None else old_pr
+            review_key, new_review = pick(stamped, "Review")
+            review = (
+                new_review
+                if review_key is not None
+                else current.get(
+                    (table.column("Review") if table else None) or "Review", ""
+                )
+            )
             if not is_empty(pr) and is_empty(review):
                 hint = (
                     ""
                     if table and table.column("Review")
-                    else " (this board predates the Review column: add `Review` after `PR` in ## Steps)"
+                    else f" (this board predates the Review column: {OLD_BOARD_REVIEW_HINT})"
                 )
                 raise BoardError(
                     f"step {args.key} has PR {pr} but no Review: record the PR's own"
