@@ -546,6 +546,25 @@ def test_agent_guard_points_at_existing_procedure(plugin, stem):
     )
 
 
+# (plugin, agent-stem, skill) for worker agents whose skill name differs from the agent name.
+WORKER_AGENTS = [
+    ("manuscript", "lit-strand-collector", "lit-review"),
+]
+
+
+@pytest.mark.parametrize("plugin,stem,skill", WORKER_AGENTS)
+def test_worker_agent_guard_points_at_existing_procedure(plugin, stem, skill):
+    agent = PLUGINS_DIR / plugin / "agents" / f"{stem}.md"
+    text = agent.read_text()
+    m = _GUARD.search(text)
+    assert m, f"{stem}: agent shell has no 'test -f \"$REF/<procedure>.md\"' guard"
+    assert (PLUGINS_DIR / plugin / "skills" / skill / "references" / m.group(1)).exists()
+    assert f"invoked by the {skill} skill" in text.split("---", 2)[1].lower()
+    for template in (f"{stem}.toml", f"{stem}.agent.md"):
+        assert (PLUGINS_DIR / plugin / "agents" / "templates" / template).exists(), template
+    assert f'subagent_type: "{plugin}:{stem}"' in (PLUGINS_DIR / plugin / "skills" / skill / "SKILL.md").read_text()
+
+
 DISPATCH_RE = re.compile(r'subagent_type:\s*"([^"]+)"')
 
 
