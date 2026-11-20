@@ -926,11 +926,11 @@
 <p>The same shape across every card is what lets synthesis scan the corpus quickly instead of re-reading full papers.</p>
 <h2 id="skills">Skills<a class="headerlink" href="#skills" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>lit-review</strong>: both literature-review modes described above</li>
+<li><strong>lit-review</strong>: both literature-review modes described above; Phase 1 runs one <code>lit-strand-collector</code> agent per strand in parallel, each from its brief alone</li>
 <li><strong>manuscript-writing</strong>: IMRAD structure and section templates</li>
 <li><strong>paper-review</strong>: the peer-review simulation described above; thin-dispatch with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template</li>
 <li><strong>manuscript-formatting</strong>: journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management), a polished Pandoc reference DOCX, and inline or end-of-document figure placement</li>
-<li><strong>humanizer</strong>: a final natural-writing pass that removes AI-writing tells while preserving meaning and discipline conventions, including 16 research- and grant-prose patterns common in AI-assisted drafts (sentence-shape tells, hidden actors, and unanchored pronouns) and a quick scan that counts them</li>
+<li><strong>humanizer</strong>: a final natural-writing pass that removes AI-writing tells while preserving meaning and discipline conventions, including 16 research- and grant-prose patterns common in AI-assisted drafts (sentence-shape tells, hidden actors, and unanchored pronouns) and a quick scan that counts them; thin-dispatch to a fresh-context editor agent (Opus at <code>medium</code>) in rewrite or audit mode, with Codex and Copilot templates and an inline fallback</li>
 </ul>
 <h2 id="try-it">Try it<a class="headerlink" href="#try-it" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>&quot;Review this manuscript at paper.pdf as a peer reviewer&quot;

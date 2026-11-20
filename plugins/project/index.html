@@ -958,7 +958,7 @@ Host-specific mechanics (how each host wakes the manager and asks questions) are
 <li><strong>security-audit</strong>: credential scanning, dependency audit, Open Worldwide Application Security Project (OWASP) checklist, configuration hardening</li>
 <li><strong>document-processing</strong>: Portable Document Format (PDF) and image optical character recognition (OCR), text extraction, markdown conversion</li>
 </ul>
-<p>Includes autonomous agents: <strong>dependency-auditor</strong> (vulnerability scanning), <strong>release-prep</strong> (pre-release validation), and a Claude-bundled <strong>pr-review-toolkit</strong> reviewer.
+<p>Includes autonomous agents: <strong>dependency-auditor</strong> (package vulnerability, version, and license scanning), <strong>release-prep</strong> (pre-release validation), and Claude-bundled <strong>pr-review-toolkit</strong> and <strong>security-audit</strong> reviewers; the <code>security-audit</code> skill runs its auditor and <code>dependency-auditor</code> in parallel.
 Codex receives opt-in Terra phase-planner and Luna implementation-worker Tom's Obvious, Minimal Language (TOML) templates; Copilot exposes matching agent profiles through its native plugin manifest.</p>
 <h2 id="try-it">Try it<a class="headerlink" href="#try-it" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>/init-project &quot;Python EEG analysis package&quot;
