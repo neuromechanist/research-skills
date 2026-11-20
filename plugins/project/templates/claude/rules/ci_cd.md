@@ -52,8 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-    - uses: actions/checkout@v4
-    - uses: astral-sh/setup-uv@v4
+    - uses: actions/checkout@v7
+    - uses: astral-sh/setup-uv@v10.3.2
     - run: uv sync --dev
     - run: uv run ruff check .
     - run: uv run ruff format --check .
@@ -65,8 +65,8 @@ jobs:
     strategy:
       matrix: { python-version: ['3.11', '3.12', '3.13'] }
     steps:
-    - uses: actions/checkout@v4
-    - uses: astral-sh/setup-uv@v4
+    - uses: actions/checkout@v7
+    - uses: astral-sh/setup-uv@v10.3.2
       with: { python-version: '${{ matrix.python-version }}' }
     - run: uv sync --dev
     - run: uv run pytest --cov=src
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: oven-sh/setup-bun@v2
     - run: bun install
     - run: bun run biome check .
@@ -100,14 +100,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
     - uses: oven-sh/setup-bun@v2
     - run: bun install
     - run: bun test
 ```
 
 ## Key Practices (Think About Pipeline Flow)
-- **Pin versions:** `actions/checkout@v4` (reproducibility)
+- **Pin versions:** `actions/checkout@v7` (reproducibility)
 - **Cache deps:** UV and Bun both have built-in caching; use `setup-uv` and `setup-bun` actions
 - **Fail fast:** Lint -> Type Check -> Test -> Build -> Deploy (catch cheap failures first)
 - **Matrix testing:** Test all supported versions

@@ -6,27 +6,27 @@
   },
   "metadata": {
     "description": "Research and development plugins for literature search, grants, manuscripts, figures, presentations, project lifecycle management, neuroinformatics, and cloud GPU provisioning for model training",
-    "version": "0.16.20"
+    "version": "0.16.23"
   },
   "plugins": [
     {
       "name": "project",
       "description": "Project lifecycle toolkit: initialization, tracked cross-agent project memory, cross-agent user-instruction setup, tiered model routing, epic/sprint workflow, PR review, onboarding, planning, debugging, engineering loop, manager loop with a live board, agent fan-out, CI/CD, Docker, security, and document processing",
-      "version": "0.14.2",
+      "version": "0.15.1",
       "source": "./plugins/project",
       "category": "development"
     },
     {
       "name": "grant",
       "description": "Grant proposal toolkit: NIH/NSF and SBIR/STTR writing with mechanism-specific templates, merit and readability review, and figure quality assurance",
-      "version": "0.5.4",
+      "version": "0.5.5",
       "source": "./plugins/grant",
       "category": "research"
     },
     {
       "name": "manuscript",
-      "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, journal-specific formatting with semantic-line-break safety, polished Word/DOCX reference templates with inline or end-of-document figures, and humanizer pass to remove AI-writing tells",
-      "version": "0.9.2",
+      "description": "Academic manuscript toolkit: literature review (multi-phase citation-traceable + single-pass thematic), peer review, writing, journal-specific formatting with semantic-line-break safety, polished Word/DOCX reference templates with inline or end-of-document figures, and a fresh-context humanizer editor agent to remove AI-writing tells",
+      "version": "0.11.0",
       "source": "./plugins/manuscript",
       "category": "research"
     },

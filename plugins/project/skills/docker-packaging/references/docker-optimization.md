@@ -25,7 +25,7 @@ RUN uv sync --frozen --no-dev
 
 ### Use slim/alpine base images
 - `python:3.12-slim` (~50MB) vs `python:3.12` (~350MB)
-- `node:22-alpine` (~50MB) vs `node:22` (~350MB)
+- `node:24-alpine` (~50MB) vs `node:24` (~350MB)
 
 ### Multi-stage builds
 Keep build tools out of the runtime image:

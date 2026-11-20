@@ -29,6 +29,8 @@ Report only findings that affect first-read comprehension:
   be stated directly. Preserve substantive limitations, uncertainty, risks, and
   alternatives; those are not readability defects.
 
+Leave AI-writing tells (AI vocabulary, significance inflation, purpose tails, colon reveals, and the other `manuscript:humanizer` patterns) to the humanizer audit that the dispatching skill runs alongside this pass; do not reproduce that catalog here. Ambiguous referents stay in this pass because they cost comprehension; the dispatcher drops the duplicate humanizer hit.
+
 When the caller requests the optional **conciseness hunt**, also flag redundant
 restatement, throat-clearing lead-ins, stacked intensifiers, and facts repeated
 beyond their second appearance. A conciseness rewrite must be strictly shorter

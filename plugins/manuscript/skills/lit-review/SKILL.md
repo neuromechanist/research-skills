@@ -1,7 +1,7 @@
 ---
 name: lit-review
 description: "Use this skill for \"literature review workflow\", \"multi-phase lit review\", \"direction paper\", \"review paper protocol\", \"strand-based literature review\", \"citation-grounded review\", \"systematic lit review with paper cards\", \"build a lit review corpus\", \"lit review pipeline\", \"orchestrate a literature review\", \"research directions document\", \"write a literature review\", \"synthesize papers\", \"thematic review\", \"narrative review\", \"systematic review\", \"scoping review\", \"gap analysis\", or when the user wants either a rigorous multi-phase citation-traceable lit review or a single-pass thematic synthesis for an Introduction/Background section."
-version: 0.2.2
+version: 0.3.0
 ---
 
 # Multi-Phase Literature Review Workflow
@@ -68,7 +68,14 @@ For each strand, build a corpus of paper-cards under `research/collection/<stran
 
 Schema and storage rules: [references/paper-card-schema.md](references/paper-card-schema.md). License-to-redistribution policy and CI rule: [references/license-rules.md](references/license-rules.md).
 
-When parallelizing strands, dispatch one agent per strand. Use the brief as the agent's full context. Do not let strand agents synthesize across strands; that is Phase 2's job.
+Every collector follows [references/strand-collection-procedure.md](references/strand-collection-procedure.md): the brief is its whole context, it writes only in its strand folder, and it never synthesizes across strands (that is Phase 2's job). Dispatch one collector per strand, all in parallel:
+
+- **Claude Code:** `Agent(subagent_type: "manuscript:lit-strand-collector", ...)` per strand, passing the strand name, brief path, and collection root, with every call in a single message so the strands run concurrently.
+- **Codex CLI:** plugin installation exposes this skill, not a Codex subagent. Copy `agents/templates/lit-strand-collector.toml` to `~/.codex/agents/` or `.codex/agents/`, set `max_threads` to cover the strand count, and invoke one configured agent per strand if the current Codex surface supports `/agent`. If no Codex subagent is configured or available, use the fallback.
+- **Copilot CLI:** plugin installation exposes this skill and, through `.github/plugin/plugin.json`, `agents/templates/lit-strand-collector.agent.md`; invoke it per strand when the current Copilot surface supports custom agents (`/fleet` when available). If running outside a plugin install, copy it to `.github/agents/` or `~/.copilot/agents/`. If no custom agent is available, use the fallback.
+- **Fallback:** run the procedure in this session, one strand at a time, reading only that strand's brief while collecting it.
+
+Read each collector's report against its brief's acceptance criteria before Phase 2; rerun a strand that missed them rather than patching its folder by hand.
 
 ### Phase 2: Synthesis (whole-corpus integration)
 
@@ -180,6 +187,7 @@ Invoke each installed skill by its fully qualified `<plugin>:<skill>` name throu
 
 - [references/paper-card-schema.md](references/paper-card-schema.md): card.md frontmatter + sections, meta.json schema, license vocabulary, storage rules
 - [references/brief-template.md](references/brief-template.md): per-strand dispatch brief structure
+- [references/strand-collection-procedure.md](references/strand-collection-procedure.md): the Phase 1 collector contract (inputs, steps, no-invention rules, report)
 - [references/synthesis-templates.md](references/synthesis-templates.md): ontology, gap-analysis, map, scope-diagram patterns
 - [references/direction-paper-template.md](references/direction-paper-template.md): essay structure with cite-card cross-link convention
 - [references/license-rules.md](references/license-rules.md): redistribution discipline and CI rules

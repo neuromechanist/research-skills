@@ -1,12 +1,12 @@
 ---
 name: security-audit
 description: "This skill should be used when the user says \"security audit\", \"check for vulnerabilities\", \"security review\", \"harden project\", \"dependency audit\", \"credential scan\", \"check for secrets\", \"scan for secrets\", \"OWASP review\", \"security checklist\", \"audit dependencies\", \"find vulnerabilities\", or wants to review their project for security issues, exposed credentials, or vulnerable dependencies."
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Security Audit
 
-Systematic security review of a project covering dependency vulnerabilities, credential exposure, common code vulnerabilities, and configuration hardening.
+Routes a security review to an **independent, fresh-context auditor** covering credential exposure, code vulnerability patterns, authentication, configuration, Docker, and continuous integration and delivery (CI/CD), with dependency scanning handled by the `dependency-auditor` agent in parallel. This skill is a thin dispatcher; the checklist, severity rubric, and output format live in `references/audit-procedure.md`.
 
 ## When to Use
 
@@ -16,151 +16,27 @@ Systematic security review of a project covering dependency vulnerabilities, cre
 - Periodic security reviews
 - After receiving a vulnerability report
 
-## Audit Checklist
+## Why a fresh-context auditor
 
-### 1. Credential and Secret Scanning
+The session that wrote the code knows why each risky-looking pattern was meant to be safe, and that knowledge is exactly what an attacker does not share. A separate auditor reads only the tree, history, and configuration. Pass **framing** only: repository root or paths, deployment context (internet-facing service, internal tool, library, research scripts), and release target if any; never the implementation rationale. Dependency scanning is mechanical, so it stays with the `dependency-auditor` agent rather than the judgment-based auditor.
 
-Check for exposed secrets in the codebase:
+## Modes (caller decides each run)
 
-```bash
-# Check for common secret patterns in tracked files
-git grep -n -i -E '(api_key|apikey|secret|password|token|credential|private_key)\s*[:=]' -- ':!*.md' ':!*.lock'
+- **Full (default):** the auditor runs the whole checklist while `dependency-auditor` scans packages, outdated versions, and licenses in parallel; merge both into one report by the shared severity rubric.
+- **Scoped:** the caller names checklist sections (for example secrets only, or CI/CD only) or paths; run only those, and skip `dependency-auditor` unless dependencies are in scope (without it, omit `dependency_scan=separate`).
+- **Dependencies only:** "audit dependencies" or a lockfile change; run `dependency-auditor` alone.
 
-# Check for .env files tracked in git
-git ls-files | grep -i '\.env'
+## Dispatch
 
-# Check .gitignore covers sensitive files
-for f in .env .env.local credentials.json secrets.yaml; do
-  git check-ignore "$f" 2>/dev/null || echo "WARNING: $f not in .gitignore"
-done
-```
+Pick the branch for the current tool. In every branch the auditor follows `references/audit-procedure.md`.
 
-Files that must never be committed:
-- `.env`, `.env.*` (environment variables)
-- `credentials.json`, `service-account.json` (cloud credentials)
-- `*.pem`, `*.key` (private keys)
-- `*.p12`, `*.pfx` (certificates with private keys)
+- **Claude Code:** in a single message, `Agent(subagent_type: "project:security-audit", ...)` with the root, scope, deployment context, and `dependency_scan=separate`, and `Agent(subagent_type: "project:dependency-auditor", ...)` with the root, so both run in parallel. Merge the two reports: one Critical/High/Medium/Low list, dependency findings tagged `[DEP]`, duplicates removed, and every Critical surfaced as a release blocker.
+- **Codex CLI:** plugin installation exposes this skill, not a Codex subagent. To use a fresh-context Codex auditor, copy `agents/templates/security-audit.toml` to `~/.codex/agents/` or `.codex/agents/` and invoke that configured agent with `dependency_scan=separate` if the current Codex surface supports `/agent`; run the dependency section of the procedure in this session. If no Codex subagent is available, use the fallback branch.
+- **Copilot CLI:** plugin installation exposes this skill and, through `.github/plugin/plugin.json`, the `.agent.md` auditor in `agents/templates/`. Invoke that configured agent with `dependency_scan=separate` when the current Copilot surface supports custom agents, and run the dependency section in this session. If running outside a plugin install, copy `agents/templates/security-audit.agent.md` to `.github/agents/` or `~/.copilot/agents/`. If no custom agent is available, use the fallback branch.
+- **Fallback** (no subagent support, or the user wants an interactive in-thread audit): locate the references (`$CLAUDE_PLUGIN_ROOT/skills/security-audit/references`, else `find . -type d -path '*/skills/security-audit/references' | head -1`); if they cannot be found, stop and tell the user to install the project plugin rather than auditing from memory. Then follow `references/audit-procedure.md` in full, including the dependency scan.
 
-### 2. Dependency Vulnerability Scan
+## The brain (do not duplicate into dispatch or agent shells)
 
-**Python:**
-```bash
-uv run pip-audit
-```
-
-**JavaScript/TypeScript:**
-```bash
-bun pm audit
-# or check with npm for broader database
-npm audit --omit=dev
-```
-
-**Go:**
-```bash
-govulncheck ./...
-```
-
-Review results against the severity rubric (shared with the
-dependency-auditor agent):
-
-- Critical: exploitable now or actively exploited (leaked live credential,
-  known-exploited CVE in a reachable path). Must fix before release; blocks
-  release-prep.
-- High: known vulnerability with a plausible attack path. Fix before the next
-  release.
-- Medium: vulnerability with mitigating factors, or a major-version lag on a
-  security-relevant package. Fix within the sprint.
-- Low: outdated without known vulnerabilities; license concerns to review.
-  Track in backlog.
-
-### 3. Code Vulnerability Patterns
-
-Scan for common vulnerability patterns:
-
-**SQL Injection:**
-```bash
-# Look for string interpolation in SQL
-grep -rn 'f".*SELECT\|f".*INSERT\|f".*UPDATE\|f".*DELETE' --include='*.py'
-grep -rn "format.*SELECT\|format.*INSERT" --include='*.py'
-```
-
-**Command Injection:**
-```bash
-# Look for shell=True or unsanitized subprocess calls
-grep -rn 'shell=True\|os\.system\|subprocess\.call.*shell' --include='*.py'
-grep -rn 'exec(\|eval(' --include='*.py' --include='*.js' --include='*.ts'
-```
-
-**XSS (Cross-Site Scripting):**
-```bash
-# Look for dangerouslySetInnerHTML or unescaped output
-grep -rn 'dangerouslySetInnerHTML\|innerHTML\s*=' --include='*.tsx' --include='*.jsx' --include='*.ts' --include='*.js'
-```
-
-**Path Traversal:**
-```bash
-grep -rn 'open(.*\+\|os\.path\.join.*input\|req\.\(params\|query\|body\)' --include='*.py' --include='*.js'
-```
-
-### 4. Authentication and Authorization
-
-Review:
-- [ ] Authentication endpoints use constant-time comparison for secrets
-- [ ] Session tokens have appropriate expiration
-- [ ] CORS configuration is restrictive (not `*` in production)
-- [ ] Rate limiting on auth endpoints
-- [ ] Password hashing uses bcrypt/argon2 (not MD5/SHA1)
-
-### 5. Configuration Hardening
-
-- [ ] Debug mode disabled in production configs
-- [ ] HTTPS enforced (HSTS headers)
-- [ ] Security headers present (CSP, X-Frame-Options, X-Content-Type-Options)
-- [ ] Error messages do not leak stack traces in production
-- [ ] Logging does not include sensitive data (passwords, tokens)
-
-### 6. Docker Security (if applicable)
-
-- [ ] Non-root user in Dockerfile
-- [ ] Base image is pinned to specific version (not `latest`)
-- [ ] No secrets in Docker build args or layers
-- [ ] Health checks configured
-- [ ] Read-only filesystem where possible
-
-### 7. CI/CD Security
-
-- [ ] Secrets stored in GitHub Secrets (not in workflow files)
-- [ ] Third-party actions pinned to SHA (not tags)
-- [ ] Minimal permissions in workflow `permissions:` block
-- [ ] No `pull_request_target` with `actions/checkout` of PR head
-
-## Output Format
-
-Present findings as a prioritized list:
-
-```
-## Security Audit Results
-
-### Critical (must fix)
-1. [CRED] API key found in src/config.py:42 - move to environment variable
-2. [DEP] lodash 4.17.20 has prototype pollution (CVE-2021-23337)
-
-### High (fix before release)
-3. [CODE] SQL injection risk in src/db.py:88 - use parameterized queries
-
-### Medium (fix within sprint)
-4. [CONFIG] CORS allows * origin in production config
-
-### Low (backlog)
-5. [STYLE] Error responses include stack traces in non-debug mode
-
-### Passed
-- [x] No .env files in git
-- [x] Docker runs as non-root
-- [x] Dependencies up to date
-```
-
-## Additional Resources
-
-- Reference: [references/owasp-top-10.md](references/owasp-top-10.md) - OWASP Top 10 checklist with project-specific examples
-- Reference: [references/secret-management.md](references/secret-management.md) - How to manage secrets across environments
+- `references/audit-procedure.md` -- scope and independence rules, the seven-section checklist, the severity rubric shared with `dependency-auditor`, and the output format.
+- `references/owasp-top-10.md` -- Open Worldwide Application Security Project (OWASP) Top 10 checklist with project-specific examples.
+- `references/secret-management.md` -- how to manage secrets across environments.
