@@ -70,9 +70,9 @@ Schema and storage rules: [references/paper-card-schema.md](references/paper-car
 
 Every collector follows [references/strand-collection-procedure.md](references/strand-collection-procedure.md): the brief is its whole context, it writes only in its strand folder, and it never synthesizes across strands (that is Phase 2's job). Dispatch one collector per strand, all in parallel:
 
-- **Claude Code:** `Agent(subagent_type: "manuscript:lit-strand-collector", ...)` per strand, passing the brief path and collection root, with every call in a single message so the strands run concurrently.
-- **Codex CLI:** copy `agents/templates/lit-strand-collector.toml` to `~/.codex/agents/` or `.codex/agents/`, set `max_threads` to cover the strand count, and invoke one configured agent per strand. Without a configured agent, use the fallback.
-- **Copilot CLI:** the plugin exposes `agents/templates/lit-strand-collector.agent.md`; invoke it per strand (`/fleet` when available). Without a custom agent, use the fallback.
+- **Claude Code:** `Agent(subagent_type: "manuscript:lit-strand-collector", ...)` per strand, passing the strand name, brief path, and collection root, with every call in a single message so the strands run concurrently.
+- **Codex CLI:** plugin installation exposes this skill, not a Codex subagent. Copy `agents/templates/lit-strand-collector.toml` to `~/.codex/agents/` or `.codex/agents/`, set `max_threads` to cover the strand count, and invoke one configured agent per strand if the current Codex surface supports `/agent`. If no Codex subagent is configured or available, use the fallback.
+- **Copilot CLI:** plugin installation exposes this skill and, through `.github/plugin/plugin.json`, `agents/templates/lit-strand-collector.agent.md`; invoke it per strand when the current Copilot surface supports custom agents (`/fleet` when available). If running outside a plugin install, copy it to `.github/agents/` or `~/.copilot/agents/`. If no custom agent is available, use the fallback.
 - **Fallback:** run the procedure in this session, one strand at a time, reading only that strand's brief while collecting it.
 
 Read each collector's report against its brief's acceptance criteria before Phase 2; rerun a strand that missed them rather than patching its folder by hand.

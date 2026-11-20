@@ -31,8 +31,8 @@ Procedure:
 4. Return the report in the procedure's output format.
 
 Inputs from the caller: root or paths (required), scope (full by default, or
-named sections), deployment context, and whether a dependency scan is running
-separately. Never the implementation rationale.
+named sections), deployment context, and dependency_scan=separate when a dependency
+scan is running in parallel (then skip the package scans). Never the implementation rationale.
 
 Constraints: read-only (never edit files, rotate credentials, install
 packages, or run fixes); never print a secret value (file, line, type, masked

@@ -21,13 +21,15 @@ Identify the project's dependency files:
 - `Cargo.toml` / `Cargo.lock` -> Rust (cargo)
 - `go.mod` / `go.sum` -> Go
 
-If no recognized dependency files are found, report an error and stop.
+If no recognized dependency files are found, report "no dependency manifests; nothing to audit" as a pass and stop. Do not report it as an error.
 
 ### 2. Run Vulnerability Scan
 
 **Python:**
 ```bash
-uv run pip-audit --format json || uv run pip-audit
+# Read-only: export the locked set without syncing .venv or touching uv.lock
+uv export --frozen --no-hashes --format requirements-txt > "${TMPDIR:-/tmp}/audit-req.txt"
+uvx pip-audit -r "${TMPDIR:-/tmp}/audit-req.txt" --format json
 ```
 
 **JavaScript:**

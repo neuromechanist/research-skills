@@ -32,7 +32,7 @@ This is a thin shell. Load the checklist, severity rubric, and output format fro
 
 ## Inputs from the caller
 
-Root or paths (required), scope (full by default, or named sections), deployment context, and whether a dependency scan is running separately. Never the implementation rationale.
+Root or paths (required), scope (full by default, or named sections), deployment context, and `dependency_scan=separate` when a dependency scan is running in parallel (then skip the package scans). Never the implementation rationale.
 
 ## Constraints
 

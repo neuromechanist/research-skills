@@ -6,6 +6,7 @@ This procedure is the collector's contract on every host: a bundled agent, a con
 
 ## Inputs
 
+- **Strand name** (required): `<strand>`, matching the brief file name and the folder the collector writes.
 - **Brief path** (required): `_briefs/strand-<name>.md`, written from [brief-template.md](brief-template.md).
 - **Collection root** (required): usually `research/collection/`; the collector writes only under `<root>/<strand>/`.
 - **Schema**: [paper-card-schema.md](paper-card-schema.md), or the local copy at `<root>/_schema/paper-card.md` when the project has one.
@@ -24,7 +25,7 @@ Do not read other strands' folders, the synthesis directory, or direction papers
 5. For each entry, create `<root>/<strand>/<slug>/` with:
    - `card.md` from the schema, with `strand: <strand>` and a relevance grade calibrated to the schema's anchors;
    - `source.md` (always): a PDF-to-markdown extraction, or the canonical README or docs page for a tool, dataset, or standard;
-   - `meta.json` with provenance (DOI or URL, `retrieved_at`, license, `redistribution_ok`, `pdf_status`, and `pdf_sha256` when a PDF is archived);
+   - `meta.json` with provenance (Digital Object Identifier (DOI) or URL, `retrieved_at`, license, `redistribution_ok`, `pdf_status`, and `pdf_sha256` when a PDF is archived);
    - `source.pdf` only when `redistribution_ok` is true under the license rules.
 6. Append each entry's BibTeX from `opencite` to `<root>/<strand>/<strand>.bib`, keeping the key consistent with the slug, and add a one-line entry under the right category in `<root>/<strand>/INDEX.md`.
 7. Check the brief's acceptance criteria and report against them.

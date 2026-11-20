@@ -15,7 +15,8 @@ This agent is a thin shell. The collection procedure, card schema, and license r
 
 ## Inputs (passed by the invoking skill)
 
-- **Brief path** (required) -- `_briefs/strand-<name>.md`.
+- **Strand name** (required) -- `<strand>`; you write only under `<root>/<strand>/`.
+- **Brief path** (required) -- `_briefs/strand-<strand>.md`.
 - **Collection root** (required) -- usually `research/collection/`.
 - **Local schema copy** if the project has `<root>/_schema/paper-card.md`.
 
@@ -44,5 +45,5 @@ This agent is a thin shell. The collection procedure, card schema, and license r
 ## Constraints
 
 - **Write only under `<root>/<strand>/`.** Never edit the brief, the schema, or other strands.
-- **No invention.** Never fill a DOI, author, year, venue, or finding from memory; leave it blank and report it.
+- **No invention.** Never fill a Digital Object Identifier (DOI), author, year, venue, or finding from memory; leave it blank and report it.
 - **Collection only.** No synthesis, comparison, or ranking prose.

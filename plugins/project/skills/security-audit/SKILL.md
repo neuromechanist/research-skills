@@ -23,16 +23,16 @@ The session that wrote the code knows why each risky-looking pattern was meant t
 ## Modes (caller decides each run)
 
 - **Full (default):** the auditor runs the whole checklist while `dependency-auditor` scans packages, outdated versions, and licenses in parallel; merge both into one report by the shared severity rubric.
-- **Scoped:** the caller names checklist sections (for example secrets only, or CI/CD only) or paths; run only those, and skip `dependency-auditor` unless dependencies are in scope.
+- **Scoped:** the caller names checklist sections (for example secrets only, or CI/CD only) or paths; run only those, and skip `dependency-auditor` unless dependencies are in scope (without it, omit `dependency_scan=separate`).
 - **Dependencies only:** "audit dependencies" or a lockfile change; run `dependency-auditor` alone.
 
 ## Dispatch
 
 Pick the branch for the current tool. In every branch the auditor follows `references/audit-procedure.md`.
 
-- **Claude Code:** in a single message, `Agent(subagent_type: "project:security-audit", ...)` with the root, scope, and deployment context, and `Agent(subagent_type: "project:dependency-auditor", ...)` with the root, so both run in parallel. Merge the two reports: one Critical/High/Medium/Low list, dependency findings tagged `[DEP]`, duplicates removed, and every Critical surfaced as a release blocker.
-- **Codex CLI:** plugin installation exposes this skill, not a Codex subagent. To use a fresh-context Codex auditor, copy `agents/templates/security-audit.toml` to `~/.codex/agents/` or `.codex/agents/` and invoke that configured agent if the current Codex surface supports `/agent`; run the dependency section of the procedure in this session. If no Codex subagent is available, use the fallback branch.
-- **Copilot CLI:** plugin installation exposes this skill and, through `.github/plugin/plugin.json`, the `.agent.md` auditor in `agents/templates/`. Invoke that configured agent when the current Copilot surface supports custom agents, and run the dependency section in this session. If running outside a plugin install, copy `agents/templates/security-audit.agent.md` to `.github/agents/` or `~/.copilot/agents/`. If no custom agent is available, use the fallback branch.
+- **Claude Code:** in a single message, `Agent(subagent_type: "project:security-audit", ...)` with the root, scope, deployment context, and `dependency_scan=separate`, and `Agent(subagent_type: "project:dependency-auditor", ...)` with the root, so both run in parallel. Merge the two reports: one Critical/High/Medium/Low list, dependency findings tagged `[DEP]`, duplicates removed, and every Critical surfaced as a release blocker.
+- **Codex CLI:** plugin installation exposes this skill, not a Codex subagent. To use a fresh-context Codex auditor, copy `agents/templates/security-audit.toml` to `~/.codex/agents/` or `.codex/agents/` and invoke that configured agent with `dependency_scan=separate` if the current Codex surface supports `/agent`; run the dependency section of the procedure in this session. If no Codex subagent is available, use the fallback branch.
+- **Copilot CLI:** plugin installation exposes this skill and, through `.github/plugin/plugin.json`, the `.agent.md` auditor in `agents/templates/`. Invoke that configured agent with `dependency_scan=separate` when the current Copilot surface supports custom agents, and run the dependency section in this session. If running outside a plugin install, copy `agents/templates/security-audit.agent.md` to `.github/agents/` or `~/.copilot/agents/`. If no custom agent is available, use the fallback branch.
 - **Fallback** (no subagent support, or the user wants an interactive in-thread audit): locate the references (`$CLAUDE_PLUGIN_ROOT/skills/security-audit/references`, else `find . -type d -path '*/skills/security-audit/references' | head -1`); if they cannot be found, stop and tell the user to install the project plugin rather than auditing from memory. Then follow `references/audit-procedure.md` in full, including the dependency scan.
 
 ## The brain (do not duplicate into dispatch or agent shells)

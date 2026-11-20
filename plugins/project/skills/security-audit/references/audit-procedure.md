@@ -38,9 +38,15 @@ Files that must never be committed:
 
 ### 2. Dependency Vulnerability Scan
 
+When the caller passes `dependency_scan=separate`, the `dependency-auditor` agent is scanning packages in parallel: skip the scans in this section and leave the `[DEP]` findings to its report. Otherwise run them here.
+These commands are read-only: they must not sync an environment or rewrite a lockfile.
+A project with no dependency manifests passes this section; say so instead of reporting an error.
+
 **Python:**
 ```bash
-uv run pip-audit
+# Export the locked set without syncing .venv or touching uv.lock
+uv export --frozen --no-hashes --format requirements-txt > "${TMPDIR:-/tmp}/audit-req.txt"
+uvx pip-audit -r "${TMPDIR:-/tmp}/audit-req.txt"
 ```
 
 **JavaScript/TypeScript:**
@@ -55,13 +61,11 @@ npm audit --omit=dev
 govulncheck ./...
 ```
 
-When the dispatcher runs the `dependency-auditor` agent alongside this audit, skip the package scans below and cite its report instead; run them here only when no dependency report exists.
-
 Review results against the severity rubric (shared with the
 dependency-auditor agent):
 
 - Critical: exploitable now or actively exploited (leaked live credential,
-  known-exploited CVE in a reachable path). Must fix before release; blocks
+  known-exploited Common Vulnerabilities and Exposures (CVE) entry in a reachable path). Must fix before release; blocks
   release-prep.
 - High: known vulnerability with a plausible attack path. Fix before the next
   release.

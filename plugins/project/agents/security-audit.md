@@ -18,7 +18,7 @@ This agent is a thin shell. The checklist, severity rubric, and output format li
 - **Root or paths** (required) -- what to audit.
 - **Scope** -- full checklist (default) or named sections.
 - **Deployment context** if known (internet-facing service, internal tool, library, research scripts).
-- **Whether `dependency-auditor` is running in parallel**; if so, skip the package scans and leave them to it.
+- **`dependency_scan=separate`** when `dependency-auditor` is running in parallel; then skip the package scans and leave them to it.
 
 ## Procedure
 

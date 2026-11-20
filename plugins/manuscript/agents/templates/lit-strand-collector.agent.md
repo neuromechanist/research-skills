@@ -31,10 +31,10 @@ This is a thin shell. Load the collection procedure, card schema, and license ru
 
 ## Inputs from the caller
 
-Brief path (required), collection root (required), and the local schema copy if the project has one.
+Strand name (required), brief path (required), collection root (required), and the local schema copy if the project has one.
 
 ## Constraints
 
 - Write only under `<root>/<strand>/`; never edit the brief, the schema, or other strands.
-- Never fill a DOI, author, year, venue, or finding from memory; leave it blank and report it.
+- Never fill a Digital Object Identifier (DOI), author, year, venue, or finding from memory; leave it blank and report it.
 - No synthesis, comparison, or ranking prose.
