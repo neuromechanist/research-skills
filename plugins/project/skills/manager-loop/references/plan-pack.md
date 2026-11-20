@@ -71,7 +71,7 @@ Recommended: Context (what to read first), Decided design ("Settled: ...; the im
 Every card is sent after the same preamble:
 
 - One card, one branch, one PR, in the worktree named on the card; use absolute paths.
-- Only the manager merges; push once per review round; never force-push or rebase a pushed branch.
+- Only the manager merges, and only after the PR's own `project:pr-review-toolkit` review; push once per review round; never force-push or rebase a pushed branch.
 - Stay inside Scope; anything else goes in the report as a patch note for its owner.
 - Run every gate yourself and quote its output; a computed value is never reported as measured.
 - Stop and report on any stop condition, or when the card seems wrong.

@@ -164,13 +164,115 @@ def test_dependency_cycle_is_reported(board: Path):
 
 def test_hand_edit_errors_are_caught_by_check(board: Path):
     text = board.read_text().replace(
-        "|---|---|---|---|---|---|---|---|---|---|---|---|\n",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|\n| S1 | broken row |\n",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|\n",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|\n| S1 | broken row |\n",
     )
     board.write_text(text)
     result = run("check", str(board), check=False)
     assert result.returncode == 1
-    assert "cells, header has 12" in result.stdout
+    assert "cells, header has 13" in result.stdout
+
+
+def test_done_with_a_pr_requires_a_recorded_review(board: Path):
+    add_step(board, "S1", "State=review", "PR=12")
+    refused = run("set", str(board), "steps", "S1", "State=done", check=False)
+    assert refused.returncode != 0
+    assert "no Review" in refused.stderr + refused.stdout
+    assert "project:pr-review-toolkit" in refused.stderr + refused.stdout
+
+    run(
+        "set",
+        str(board),
+        "steps",
+        "S1",
+        "State=done",
+        "Review=r1 code+tests 2 fixed; r2 clean",
+    )
+    assert run("check", str(board)).returncode == 0
+
+    add_step(board, "S2", "State=active")  # no PR: nothing to review, done is allowed
+    run("set", str(board), "steps", "S2", "State=done")
+
+    # A recorded review cannot be blanked on a done step: every write is validated.
+    erased = run("set", str(board), "steps", "S1", "Review=-", check=False)
+    assert erased.returncode != 0 and "no Review" in erased.stderr + erased.stdout
+    add_step(board, "S4", "State=review", "PR=14")
+    refused = run(
+        "set", str(board), "steps", "S4", "State=done", "Review=-", check=False
+    )
+    assert refused.returncode != 0 and "no Review" in refused.stderr + refused.stdout
+
+    created_done = run(
+        "set",
+        str(board),
+        "steps",
+        "S3",
+        "Title=Step S3",
+        "State=done",
+        "PR=5",
+        "--new",
+        check=False,
+    )
+    assert (
+        created_done.returncode != 0
+        and "no Review" in created_done.stderr + created_done.stdout
+    )
+
+
+def test_check_flags_a_hand_edited_done_step_without_review(board: Path):
+    add_step(board, "S1", "State=review", "PR=12")
+    board.write_text(
+        re.sub(r"(\| S1 \|.*?\| )review( \|)", r"\1done\2", board.read_text())
+    )
+    result = run("check", str(board), check=False)
+    assert result.returncode == 1
+    assert "S1 is done with PR 12 but no Review" in result.stdout
+
+
+def test_board_without_review_column_gets_the_fix_in_the_error(board: Path):
+    text = board.read_text()
+    text = text.replace("| PR | Review | Started |", "| PR | Started |")
+    text = text.replace(
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|\n",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|\n",
+    )
+    board.write_text(text)
+    add_step(board, "S1", "State=review", "PR=12")
+    refused = run("set", str(board), "steps", "S1", "State=done", check=False)
+    assert refused.returncode != 0
+    assert "predates the Review column" in refused.stderr + refused.stdout
+
+    # A step already done before the rule existed only warns, so a running loop is not blocked.
+    board.write_text(
+        re.sub(r"(\| S1 \|.*?\| )review( \|)", r"\1done\2", board.read_text())
+    )
+    result = run("check", str(board), check=False)
+    assert result.returncode == 0
+    assert "this board has no Review column" in result.stdout
+
+    # Passing Review on an old board migrates ## Steps: the column lands after PR in every row.
+    add_step(board, "S2", "State=review", "PR=13")
+    run("set", str(board), "steps", "S2", "State=done", "Review=r1 code clean")
+    text = board.read_text()
+    assert "| PR | Review | Started |" in text
+    # S1 was merged under the old rule; the migration says so instead of inventing a review.
+    assert "not recorded (merged before the Review column)" in text
+    assert run("check", str(board)).returncode == 0
+
+
+def test_review_gate_matches_column_names_case_insensitively(board: Path):
+    add_step(board, "S1", "State=review", "PR=12")
+    refused = run("set", str(board), "steps", "S1", "state=done", check=False)
+    assert refused.returncode != 0 and "no Review" in refused.stderr + refused.stdout
+    run("set", str(board), "steps", "S1", "state=done", "review=r1 code clean")
+    assert run("check", str(board)).returncode == 0
+
+
+def test_done_cannot_clear_the_pr_in_the_same_write(board: Path):
+    add_step(board, "S1", "State=review", "PR=12")
+    refused = run("set", str(board), "steps", "S1", "State=done", "PR=-", check=False)
+    assert refused.returncode != 0
+    assert "refusing to clear PR 12" in refused.stderr + refused.stdout
 
 
 def test_board_line_limit(board: Path):

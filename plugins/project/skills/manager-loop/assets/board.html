@@ -275,7 +275,7 @@ details.panel > summary { cursor: pointer; font-weight: 700; color: var(--muted)
     if (s.state === "todo" && !(s.unmet || []).length && !s.wave_open) tags.push(`<span class="tag">wave closed</span>`);
     if (s.state === "outline") tags.push(`<span class="tag">outline</span>`);
     const agents = (data.agents || []).filter((a) => a.Step === s.id && !/^(done|stopped)$/i.test(a.State || ""));
-    const fields = [["Tier", s.Tier], ["Model", s.model], ["Needs", (s.needs || []).join(", ")], ["Depends", s.Depends],
+    const fields = [["Tier", s.Tier], ["Model", s.model], ["Needs", (s.needs || []).join(", ")], ["Depends", s.Depends], ["Review", s.Review],
       ["Started", s.Started ? `${s.Started} (${ago(s.Started)})` : ""], ["Timebox", s.Timebox],
       ["Agents", agents.map((a) => `${a.Agent} (${a.Role})`).join(", ")]]
       .filter(([, v]) => !empty(v)).map(([k, v]) => `<dt>${k}</dt><dd>${inline(v)}</dd>`).join("");

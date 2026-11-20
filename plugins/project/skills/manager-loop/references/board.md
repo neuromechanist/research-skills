@@ -20,7 +20,7 @@ The Steps and Questions tables identify rows by an identifier (ID); the Steps ta
 | Slots | owner | Slot, Platform, Tiers, Max, Can, Notes | Platform names a Parity column; Can lists capabilities |
 | Budget | owner sets Limit; manager updates Used | Item, Limit, Used, Resets, Notes | Resets: never, daily, or wave |
 | Waves | lead, then manager sets State | Wave, Goal, Agents, State, Exit gate | optional; states planned, active, done, hold; setting a wave `active` resets the wave budgets |
-| Steps | manager | ID, Title, Wave, Tier, Needs, Slot, State, Depends, PR, Started, Timebox, Next | table order is dispatch priority |
+| Steps | manager | ID, Title, Wave, Tier, Needs, Slot, State, Depends, PR, Review, Started, Timebox, Next | table order is dispatch priority; Review records the PR's own `project:pr-review-toolkit` review (for example `r1 code 3 fixed; r2 clean` or a report link), and `set` refuses `State=done` for a step with a PR and no Review |
 | Questions | manager asks; owner answers | ID, Step, Question, Options, Default, Needed by, State, Answer | states open, answered, closed, defaulted |
 | Proposals | manager | ID, Time, Proposal, Why, State | states open, accepted, rejected, withdrawn |
 | Agents | manager | Agent, Role, Slot, Model, Step, Started, State | ids needed to message or resume a worker |

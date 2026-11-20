@@ -58,8 +58,8 @@ In Steps and Questions, the first column holds each row's identifier (ID); in St
 
 ## Steps
 
-| ID | Title | Wave | Tier | Needs | Slot | State | Depends | PR | Started | Timebox | Next |
-|---|---|---|---|---|---|---|---|---|---|---|---|
+| ID | Title | Wave | Tier | Needs | Slot | State | Depends | PR | Review | Started | Timebox | Next |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
 
 ## Questions
 
