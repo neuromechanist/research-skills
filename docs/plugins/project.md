@@ -68,7 +68,7 @@ Host-specific mechanics (how each host wakes the manager and asks questions) are
 - **security-audit**: credential scanning, dependency audit, Open Worldwide Application Security Project (OWASP) checklist, configuration hardening
 - **document-processing**: Portable Document Format (PDF) and image optical character recognition (OCR), text extraction, markdown conversion
 
-Includes autonomous agents: **dependency-auditor** (vulnerability scanning), **release-prep** (pre-release validation), and a Claude-bundled **pr-review-toolkit** reviewer.
+Includes autonomous agents: **dependency-auditor** (package vulnerability, version, and license scanning), **release-prep** (pre-release validation), and Claude-bundled **pr-review-toolkit** and **security-audit** reviewers; the `security-audit` skill runs its auditor and `dependency-auditor` in parallel.
 Codex receives opt-in Terra phase-planner and Luna implementation-worker Tom's Obvious, Minimal Language (TOML) templates; Copilot exposes matching agent profiles through its native plugin manifest.
 
 ## Try it

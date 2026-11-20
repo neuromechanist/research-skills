@@ -34,11 +34,11 @@ The same shape across every card is what lets synthesis scan the corpus quickly 
 
 ## Skills
 
-- **lit-review**: both literature-review modes described above
+- **lit-review**: both literature-review modes described above; Phase 1 runs one `lit-strand-collector` agent per strand in parallel, each from its brief alone
 - **manuscript-writing**: IMRAD structure and section templates
 - **paper-review**: the peer-review simulation described above; thin-dispatch with a Claude-bundled fresh-context agent, a Codex agent template, and a Copilot plugin-agent template
 - **manuscript-formatting**: journal-specific formatting (IEEE, Nature, PNAS, Elsevier, LaTeX/BibTeX management), a polished Pandoc reference DOCX, and inline or end-of-document figure placement
-- **humanizer**: a final natural-writing pass that removes AI-writing tells while preserving meaning and discipline conventions, including 16 research- and grant-prose patterns common in AI-assisted drafts (sentence-shape tells, hidden actors, and unanchored pronouns) and a quick scan that counts them
+- **humanizer**: a final natural-writing pass that removes AI-writing tells while preserving meaning and discipline conventions, including 16 research- and grant-prose patterns common in AI-assisted drafts (sentence-shape tells, hidden actors, and unanchored pronouns) and a quick scan that counts them; thin-dispatch to a fresh-context editor agent (Opus at `medium`) in rewrite or audit mode, with Codex and Copilot templates and an inline fallback
 
 ## Try it
 
