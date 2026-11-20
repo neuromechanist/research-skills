@@ -512,37 +512,45 @@ def test_copilot_component_paths_exist(plugin):
                 )
 
 
-# (plugin, agent-stem) pairs for the review/QA agents introduced by the review-subagent
-# pattern. Each agent must guard on, and its skill must contain, a procedure file.
-REVIEW_AGENTS = [
-    ("grant", "grant-review"),
-    ("grant", "grant-figure-qa"),
-    ("manuscript", "paper-review"),
-    ("manuscript", "humanizer"),
-    ("figures", "figure-qa"),
+# (plugin, agent-stem, skill) for agents that follow the review-subagent pattern, plus
+# worker agents whose skill name differs. Each agent must guard on, and its skill must
+# contain, a procedure file, and each ships Codex and Copilot templates.
+AGENT_SHELLS = [
+    ("grant", "grant-review", "grant-review"),
+    ("grant", "grant-figure-qa", "grant-figure-qa"),
+    ("manuscript", "paper-review", "paper-review"),
+    ("manuscript", "humanizer", "humanizer"),
+    ("project", "security-audit", "security-audit"),
+    ("figures", "figure-qa", "figure-qa"),
+    ("manuscript", "lit-strand-collector", "lit-review"),
 ]
 
 _GUARD = re.compile(r'test -f "\$REF/([A-Za-z0-9._-]+\.md)"')
 
 
-@pytest.mark.parametrize("plugin,stem", REVIEW_AGENTS)
-def test_agent_guard_points_at_existing_procedure(plugin, stem):
+@pytest.mark.parametrize("plugin,stem,skill", AGENT_SHELLS)
+def test_agent_guard_points_at_existing_procedure(plugin, stem, skill):
     agent = PLUGINS_DIR / plugin / "agents" / f"{stem}.md"
     assert agent.exists(), f"missing agent shell: {agent.relative_to(ROOT)}"
     text = agent.read_text()
 
     m = _GUARD.search(text)
     assert m, f"{stem}: agent shell has no 'test -f \"$REF/<procedure>.md\"' guard"
-    procedure = PLUGINS_DIR / plugin / "skills" / stem / "references" / m.group(1)
+    procedure = PLUGINS_DIR / plugin / "skills" / skill / "references" / m.group(1)
     assert procedure.exists(), (
         f"{stem}: guard names {m.group(1)} but {procedure.relative_to(ROOT)} does not exist"
     )
 
     front = text.split("---", 2)
     assert len(front) >= 3, f"{stem}: agent shell missing YAML frontmatter"
-    assert "invoked by the" in front[1].lower(), (
-        f"{stem}: agent description is not scoped to 'invoked by the <skill> skill'"
+    assert f"invoked by the {skill} skill" in front[1].lower(), (
+        f"{stem}: agent description is not scoped to 'invoked by the {skill} skill'"
     )
+    for template in (f"{stem}.toml", f"{stem}.agent.md"):
+        path = PLUGINS_DIR / plugin / "agents" / "templates" / template
+        assert path.exists(), f"{stem}: missing template {path.relative_to(ROOT)}"
+    skill_md = (PLUGINS_DIR / plugin / "skills" / skill / "SKILL.md").read_text()
+    assert f'subagent_type: "{plugin}:{stem}"' in skill_md, f"{skill}: no Claude dispatch to {plugin}:{stem}"
 
 
 DISPATCH_RE = re.compile(r'subagent_type:\s*"([^"]+)"')
@@ -562,7 +570,9 @@ def test_claude_dispatch_targets_are_namespaced_and_exist():
 
     A bare agent name never resolves, so the primary dispatch path silently
     degrades to the inline fallback. Every ``subagent_type`` string in a skill
-    must carry its own plugin's namespace and point at a shipped agent file.
+    must carry a plugin namespace and point at a shipped agent file. A target in
+    another plugin is allowed only when that plugin ships the agent; the skill must
+    then say what to do when that plugin is not installed.
     """
     dispatches = _dispatching_skills()
     assert dispatches, "expected at least one dispatching skill"
@@ -570,10 +580,12 @@ def test_claude_dispatch_targets_are_namespaced_and_exist():
         rel = skill_md.relative_to(ROOT)
         assert ":" in target, f"{rel}: subagent_type {target!r} is not namespaced"
         target_plugin, agent = target.split(":", 1)
-        assert target_plugin == plugin, (
-            f"{rel}: subagent_type {target!r} names plugin {target_plugin!r}, expected {plugin!r}"
-        )
-        agent_file = PLUGINS_DIR / plugin / "agents" / f"{agent}.md"
+        assert target_plugin in PLUGINS, f"{rel}: subagent_type {target!r} names unknown plugin {target_plugin!r}"
+        if target_plugin != plugin:
+            assert f"`{target_plugin}` plugin is installed" in skill_md.read_text(), (
+                f"{rel}: cross-plugin dispatch to {target!r} has no not-installed fallback"
+            )
+        agent_file = PLUGINS_DIR / target_plugin / "agents" / f"{agent}.md"
         assert agent_file.is_file(), f"{rel}: subagent_type {target!r} has no agent at {agent_file.relative_to(ROOT)}"
 
 
