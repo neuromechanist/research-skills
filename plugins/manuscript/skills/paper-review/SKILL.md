@@ -1,7 +1,7 @@
 ---
 name: paper-review
 description: "Use this skill for \"review this paper\", \"review this manuscript\", \"peer review\", \"review my paper\", \"critique this manuscript\", \"review this submission\", \"give me feedback on my paper\", \"check my methods\", \"review my statistics\", \"review as a peer reviewer\", \"evaluate this manuscript\", \"review this PDF\", or mentions manuscript review, peer review, paper critique, or methodological review."
-version: 0.1.1
+version: 0.1.2
 ---
 
 # Academic Manuscript Review
@@ -37,4 +37,4 @@ Pick the branch for the current tool. In every branch the reviewer follows `refe
 - `references/review-principles.md` -- review philosophy and severity calibration.
 - `references/review-output-template.md` -- the Synopsis / Critical / Major / Minor / References / Editor Note format.
 - `examples/sample-manuscript-review.md` -- worked review for calibration; `examples/sample-manuscript-excerpt.md` -- sample manuscript input for testing.
-- Sister skill `manuscript:humanizer` (invoke through the host's skill-invocation mechanism) -- AI-writing patterns to flag in the prose-quality pass.
+- Sister skill `manuscript:humanizer` (invoke through the host's skill-invocation mechanism) -- AI-writing patterns to flag in the prose-quality pass; for a full list of hits with suggested fixes, dispatch it in audit mode.
