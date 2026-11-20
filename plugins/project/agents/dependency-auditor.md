@@ -1,6 +1,6 @@
 ---
 name: dependency-auditor
-description: "Use this agent to audit project dependencies for vulnerabilities, outdated packages, and compatibility issues. Triggers on \"audit dependencies\", \"check for vulnerabilities\", \"update dependencies\", \"dependency security\", or when reviewing project health."
+description: "Use this agent to audit project dependencies (lockfiles and package manifests) for known vulnerabilities, outdated packages, and license compatibility. Triggers on \"audit dependencies\", \"update dependencies\", \"outdated packages\", \"dependency licenses\", or a lockfile change. Also run by the security-audit skill in parallel with its code auditor; broader security reviews belong to that skill."
 model: opus
 effort: medium
 tools: Bash, Read, Glob, Grep
