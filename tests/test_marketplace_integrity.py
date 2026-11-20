@@ -518,6 +518,7 @@ REVIEW_AGENTS = [
     ("grant", "grant-review"),
     ("grant", "grant-figure-qa"),
     ("manuscript", "paper-review"),
+    ("manuscript", "humanizer"),
     ("figures", "figure-qa"),
 ]
 
