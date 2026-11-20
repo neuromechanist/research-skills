@@ -98,4 +98,4 @@ Consult `review-principles.md` for the full rationale before finalizing severity
 - `figure-review-guide.md` - figure quality assessment criteria
 - `review-principles.md` - review philosophy and calibration guidance
 - `review-output-template.md` - the review output format with examples
-- Sister skill `manuscript:humanizer` - AI-writing patterns to flag in the prose-quality pass
+- Sister skill `manuscript:humanizer` - AI-writing patterns to flag in the prose-quality pass; its audit mode lists each hit with a suggested fix

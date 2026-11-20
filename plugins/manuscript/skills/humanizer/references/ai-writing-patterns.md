@@ -2,6 +2,8 @@
 
 This file is part of the `manuscript:humanizer` skill, adapted from [blader/humanizer](https://github.com/blader/humanizer) (MIT, Siqi Chen); see the skill's `SKILL.md` for attribution and `LICENSE` for terms.
 
+National Institutes of Health (NIH), Institute of Electrical and Electronics Engineers (IEEE), American Psychological Association (APA), and American Chemical Society (ACS) are referenced below by their standard abbreviations.
+
 Patterns 1 to 29 come from upstream; patterns 30 to 45, the quick scan, and the per-pattern "Research writing note" callouts are research-skills additions.
 
 ## CONTENT PATTERNS
